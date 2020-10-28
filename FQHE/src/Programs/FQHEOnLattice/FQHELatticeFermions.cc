@@ -100,6 +100,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption  ('u', "contactU", "prefactor U of the NN interaction (kinetic term ~ 1)", 1.0);
   (*SystemGroup) += new SingleDoubleOption  ('d', "deltaPotential", "Introduce a delta-potential at the origin", 0.0);
   (*SystemGroup) += new SingleDoubleOption  ('R', "randomPotential", "Introduce a random potential at all sites", 0.0);
+  (*SystemGroup) += new MultipleDoubleOption  ('s', "solenoid-flux", "twist in periodic boundary conditions phi_x[,phi_y])",',');
   (*SystemGroup) += new BooleanOption  ('\n', "positive-hopping", "choose positive sign of hopping terms", false);
   (*SystemGroup) += new BooleanOption  ('\n', "all-flux", "calculate all values of the flux to test symmetry under n_phi->1-n_phi", false);
   (*SystemGroup) += new BooleanOption ('\n', "cylinder", "Consider a cylinder geometry (only for delta Hamiltonian)");
@@ -128,6 +129,15 @@ int main(int argc, char** argv)
   int NbrFermions = Manager.GetInteger("nbr-particles");
   int Lx = Manager.GetInteger("lx");
   int Ly = Manager.GetInteger("ly");
+  double SolenoidX=0.0, SolenoidY=0.0;
+  {
+    int tmpI;
+    double *Fluxes=Manager.GetDoubles("solenoid-flux", tmpI);
+    if (tmpI>0) SolenoidX=Fluxes[0];
+    if (tmpI>1) SolenoidY=Fluxes[1];
+    
+    if (tmpI>0) delete [] Fluxes;
+  }
   int NbrFluxQuanta = Manager.GetInteger("flux");
   int NbrSites = Lx*Ly;  
   bool ReverseHopping = Manager.GetBoolean("positive-hopping");
@@ -166,6 +176,10 @@ int main(int argc, char** argv)
       if (Random!=0.0)
 	sprintf(deltaString,"R_%g_",Random);
       sprintf(interactionStr,"_u_%g", ContactU);
+      if ((SolenoidX!=0.0)||(SolenoidY!=0.0))
+	{
+	  sprintf(interactionStr,"%s_s_%g_%g",interactionStr,SolenoidX,SolenoidY);
+	}
       int offset2;
       offset2 = sprintf(OutputName,"fermions_lattice_");
       if (Manager.GetBoolean("cylinder"))
@@ -175,7 +189,7 @@ int main(int argc, char** argv)
       else
 	sprintf (OutputName+offset2, "n_%d_x_%d_y_%d%s_%s%sq.dat", NbrFermions, Lx, Ly, interactionStr, reverseHoppingString, deltaString);
     }
-  ParticleOnLattice* Space = new FermionOnLattice(NbrFermions, Lx, Ly, NbrFluxQuanta, MemorySpace);
+  ParticleOnLattice* Space = new FermionOnLattice(NbrFermions, Lx, Ly, NbrFluxQuanta, MemorySpace, SolenoidX, SolenoidY);
 
   if (Architecture.GetArchitecture()->GetLocalMemory() > 0)
     Memory = Architecture.GetArchitecture()->GetLocalMemory();

@@ -213,7 +213,7 @@ double ParticleOnLattice::RhoRhoDiagonal(int index, int nbrInteraction, double *
   double coefficient, result=0.0;
   for (int i=0; i<nbrInteraction; ++i)
     {
-      this->AdAdAA(i, q12Values[i<<1], q12Values[(i<<1)+1], q12Values[(i<<1)+1], q12Values[i<<1], coefficient);
+      this->AdAdAA(index, q12Values[i<<1], q12Values[(i<<1)+1], q12Values[(i<<1)+1], q12Values[i<<1], coefficient);
       result+=coefficient*interactionPerQ12[i];
     }
   return result;

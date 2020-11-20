@@ -158,19 +158,16 @@ double ParticleOnTorusPerturbedCoulombHamiltonian::EvaluateInteractionCoefficien
       if (N2 != 0.0)
 	{
 	  // Coulomb terms
-	  Coefficient = this->GetVofQ(PIOnM*Q2);
-	  Precision = Coefficient;	  
+	  Coefficient = this->GetVofQ(PIOnM*Q2, Precision);
 	}
       else
 	{
-	  Coefficient = this->GetVofQ(PIOnM*Q2); // yields non-zero terms only for non-singular interactions
-	  Precision = 1.0;
+	  Coefficient = this->GetVofQ(PIOnM*Q2, Precision); // yields non-zero terms only for non-singular interactions
 	}
       while ((fabs(Coefficient) + Precision) != fabs(Coefficient))
 	{
 	  Q2 = this->InvRatio * N1 * N1 + this->Ratio * N2 * N2;
-	  Precision = 2.0 * this->GetVofQ(PIOnM*Q2);
-	  Coefficient += Precision * cos (N1 * Factor);
+	  Coefficient += 2.0 * this->GetVofQ(PIOnM*Q2, Precision) * cos (N1 * Factor);
 	  N1 += 1.0;
 	}
       Sum += Coefficient;
@@ -184,19 +181,16 @@ double ParticleOnTorusPerturbedCoulombHamiltonian::EvaluateInteractionCoefficien
       Q2 = this->Ratio * N2 * N2;
       if (N2 != 0.0)
 	{
-	  Coefficient =  this->GetVofQ(PIOnM*Q2);
-	  Precision = Coefficient;
+	  Coefficient =  this->GetVofQ(PIOnM*Q2, Precision);
 	}
       else
 	{
-	  Coefficient = this->GetVofQ(PIOnM*Q2); // yields non-zero terms only for non-singular interactions
-	  Precision = 1.0;
+	  Coefficient = this->GetVofQ(PIOnM*Q2, Precision); // yields non-zero terms only for non-singular interactions
 	}
       while ((fabs(Coefficient) + Precision) != fabs(Coefficient))
 	{
 	  Q2 = this->InvRatio * N1 * N1 + this->Ratio * N2 * N2;
-	  Precision = 2.0 * this->GetVofQ(PIOnM*Q2);
-	  Coefficient += Precision * cos (N1 * Factor);
+	  Coefficient += 2.0 * this->GetVofQ(PIOnM*Q2, Precision) * cos (N1 * Factor);
 	  N1 += 1.0;
 	}
       Sum += Coefficient;
@@ -211,22 +205,31 @@ double ParticleOnTorusPerturbedCoulombHamiltonian::EvaluateInteractionCoefficien
 // Q2_half = one half of q^2 value
 // return value = Fourier tranform
 
-double ParticleOnTorusPerturbedCoulombHamiltonian::GetVofQ(double Q2_half)
+double ParticleOnTorusPerturbedCoulombHamiltonian::GetVofQ(double Q2_half, double &Precision)
 {
   // Coulomb term
   double CoulombTerm = 1.0;
+  double Q2 = 2.0*Q2_half;
   if ((Q2_half != 0.0) && (this->CoulombPrefactor != 0.0))
     {
       CoulombTerm = this->FormFactor(Q2_half);
       CoulombTerm *= this->CoulombPrefactor*CoulombTerm;
-      CoulombTerm /= sqrt(2.0*Q2_half);
+      CoulombTerm /= sqrt(Q2);
     }
   else CoulombTerm=0.0;
   // additional pseudopotential terms
   double TmpInteraction = 0.0;
   for (int i = 0; i < this->NbrPseudopotentials; ++i)
     if (this->Pseudopotentials[i] != 0.0)
-      TmpInteraction += this->Pseudopotentials[i] * this->LaguerrePolynomials[i].PolynomialEvaluate(2.0*Q2_half);
-  
-  return exp(-2.0*Q2_half) * (TmpInteraction+CoulombTerm);
+      TmpInteraction += 2.0*this->Pseudopotentials[i] * this->LaguerrePolynomials[i].PolynomialEvaluate(Q2); // extra factor of 2 relative to Coulomb terms
+  if (TmpInteraction+CoulombTerm==0.0)
+    {
+      Precision=1.0;
+      return 0.0;
+    }
+  else
+    {
+      Precision= exp(-Q2_half) * (TmpInteraction+CoulombTerm);
+      return Precision;
+    }
 }

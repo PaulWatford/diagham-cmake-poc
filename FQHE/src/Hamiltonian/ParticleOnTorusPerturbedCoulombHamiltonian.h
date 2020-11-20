@@ -114,7 +114,7 @@ class ParticleOnTorusPerturbedCoulombHamiltonian : public ParticleOnTorusGeneric
   //
   // Q2_half = one half of q^2 value
   // return value = Fourier tranform
-  double GetVofQ(double Q2_half);
+  double GetVofQ(double Q2_half, double &Precision);
 
 };
 

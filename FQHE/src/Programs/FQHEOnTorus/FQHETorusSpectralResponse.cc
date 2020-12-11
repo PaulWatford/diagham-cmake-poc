@@ -113,6 +113,7 @@ int main ( int argc, char** argv )
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-epsilon", "spectral response epsilon (default = 1E-2)",1E-2);
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-omega-interval", "spectral response omega step size (default = 1E-2)",1E-2);
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-spectral-resolution", "spectral response omega step size (default = 1E-2)",1E-2);
+    (*SystemGroup) += new SingleIntegerOption ('y', "sr-qy-momentum", "constrain the momentum of the creation operator to this value", -1);
 
     (*CoulombGroup) += new BooleanOption ('\n', "use-coulomb", "allocate a Coulomb Hamiltonian instead of a generic Hamiltonian");
     (*CoulombGroup) += new SingleIntegerOption ('\n', "coulomb-LL", "Landau-level parameter for Coulomb Hamiltonian",0);
@@ -253,7 +254,20 @@ int main ( int argc, char** argv )
     
     bool FirstRun=true;
     // qx and qy are the Fourier modes of the density operator
-    for (int qy=0;qy<NbrFluxQuanta;++qy)
+
+    int TargetQyMomentum=Manager.GetInteger("sr-qy-momentum");
+
+    int Max = NbrFluxQuanta-1;
+    int qy=0;
+    if (TargetQyMomentum < 0)
+      qy = 0;
+    else
+      {
+	qy = TargetQyMomentum;
+	Max = TargetQyMomentum;
+      }
+  
+    for (; qy <= Max; ++qy)
       {
 	ParticleOnTorus* TargetSpace = GetHilbertSpace(Statistics, NbrParticles, NbrFluxQuanta, (Momentum+qy)%NbrFluxQuanta);
 	Space->SetTargetSpace(TargetSpace);

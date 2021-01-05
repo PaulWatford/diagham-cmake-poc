@@ -731,7 +731,8 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	        {
 		  char* TmpName = new char [strlen(this->EigenvectorFileName) + 16];
                   sprintf (TmpName, "%s.omega_%g-%g_eps_%g.ni_%d.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, CurrentNbrIterLanczos);
-	          ofstream File(TmpName, ios::out); 
+	          ofstream File(TmpName, ios::out);
+	          File.precision(14);
          	  Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 		  File.close();
 		  delete [] TmpName;
@@ -845,7 +846,8 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	    {
 	      char* TmpName = new char [strlen(this->EigenvectorFileName) + 64];
 	      sprintf (TmpName, "%s.omega_%g-%g_eps_%g.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon);
-	      ofstream File(TmpName, ios::out); 
+	      ofstream File(TmpName, ios::out);
+	      File.precision(14);
 	      Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 	      File.close();
 	      delete [] TmpName;
@@ -1053,7 +1055,8 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	        {
 		  char* TmpName = new char [strlen(this->EigenvectorFileName) + 64];
                   sprintf (TmpName, "%s.omega_%g-%g_eps_%g.ni_%d.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, CurrentNbrIterLanczos);
-	          ofstream File(TmpName, ios::out); 
+	          ofstream File(TmpName, ios::out);
+	          File.precision(14);
          	  Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 		  File.close();
 		  delete [] TmpName;
@@ -1171,6 +1174,7 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	      char* TmpName = new char [strlen(this->EigenvectorFileName) + 64];
 	      sprintf (TmpName, "%s.omega_%g-%g_eps_%g.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon);
 	      ofstream File(TmpName, ios::out);
+	      File.precision(14);
 	      Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 	      File.close();
 	      delete [] TmpName;

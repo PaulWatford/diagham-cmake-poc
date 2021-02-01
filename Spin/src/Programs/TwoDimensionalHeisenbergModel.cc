@@ -96,6 +96,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  BooleanOption ('\n', "disable-momentum", "disable momentum quantum numbers even if the system is translation invariant");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-inversion", "disable the inversion symmetry quantum number");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-szsymmetry", "disable the Sz<->-Sz symmetry");
+  (*SystemGroup) += new  BooleanOption ('\n', "open-boundaries", "assume open boundary conditions");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 0);
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
@@ -125,7 +126,13 @@ int main(int argc, char** argv)
   char* OutputFileName = new char [512];
   char* CommentLine = new char [512];
   char* BoundaryName = new char [16];
-  sprintf (OutputFileName, "spin_1_2_2dheisenberg_n_%d_x_%d_y_%d", NbrSpins, NbrSitesX, NbrSitesY);
+
+  bool openBoundaryConditions = Manager.GetBoolean("open-boundaries");
+
+  if (openBoundaryConditions)
+    sprintf (OutputFileName, "spin_1_2_2dheisenberg_obc_n_%d_x_%d_y_%d", NbrSpins, NbrSitesX, NbrSitesY);
+  else
+    sprintf (OutputFileName, "spin_1_2_2dheisenberg_n_%d_x_%d_y_%d", NbrSpins, NbrSitesX, NbrSitesY);
 
 
   if (Manager.GetBoolean("disable-momentum") == false)
@@ -191,7 +198,7 @@ int main(int argc, char** argv)
       cout << InversionTable[i] << " (" << XValue << ", " << YValue << ")" << endl;
     }
 
-  if (Manager.GetBoolean("disable-momentum") == false)
+  if ((openBoundaryConditions == false) && (Manager.GetBoolean("disable-momentum") == false))
     {
       int NbrMomenta = 0;
       int* XMomenta = 0;
@@ -408,7 +415,7 @@ int main(int argc, char** argv)
 	    {
 	      Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
 	      TwoDimensionalHeisenbergHamiltonian* Hamiltonian = 0;
-	      Hamiltonian = new TwoDimensionalHeisenbergHamiltonian(Chain, NbrSitesX, NbrSitesY, Manager.GetDouble("j-value"), Manager.GetDouble("jz-value"));
+	      Hamiltonian = new TwoDimensionalHeisenbergHamiltonian(Chain, NbrSitesX, NbrSitesY, Manager.GetDouble("j-value"), Manager.GetDouble("jz-value"), openBoundaryConditions);
 	      char* TmpEigenstateString = new char[strlen(OutputFileName) + strlen(OutputParameterFileName) + 64];
 	      sprintf (TmpEigenstateString, "%s_%s_sz_%d", OutputFileName, OutputParameterFileName, TotalSz);
 	      char* TmpString = new char[64];

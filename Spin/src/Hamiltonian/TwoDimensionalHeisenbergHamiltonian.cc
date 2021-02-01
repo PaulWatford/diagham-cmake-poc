@@ -60,12 +60,23 @@ TwoDimensionalHeisenbergHamiltonian::TwoDimensionalHeisenbergHamiltonian()
 // nbrSpinY = number of spin along the y direction
 // jFactor = Heisenberg XX coupling constant between nearest neighbors
 // jzFactor = Heisenberg Z coupling constant between nearest neighbors
-
-TwoDimensionalHeisenbergHamiltonian::TwoDimensionalHeisenbergHamiltonian(AbstractSpinChain* chain, int nbrSpinX, int nbrSpinY, double jFactor, double jzFactor)
+// openBoundaryConditions = flag indicating that open boundary conditions should be used 
+TwoDimensionalHeisenbergHamiltonian::TwoDimensionalHeisenbergHamiltonian(AbstractSpinChain* chain, int nbrSpinX, int nbrSpinY, double jFactor, double jzFactor, bool openBoundaryConditions)
 {
   this->Chain = chain;
   this->NbrSpinX = nbrSpinX;
   this->NbrSpinY = nbrSpinY;
+  if (openBoundaryConditions)
+    {
+      this->NbrLinksX = nbrSpinX - 1;
+      this->NbrLinksY = nbrSpinY - 1;
+    }
+  else
+    {
+      this->NbrLinksX = nbrSpinX;
+      this->NbrLinksY = nbrSpinY;
+    }
+
   this->NbrSpin = this->NbrSpinX * this->NbrSpinY;
   this->JFactor = jFactor;
   this->JzFactor = jzFactor;
@@ -144,9 +155,9 @@ RealVector& TwoDimensionalHeisenbergHamiltonian::TwoDimensionalHeisenbergHamilto
       vDestination[i] += this->SzSzContributions[i] * vSource[i];
       double& TmpValue = vSource[i];
 
-      for (int j = 0; j < this->NbrSpinX; ++j)
+      for (int j = 0; j < this->NbrLinksX; ++j)
 	{
-	  for (int k = 0; k < this->NbrSpinY; ++k)
+	  for (int k = 0; k < this->NbrLinksY; ++k)
 	    {
 	      int TmpIndex1 = this->GetLinearizedIndex(j, k);
 	      int TmpIndex2 = this->GetSafeLinearizedIndex(j + 1, k);
@@ -248,9 +259,9 @@ void TwoDimensionalHeisenbergHamiltonian::EvaluateDiagonalMatrixElements()
       // SzSz part
       this->SzSzContributions[i] = 0.0;
       double Tmp = 0.0;
-      for (int j = 0; j < this->NbrSpinX; j++)
+      for (int j = 0; j < this->NbrLinksX; j++)
 	{
-	  for (int k = 0; k < this->NbrSpinY; k++)
+	  for (int k = 0; k < this->NbrLinksY; k++)
 	    {
 	      Tmp += this->Chain->SziSzj(this->GetLinearizedIndex(j, k), 
 					 this->GetSafeLinearizedIndex(j, k + 1), i);

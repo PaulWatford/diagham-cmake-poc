@@ -58,6 +58,11 @@ class TwoDimensionalHeisenbergHamiltonian : public AbstractHamiltonian
   int NbrSpinX;
   // number of spin chain along the y direction
   int NbrSpinY;
+		 
+  // number of links along the x direction
+  int NbrLinksX;
+  // number of links along the y direction
+  int NbrLinksY;
 
   // amplitude of the Heisenberg XX coupling between nearest neighbors
   double JFactor;
@@ -80,7 +85,8 @@ class TwoDimensionalHeisenbergHamiltonian : public AbstractHamiltonian
   // nbrSpinY = number of spin along the y direction
   // jFactor = Heisenberg XX coupling constant between nearest neighbors
   // jzFactor = Heisenberg Z coupling constant between nearest neighbors
-  TwoDimensionalHeisenbergHamiltonian(AbstractSpinChain* chain, int nbrSpinX, int nbrSpinY, double jFactor, double jzFactor);
+  // openBoundaryConditions = flag indicating that open boundary conditions should be used 
+  TwoDimensionalHeisenbergHamiltonian(AbstractSpinChain* chain, int nbrSpinX, int nbrSpinY, double jFactor, double jzFactor, bool openBoundaryConditions=true);
 
   // destructor
   //

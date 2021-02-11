@@ -12,6 +12,7 @@
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 //#include "HilbertSpace/BosonOnSphereWithSU2SpinAllSz.h"
 #include "HilbertSpace/FermionOnSphereWithSpin.h"
+#include "HilbertSpace/FermionOnSphereWithSpinLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 
 #include "Operator/ParticleOnSphereWithSpinDensityOperator.h"
@@ -165,28 +166,32 @@ int main(int argc, char** argv)
       if (Manager.GetBoolean("all-sz")==false)
   {
 #ifdef __64_BITS__
-    if (LzMax <= 31)
-      {
-        InputSpace = new FermionOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
-        OutputSpace = new FermionOnSphereWithSpin(NbrParticles, ResultingTotalLz, LzMax, ResultingTotalSz, MemorySpace);
-      }
-    else
-      {
-        cout << "Fermions with Spin not defined yet for LzMax > 31"<<endl;
-        exit(-1);
-      }
+	      if (LzMax <= 31)
 #else
-    if (LzMax <= 15)
-      {
-        InputSpace = new FermionOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
-        OutputSpace = new FermionOnSphereWithSpin(NbrParticles, ResultingTotalLz, LzMax, ResultingTotalSz, MemorySpace);
-      }
-    else
-      {
-        cout << "Fermions with Spin not defined yet for LzMax > 15, consider using a 64 bit machine!"<<endl;
-        exit(-1);
-      }
+		if (LzMax <= 15)
 #endif
+		  {
+		        InputSpace = new FermionOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
+		        OutputSpace = new FermionOnSphereWithSpin(NbrParticles, ResultingTotalLz, LzMax, ResultingTotalSz, MemorySpace);
+
+		  }
+		else
+		  {
+#ifdef __128_BIT_LONGLONG__
+		    if (LzMax <= 63)
+#else
+		      if (LzMax <= 31)
+#endif
+			{
+			        InputSpace = new FermionOnSphereWithSpinLong(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
+			        OutputSpace = new FermionOnSphereWithSpinLong(NbrParticles, ResultingTotalLz, LzMax, ResultingTotalSz, MemorySpace);
+			}
+		      else
+			{
+			  cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			  return 0;
+			}	
+		  }
   }
       else
   {

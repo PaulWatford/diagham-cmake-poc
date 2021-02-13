@@ -88,6 +88,7 @@ FermionOnSphereWithSpinLong::FermionOnSphereWithSpinLong (int nbrFermions, int t
   this->HilbertSpaceDimension = (int) this->ShiftedEvaluateHilbertSpaceDimension(this->NbrFermions, this->LzMax, (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1, 
 										 (this->TotalSpin + this->NbrFermions) >> 1);
   this->Flag.Initialize();
+  this->TargetSpace = this;
   this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
   this->StateHighestBit = new int [this->HilbertSpaceDimension];  
 
@@ -145,6 +146,10 @@ FermionOnSphereWithSpinLong::FermionOnSphereWithSpinLong(const FermionOnSphereWi
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
 }
 
 // destructor
@@ -176,6 +181,10 @@ FermionOnSphereWithSpinLong& FermionOnSphereWithSpinLong::operator = (const Ferm
       delete[] this->StateDescription;
       delete[] this->StateHighestBit;
     }
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
   this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
   this->Flag = fermions.Flag;
   this->NbrFermions = fermions.NbrFermions;
@@ -202,6 +211,24 @@ FermionOnSphereWithSpinLong& FermionOnSphereWithSpinLong::operator = (const Ferm
 AbstractHilbertSpace* FermionOnSphereWithSpinLong::Clone()
 {
   return new FermionOnSphereWithSpinLong(*this);
+}
+
+// set a different target space (for all basic operations)
+//
+// targetSpace = pointer to the target space
+
+void FermionOnSphereWithSpinLong::SetTargetSpace(ParticleOnSphereWithSpin* targetSpace)
+{
+  this->TargetSpace = (FermionOnSphereWithSpinLong*) targetSpace;
+}
+
+// return Hilbert space dimension of the target space
+//
+// return value = Hilbert space dimension
+
+int FermionOnSphereWithSpinLong::GetTargetHilbertSpaceDimension()
+{
+  return this->TargetSpace->HilbertSpaceDimension;
 }
 
 // return a list of all possible quantum numbers 
@@ -435,6 +462,7 @@ double FermionOnSphereWithSpinLong::AdAd (int index, int n1, int n2)
   return Coefficient;
 }
 
+
 // apply a_n1_u a_n2_u operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be kept in cache until next AduAdd call
 //
 // index = index of the state on which the operator has to be applied
@@ -632,6 +660,68 @@ int FermionOnSphereWithSpinLong::AduAdd (int m1, int m2, double& coefficient)
     }
   TmpState |= (((ULONGLONG) 0x1ul) << m1);
   return this->FindStateIndex(TmpState, NewLzMax);
+}
+
+
+// apply a^+_n1_d a_n2_u operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// n = first index for annihilation operator (spin up)
+// m = second index for creation operator (spin down)
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the destination state 
+
+int FermionOnSphereWithSpinLong::AddAu (int index, int m, int n, double& coefficient)
+{
+  int StateHighestBit = this->StateHighestBit[index];
+  ULONGLONG State = this->StateDescription[index];
+  m <<= 1;
+  n = (n << 1) + 1;  
+  if ((n > StateHighestBit) || ((State & (((ULONGLONG) 0x1ul) << n)) == 0))
+    {
+      coefficient = 0.0;
+      return this->TargetSpace->HilbertSpaceDimension;
+    }
+  int NewLargestBit = StateHighestBit;
+  coefficient = this->SignLookUpTable[(State >> n) & this->SignLookUpTableMask[n]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 16))  & this->SignLookUpTableMask[n + 16]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
+#ifdef __128_BIT_LONGLONG__
+  coefficient *= this->SignLookUpTable[(State >> (n + 64)) & this->SignLookUpTableMask[n + 64]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 80)) & this->SignLookUpTableMask[n + 80]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 96)) & this->SignLookUpTableMask[n + 96]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 112)) & this->SignLookUpTableMask[n + 112]];
+#endif
+  State &= ~(((ULONGLONG) 0x1ul) << n);
+  if (NewLargestBit == n)
+    while (((State >> NewLargestBit) == 0) && (NewLargestBit > 0))
+      --NewLargestBit;
+
+  if ((State & (((ULONGLONG) 0x1ul) << m))!= 0)
+    {
+      coefficient = 0.0;
+      return this->TargetSpace->HilbertSpaceDimension;
+    }
+  if (m > NewLargestBit)
+    {
+      NewLargestBit = m;
+    }
+  else
+    {
+      coefficient *= this->SignLookUpTable[(State >> m) & this->SignLookUpTableMask[m]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 16))  & this->SignLookUpTableMask[m + 16]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 32)) & this->SignLookUpTableMask[m + 32]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
+#ifdef __128_BIT_LONGLONG__
+      coefficient *= this->SignLookUpTable[(State >> (m + 64)) & this->SignLookUpTableMask[m + 64]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 80))  & this->SignLookUpTableMask[m + 80]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 96)) & this->SignLookUpTableMask[m + 96]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 112)) & this->SignLookUpTableMask[m + 112]];
+#endif
+    }
+  State |= (((ULONGLONG) 0x1ul) << m);
+  return this->TargetSpace->FindStateIndex(State, NewLargestBit);
 }
 
 // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call

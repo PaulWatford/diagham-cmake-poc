@@ -302,16 +302,17 @@ int main(int argc, char** argv)
           VectorOperatorMultiplyOperation Operation(TmpOperator, &InputState, &TmpState);
           Operation.ApplyOperation(Architecture.GetArchitecture());
     
-
           double TmpCoeff = Coefficients.GetCoefficient(2*m + 2*LzBoost - LzMax, LzMax-2*m, 2*LzBoost);
           
           if (m%2 == 1)
             TmpCoeff *= -1.0;
 
-          cout << TmpCoeff << endl; 
+          cout << TmpCoeff << " " << TmpState.Norm() << endl; 
           SWState.AddLinearCombination(TmpCoeff, TmpState);
         }
-      SWState /= SWState.Norm();  
+      cout << "Final state norm " << SWState.Norm() << endl;
+      if (SWState.Norm() > MACHINE_PRECISION)
+	      SWState /= SWState.Norm();  
       char* OutputNameLz = new char [strlen(OutputNamePrefix)+ 16];
       sprintf (OutputNameLz, "%s.0.vec", OutputNamePrefix);
       SWState.WriteVector(OutputNameLz); 

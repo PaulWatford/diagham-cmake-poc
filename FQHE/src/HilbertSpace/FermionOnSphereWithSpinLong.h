@@ -138,6 +138,16 @@ class FermionOnSphereWithSpinLong :  public ParticleOnSphereWithSpin
   // return value = particle statistic
   int GetParticleStatistic();
 
+  // set a different target space (for all basic operations)
+  //
+  // targetSpace = pointer to the target space
+  void SetTargetSpace(ParticleOnSphereWithSpin* targetSpace);
+  
+  // return Hilbert space dimension of the target space
+  //
+  // return value = Hilbert space dimension
+  int GetTargetHilbertSpaceDimension();
+
   // return a list of all possible quantum numbers 
   //
   // return value = pointer to corresponding quantum number
@@ -306,6 +316,15 @@ class FermionOnSphereWithSpinLong :  public ParticleOnSphereWithSpin
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AduAdd (int m1, int m2, double& coefficient);
+
+  // apply a^+_n1_d a_n2_u operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // n = first index for annihilation operator (spin up)
+  // m = second index for creation operator (spin down)
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the destination state 
+  virtual int AddAu (int index, int m, int n, double& coefficient);
 
   // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call
   //

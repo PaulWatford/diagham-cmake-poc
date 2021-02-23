@@ -360,8 +360,19 @@ int main(int argc, char** argv)
 	}
     else
 	{
-	  OutputName = new char[strlen(Manager.GetString("input-file"))+10];
-	  sprintf(OutputName,"%s_Ad",Manager.GetString("input-file"));
+     OutputName = new char [256];
+     int FinalLz, FinalNbrParticles;
+     if (Manager.GetBoolean("annihilate-particle") == false)
+        { 
+          FinalNbrParticles = NbrParticles + 1; 
+          FinalLz = Lz + (2 * OrbitalNumber - LzMax);
+        }  
+     else
+        {
+          FinalNbrParticles = NbrParticles - 1;  
+          FinalLz = Lz - (2 * OrbitalNumber - LzMax);
+        } 
+     sprintf (OutputName, "fermions_addremoveparticle_n_%d_2s_%d_lz_%d.0.vec", FinalNbrParticles, LzMax, FinalLz);
 	}  
     if (TargetVector.WriteVector(OutputName) == false)
 	{

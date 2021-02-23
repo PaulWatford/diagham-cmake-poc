@@ -98,7 +98,7 @@ int main(int argc, char** argv)
   SimpleMonteCarloAlgorithm MonteCarloRoutine(AbstractParticleCollection::OnDiskCollection, NbrParticles, TestWaveFunction, SamplingFunction,
 						      &Manager);
   
-  /*
+/*  
   if (Manager.GetString("interaction-params")==0)
     {
       // add Coulomb energy in LLL
@@ -135,6 +135,7 @@ int main(int argc, char** argv)
 	}
     }
   */
+  
   
   SimpleTwoBodyCorrelatorOnDisk *Correlations=NULL;
   if (Manager.GetBoolean("correlations"))

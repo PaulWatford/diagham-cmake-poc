@@ -66,6 +66,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption  ('\n', "input-file", "file describing the input vector");
   (*SystemGroup) += new SingleDoubleOption  ('\n', "energy-min", "lowest energy in the spectrum", 0);
   (*SystemGroup) += new SingleDoubleOption  ('\n', "energy-max", "highest energy in the spectrum", 0);
+  (*SystemGroup) += new SingleDoubleOption  ('\n', "chemical-potential", "chemical potential shift, H -> H + mu", 0);
 
   Architecture.AddOptionGroup(&Manager);
   Lanczos.AddOptionGroup(&Manager);  
@@ -350,9 +351,13 @@ int main(int argc, char** argv)
 	int NbrChebyshev = Manager.GetInteger("nbr-chebyshev");
 	double Emin = Manager.GetDouble("energy-min");
 	double Emax = Manager.GetDouble("energy-max");
-    double epsilon = 4.0/NbrChebyshev;
+  double epsilon = 4.0/NbrChebyshev;
+  double ChemicalPotential = Manager.GetDouble("chemical-potential");
+  if (ChemicalPotential != 0)
+    Hamiltonian->ShiftHamiltonian(ChemicalPotential);
 
-    double a = (Emax-Emin)/(2.0 - 4.0 * epsilon);
+
+  double a = (Emax-Emin)/(2.0 - 4.0 * epsilon);
 	double b = (Emax+Emin)/2.0;
 
     cout << "Rescaled a= " << a << " b= " << b << endl;

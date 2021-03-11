@@ -800,6 +800,29 @@ int ParticleOnSphereWithSpin::Add (int index, int m, double& coefficient)
   return this->HilbertSpaceDimension;
 }
 
+// apply a_m_u  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// m = index for annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int ParticleOnSphereWithSpin::Au (int index, int m, double& coefficient)
+{
+  return this->HilbertSpaceDimension;
+}
+
+// apply a_m_d  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// m = index for annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int ParticleOnSphereWithSpin::Ad (int index, int m, double& coefficient)
+{
+  return this->HilbertSpaceDimension;
+}
   
 // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
 //

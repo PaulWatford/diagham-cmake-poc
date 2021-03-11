@@ -591,6 +591,18 @@ int ParticleOnSphere::A (int index, int n, double& coefficient)
   return this->HilbertSpaceDimension;
 }
 
+// apply a^+_n  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// n = index for creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int ParticleOnSphere::Ad (int index, int n, double& coefficient)
+{
+  cout << "Warning: using the default operator ParticleOnSphere::Ad" << endl;
+  return this->HilbertSpaceDimension;
+}
 
 // check whether HilbertSpace implements ordering of operators
 //

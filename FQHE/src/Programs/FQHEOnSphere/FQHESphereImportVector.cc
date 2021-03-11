@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 		{
 		  // recognized format used by Edward Rezayi for bilayer basis:
 		  int pos=0, NToBeFound=NbrParticles;
-		  unsigned int State=0x0l;
+		  unsigned long State=0x0l;
 		  double Coefficient=1.0, TmpCoeff;
 		  if (Verbose)
 		    cout << Descriptor << " : " << endl;

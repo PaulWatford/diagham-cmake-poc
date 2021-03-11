@@ -341,24 +341,29 @@ int main(int argc, char** argv)
 	}
       
 
-	if (InitialVector.GetVectorDimension()!=Space->GetHilbertSpaceDimension())
+   if (InitialVector.GetVectorDimension()!=Space->GetHilbertSpaceDimension())
 	    {
 	      cout << "error: vector and Hilbert-space have unequal dimensions"<<endl;
 	      return -1;
 	    }
     cout << "Read in vector " << InitialVector.GetVectorDimension() << endl;
 
-	int NbrChebyshev = Manager.GetInteger("nbr-chebyshev");
-	double Emin = Manager.GetDouble("energy-min");
-	double Emax = Manager.GetDouble("energy-max");
+    //Computes <v|T_n(H')|v> for n <  2 N
+    //Uses rescaled H' = (H-b)/a if provided
+    //Returns [<v|T_0(H)|v>, 2 <u|T_1(H)|v>, 2 <u|T_2(H)|v>, ...]
+
+  int NbrChebyshev = Manager.GetInteger("nbr-chebyshev");
+  double Emin = Manager.GetDouble("energy-min");
+  double Emax = Manager.GetDouble("energy-max");
   double epsilon = 4.0/NbrChebyshev;
   double ChemicalPotential = Manager.GetDouble("chemical-potential");
+  
   if (ChemicalPotential != 0)
     Hamiltonian->ShiftHamiltonian(ChemicalPotential);
 
 
   double a = (Emax-Emin)/(2.0 - 4.0 * epsilon);
-	double b = (Emax+Emin)/2.0;
+  double b = (Emax+Emin)/2.0;
 
     cout << "Rescaled a= " << a << " b= " << b << endl;
 
@@ -407,76 +412,7 @@ int main(int argc, char** argv)
 
 	return 0;
 
-/*
-def T_series_herm(v, H, N, a = 1, b = 0):
-    """Computes <v|T_n(H')|v> for n <  2 N
-    
-        Uses rescaled H' = (H-b)/a if provided
-     
-        Returns [<v|T_0(H)|v>, 2 <u|T_1(H)|v>, 2 <u|T_2(H)|v>, ...]
-        
-    """
 
-    def mul(x): #Rescaling
-        y = H.matvec(x)
-        if b!=0.:
-            y = y - b*x
-        if a!=1.:
-            y = y/a
-        return y
-    
-    alpha = v.copy()
-    beta = mul(alpha)
-    
-    mu = [ np.vdot(v, alpha), np.dot(v, beta)]
-
-    for n in range(2, N, 2):    
-        y = 2*mul(beta) - alpha
-        alpha = beta
-        beta = y
-        mu.append(2*np.dot(alpha, alpha) - mu[0]) 
-        mu.append(2*np.dot(beta, alpha) - mu[1])
-    mu = np.array(mu)
-    mu[1:]*=2
-    return mu
-*/	
-     
-/*
-      Hamiltonian->ShiftHamiltonian(Shift);
-
-      // add eventual projectors
-      int NbrProjectors = 0;
-      AbstractHamiltonian** Projectors = NULL;
-      if (Manager.GetBoolean("project-l2")) ++NbrProjectors;
-      Projectors = new AbstractHamiltonian*[NbrProjectors];
-      NbrProjectors = 0;
-      if (Manager.GetBoolean("project-l2"))
-	{
-	  AbstractHamiltonian* L2Projector =
-	    new ParticleOnSphereL2Hamiltonian(Space, NbrParticles, LzMax, L, 
-					      Architecture.GetArchitecture(), 1.0, ((long)Manager.GetInteger("l2-memory"))<<20);
-	  L2Projector->ShiftHamiltonian(-0.25*(double)L*(L+2.0));
-	  Projectors[NbrProjectors++]=L2Projector;
-	}
-      
-      char* EigenvectorName = 0;
-      if (Manager.GetBoolean("eigenstate") == true)	
-	{
-	  EigenvectorName = new char [64];
-	  sprintf (EigenvectorName, "fermions_%s%s_n_%d_2s_%d_lz_%d", InteractionName, ExtraTerms, NbrParticles, LzMax, L);
-	}
-      
-      QHEOnSphereMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName, LzMax, Projectors, NbrProjectors);
-      MainTaskOperation TaskOperation (&Task);
-      TaskOperation.ApplyOperation(Architecture.GetArchitecture());
-      if (EigenvectorName != 0)
-	{
-	  delete[] EigenvectorName;
-	}
-*/	
-    //  for (int p=0; p<NbrProjectors;++p)
-  	//     delete Projectors[p];
-    //  delete [] Projectors;
       delete Hamiltonian;
       delete Space;
       if (FirstRun == true)

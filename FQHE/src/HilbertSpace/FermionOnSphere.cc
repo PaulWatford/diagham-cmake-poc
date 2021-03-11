@@ -1390,6 +1390,37 @@ int FermionOnSphere::A (int index, int n, double& coefficient)
 }
 
 
+// apply a^+_m operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m = index for creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+int FermionOnSphere::Ad (int index, int m, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+    
+  if ((TmpState & (0x1ul << m))!= 0x0ul)
+    {
+      coefficient = 0.0;
+      return this->TargetSpace->HilbertSpaceDimension;
+    }
+  int NewLzMax = this->StateLzMax[index];
+  if (m > NewLzMax)
+    NewLzMax = m;
+ 
+  coefficient = this->SignLookUpTable[(TmpState >> m) & this->SignLookUpTableMask[m]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (m + 16))  & this->SignLookUpTableMask[m + 16]];
+#ifdef  __64_BITS__
+  coefficient *= this->SignLookUpTable[(TmpState >> (m + 32)) & this->SignLookUpTableMask[m + 32]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
+#endif
+    
+  TmpState |= (0x1ul << m);
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
+}
+
 
 // check whether HilbertSpace implements ordering of operators
 //

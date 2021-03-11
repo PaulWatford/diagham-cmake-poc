@@ -38,4 +38,6 @@ ParticleOnSphereCreationOperator.cc \
 ParticleOnSphereAnnihilationOperator.cc \
 ParticleOnTorusCreationOperator.cc \
 ParticleOnSphereLPlusOperator.cc \
-ParticleOnTorusDensityOperator.cc
+ParticleOnTorusDensityOperator.cc \
+ParticleOnSphereWithSpinAnnihilationOperator.cc \
+ParticleOnSphereWithSpinCreationOperator.cc

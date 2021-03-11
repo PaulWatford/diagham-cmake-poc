@@ -1476,6 +1476,73 @@ int FermionOnSphereWithSpin::Add (int index, int m, double& coefficient)
   return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
 }
 
+// apply a_n_d operator to a state, assuming a different target space
+//
+// index = index of the state on which the operator has to be applied
+// n = second index for annihilation operator (spin down)
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+int FermionOnSphereWithSpin::Ad (int index, int n, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  n <<= 1;
+  if ((TmpState & (0x1ul << n)) == 0x0ul)
+    return this->TargetSpace->HilbertSpaceDimension;
+  this->ProdALzMax = this->StateHighestBit[index];
+  coefficient = this->SignLookUpTable[(TmpState >> n) & this->SignLookUpTableMask[n]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 16)) & this->SignLookUpTableMask[n + 16]];
+#ifdef  __64_BITS__
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
+#endif
+  TmpState &= ~(0x1ul << n);
+  int NewLzMax = this->StateHighestBit[index];
+  if (TmpState != 0x0ul)
+    {
+      while ((TmpState >> NewLzMax) == 0)
+	--NewLzMax;
+    }
+  else
+    NewLzMax = 0;
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
+}
+
+
+// apply a_n_u operator to a state, assuming a different target space
+//
+// index = index of the state on which the operator has to be applied
+// n = index for annihilation operator (spin up)
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+int FermionOnSphereWithSpin::Au (int index, int n, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  n <<= 1;
+  n++;
+  if ((TmpState & (0x1ul << n)) == 0x0ul)
+    return this->TargetSpace->HilbertSpaceDimension;
+  this->ProdALzMax = this->StateHighestBit[index];
+  coefficient = this->SignLookUpTable[(TmpState >> n) & this->SignLookUpTableMask[n]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 16)) & this->SignLookUpTableMask[n + 16]];
+#ifdef  __64_BITS__
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
+#endif
+  TmpState &= ~(0x1ul << n);
+  int NewLzMax = this->StateHighestBit[index];
+  if (TmpState != 0x0ul)
+    {
+      while ((TmpState >> NewLzMax) == 0)
+	--NewLzMax;
+    }
+  else
+    NewLzMax = 0;
+
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
+}
+
 // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call
 //
 // index = index of the state on which the operator has to be applied

@@ -630,6 +630,22 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
   // return value =  index of the resulting state 
   virtual int Add (int index, int m, double& coefficient);
 
+  // apply a^_m_u  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index for annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Au (int index, int m, double& coefficient);
+
+  // apply a_m_d  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index for annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Ad (int index, int m, double& coefficient);
+
   // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call
   //
   // index = index of the state on which the operator has to be applied

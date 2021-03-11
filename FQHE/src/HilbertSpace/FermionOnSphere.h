@@ -446,6 +446,14 @@ class FermionOnSphere :  public ParticleOnSphere
   // return value =  index of the resulting state 
   virtual int A (int index, int n, double& coefficient);
 
+  // apply a^+_n  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // n = index for creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Ad (int index, int n, double& coefficient);
+
   // apply a^+_n  operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad or A call
   //
   // index = index of the state on which the operator has to be applied

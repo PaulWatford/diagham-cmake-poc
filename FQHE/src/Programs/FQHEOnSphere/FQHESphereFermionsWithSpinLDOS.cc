@@ -401,26 +401,36 @@ int main(int argc, char** argv)
     Hamiltonian->ShiftHamiltonian(ChemicalPotential);
 
 
-  double a = (Emax-Emin)/(2.0 - 4.0 * epsilon);
-  double b = (Emax+Emin)/2.0;
+    double a = (Emax-Emin)/(2.0 - 4.0 * epsilon);
+    double b = (Emax+Emin)/2.0;
 
     cout << "Rescaled a= " << a << " b= " << b << endl;
+
+    RealVector TestVector(Space->GetHilbertSpaceDimension(), true); 
+    VectorHamiltonianMultiplyOperation TestOperation (Hamiltonian, &InitialVector, &TestVector);
+    TestOperation.ApplyOperation(Architecture.GetArchitecture());
+    cout << "<psi_0|H|psi_0>= " << InitialVector * TestVector << endl;	
 
     RealVector alpha = InitialVector; 
     RealVector beta(Space->GetHilbertSpaceDimension(), true); 
     VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &alpha, &beta);
     Operation.ApplyOperation(Architecture.GetArchitecture());
 
-    if (b != 0.)
+    if (abs(b) > 1e-14)
         beta.AddLinearCombination(-b, alpha);
-    if (a !=1.)
-        beta *= (1.0/a);
 
+    if (abs(a) > 1e-14)
+        beta *= (1.0/a);
+    else
+	cout << "Warning: division with zero " << endl;
+
+    cout << "Norm of alpha= " << alpha*alpha << " Norm of beta= " << beta*beta << endl;	
     double* mu = new double[NbrChebyshev];
 
     mu[0] = InitialVector * alpha;
     mu[1] = InitialVector * beta;
-
+ 
+   cout << mu[0] << " " << mu[1] << endl;
 
     for (int n = 2; n < NbrChebyshev; n += 2)
     	{

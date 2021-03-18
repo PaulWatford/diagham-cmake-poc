@@ -312,6 +312,7 @@ int main(int argc, char** argv)
 	  cout << "error while writing " << OutputName << endl;
 	  return -1;
 	}
+    cout<<"Norm= " << TargetVector.Norm() << endl;
     delete [] OutputName;
 
   delete IntialSpace;

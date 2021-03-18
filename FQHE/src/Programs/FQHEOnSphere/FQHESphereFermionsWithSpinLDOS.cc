@@ -416,13 +416,16 @@ int main(int argc, char** argv)
     VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &alpha, &beta);
     Operation.ApplyOperation(Architecture.GetArchitecture());
 
-    if (abs(b) > 1e-14)
+    if (b != 0.0)
         beta.AddLinearCombination(-b, alpha);
 
-    if (abs(a) > 1e-14)
+    if (a > 1e-12)
         beta *= (1.0/a);
     else
-	cout << "Warning: division with zero " << endl;
+       {
+	 cout << "a= " << a << " Warning: division with zero " << endl;
+         exit(2);
+       }   
 
     cout << "Norm of alpha= " << alpha*alpha << " Norm of beta= " << beta*beta << endl;	
     double* mu = new double[NbrChebyshev];

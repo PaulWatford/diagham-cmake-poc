@@ -268,6 +268,8 @@ int main(int argc, char** argv)
   Manager += MiscGroup;
   (*SystemGroup) += new SingleIntegerOption  ('n', "nbr-particles", "number of particles", 4);
   (*SystemGroup) += new SingleIntegerOption  ('s', "nbr-flux", "number of flux quanta", 20);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "total-lz", "Lz sector", 0);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "total-sz", "spin projection for SU(2) case", 0);
   (*SystemGroup) += new BooleanOption  ('\n', "fermion", "use fermionic statistic instead of bosonic statistic");
   (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics");
   (*SystemGroup) += new BooleanOption  ('\n', "4-D", "consider particles on the 4D sphere (only available for bosons)");
@@ -297,7 +299,7 @@ int main(int argc, char** argv)
     
   int NbrParticles = Manager.GetInteger("nbr-particles"); 
   int NbrFluxQuanta = Manager.GetInteger("nbr-flux"); 
-  int LzMin = 0;
+  int LzMin = Manager.GetInteger("total-lz"); 
   int JzMin = 0;
   int KzMin = 0;
   
@@ -431,6 +433,9 @@ int main(int argc, char** argv)
       int Sz = 0;
       if (NbrParticles & 1)
 	Sz = 1;
+      if (Manager.GetInteger("total-sz") > 0)
+        Sz = Manager.GetInteger("total-sz");
+
       if (Manager.GetBoolean("boson") == true)
 	{
 

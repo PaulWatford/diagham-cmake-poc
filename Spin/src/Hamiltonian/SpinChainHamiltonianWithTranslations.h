@@ -116,6 +116,7 @@ class SpinChainHamiltonianWithTranslations : public AbstractHamiltonian
   // j = coupling constants between spins
   // nnCoupling = term to add to ZZ nearest-neighbour interaction
   // nnnCoupling = nearest-neighbour interaction in Z direction
+  
   SpinChainHamiltonianWithTranslations(AbstractSpinChainWithTranslations* chain, int nbrSpin, double j, double nnCoupling, double nnnCoupling);
 
   // destructor

@@ -39,7 +39,6 @@
 #include <sys/time.h>
 #include <string.h>
 
-
 // destructor
 //
 

@@ -67,6 +67,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption  ('\n', "energy-min", "lowest energy in the spectrum", 0);
   (*SystemGroup) += new SingleDoubleOption  ('\n', "energy-max", "highest energy in the spectrum", 0);
   (*SystemGroup) += new SingleDoubleOption  ('\n', "chemical-potential", "chemical potential shift, H -> H + mu", 0);
+  (*SystemGroup) += new SingleDoubleOption  ('\n', "chebyshev-epsilon", "epsilon parameter for Chebyshev", 0);
 
   Architecture.AddOptionGroup(&Manager);
   Lanczos.AddOptionGroup(&Manager);  
@@ -350,31 +351,33 @@ int main(int argc, char** argv)
 
     //Computes <v|T_n(H')|v> for n <  2 N
     //Uses rescaled H' = (H-b)/a if provided
-    //Returns [<v|T_0(H)|v>, 2 <u|T_1(H)|v>, 2 <u|T_2(H)|v>, ...]
+    //Returns [<v|T_0(H)|v>, <v|T_1(H)|v>, <v|T_2(H)|v>, ...]
 
-  int NbrChebyshev = Manager.GetInteger("nbr-chebyshev");
-  double Emin = Manager.GetDouble("energy-min");
-  double Emax = Manager.GetDouble("energy-max");
-  double epsilon = 4.0/NbrChebyshev;
-  double ChemicalPotential = Manager.GetDouble("chemical-potential");
+   int NbrChebyshev = Manager.GetInteger("nbr-chebyshev");
+   double Emin = Manager.GetDouble("energy-min");
+   double Emax = Manager.GetDouble("energy-max");
+   double epsilon = Manager.GetDouble("chebyshev-epsilon");
+   if (epsilon == 0)
+     epsilon = 16.0/NbrChebyshev;
+   double ChemicalPotential = Manager.GetDouble("chemical-potential");
   
-  if (ChemicalPotential != 0)
-    Hamiltonian->ShiftHamiltonian(ChemicalPotential);
+    if (ChemicalPotential != 0)
+      Hamiltonian->ShiftHamiltonian(ChemicalPotential);
 
 
-  double a = (Emax-Emin)/(2.0 - 4.0 * epsilon);
-  double b = (Emax+Emin)/2.0;
+    double a = (Emax-Emin)/(2.0 - epsilon);
+    double b = (Emax+Emin)/2.0;
 
     cout << "Rescaled a= " << a << " b= " << b << endl;
 
     RealVector alpha = InitialVector; 
     RealVector beta(Space->GetHilbertSpaceDimension(), true); 
-	VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &alpha, &beta);
-	Operation.ApplyOperation(Architecture.GetArchitecture());
+    VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &alpha, &beta);
+    Operation.ApplyOperation(Architecture.GetArchitecture());
 
     if (b != 0.)
         beta.AddLinearCombination(-b, alpha);
-    if (a !=1.)
+    if (a != 1.)
         beta *= (1.0/a);
 
     double* mu = new double[NbrChebyshev];
@@ -388,7 +391,7 @@ int main(int argc, char** argv)
     		RealVector y(Space->GetHilbertSpaceDimension(), true);
 
     		VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &beta, &y);
-			Operation.ApplyOperation(Architecture.GetArchitecture());
+		Operation.ApplyOperation(Architecture.GetArchitecture());
     		if (b !=0.)
         		y.AddLinearCombination(-b, beta);
     		if (a !=1.)
@@ -396,21 +399,18 @@ int main(int argc, char** argv)
         	y *= 2.0;
         	y.AddLinearCombination(-1.0, alpha);
 
-    	    alpha = beta;
+    	    	alpha = beta;
         	beta = y;
         	mu[n] = 2.0 * (alpha * alpha) - mu[0]; 
         	mu[n+1] = 2.0 * (beta * alpha) - mu[1];
 	    }
 
-    for (int i = 1; i < NbrChebyshev; i++)	    
- 	   mu[i] *= 2.0;
-
-    for (int i = 0; i < NbrChebyshev; i++)
+      for (int i = 0; i < NbrChebyshev; i++)
     	cout << "mu " << i << " : " << mu[i] << endl;
 	  
-	delete[] mu;  
+      delete[] mu;  
 
-	return 0;
+      return 0;
 
 
       delete Hamiltonian;

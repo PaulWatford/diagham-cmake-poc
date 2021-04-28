@@ -88,7 +88,11 @@ SpinChainHamiltonianWithTranslations::SpinChainHamiltonianWithTranslations(Abstr
   this->NNNCoupling = nnnCoupling;
   if (this->NNNCoupling != 0)
     cout << "Adding NNN interaction: " << this->NNNCoupling << endl;
-
+  
+  this->HermitianSymmetryFlag = false;
+  this->Architecture = 0;
+  this->FastMultiplicationFlag = false;
+  this->FastMultiplicationStep = 1;
   this->SzSzContributions = new double [this->Chain->GetHilbertSpaceDimension()];
   this->EvaluateDiagonalMatrixElements();
   this->EvaluateCosinusTable();
@@ -706,6 +710,10 @@ bool SpinChainHamiltonianWithTranslations::GetLoadBalancing(int nbrTasks, long* 
 {
   long MinIndex;
   long MaxIndex;
+  if (this->Architecture == 0)
+    {
+       return false;
+    } 
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
   int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
   if ((this->NbrInteractionPerComponent != 0) && (this->FastMultiplicationStep != 0))

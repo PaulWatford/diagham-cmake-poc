@@ -408,7 +408,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 		{
 		  HRep.LapackDiagonalize(TmpDiag);
 		  for (int j = 0; j < this->Hamiltonian->GetHilbertSpaceDimension() ; ++j)
-		    File << (this->LValue/ 2) << " " << (TmpDiag[j] - this->EnergyShift) << endl;
+		    File << (this->LValue/2.0) << " " << (TmpDiag[j] - this->EnergyShift) << endl;
 		}
 	      else
 		{
@@ -431,7 +431,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 		  if (this->ComputeLValueFlag == false)
 		    for (int j = 0; j < this->Hamiltonian->GetHilbertSpaceDimension() ; ++j)
 		      {
-			File << (this->LValue/ 2) << " " << (TmpDiag[j] - this->EnergyShift);
+			File << (this->LValue/2.0) << " " << (TmpDiag[j] - this->EnergyShift);
 			if (this->ComputeEnergyFlag == true)
 			  {
 			    RealVector TmpEigenvector(this->Hamiltonian->GetHilbertSpaceDimension());
@@ -445,7 +445,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 		      ParticleOnSphereSquareTotalMomentumOperator Oper((ParticleOnSphere*) Space, this->LzMax);
 		      for (int j = 0; j < this->Hamiltonian->GetHilbertSpaceDimension() ; ++j)
 			{
-			  File << (this->LValue/ 2) << " " << (TmpDiag[j] - this->EnergyShift);
+			  File << (this->LValue/2.0) << " " << (TmpDiag[j] - this->EnergyShift);
 			  if (this->ComputeEnergyFlag == true)
 			    {
 			      RealVector TmpEigenvector(this->Hamiltonian->GetHilbertSpaceDimension());
@@ -468,7 +468,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 		  TmpTriDiag.Diagonalize();
 		  TmpTriDiag.SortMatrixUpOrder();
 		  for (int j = 0; j < this->Hamiltonian->GetHilbertSpaceDimension() ; ++j)
-		    File << (this->LValue/ 2) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift) << endl;
+		    File << (this->LValue/2.0) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift) << endl;
 		}
 	      else
 		{
@@ -493,7 +493,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 		  if (this->ComputeLValueFlag == false)
 		    for (int j = 0; j < this->Hamiltonian->GetHilbertSpaceDimension() ; ++j)
 		      {
-			File << (this->LValue/ 2) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift);
+			File << (this->LValue/2.0) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift);
 			if (this->ComputeEnergyFlag == true)
 			  {
 			    RealVector TmpEigenvector(this->Hamiltonian->GetHilbertSpaceDimension());
@@ -507,7 +507,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 		      ParticleOnSphereSquareTotalMomentumOperator Oper((ParticleOnSphere*) Space, this->LzMax);
 		      for (int j = 0; j < this->Hamiltonian->GetHilbertSpaceDimension() ; ++j)
 			{
-			  File << (this->LValue/ 2) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift);
+			  File << (this->LValue/2.0) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift);
 			  if (this->ComputeEnergyFlag == true)
 			    {
 			      RealVector TmpEigenvector(this->Hamiltonian->GetHilbertSpaceDimension());
@@ -527,7 +527,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 	{
 	  if (this->ComputeLValueFlag == false)
 	    {
-	      File << (this->LValue/ 2) << " " << (HRep(0, 0)  - this->EnergyShift);
+	      File << (this->LValue/2.0) << " " << (HRep(0, 0)  - this->EnergyShift);
 	      if (this->ComputeEnergyFlag == true)
 		File << " " << (HRep(0, 0)  - this->EnergyShift) ;
 	      File << endl;	      
@@ -538,7 +538,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 	      RealVector TmpEigenvector(1);
 	      TmpEigenvector[0] = 1.0;
 	      double TmpMomentum = Oper.MatrixElement(TmpEigenvector, TmpEigenvector).Re;
-	      File << (this->LValue/ 2) << " " << (HRep(0, 0)  - this->EnergyShift);
+	      File << (this->LValue/2.0) << " " << (HRep(0, 0)  - this->EnergyShift);
 	      File << " "  << TmpMomentum << " " << (0.5 * (sqrt ((4.0 * TmpMomentum) + 1.0) - 1.0)) << endl;	      
 	    }
 	  if (this->EvaluateEigenvectors)
@@ -778,7 +778,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 	      for (int i = 0; i < this->NbrEigenvalue; ++i)
 		{
 		  cout << (TmpMatrix.DiagonalElement(i) - this->EnergyShift) << " ";
-		  File << (this->LValue/ 2) << " " << (TmpMatrix.DiagonalElement(i) - this->EnergyShift) << endl;
+		  File << (this->LValue/2.0) << " " << (TmpMatrix.DiagonalElement(i) - this->EnergyShift) << endl;
 		}
 	      cout << endl;
 	    }
@@ -825,7 +825,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 	{
 	  cout << (TmpMatrix.DiagonalElement(i) - this->EnergyShift) << " ";
 	  if  ((this->ComputeEnergyFlag == false) && (this->ComputeLValueFlag == false))
-	    File << (this->LValue/ 2) << " " << (TmpMatrix.DiagonalElement(i) - this->EnergyShift) << endl;
+	    File << (this->LValue/2.0) << " " << (TmpMatrix.DiagonalElement(i) - this->EnergyShift) << endl;
 	}
       cout << endl;
       if (((this->EvaluateEigenvectors == true) || (this->ComputeLValueFlag == true)) && 
@@ -880,7 +880,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 	      for (int i = 0; i < this->NbrEigenvalue; ++i)
 		{
 		  if ((this->ComputeEnergyFlag == true) || (this->ComputeLValueFlag == true))
-		    File << (this->LValue/ 2) << " " << (TmpMatrix.DiagonalElement(i) - this->EnergyShift);
+		    File << (this->LValue/2.0) << " " << (TmpMatrix.DiagonalElement(i) - this->EnergyShift);
 		  VectorHamiltonianMultiplyOperation Operation1 (this->Hamiltonian, &(Eigenvectors[i]), &TmpEigenvector);
 		  Operation1.ApplyOperation(this->Architecture);
 		  cout << ((TmpEigenvector * Eigenvectors[i]) - this->EnergyShift) << " ";	
@@ -1020,7 +1020,7 @@ void QHEOnSphereMainTask::DiagonalizeInHilbertSubspace(char* subspaceDescription
 	    }
 	  for (int j = 0; j < TmpHilbertSpaceDimension; ++j)
 	    {
-	      file << (this->LValue/ 2) << " " << (TmpDiag[j] - this->EnergyShift) << endl;
+	      file << (this->LValue/2.0) << " " << (TmpDiag[j] - this->EnergyShift) << endl;
 	    }
 	}
       else
@@ -1045,7 +1045,7 @@ void QHEOnSphereMainTask::DiagonalizeInHilbertSubspace(char* subspaceDescription
 	    }
 	  for (int j = 0; j < TmpHilbertSpaceDimension; ++j)
 	    {
-	      file << (this->LValue/ 2) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift) << endl;
+	      file << (this->LValue/2.0) << " " << (TmpTriDiag.DiagonalElement(j) - this->EnergyShift) << endl;
 	    }
 #ifdef __LAPACK__
 	}
@@ -1063,7 +1063,7 @@ void QHEOnSphereMainTask::DiagonalizeInHilbertSubspace(char* subspaceDescription
     }
   else
     {
-      file << (this->LValue/ 2) << " " << (HRep(0, 0)  - this->EnergyShift) << endl;
+      file << (this->LValue/2.0) << " " << (HRep(0, 0)  - this->EnergyShift) << endl;
     }
   for (int j= 0; j < TmpHilbertSpaceDimension; ++j)
     delete[] VectorFileNames[j];

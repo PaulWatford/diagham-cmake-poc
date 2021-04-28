@@ -49,7 +49,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  OptionManager Manager ("FTIGenericInteractionFromFileTwoBands" , "0.01");
+  OptionManager Manager ("FTIGenericInteractionFromFileTwoBands" , "0.02");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");

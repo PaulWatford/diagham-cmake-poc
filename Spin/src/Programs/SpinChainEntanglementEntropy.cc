@@ -358,14 +358,6 @@ int main(int argc, char** argv)
  }
 
 
-
-
-
-
-
-
-
-
   
   if (Manager.GetString("degenerated-groundstate") == 0)
     {

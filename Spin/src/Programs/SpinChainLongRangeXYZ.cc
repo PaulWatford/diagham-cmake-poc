@@ -41,7 +41,7 @@ int main(int argc, char** argv)
   OptionGroup* SystemGroup = new OptionGroup ("system options");
 
   ArchitectureManager Architecture;
-  LanczosManager Lanczos(false);
+  LanczosManager Lanczos(true);
 
   Manager += SystemGroup;
   Architecture.AddOptionGroup(&Manager);
@@ -124,21 +124,23 @@ int main(int argc, char** argv)
 	{
 		Spin1_2ChainWithTranslations* Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, 1000000, 1000000);
       
+     Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());  
+
+
    		if (Chain->GetHilbertSpaceDimension() > 0)
 			{
-	 			 SpinChainLongRangeXYZHamiltonian* Hamiltonian = 0;
-	  			 Hamiltonian = new SpinChainLongRangeXYZHamiltonian (Chain, NbrSpins, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, HValue);
+	 			 SpinChainLongRangeXYZHamiltonian Hamiltonian (Chain, NbrSpins, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, HValue);
 	  
 				char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 	  			sprintf (TmpEigenstateString, "%s", OutputFileName);
 	  			char TmpEntry = '\0';
-	  			GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, &TmpEntry, CommentLine, 0.0,  FullOutputFileName,
+	  			GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, &TmpEntry, CommentLine, 0.0,  FullOutputFileName,
 				   FirstRun, TmpEigenstateString);
+
 	  			MainTaskOperation TaskOperation (&Task);
 	  			TaskOperation.ApplyOperation(Architecture.GetArchitecture());
 	  			FirstRun = false;
 	  			delete[] TmpEigenstateString;
-	  			delete Hamiltonian;
 			}
 		 delete Chain;
 	}	 

@@ -109,12 +109,12 @@ int main(int argc, char** argv)
   if (HValue == 0.0)
     {
       sprintf (OutputFileName, "%s_x_%.6f_y_%.6f_z_%.6f_alphax_%.6f_alphay_%.6f_alphaz_%.6f_n_%d_k_%d", FileNamePrefix, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, NbrSpins, Manager.GetInteger("momentum"));
-      sprintf (CommentLine, "# XYZ chain with %d sites, Jx=%.6f, Jy= %.6f, Jz=%.6f, AlphaXX= %.6f, AlphaYY= %.6f, AlphaZZ= %6.f, K = %d\n", NbrSpins, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, Manager.GetInteger("momentum"));
+      sprintf (CommentLine, "XYZ chain with %d sites, Jx=%.6f, Jy= %.6f, Jz=%.6f, AlphaXX= %.6f, AlphaYY= %.6f, AlphaZZ= %6.f, K = %d\n", NbrSpins, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, Manager.GetInteger("momentum"));
     }
   else
     {
        sprintf (OutputFileName, "%s_x_%.6f_y_%.6f_z_%.6f_alphax_%.6f_alphay_%.6f_alphaz_%.6f_h_%6.f_n_%d_k_%d", FileNamePrefix, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, HValue, NbrSpins, Manager.GetInteger("momentum"));
-      sprintf (CommentLine, "# XYZ chain with %d sites, Jx=%.6f, Jy= %.6f, Jz=%.6f, AlphaXX= %.6f, AlphaYY= %.6f, AlphaZZ= %6.f, H= %6.f, K = %d\n", NbrSpins, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, HValue, Manager.GetInteger("momentum"));
+      sprintf (CommentLine, "XYZ chain with %d sites, Jx=%.6f, Jy= %.6f, Jz=%.6f, AlphaXX= %.6f, AlphaYY= %.6f, AlphaZZ= %6.f, H= %6.f, K = %d\n", NbrSpins, JxValue, JyValue, JzValue, PowerLawXX, PowerLawYY, PowerLawZZ, HValue, Manager.GetInteger("momentum"));
     }
   char* FullOutputFileName = new char [strlen(OutputFileName)+ 16];
   sprintf (FullOutputFileName, "%s.dat", OutputFileName);
@@ -133,8 +133,12 @@ int main(int argc, char** argv)
 	  
 				char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 	  			sprintf (TmpEigenstateString, "%s", OutputFileName);
-	  			char TmpEntry = '\0';
-	  			GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, &TmpEntry, CommentLine, 0.0,  FullOutputFileName,
+
+          char* TmpString = new char[64];
+          sprintf (TmpString, "%d ", Momentum);
+
+
+	  			GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpString, CommentLine, 0.0,  FullOutputFileName,
 				   FirstRun, TmpEigenstateString);
 
 	  			MainTaskOperation TaskOperation (&Task);

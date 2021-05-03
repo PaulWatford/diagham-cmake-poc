@@ -76,6 +76,8 @@ class Spin1_2ChainWithTranslations : public AbstractSpinChainWithTranslations
   // look-up table (LookUpTable[i] gives the index of the smallest state that greater than i <<  LookUpTableShift)
   long* LookUpTable;
 
+  int ShiftLookUpTable;
+
   // array describing each state
   unsigned long* StateDescription;
 
@@ -151,6 +153,13 @@ class Spin1_2ChainWithTranslations : public AbstractSpinChainWithTranslations
   // index = index of the state to test
   // return value = spin projection on (Oz)
   virtual int TotalSz (int index);
+
+  // return eigenvalue of Sz_i associated to a given state
+  //
+  // i = position
+  // state = index of the state to consider
+  // return value = corresponding eigenvalue
+  virtual double Szi (int i, int state);
 
   // return eigenvalue of Sz_i Sz_j associated to a given state
   //
@@ -290,6 +299,15 @@ class Spin1_2ChainWithTranslations : public AbstractSpinChainWithTranslations
   // return value = entanglement matrix of the subsytem (return a zero dimension matrix if the entanglement matrix is equal to zero)
 
   ComplexMatrix EvaluatePartialEntanglementMatrix (int nbrSites, int szSector, ComplexVector& groundState, AbstractArchitecture* architecture);
+
+  // evaluate entanglement matrix of a subsystem of the whole system described by a given ground state. Sz is not conserved
+  // 
+  // nbrSites = number of sites that are part of the A subsytem 
+  // groundState = reference on the total system ground state
+  // architecture = pointer to the architecture to use parallelized algorithm 
+  // return value = entanglement matrix of the subsytem (return a zero dimension matrix if the entanglement matrix is equal to zero)
+
+  ComplexMatrix EvaluatePartialEntanglementMatrix (int nbrSites, ComplexVector& groundState, AbstractArchitecture* architecture);
 
   // evaluate a density matrix of a subsystem of the whole system described by a given ground state, using particle partition.
   // 

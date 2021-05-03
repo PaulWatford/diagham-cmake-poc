@@ -625,6 +625,19 @@ RealMatrix AbstractSpinChain::EvaluatePartialEntanglementMatrix (int nbrSites, i
   return this->EvaluatePartialEntanglementMatrix(nbrSites, szSector, 0, groundState, architecture);
 }	
 
+// evaluate entanglement matrix of a subsystem of the whole system described by a given ground state. Sz is not conserved.
+// 
+// nbrSites = number of sites that are part of the A subsystem 
+// groundState = reference on the total system ground state
+// architecture = pointer to the architecture to use parallelized algorithm 
+// return value = entanglement matrix of the subsystem (return a zero dimension matrix if the entanglement matrix is equal to zero)
+
+ComplexMatrix AbstractSpinChain::EvaluatePartialEntanglementMatrix (int nbrSites, ComplexVector& groundState, AbstractArchitecture* architecture)
+{
+  return ComplexMatrix();
+}
+
+
 // evaluate entanglement matrix of a subsystem of the whole system described by a given ground state. The entanglement matrix density matrix is only evaluated in a given Sz sector.
 // 
 // nbrSites = number of sites that are part of the A subsystem 

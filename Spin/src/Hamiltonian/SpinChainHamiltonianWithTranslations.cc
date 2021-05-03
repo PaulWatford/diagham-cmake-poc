@@ -74,6 +74,7 @@ SpinChainHamiltonianWithTranslations::SpinChainHamiltonianWithTranslations()
 
 SpinChainHamiltonianWithTranslations::SpinChainHamiltonianWithTranslations(AbstractSpinChainWithTranslations* chain, int nbrSpin, double j, double nnCoupling, double nnnCoupling)
 {
+  //cout << "SpinChainHamiltonianWithTranslations" << endl;
   this->Chain = chain;
   this->NbrSpin = nbrSpin;
   this->J = j;

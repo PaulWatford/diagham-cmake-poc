@@ -1235,6 +1235,137 @@ void SortArrayUpOrdering(Complex* complexArray, ClassName* array, long nbrValue)
   return;
 }
 
+// sort in up ordering an array of long int numbers and apply the same sort on another array (using quick sort)
+//
+// longArray = pointer to the array of long int numbers
+// array = pointer to the second array to sort in the same way as longArray
+// nbrValue = nbr of value in the array
+
+template <class ClassName>
+void SortArrayUpOrdering(unsigned long* longArray, ClassName* array, long nbrValue)
+{
+  switch (nbrValue)
+    {
+    case 0:
+      return;
+    case 1:
+      return;
+    case 2:
+      {
+	if (longArray[0] > longArray[1])
+	  {
+	    unsigned long TmpElement = longArray[0];
+	    longArray[0] = longArray[1];
+	    longArray[1] = TmpElement;
+	    ClassName TmpElement2 = array[0];
+	    array[0] = array[1];
+	    array[1] = TmpElement2;
+	  }
+	return;
+      }
+      break;
+    case 3:
+      {
+	unsigned long TmpElement;
+	ClassName TmpElement2;
+	if (longArray[0] > longArray[1])
+	  {
+	    TmpElement = longArray[0];
+	    longArray[0] = longArray[1];
+	    longArray[1] = TmpElement;
+	    TmpElement2 = array[0];
+	    array[0] = array[1];
+	    array[1] = TmpElement2;
+	  }
+	if (longArray[1] > longArray[2])
+	  {
+	    TmpElement = longArray[1];
+	    longArray[1] = longArray[2];
+	    longArray[2] = TmpElement;
+	    TmpElement2 = array[1];
+	    array[1] = array[2];
+	    array[2] = TmpElement2;
+	  }	
+	if (longArray[0] > longArray[1])
+	  {
+	    TmpElement = longArray[0];
+	    longArray[0] = longArray[1];
+	    longArray[1] = TmpElement;
+	    TmpElement2 = array[0];
+	    array[0] = array[1];
+	    array[1] = TmpElement2;
+	  }	
+	return;
+      }
+      break;
+    default:
+      {
+	int j = nbrValue - 1;
+	int i = nbrValue >> 1;
+	unsigned long TmpElement;
+	ClassName TmpElement2;
+	if (longArray[0] >  longArray[i])
+	  {
+	    TmpElement = longArray[i];
+	    longArray[i] = longArray[0];
+	    longArray[0] = TmpElement;
+	    TmpElement2 = array[i];
+	    array[i] = array[0];
+	    array[0] = TmpElement2;
+	  }
+	if (longArray[i] >  longArray[j])
+	  {
+	    TmpElement = longArray[i];
+	    longArray[i] = longArray[j];
+	    longArray[j] = TmpElement;
+	    TmpElement2 = array[i];
+	    array[i] = array[j];
+	    array[j] = TmpElement2;
+	  }
+	if (longArray[0] >  longArray[i])
+	  {
+	    TmpElement = longArray[i];
+	    longArray[i] = longArray[0];
+	    longArray[0] = TmpElement;
+	    TmpElement2 = array[i];
+	    array[i] = array[0];
+	    array[0] = TmpElement2;
+	  }
+	--j;
+	unsigned long Pivot = longArray[i];
+	ClassName Pivot2 = array[i];
+	longArray[i] = longArray[j];
+	longArray[j] = Pivot;
+	array[i] = array[j];
+	array[j] = Pivot2;
+	i = 0;
+	while (true)
+	  {
+	    while (longArray[++i] < Pivot);
+	    while (longArray[--j] > Pivot);
+	    if (i < j)
+	      {
+		TmpElement = longArray[i];
+		longArray[i] = longArray[j];
+		longArray[j] = TmpElement;	    
+		TmpElement2 = array[i];
+		array[i] = array[j];
+		array[j] = TmpElement2;	    
+	      }
+	    else
+	      break;
+	  }	
+	longArray[nbrValue - 2] = longArray[i];
+	longArray[i] = Pivot;
+	array[nbrValue - 2] = array[i];
+	array[i] = Pivot2;
+	SortArrayUpOrdering(longArray, array, i);
+	SortArrayUpOrdering(&(longArray[i + 1]), &(array[i + 1]), nbrValue - i - 1);	
+      }
+    }
+  return;
+}
+
 // up ordering array sort using quick sort, and sort row of an 2d-array in the way
 //
 // array = pointer to the array

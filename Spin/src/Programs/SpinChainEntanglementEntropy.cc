@@ -75,6 +75,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleIntegerOption ('s', "spin", "twice the spin value", 1);
   (*SystemGroup) += new SingleStringOption  ('\0', "ground-file", "name of the file corresponding to the ground state of the whole system");
   (*SystemGroup) += new SingleStringOption  ('\n', "degenerated-groundstate", "single column file describing a degenerated ground state");  
+  (*SystemGroup) += new BooleanOption  ('\n', "no-sz", "ground state does not have well-defined Sz quantum number (e.g., Ising or XYZ models)");  
   (*SystemGroup) += new BooleanOption  ('c', "complex", "consider complex wave function");
   (*SystemGroup) += new SingleIntegerOption  ('\n', "min-la", "minimum size of the subsystem whose entropy has to be evaluated", 1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-la", "maximum size of the subsystem whose entropy has to be evaluated (0 if equal to half the total system size)", 0);
@@ -106,6 +107,7 @@ int main(int argc, char** argv)
   int SpinValue = 0;
   int NbrSpins = 0;
   int SzValue = 0;
+  bool NoSzFlag = Manager.GetBoolean("no-sz");
 #ifdef __LAPACK__
   bool LapackFlag = Manager.GetBoolean("use-lapack");
 #endif
@@ -120,6 +122,250 @@ int main(int argc, char** argv)
   int* Momenta = 0;
   int* InversionSectors = 0;
   int* SzSymmetrySectors = 0;
+
+  ofstream File;
+
+  if (NoSzFlag)
+  {
+    //no Sz symmetry
+    cout << "Assume no Sz conservation "<<endl;
+
+    GroundStateFiles = new char* [1];
+    Momenta = new int[1];
+    Weights = new double[1];
+    Weights[0] = 1.0;
+    GroundStateFiles[0] = new char [strlen(Manager.GetString("ground-file")) + 1];
+    strcpy (GroundStateFiles[0], Manager.GetString("ground-file"));      
+
+    NbrSpaces= 1;
+    if (SpinAllSzFindSystemInfoFromVectorFileName(GroundStateFiles[0], NbrSpins, SpinValue, Momenta[0]) == false)
+		{
+			cout << "error while retrieving system parameters from file name " << GroundStateFiles[0] << endl;
+		  	return -1;
+	    }
+	cout << "Read in file " << GroundStateFiles[0] << " NbrSpins= "<<NbrSpins<<" SpinValue= "<<SpinValue<<" Momenta= "<<Momenta[0]<<endl;	
+
+  if (Manager.GetString("output-file") != 0)
+    {
+      File.open(Manager.GetString("output-file"), ios::binary | ios::out);
+      if (Manager.GetBoolean("disable-densitymatrix") == false)
+	{
+	  DensityMatrixFileName  = ReplaceExtensionToFileName(Manager.GetString("output-file"), "ent", "full.ent");
+	  if (DensityMatrixFileName == 0)
+	    {
+	      cout << "no ent extension was find in " << Manager.GetString("output-file") << " file name" << endl;
+	      return 0;
+	    }
+	}
+    }
+  else
+    {
+      char* TmpFileName;
+      TmpFileName = ReplaceExtensionToFileName(GroundStateFiles[0], "vec", "ent");
+      if (TmpFileName == 0)
+	{
+	  cout << "no vec extension was find in " << GroundStateFiles[0] << " file name" << endl;
+	  return 0;
+	}
+      File.open(TmpFileName, ios::binary | ios::out);
+      if (Manager.GetBoolean("disable-densitymatrix") == false)
+	{
+	  DensityMatrixFileName  = ReplaceExtensionToFileName(TmpFileName, "ent", "full.ent");
+	  if (DensityMatrixFileName == 0)
+	    {
+	      cout << "no ent extension was find in " <<  TmpFileName << " file name" << endl;
+	      return 0;
+	    }
+	}
+      delete[] TmpFileName;
+    }
+
+
+  if (DensityMatrixFileName != 0)
+    {
+      ofstream DensityMatrixFile;
+      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out); 
+	  DensityMatrixFile << "# l_a    lambda" << endl;
+      DensityMatrixFile.close();
+    }
+  
+  File.precision(14);
+  cout.precision(14);
+
+  cout << "Complex problem "<<endl;
+  ComplexVector* GroundStates = 0;
+     
+  GroundStates = new ComplexVector [NbrSpaces];  
+  for (int i = 0; i < NbrSpaces; ++i)
+    {
+	 if (GroundStates[i].ReadVector (GroundStateFiles[i]) == false)
+	   {
+	     cout << "can't open vector file " << GroundStateFiles[i] << endl;
+	     return -1;      
+	   }
+    }
+ 
+  Spaces = new AbstractSpinChain* [NbrSpaces];
+  for (int i = 0; i < NbrSpaces; ++i)
+	{
+	   switch (SpinValue)
+		{
+		case 1 :
+		  Spaces[i] = new Spin1_2ChainWithTranslations (NbrSpins, Momenta[i], 1, 1000000, 1000000);
+		  break;
+		default :
+		  {
+		    if ((SpinValue & 1) == 0)
+		      cout << "spin " << (SpinValue / 2) << " are not available" << endl;
+		    else 
+		      cout << "spin " << SpinValue << "/2 are not available" << endl;
+		    return -1;
+		  }
+		}
+	}
+
+  for (int i = 0; i < NbrSpaces; ++i)
+	{
+	  if (Spaces[i]->GetHilbertSpaceDimension() != GroundStates[i].GetVectorDimension())
+	    {
+	      cout << "error, dimension mismatch for " << GroundStateFiles[i] << " (dimnension is " << GroundStates[i].GetVectorDimension() 
+		   << ", should be " << Spaces[i]->GetHilbertSpaceDimension() << ")" << endl;
+	      return -1;
+	    }
+	}
+
+   int SubsystemSize = Manager.GetInteger("min-la");
+   if (SubsystemSize < 1)
+       SubsystemSize = 1;
+   int MeanSubsystemSize = NbrSpins >> 1;
+   if (Manager.GetInteger("max-la") > 0)
+       {
+	 	MeanSubsystemSize = Manager.GetInteger("max-la");
+	 	if (MeanSubsystemSize > NbrSpins)
+	   		MeanSubsystemSize = NbrSpins;
+       }
+   for (; SubsystemSize <= MeanSubsystemSize; ++SubsystemSize)
+    {
+	 double EntanglementEntropy = 0.0;
+	 double DensitySum = 0.0;
+
+	 ComplexMatrix PartialEntanglementMatrix;
+	 for (int i = 0; i < NbrSpaces; ++i)
+	   {
+		ComplexMatrix TmpPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrix(SubsystemSize, GroundStates[0]);
+	    if (WeightFlag == true)
+			   TmpPartialEntanglementMatrix *= sqrt(Weights[i]);
+		if (PartialEntanglementMatrix.GetNbrRow() == 0)
+			   	PartialEntanglementMatrix = TmpPartialEntanglementMatrix;
+			 else
+			 	PartialEntanglementMatrix += TmpPartialEntanglementMatrix;
+		}	 
+	  if ((NbrSpaces > 1) && (WeightFlag == false))
+		   PartialEntanglementMatrix /= sqrt(((double) NbrSpaces));
+	    
+	     
+	  if (((PartialEntanglementMatrix.GetNbrRow() >= 1) && (PartialEntanglementMatrix.GetNbrColumn() >= 1)))
+	       {
+	       	  int TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
+			  if (TmpDimension > PartialEntanglementMatrix.GetNbrRow())
+			   	{
+			      TmpDimension = PartialEntanglementMatrix.GetNbrRow();
+			   	}
+		    RealDiagonalMatrix TmpDiag (TmpDimension);
+	
+		    PartialEntanglementMatrix.RemoveZeroColumns();
+		    PartialEntanglementMatrix.RemoveZeroRows();
+		    if ((PartialEntanglementMatrix.GetNbrRow() > 1) && (PartialEntanglementMatrix.GetNbrColumn() > 1))
+		       {
+			 	cout << "PartialEntanglementMatrix = " << PartialEntanglementMatrix.GetNbrRow() << " x " << PartialEntanglementMatrix.GetNbrColumn() << endl;
+				 double* TmpValues = PartialEntanglementMatrix.SingularValueDecomposition();
+			 	int TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
+			 	if (TmpDimension > PartialEntanglementMatrix.GetNbrRow())
+			   	{
+			    	 TmpDimension = PartialEntanglementMatrix.GetNbrRow();
+			   	}
+			 	for (int i = 0; i < TmpDimension; ++i)
+			   		TmpValues[i] *= TmpValues[i];
+			 	TmpDiag = RealDiagonalMatrix(TmpValues, TmpDimension);
+				TmpDiag.SortMatrixDownOrder();
+		       }
+		     else
+		       {
+			 		double TmpValue = 0.0;
+			 		if (PartialEntanglementMatrix.GetNbrRow() == 1)
+			   		{
+			     		for (int i = 0; i < PartialEntanglementMatrix.GetNbrColumn(); ++i)
+			       		{ 
+				 			Complex Tmp = PartialEntanglementMatrix[i][0]; 
+				 			TmpValue += Tmp.Re * Tmp.Re + Tmp.Im * Tmp.Im;
+			       		}
+			   		}
+			 		else
+			   		{
+			     		for (int i = 0; i < PartialEntanglementMatrix.GetNbrRow(); ++i)
+			       		{
+				 			Complex Tmp = PartialEntanglementMatrix[0][i]; 
+				 			TmpValue += Tmp.Re * Tmp.Re + Tmp.Im * Tmp.Im;		
+			       		}		  
+			   		}
+			 		TmpDiag = RealDiagonalMatrix(1, 1);
+			 		TmpDiag[0] = TmpValue;
+		       }
+		   
+		 
+		 for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+		   {
+		     if (TmpDiag[i] > 1e-14)
+		       {
+			 EntanglementEntropy += TmpDiag[i] * log(TmpDiag[i]);
+			 DensitySum += TmpDiag[i];
+		       }
+		   }
+		 if (DensityMatrixFileName != 0)
+		   {
+		     ofstream DensityMatrixFile;
+		     DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
+		     DensityMatrixFile.precision(14);
+			 for (int i = 0; i <TmpDiag.GetNbrRow(); ++i)
+			   DensityMatrixFile << SubsystemSize << " " << TmpDiag[i] << endl;
+		     DensityMatrixFile.close();
+		   }
+	     }
+	     else
+	       {
+		 if ((PartialEntanglementMatrix.GetNbrRow() == 1) || (PartialEntanglementMatrix.GetNbrColumn() == 1))
+		   {
+		     double TmpValue = 0; //PartialDensityMatrix(0,0);
+		     if (TmpValue > 1e-14)
+		       {
+			 EntanglementEntropy += TmpValue * log(TmpValue);
+			 DensitySum += TmpValue;
+		       }
+		     if (DensityMatrixFileName != 0)
+		       {
+			 ofstream DensityMatrixFile;
+			 DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
+			 DensityMatrixFile.precision(14);
+			 DensityMatrixFile << SubsystemSize << " "<< TmpValue << endl;
+			 DensityMatrixFile.close();
+		       }		  
+		   }
+	       }
+	 File << SubsystemSize << " " << (-EntanglementEntropy) << " " << DensitySum << endl;
+     }
+  File.close();
+  return 0;
+ }
+
+
+
+
+
+
+
+
+
+
   
   if (Manager.GetString("degenerated-groundstate") == 0)
     {
@@ -190,7 +436,7 @@ int main(int argc, char** argv)
 	}
     }
   
-  ofstream File;
+  //ofstream File;
   if (Manager.GetString("output-file") != 0)
     {
       File.open(Manager.GetString("output-file"), ios::binary | ios::out);
@@ -873,7 +1119,7 @@ int main(int argc, char** argv)
 	   }
 	 File << SubsystemSize << " " << (-EntanglementEntropy) << " " << DensitySum << endl;
        }
-     File.close();
-   }
+  File.close();
+  }
   return 0;
 }

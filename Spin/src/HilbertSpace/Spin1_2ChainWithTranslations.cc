@@ -108,7 +108,7 @@ Spin1_2ChainWithTranslations::Spin1_2ChainWithTranslations (int chainLength, int
 
   this->CreatePrecalculationTable();
 
-  cout << "warning : untested code" << endl;
+  //cout << "warning : untested code" << endl;
   long TmpHilbertSpaceDimension = (1l <<  this->ChainLength );
   this->LargeHilbertSpaceDimension = 0l;
   unsigned long TmpState;
@@ -149,8 +149,37 @@ Spin1_2ChainWithTranslations::Spin1_2ChainWithTranslations (int chainLength, int
     }
   this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;  
 
+  SortArrayUpOrdering(this->StateDescription, this->NbrStateInOrbit, this->HilbertSpaceDimension);
+
+  this->LookUpTable =0;
   if (this->HilbertSpaceDimension > 0)
     this->CreateLookUpTable();
+
+  for(int i=0; i < this->HilbertSpaceDimension; i++)
+    {
+      if ( i !=  this->FindStateIndex(this->StateDescription[i]) )
+      {
+        cout <<"Problem in Find state index "<< i<< " "<< this->FindStateIndex(this->StateDescription[i])<<endl;
+      }
+    }
+
+  //cout << "LookUpTable OK" << endl;  
+  /*
+    for (int i = 0; i < this->HilbertSpaceDimension; i++)
+  {
+    unsigned long Mask = 0x1ul;
+     for (int k = 0; k < this->ChainLength; k++)    
+        {
+          if ((this->StateDescription[i] & Mask) == 0x0ul)
+             cout << "- ";
+          else
+            cout << "+ ";
+          Mask <<= 1;
+       }
+    cout << "=== i= " << i <<" " << this->StateDescription[i] << " find= " << this->FindStateIndex(this->StateDescription[i]) << " =============== "<< this->NbrStateInOrbit[i] << endl;
+  }
+  */
+
 }
 
 // constructor for Hilbert space corresponding to a given total spin projection Sz
@@ -237,6 +266,31 @@ Spin1_2ChainWithTranslations::Spin1_2ChainWithTranslations (int chainLength, int
   this->LookUpTable =0;
   if (this->HilbertSpaceDimension > 0)
     this->CreateLookUpTable();
+
+  for(int i=0; i < this->HilbertSpaceDimension; i++)
+    {
+      if ( i !=  this->FindStateIndex(this->StateDescription[i]) )
+      {
+        cout <<"Problem in Find state index "<< i<< " "<< this->FindStateIndex(this->StateDescription[i])<<endl;
+      }
+    }
+  //cout << "LookUpTable OK" << endl;  
+  /*
+  for (int i = 0; i < this->HilbertSpaceDimension; i++)
+  {
+    unsigned long Mask = 0x1ul;
+     for (int k = 0; k < this->ChainLength; k++)    
+        {
+          if ((this->StateDescription[i] & Mask) == 0x0ul)
+             cout << "- ";
+          else
+            cout << "+ ";
+          Mask <<= 1;
+       }
+    cout << "=== i= " << i <<" " << this->StateDescription[i] << " find= " << this->FindStateIndex(this->StateDescription[i]) << " =============== "<< this->NbrStateInOrbit[i] << endl;
+  }
+  */
+
 }
 
 // constructor from pre-constructed datas
@@ -494,6 +548,21 @@ inline int Spin1_2ChainWithTranslations::GetTotalSz (unsigned long stateDescript
   return ((2 * TmpSz) - this->ChainLength);
 }
 
+// return eigenvalue of Sz_i associated to a given state
+//
+// i = position
+// state = index of the state to consider
+// return value = corresponding eigenvalue
+
+double Spin1_2ChainWithTranslations::Szi (int i, int state)
+{ 
+  unsigned long State = this->StateDescription[state];
+  if (((State >> i) & (unsigned long) 0x1) == 0)
+    return 0.5;
+  else
+    return -0.5;
+}
+
 // return eigenvalue of Sz_i Sz_j associated to a given state
 //
 // i = first position
@@ -588,7 +657,7 @@ int Spin1_2ChainWithTranslations::SmiSpj (int i, int j, int state, double& coeff
 	  State |= (0x1ul << j);
 	  State &= ~(0x1ul << i);
 	  coefficient = 1.0;
-	  return this->SymmetrizeResult(State, this->NbrStateInOrbit[state], coefficient, nbrTranslation);
+   return this->SymmetrizeResult(State, this->NbrStateInOrbit[state], coefficient, nbrTranslation);
 	}
       else
 	{
@@ -831,9 +900,9 @@ inline int Spin1_2ChainWithTranslations::FindStateIndex(unsigned long state)
     {
       MidPos = (HighPos + LowPos) >> 1;
       if (this->StateDescription[MidPos] >= state)
-	HighPos = MidPos;
+  HighPos = MidPos;
       else
-	LowPos = MidPos;
+  LowPos = MidPos;
     }
 
   if (this->StateDescription[LowPos] == state) 
@@ -843,7 +912,50 @@ inline int Spin1_2ChainWithTranslations::FindStateIndex(unsigned long state)
   return this->HilbertSpaceDimension;
 }
 
+/*
+//Working but slow
+int Spin1_2ChainWithTranslations::FindStateIndex(unsigned long state)
+{
+  int index = 0;//this->LookUpTable[state & this->LookUpTableMask];
+  unsigned long* TmpState = &(this->StateDescription[index]);
+  while ((index < this->HilbertSpaceDimension) && (state != *(TmpState++)))
+    ++index;
+  return index;   
+}
+*/
 
+// create look-up table used to speed up index search
+//
+
+void Spin1_2ChainWithTranslations::CreateLookUpTable()
+{
+  int TmpHilbertSpaceDimension = this->HilbertSpaceDimension;
+  // create the look-up table
+  unsigned long Max = ((unsigned long) 1) << ((this->ChainLength << 1) - this->LookUpTableShift + 1);
+  this->LookUpTable = new long [Max + 1];
+  long LowPos;
+  long MidPos;
+  long HighPos;
+  unsigned long Max2 = (this->StateDescription[TmpHilbertSpaceDimension - 1]) >> this->LookUpTableShift;
+  for (unsigned long i = 0; i <= Max2; ++i)
+    {
+      LowPos = 0;
+      HighPos = TmpHilbertSpaceDimension - 1;
+      while ((HighPos - LowPos) > 1)
+  {
+    MidPos = (HighPos + LowPos) >> 1;
+    if (this->StateDescription[MidPos] >= (i << this->LookUpTableShift))
+      HighPos = MidPos;
+    else
+      LowPos = MidPos;
+  }      
+      this->LookUpTable[i] = LowPos;
+    }
+  --TmpHilbertSpaceDimension;
+  for (unsigned long i = Max2 + 1; i <= Max; ++i)    
+    this->LookUpTable[i] = TmpHilbertSpaceDimension;
+  ++TmpHilbertSpaceDimension;
+}
 
 // print a given State
 //
@@ -864,7 +976,7 @@ ostream& Spin1_2ChainWithTranslations::PrintState (ostream& Str, int state)
 	Str << "+ ";
       Mask <<= 1;
     }
-  Str << " " << hex << this->StateDescription[state] << dec;
+  //Str << " " << hex << this->StateDescription[state] << dec << " ";
   return Str;
 }
 
@@ -920,39 +1032,6 @@ void Spin1_2ChainWithTranslations::CreatePrecalculationTable()
     }
 }
 
-
-// create look-up table used to speed up index search
-//
-
-void Spin1_2ChainWithTranslations::CreateLookUpTable()
-{
-  int TmpHilbertSpaceDimension = this->HilbertSpaceDimension;
-  // create the look-up table
-  unsigned long Max = ((unsigned long) 1) << ((this->ChainLength << 1) - this->LookUpTableShift + 1);
-  this->LookUpTable = new long [Max + 1];
-  long LowPos;
-  long MidPos;
-  long HighPos;
-  unsigned long Max2 = (this->StateDescription[TmpHilbertSpaceDimension - 1]) >> this->LookUpTableShift;
-  for (unsigned long i = 0; i <= Max2; ++i)
-    {
-      LowPos = 0;
-      HighPos = TmpHilbertSpaceDimension - 1;
-      while ((HighPos - LowPos) > 1)
-	{
-	  MidPos = (HighPos + LowPos) >> 1;
-	  if (this->StateDescription[MidPos] >= (i << this->LookUpTableShift))
-	    HighPos = MidPos;
-	  else
-	    LowPos = MidPos;
-	}      
-      this->LookUpTable[i] = LowPos;
-    }
-  --TmpHilbertSpaceDimension;
-  for (unsigned long i = Max2 + 1; i <= Max; ++i)    
-    this->LookUpTable[i] = TmpHilbertSpaceDimension;
-  ++TmpHilbertSpaceDimension;
-}
 
 // evaluate Hilbert space dimension
 //
@@ -1048,6 +1127,67 @@ ComplexMatrix Spin1_2ChainWithTranslations::EvaluatePartialEntanglementMatrix (i
   return TmpEntanglementMatrix;
 }
 
+
+// evaluate entanglement matrix of a subsystem of the whole system described by a given ground state. Sz is not conserved
+// 
+// nbrSites = number of sites that are part of the A subsytem 
+// groundState = reference on the total system ground state
+// architecture = pointer to the architecture to use parallelized algorithm 
+// return value = entanglement matrix of the subsytem (return a zero dimension matrix if the entanglement matrix is equal to zero)
+
+ComplexMatrix Spin1_2ChainWithTranslations::EvaluatePartialEntanglementMatrix (int nbrSites, ComplexVector& groundState, AbstractArchitecture* architecture)
+{
+  if (nbrSites == 0)
+    {
+    ComplexMatrix TmpEntanglementMatrix(1, 1);
+          Complex Tmp(1.0, 0.0);
+    TmpEntanglementMatrix.SetMatrixElement(0, 0, Tmp);
+    return TmpEntanglementMatrix;
+  }
+  if (nbrSites == this->ChainLength)
+    {
+    ComplexMatrix TmpEntanglementMatrix(1, 1);
+          Complex Tmp(1.0, 0.0);
+    TmpEntanglementMatrix.SetMatrixElement(0, 0, Tmp);
+    return TmpEntanglementMatrix;
+  }      
+    
+  Spin1_2Chain TmpDestinationHilbertSpace(nbrSites, 1000000);
+  Spin1_2Chain TmpHilbertSpace(this->ChainLength - nbrSites, 1000000);
+
+  ComplexMatrix TmpEntanglementMatrix(TmpHilbertSpace.HilbertSpaceDimension, TmpDestinationHilbertSpace.HilbertSpaceDimension, true);
+  
+  int Shift = nbrSites;
+  int MinIndex = 0;
+  int MaxIndex = TmpHilbertSpace.HilbertSpaceDimension;
+  int TmpNbrTranslation;
+  int TmpNbrTranslationToIdentity;
+  Complex* TmpPhases = new Complex [this->ChainLength];
+  double Coef = 2.0 * M_PI * ((double) this->Momentum) / ((double) this->ChainLength);
+  for (int i = 0; i < this->ChainLength; ++i)
+    {
+      TmpPhases[i] = Phase(Coef * ((double) i));
+    }
+
+  unsigned long Mask1 = (0x1ul << Shift) - 0x1ul;
+  unsigned long Mask2 = (0x1ul << this->ChainLength) - 0x1ul;
+  for (; MinIndex < MaxIndex; ++MinIndex)    
+    {
+      unsigned long TmpState = TmpHilbertSpace.StateDescription[MinIndex] << Shift;
+      for (int j = 0; j < TmpDestinationHilbertSpace.HilbertSpaceDimension; ++j)
+  {
+    unsigned long TmpState2 = (TmpState | (TmpDestinationHilbertSpace.StateDescription[j] & Mask1)) & Mask2;
+    double Coefficient = 1.0;
+    int TmpPos = this->SymmetrizeResult(TmpState2, 1, Coefficient, TmpNbrTranslation);
+    if (TmpPos != this->HilbertSpaceDimension)
+      {
+        TmpEntanglementMatrix.AddToMatrixElement(MinIndex, j, groundState[TmpPos] * TmpPhases[TmpNbrTranslation] / sqrt((double) this->NbrStateInOrbit[TmpPos]));
+      }
+  }
+    }
+  delete[] TmpPhases;
+  return TmpEntanglementMatrix;
+}
 
 // evaluate a density matrix of a subsystem of the whole system described by a given ground state, using particle partition.
 // 

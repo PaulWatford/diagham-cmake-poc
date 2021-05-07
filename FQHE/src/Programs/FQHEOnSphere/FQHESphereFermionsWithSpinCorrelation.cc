@@ -61,6 +61,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption  ('i', "interaction-name", "name of the interaction (used for output file name)", "sphere_spin");
   (*SystemGroup) += new SingleStringOption ('a', "add-filename", "add a string with additional informations to the output file name(just before the .dat extension)");
   (*SystemGroup) += new BooleanOption  ('\n', "coefficients-only", "only compute the one or two body coefficients that are requested to evaluate the density-density correlation", false);
+  (*SystemGroup) += new BooleanOption  ('\n', "spinflip-odlro", "compute off-diagonal long range order, c_{up,S}^+ c_{down,-S}^+ c_{up,-S} c_{down,S}");
   (*SystemGroup) += new BooleanOption  ('\n', "use-twoLLs", "use two Landau levels instead of two spin species. WARNING: the Hilbert space will be the same for both", false);
  (*SystemGroup) += new SingleIntegerOption  ('\n', "first-LLindex", "index of first Landau level (if two Landau levels are used)", 0);
  (*SystemGroup) += new SingleIntegerOption  ('\n', "second-LLindex", "index of second Landau level (if two Landau levels are used)", 0);
@@ -155,6 +156,20 @@ int main(int argc, char** argv)
 #endif
 
   cout << "dim = " << Space->GetHilbertSpaceDimension() << endl;
+
+  if (Manager.GetBoolean("spinflip-odlro"))
+  {
+
+   cout << "Spin-flip ODLRO " << NbrParticles << " " << TotalLz << " " << LzMax << " " << endl;
+
+   
+   ParticleOnSphereWithSpinDensityDensityOperator Operator (Space, LzMax, 0, 0, 1, 0, 0, LzMax, 1); 
+   Complex Tmp = Operator.MatrixElement(State, State);
+
+   cout << Tmp.Re << " " << Tmp.Im << endl;
+	
+   return 0;
+  }
 
   if (TwoLLsFlag == false)
    {

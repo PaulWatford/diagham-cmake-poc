@@ -72,6 +72,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "unknown");
   (*SystemGroup) += new  SingleStringOption ('\n', "Vm2-file", "file describing the anisotropic pseudopotentials V_m^2, m = 1, 3, 5, etc.");
   (*SystemGroup) += new  SingleStringOption ('\n', "Vm4-file", "file describing the anisotropic pseudopotentials V_m^4, m = 1, 3, 5, etc.");
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "chirality", "chirality of the spectral function (+/-1)", 0);
   (*SystemGroup) += new BooleanOption  ('g', "ground", "restrict to the largest subspace");
   (*SystemGroup) += new  SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
   (*SystemGroup) += new SingleDoubleOption ('\n', "l2-factor", "multiplicative factor in front of an optional L^2 operator than can be added to the Hamiltonian", 0.0);
@@ -129,6 +130,7 @@ int main(int argc, char** argv)
   bool FirstRun = true;
   double* PseudoPotentials = new double[LzMax + 1];
   double* OneBodyPotentials = 0;
+  int Chirality = Manager.GetInteger("chirality");
   double* AnisotropicPseudoPotentialsAlpha2 = new double[LzMax + 1];
   double* OneBodyAnisotropicPotentialsAlpha2 = 0;
   double* AnisotropicPseudoPotentialsAlpha4 = new double[LzMax + 1];
@@ -258,6 +260,7 @@ int main(int argc, char** argv)
 	    Hamiltonian = new ParticleOnSphereGenericAnisotropicHamiltonian(Space, NbrParticles, LzMax, PseudoPotentials, 
 								 AnisotropicPseudoPotentialsAlpha2,
 								 AnisotropicPseudoPotentialsAlpha4,
+                                                                 Chirality,
 								 Manager.GetDouble("l2-factor"),
 								 Architecture.GetArchitecture(), 
 								 Memory, DiskCacheFlag,
@@ -267,6 +270,7 @@ int main(int argc, char** argv)
 	    Hamiltonian = new ParticleOnSphereGenericAnisotropicHamiltonian(Space, NbrParticles, LzMax, PseudoPotentials,
 								 OneBodyPotentials, AnisotropicPseudoPotentialsAlpha2, 
 								 AnisotropicPseudoPotentialsAlpha4, 
+                                                                 Chirality,
 								 Manager.GetDouble("l2-factor"),
 								 Architecture.GetArchitecture(), 
 								 Memory, DiskCacheFlag,

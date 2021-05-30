@@ -331,12 +331,14 @@ int main(int argc, char** argv)
       RealVector TmpState(Space->GetHilbertSpaceDimension());
       VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &State, &TmpState);
       Operation.ApplyOperation(Architecture.GetArchitecture());
+      double TmpNorm = TmpState * TmpState;
+
       double EnergyValue;
       if (BraStateFileName == StateFileName)  
         EnergyValue = State * TmpState;
           else
         EnergyValue = BraState * TmpState;        
-      cout << "<Energy>= "<< (EnergyValue) << endl;
+      cout << "<Energy>= "<< (EnergyValue) << " Norm= " << TmpNorm << endl;
       return 0;
 	 }
       

@@ -404,7 +404,7 @@ int main(int argc, char** argv)
 	}
       double Shift = -10.0;
       Hamiltonian->ShiftHamiltonian(Shift);      
-      FQHEOnTorusMainTask Task (&Manager, TotalSpace, &Lanczos, Hamiltonian, YMomentum, Shift, OutputName, FirstRun, EigenvectorName);
+      FQHEOnTorusMainTask Task (&Manager, TotalSpace, &Lanczos, Hamiltonian, YMomentum, Shift, OutputName, FirstRun, EigenvectorName, XMomentum);
       Task.SetKxValue(XMomentum);
       if (Multiplicities != 0)
 	Task.SetMultiplicity(Multiplicities[Pos]);

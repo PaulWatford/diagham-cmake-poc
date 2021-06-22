@@ -6,7 +6,7 @@
 #include "Vector/ComplexVector.h"
 #include "Matrix/ComplexMatrix.h"
 #include "Matrix/RealDiagonalMatrix.h"
-
+#include "MathTools/ClebschGordanCoefficients.h"
 #include "HilbertSpace/FermionOnSphere.h"
 #include "HilbertSpace/BosonOnSphere.h"
 #include "HilbertSpace/BosonOnSphereShort.h"
@@ -88,7 +88,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('p', "nbr-particles", "number of particles (override autodetection from input file name if non zero)", 0);
   (*SystemGroup) += new SingleIntegerOption  ('l', "lzmax", "twice the maximum momentum for a single particle (0 if it has to be guessed from file name)", 0);
   (*SystemGroup) += new SingleIntegerOption  ('z', "total-lz", "twice the total lz value of the system (0 if it has to be guessed from file name)", 0);
-  (*SystemGroup) += new SingleIntegerOption  ('\n', "lz-boost", "Lz momentum that has to be transfer via the SMA", 0);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "lz-boost", "Lz momentum that has to be transfered via the SMA", 0);
   (*SystemGroup) += new BooleanOption ('\n', "compute-bilinears", "compute the action of all the bilinear operators on the ground state");
   (*SystemGroup) += new SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "sma");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 
@@ -215,6 +215,51 @@ int main(int argc, char** argv)
 	}
       return 0;
     }
+  else //proceed to explicitly compute the SMA wavefunction with given L = LzBoost
+   {
+      cout << "Computing SMA state "<<endl;
+      cout << "Using the expression |psi_L> = sum_k (-1)^(S-k) <S,L+k; S,-k| L,L> c_{L+k}^+ c_{k} |psi_0> " << endl;
+
+      ClebschGordanCoefficients Coefficients(LzMax, LzMax);
+      
+      int MinLzValue = 0;
+      int MaxLzValue = LzMax;
+      if (LzBoost >= 0)
+        {
+          MaxLzValue = LzMax - LzBoost;   
+        }
+      else
+        {
+          MinLzValue = -LzBoost;    
+        }
+
+      RealVector SMAState(TargetSpace->GetHilbertSpaceDimension(), true);
+      RealVector TmpState(TargetSpace->GetHilbertSpaceDimension());
+       for (int m = MinLzValue; m <= MaxLzValue; ++m)
+        {
+          cout << "computing c^+_"<< (m + LzBoost) << " c_" << m << " |Psi>" << endl;
+
+          ParticleOnSphereDensityOperator* TmpOperator;
+          TmpOperator = new ParticleOnSphereDensityOperator(TotalSpace, m + LzBoost, m);
+          VectorOperatorMultiplyOperation Operation(TmpOperator, &InputState, &TmpState);
+          Operation.ApplyOperation(Architecture.GetArchitecture());
+    
+          double TmpCoeff = Coefficients.GetCoefficient(2*m + 2*LzBoost - LzMax, LzMax-2*m, 2*LzBoost);
+          
+          if (m%2 == 1)
+            TmpCoeff *= -1.0;
+
+          cout << TmpCoeff << " " << TmpState.Norm() << endl; 
+          SMAState.AddLinearCombination(TmpCoeff, TmpState);
+        }
+      cout << "Final state norm " << SMAState.Norm() << endl;
+      if (SMAState.Norm() > MACHINE_PRECISION)
+	      SMAState /= SMAState.Norm();  
+      char* OutputNameLz = new char [strlen(OutputNamePrefix)+ 16];
+      sprintf (OutputNameLz, "%s.0.vec", OutputNamePrefix);
+      SMAState.WriteVector(OutputNameLz); 
+
+   }
 
 
   cout << " Target Hilbert space dimension = " << TargetSpace->GetHilbertSpaceDimension() << endl;

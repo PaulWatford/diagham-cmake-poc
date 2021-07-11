@@ -596,11 +596,8 @@ void ParticleOnSphereGenericAnisotropicHamiltonian::EvaluateInteractionFactors()
 	    ++TotalIndex;
 	  }
     }
-  else
+  else //BOSONS
     {
-//BOSONS NOT WORKING
-cout << "Bosons not implemented atm." << endl;
-/*
        for (int m1 = -this->LzMax; m1 <= this->LzMax; m1 += 2)
 	for (int m2 =  -this->LzMax; m2 <= m1; m2 += 2)
 	  {
@@ -612,17 +609,118 @@ cout << "Bosons not implemented atm." << endl;
 	      Min = -this->LzMax;
 	    for (int m3 = Min; m3 <= Lim; m3 += 2)
 	      {
-		Clebsch.InitializeCoefficientIterator(m1, m2);
-		m4 = m1 + m2 - m3;
+
 		TmpCoefficient[Pos] = 0.0;
+
+		// add the standard pseudopotential
+
+		J = 2 * this->LzMax;
+		Clebsch.InitializeCoefficientIterator(m1, m2);
 		while (Clebsch.Iterate(J, ClebschCoef))
 		  {
-		    if (((J >> 1) & 1) != Sign)
+		    if (((J >> 1) & 1) == Sign)
+		    {
 		      TmpCoefficient[Pos] += this->PseudoPotential[J >> 1] * ClebschCoef * Clebsch.GetCoefficient(m3, m4, J);
+// 		      cout << m1 << " " << m2 << " " << m3 << " " << m4 << " " << (this->LzMax - (J >> 1)) << " " << TmpCoefficient[Pos] << endl;
+		    }
 		  }
+
+
+		// add the anisotropic pseudopotential alpha = 2
+		double TmpAnisoPos = 0.0;		
+		double TmpAnisoNeg = 0.0;		
+		int Alpha = 2;
+
+		int Mom = 0;
+		while (Mom <= this->LzMax)
+		  {
+		    if (this->AnisotropicPseudoPotentialAlpha2[Mom] != 0.0)
+		      {
+			int L12 = this->LzMax - Mom;
+			int L34 = this->LzMax - Mom - Alpha;
+			int tmpmin;
+			if (L12 < L34)	
+				tmpmin = L12;
+			else
+				tmpmin = L34;
+
+			for (int ML = -tmpmin; ML <= tmpmin; ML++)
+				if ( (2*ML==(m1+m2)) && (2*ML==(m3+m4)) )
+					TmpAnisoPos +=  this->AnisotropicPseudoPotentialAlpha2[Mom]  * Clebsch.GetCoefficient(m1, m2, 2*L12) * Clebsch.GetCoefficient(m3, m4, 2*L34);
+
+			L12 = this->LzMax - Mom - Alpha;
+			L34 = this->LzMax - Mom;
+			if (L12 < L34)	
+				tmpmin = L12;
+			else
+				tmpmin = L34;
+
+			for (int ML = -tmpmin; ML <= tmpmin; ML++)
+				if ( (2*ML==(m1+m2)) && (2*ML==(m3+m4)) )
+					TmpAnisoNeg += this->AnisotropicPseudoPotentialAlpha2[Mom] * Clebsch.GetCoefficient(m1, m2, 2*L12) * Clebsch.GetCoefficient(m3, m4, 2*L34);
+		     }
+		    Mom = Mom + 2;
+		  }
+
+		if (this->Chirality == 1)
+		    TmpCoefficient[Pos] += TmpAnisoPos;
+		else if (this->Chirality == -1)
+		    TmpCoefficient[Pos] += TmpAnisoNeg;
+                else                      
+	    	    TmpCoefficient[Pos] += 0.5 * (TmpAnisoPos + TmpAnisoNeg);
+
+
+		// add the anisotropic pseudopotential alpha = 4
+		TmpAnisoPos = 0.0;		
+		TmpAnisoNeg = 0.0;		
+		Alpha = 4;
+
+		Mom = 0;
+		while (Mom <= this->LzMax)
+		  {
+		    if (this->AnisotropicPseudoPotentialAlpha4[Mom] != 0.0)
+		      {
+			int L12 = this->LzMax - Mom;
+			int L34 = this->LzMax - Mom - Alpha;
+			int tmpmin;
+			if (L12 < L34)	
+				tmpmin = L12;
+			else
+				tmpmin = L34;
+
+			for (int ML = -tmpmin; ML <= tmpmin; ML++)
+				if ( (2*ML==(m1+m2)) && (2*ML==(m3+m4)) )
+					TmpAnisoPos +=  this->AnisotropicPseudoPotentialAlpha4[Mom]  * Clebsch.GetCoefficient(m1, m2, 2*L12) * Clebsch.GetCoefficient(m3, m4, 2*L34);
+
+			L12 = this->LzMax - Mom - Alpha;
+			L34 = this->LzMax - Mom;
+			if (L12 < L34)	
+				tmpmin = L12;
+			else
+				tmpmin = L34;
+
+			for (int ML = -tmpmin; ML <= tmpmin; ML++)
+				if ( (2*ML==(m1+m2)) && (2*ML==(m3+m4)) )
+					TmpAnisoNeg += this->AnisotropicPseudoPotentialAlpha4[Mom] * Clebsch.GetCoefficient(m1, m2, 2*L12) * Clebsch.GetCoefficient(m3, m4, 2*L34);
+		     }
+		    Mom = Mom + 2;
+		  }
+
+		if (this->Chirality == 1)
+		    TmpCoefficient[Pos] += TmpAnisoPos;
+		else if (this->Chirality == -1)
+		    TmpCoefficient[Pos] += TmpAnisoNeg;
+                else                      
+	    	    TmpCoefficient[Pos] += 0.5 * (TmpAnisoPos + TmpAnisoNeg);
+
+		//cout << m1 << " " << m2 << " " << m3 << " " << m4 << " " << TmpCoefficient[Pos] << endl;
+
 		if (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
 		  MaxCoefficient = TmpCoefficient[Pos];
 		++Pos;
+
+
+
 	      }
 	  }
       this->NbrInteractionFactors = 0;
@@ -790,8 +888,7 @@ cout << "Bosons not implemented atm." << endl;
 		}
 	    }
 	  ++TotalIndex;
-	}   
-*/  
+	}     
     }
   if (this->OneBodyTermFlag == true)
     {

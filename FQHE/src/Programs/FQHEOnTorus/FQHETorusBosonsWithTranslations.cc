@@ -376,6 +376,9 @@ int main(int argc, char** argv)
       
       cout << "----------------------------------------------------------------" << endl;
       cout << " Ratio = " << XRatio << endl;
+      if (Angle != 0.0)
+          cout << " Angle = " << Angle << " *  Pi"<< endl;
+      
       BosonOnTorusWithMagneticTranslationsShort* TotalSpace = new BosonOnTorusWithMagneticTranslationsShort(NbrBosons, MaxMomentum, XMomentum, YMomentum);
       Architecture.GetArchitecture()->SetDimension(TotalSpace->GetHilbertSpaceDimension());
 

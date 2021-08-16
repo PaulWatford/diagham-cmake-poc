@@ -56,6 +56,19 @@ class ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian : public 
   // energy of wigner crystal reference
   double WignerEnergy;
 
+  // cosine of the torus angle
+  double CosTheta;
+  // sine of the torus angle
+  double SinTheta;
+  // length of torus along x-direction
+  double Lx;
+  // length of torus along y-direction
+  double Ly;
+  // reciprocal lattice vector x-direction
+  double Gx;
+  // reciprocal lattice vector y-direction
+  double Gy;
+
  public:
 
   // constructor from default datas

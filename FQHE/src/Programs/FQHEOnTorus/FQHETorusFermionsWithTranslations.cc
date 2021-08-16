@@ -74,7 +74,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption   ('R', "ratio", 
 					      "ratio between lengths along the x and y directions (-1 if has to be taken equal to nbr-particles/4)", 
 					      -1);
-  (*SystemGroup) += new SingleDoubleOption   ('\n', "angle", "angle between the two fundamental cycles of the torus in radians (0 if rectangular)", 0);
+  (*SystemGroup) += new SingleDoubleOption   ('\n', "angle", "angle between the two fundamental cycles of the torus in pi units (0 if rectangular)", 0);
   (*SystemGroup) += new SingleIntegerOption  ('L', "landau-level", "Landau-level to be simulated", 0);
   (*SystemGroup) += new SingleDoubleOption   ('\n', "double-gate", "assume that the Coulomb interaction is screened by a double gate (0 if no gating, otherwise provide the gate distance)", 0.0); 
   (*SystemGroup) += new SingleStringOption  ('\n', "interaction-file", "file describing the interaction");
@@ -416,7 +416,7 @@ int main(int argc, char** argv)
       cout << "----------------------------------------------------------------" << endl;
       cout << " Ratio = " << XRatio << endl;
       if (Angle != 0.0)
-          cout << " Angle = " << Angle / M_PI << " Pi"<< endl;
+          cout << " Angle = " << Angle << " *  Pi"<< endl;
       //	FermionOnTorus TotalSpace (NbrFermions, MaxMomentum, y);
       FermionOnTorusWithMagneticTranslations *TotalSpace = new FermionOnTorusWithMagneticTranslations(NbrFermions, MaxMomentum, XMomentum, YMomentum);
       //cout << " Total Hilbert space dimension = " << TotalSpace->GetHilbertSpaceDimension() << endl;
@@ -466,7 +466,7 @@ int main(int argc, char** argv)
       else
 	{
           Hamiltonian = new ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
-											     XRatio, Angle, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, !Manager.GetBoolean("add-wigner"),
+											     XRatio, Angle * M_PI, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, !Manager.GetBoolean("add-wigner"),
 											     Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 	}
       

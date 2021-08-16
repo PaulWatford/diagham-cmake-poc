@@ -29,7 +29,6 @@
 //                                                                            //
 ////////////////////////////////////////////////////////////////////////////////
 
-
 #include "Hamiltonian/ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian.h"
 #include "Vector/RealVector.h"
 #include "Vector/ComplexVector.h"
@@ -91,6 +90,15 @@ ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::ParticleOnTwis
   this->Ratio = ratio;
   this->InvRatio = 1.0 / ratio;
   this->Angle = angle;
+  // calculate some convenient lattice geometry parameters
+  this->CosTheta = cos(this->Angle);
+  this->SinTheta = sqrt(1.0 - this->CosTheta * this->CosTheta);
+  this->Lx = sqrt(2.0 * M_PI * (double)this->MaxMomentum * this->Ratio/this->SinTheta);
+  this->Ly = sqrt(2.0 * M_PI * (double)this->MaxMomentum / (this->Ratio * this->SinTheta));
+  this->Gx = 2.0 * M_PI / this->Lx;
+  this->Gy = 2.0 * M_PI / this->Ly;
+  cout << "Twisted torus cos(angle) = " << this->CosTheta << endl;
+
   this->LandauLevel = landauLevel;
   this->NbrPseudopotentials = nbrPseudopotentials;
   if (this->NbrPseudopotentials>0)
@@ -124,6 +132,7 @@ ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::ParticleOnTwis
     this->WignerEnergy = this->EvaluateWignerCrystalEnergy() / 2.0;
   else 
     this->WignerEnergy = 0.0;
+
   this->Architecture = architecture;
   long MinIndex;
   long MaxIndex;
@@ -383,6 +392,127 @@ void ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::EvaluateI
   delete[] TmpCoefficient;
 }
 
+
+// evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
+//
+// m1 = first index
+// m2 = second index
+// m3 = third index
+// m4 = fourth index
+// return value = numerical coefficient
+
+Complex ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4)
+{
+  Complex Sum(0.0, 0.0);
+  double N1;
+  double N2 = (double)(m1 - m4);
+  double Q2, Qx, Qy;
+  double Xj13 = this->Gy * (double)(m1 - m3);
+  Complex Coefficient(1.0,0.0);
+  double PrecisionPos, PrecisionNeg, Precision;
+  Complex Phase;
+
+  while (((fabs(Sum.Re) + fabs(Coefficient.Re)) != fabs(Sum.Re)) || ((fabs(Sum.Im) + fabs(Coefficient.Im)) != fabs(Sum.Im)))
+    {
+      Qx = 0.0;
+      Qy = this->Gy * N2;
+      Qy /= this->SinTheta;
+      Q2 = Qx * Qx + Qy * Qy;
+
+	  Coefficient.Re = this->GetVofQ(0.5 * Q2);
+	  Coefficient.Im = 0.0;  	
+	  if (Q2 == 0.0)
+	  	Precision = 1.0;
+	  else
+  	   Precision = Coefficient.Re;
+
+      N1 = 1.0;
+      while ((fabs(Coefficient.Re) + fabs(Precision)) != fabs(Coefficient.Re))
+	{
+      //Sum over positive N1
+       Qx = this->Gx * N1;
+       Qy = this->Gy * N2 - this->Gx * N1 * this->CosTheta;
+       Qy /= this->SinTheta;
+       Q2 = Qx * Qx + Qy * Qy;
+
+       PrecisionPos = this->GetVofQ(0.5 * Q2);          
+       Phase.Re = cos(Qx * Xj13/this->SinTheta);
+       Phase.Im =  -sin(Qx * Xj13/this->SinTheta);
+       Coefficient += (PrecisionPos * Phase);
+
+       //Sum over negative N1
+       Qx = -this->Gx * N1;
+       Qy = this->Gy * N2 + this->Gx * N1 * this->CosTheta;
+       Qy /= this->SinTheta;
+       Q2 = Qx * Qx + Qy * Qy;
+	
+       PrecisionNeg = this->GetVofQ(0.5 * Q2);   
+       Phase.Re = cos(Qx * Xj13/this->SinTheta);
+       Phase.Im = -sin(Qx * Xj13/this->SinTheta);
+       Coefficient += (PrecisionNeg * Phase);
+      //Increment N1
+       N1 += 1.0;
+       Precision = PrecisionPos + PrecisionNeg;
+	}
+      Sum += Coefficient;
+      N2 += (double)this->MaxMomentum;
+    }
+
+  N2 = (double) (m1 - m4 - this->MaxMomentum);
+  Coefficient = Sum;	    
+  while (((fabs(Sum.Re) + fabs(Coefficient.Re)) != fabs(Sum.Re)) || ((fabs(Sum.Im) + fabs(Coefficient.Im)) != fabs(Sum.Im)))
+    {
+      Qx = 0.0;
+      Qy = this->Gy * N2;
+      Qy /= this->SinTheta;
+      Q2 = Qx * Qx + Qy * Qy;
+
+	  Coefficient.Re = this->GetVofQ(0.5 * Q2);
+	  Coefficient.Im = 0.0;
+	  if (Q2 == 0.0)
+	  	Precision = 1.0;
+	  else
+  	   Precision = Coefficient.Re;
+
+      N1 = 1.0;
+      while ((fabs(Coefficient.Re) + fabs(Precision)) != fabs(Coefficient.Re))
+	{
+       //Sum over positive N1
+       Qx = this->Gx * N1;
+       Qy = this->Gy * N2 - this->Gx * N1 * this->CosTheta;
+       Qy /= this->SinTheta;
+       Q2 = Qx * Qx + Qy * Qy;
+
+       PrecisionPos = this->GetVofQ(0.5 * Q2);
+       Phase.Re = cos(Qx * Xj13/this->SinTheta);
+       Phase.Im = -sin(Qx * Xj13/this->SinTheta);
+       Coefficient += (PrecisionPos * Phase);
+
+       //Sum over negative N1
+       Qx = -this->Gx * N1;
+       Qy = this->Gy * N2 + this->Gx * N1 * this->CosTheta;
+       Qy /= this->SinTheta;
+       Q2 = Qx * Qx + Qy * Qy;
+
+       PrecisionNeg = this->GetVofQ(0.5 * Q2); 
+       Phase.Re = cos(Qx * Xj13/this->SinTheta);
+       Phase.Im = -sin(Qx * Xj13/this->SinTheta);
+       Coefficient += (PrecisionNeg * Phase);
+       //Increment N1
+       N1 += 1.0;
+       Precision = PrecisionPos + PrecisionNeg;
+	}
+      Sum += Coefficient;
+      N2 -= (double)this->MaxMomentum;
+    }
+ return (Sum / (4.0 * M_PI * (double)this->MaxMomentum));
+}
+
+
+/*
+
+//ZP: The code below does not seem to work for correctly when the torus angle is non-zero
+
 // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
 //
 // m1 = first index
@@ -492,6 +622,32 @@ double ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::GetVofQ
   //cout <<"V("<<2*Q2_half<<")="<<Result<<" LL="<<this->LandauLevel<<endl;
   return Result * exp(-Q2_half);
 }
+
+
+*/
+
+// get fourier transform of interaction
+// Q2_half = one half of q² value
+double ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::GetVofQ(double Q2_half)
+{ 
+  double Result;
+  double Q2 = 2.0 * Q2_half;
+  if ((this->HaveCoulomb) && (Q2 != 0.0))
+    {
+      Result = pow(this->FormFactor.PolynomialEvaluate(Q2_half), 2) * (2.0 * M_PI)/sqrt(Q2);
+    }
+  else
+    Result = 0.0;
+
+  //add pseudopotentials
+  for (int i=0; i<NbrPseudopotentials; ++i)
+     if (this->Pseudopotentials[i]!=0.0)
+        Result += 2.0 * (2.0 * M_PI) * this->Pseudopotentials[i]*this->LaguerreM[i].PolynomialEvaluate(Q2);
+   
+  return Result * exp(-Q2_half);
+}
+
+
 
 // evaluate Wigner crystal energy per particle
 //

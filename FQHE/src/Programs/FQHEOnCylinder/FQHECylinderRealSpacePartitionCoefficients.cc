@@ -58,6 +58,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption  ('\n', "error", "error below which a coefficient is consider as 0 (or 1)", 0.0);
   (*SystemGroup) += new SingleDoubleOption  ('r', "aspect-ratio", "aspect ratio of the cylinder", 1);
   (*SystemGroup) += new SingleDoubleOption  ('\n', "cylinder-perimeter", "if non zero, fix the cylinder perimeter (in magnetic length unit) instead of the aspect ratio", 0);
+  (*SystemGroup) += new SingleDoubleOption  ('\n', "flux-insertion", "additional flux insertion along the cylinder axis (in phi0 units)", 0.0);
   (*SystemGroup) += new BooleanOption ('\n', "finite-patch", "use a patch with a finite length and optionally a finite width");
   (*SystemGroup) += new SingleDoubleOption  ('\n', "patch-center", "position of the patch center along the cylinder axis", 0.0);
   (*SystemGroup) += new SingleDoubleOption  ('\n', "patch-length", "length of the patch along the cylinder axis", 1.0);
@@ -104,18 +105,36 @@ int main(int argc, char** argv)
     {
       double CutPosition = 0.0;
       double CutLength = 0.0;
+      double FluxInsertion = Manager.GetDouble("flux-insertion");
       if (Manager.GetString("output-file") == 0)
 	{
-	  if (Manager.GetBoolean("finite-patch") == true)
+	  if (FluxInsertion == 0.0)
 	    {
-	      OutputFile = new char[512];
-	      sprintf (OutputFile, "realspace_cylinder_l_%.6f_perimeter_%.6f_xcenter_%.6f_length_%.6f_2s_%d.dat", CutPosition, Perimeter, 
-		       Manager.GetDouble("patch-center"), Manager.GetDouble("patch-length"), NbrFluxQuanta);
+	      if (Manager.GetBoolean("finite-patch") == true)
+		{
+		  OutputFile = new char[512];
+		  sprintf (OutputFile, "realspace_cylinder_l_%.6f_perimeter_%.6f_xcenter_%.6f_length_%.6f_2s_%d.dat", CutPosition, Perimeter, 
+			   Manager.GetDouble("patch-center"), Manager.GetDouble("patch-length"), NbrFluxQuanta);
+		}
+	      else
+		{
+		  OutputFile = new char[512];
+		  sprintf (OutputFile, "realspace_cylinder_l_%.6f_perimeter_%.6f_2s_%d.dat", CutPosition, Perimeter, NbrFluxQuanta);
+		}
 	    }
 	  else
 	    {
-	      OutputFile = new char[512];
-	      sprintf (OutputFile, "realspace_cylinder_l_%.6f_perimeter_%.6f_2s_%d.dat", CutPosition, Perimeter, NbrFluxQuanta);
+	      if (Manager.GetBoolean("finite-patch") == true)
+		{
+		  OutputFile = new char[512];
+		  sprintf (OutputFile, "realspace_cylinder_l_%.6f_perimeter_%.6f_xcenter_%.6f_length_%.6f_flux_%.6f_2s_%d.dat", CutPosition, Perimeter, 
+			   Manager.GetDouble("patch-center"), Manager.GetDouble("patch-length"), FluxInsertion, NbrFluxQuanta);
+		}
+	      else
+		{
+		  OutputFile = new char[512];
+		  sprintf (OutputFile, "realspace_cylinder_l_%.6f_perimeter_%.6f_flux_%.6f_2s_%d.dat", CutPosition, Perimeter, FluxInsertion, NbrFluxQuanta);
+		}
 	    }
 	}
       else
@@ -145,6 +164,10 @@ int main(int argc, char** argv)
 	{
 	  File << "a cylinder with perimeter L=" << Perimeter << " and N_phi=" << NbrFluxQuanta;
 	}
+      if (FluxInsertion != 0.0)
+	{
+	  File << " and flux insertion phi=" << FluxInsertion;
+	}
       int NbrCoefficients = 0;
       double* Coefficients = 0;
       if (NbrFluxQuanta == 0)
@@ -155,7 +178,7 @@ int main(int argc, char** argv)
 	    {
 	      for (int i = 0; i < MaxNbrCoefficients; ++i)
 		{
-		  TmpCoefficients[i] = FQHECylinderComputeSharpRealSpaceCutCoefficient(i, Perimeter, CutPosition);
+		  TmpCoefficients[i] = FQHECylinderComputeSharpRealSpaceCutCoefficient(((double) i) + FluxInsertion, Perimeter, CutPosition);
 		  if (TmpCoefficients[i] < Error)
 		    {
 		      i = MaxNbrCoefficients;
@@ -170,7 +193,7 @@ int main(int argc, char** argv)
 	    {
 	      for (int i = 0; i < MaxNbrCoefficients; ++i)
 		{
-		  TmpCoefficients[i] = FQHECylinderComputeSharpRealSpaceCutCoefficient(i, Perimeter, CutPosition - (0.5 * CutLength), 
+		  TmpCoefficients[i] = FQHECylinderComputeSharpRealSpaceCutCoefficient(((double) i) + FluxInsertion, Perimeter, CutPosition - (0.5 * CutLength), 
 										       CutPosition + (0.5 * CutLength));
 		  if (TmpCoefficients[i] < Error)
 		    {
@@ -198,14 +221,14 @@ int main(int argc, char** argv)
 	    {
 	      for (NbrCoefficients = 0; NbrCoefficients <= NbrFluxQuanta; ++NbrCoefficients)
 		{
-		  Coefficients[NbrCoefficients] = FQHECylinderComputeSharpRealSpaceCutCoefficient(((double) NbrCoefficients) - 0.5 * ((double) NbrFluxQuanta), Perimeter, CutPosition);
+		  Coefficients[NbrCoefficients] = FQHECylinderComputeSharpRealSpaceCutCoefficient(((double) NbrCoefficients) - 0.5 * ((double) NbrFluxQuanta) + FluxInsertion, Perimeter, CutPosition);
 		}
 	    }
 	  else
 	    {
 	      for (NbrCoefficients = 0; NbrCoefficients <= NbrFluxQuanta; ++NbrCoefficients)
 		{
-		  Coefficients[NbrCoefficients] = FQHECylinderComputeSharpRealSpaceCutCoefficient(((double) NbrCoefficients) - 0.5 * ((double) NbrFluxQuanta), Perimeter, 
+		  Coefficients[NbrCoefficients] = FQHECylinderComputeSharpRealSpaceCutCoefficient(((double) NbrCoefficients) - 0.5 * ((double) NbrFluxQuanta) + FluxInsertion, Perimeter, 
 												  CutPosition - (0.5 * CutLength), CutPosition + (0.5 * CutLength));
 		}
 	    }

@@ -253,7 +253,7 @@ int main(int argc, char** argv)
           SMAState.AddLinearCombination(TmpCoeff, TmpState);
         }
       cout << "Final state norm " << SMAState.Norm() << endl;
-      if (SMAState.Norm() > MACHINE_PRECISION)
+      if (SMAState.Norm() > 1e-10)
 	      SMAState /= SMAState.Norm();  
       char* OutputNameLz = new char [strlen(OutputNamePrefix)+ 16];
       sprintf (OutputNameLz, "%s.0.vec", OutputNamePrefix);

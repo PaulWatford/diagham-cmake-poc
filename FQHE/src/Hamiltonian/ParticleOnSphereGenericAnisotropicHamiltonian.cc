@@ -611,6 +611,7 @@ void ParticleOnSphereGenericAnisotropicHamiltonian::EvaluateInteractionFactors()
 	      {
 
 		TmpCoefficient[Pos] = 0.0;
+		m4 = m1 + m2 - m3;
 
 		// add the standard pseudopotential
 
@@ -618,7 +619,7 @@ void ParticleOnSphereGenericAnisotropicHamiltonian::EvaluateInteractionFactors()
 		Clebsch.InitializeCoefficientIterator(m1, m2);
 		while (Clebsch.Iterate(J, ClebschCoef))
 		  {
-		    if (((J >> 1) & 1) == Sign)
+		    if (((J >> 1) & 1) != Sign)
 		    {
 		      TmpCoefficient[Pos] += this->PseudoPotential[J >> 1] * ClebschCoef * Clebsch.GetCoefficient(m3, m4, J);
 // 		      cout << m1 << " " << m2 << " " << m3 << " " << m4 << " " << (this->LzMax - (J >> 1)) << " " << TmpCoefficient[Pos] << endl;

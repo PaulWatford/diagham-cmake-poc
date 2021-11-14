@@ -201,7 +201,7 @@ class FermionOnSphereWithSU8SpinLong :  public ParticleOnSphereWithSU8Spin
   // return value = coefficient obtained when applying a^+_m a_m
   virtual double AdsigmaAsigma (long index, int m, int sigma);
 
-  // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up, 1 for um, 2 for dp and 3 for dm 
+   // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up, 1 for um, 2 for dp and 3 for dm 
   //
   // index = index of the state on which the operator has to be applied
   // n1 = first index for annihilation operator
@@ -365,7 +365,7 @@ inline int FermionOnSphereWithSU8SpinLong::GetParticleStatistic()
   return AbstractQHEParticle::FermionicStatistic;
 }
 
-// factorized code for any a^+_m_x a_n_y operator 
+/// factorized code for any a^+_m_x a_n_y operator 
 //
 // index = index of the state on which the operator has to be applied
 // m = global index of the creation operator

@@ -23,7 +23,5 @@ Rational.cc \
 LongRational.cc \
 JacobiThetaDerivativeFunction.cc \
 SU3ClebschGordanCoefficients.cc \
-SU3IrreducibleRepresentations.cc
-
-
-# LaguerreFunction.cc
+SU3IrreducibleRepresentations.cc \
+ClebschGordanThinAnnulusCoefficients.cc

@@ -189,6 +189,17 @@ class FermionOnSphereWithSU8Spin :  public ParticleOnSphereWithSU8Spin
   // return value = coefficient obtained when applying a^+_m a_m
   virtual double AdsigmaAsigma (long index, int m, int sigma);
 
+  // apply a^+_m1_s1 a_m2_s2 operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m1 = index of the creation operator
+  // sigma1 = internal degree of freedom label of the creation operator
+  // m2 = index of the annihilation operator
+  // sigma2 = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual int AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient);
+
   // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up, 1 for um, 2 for dp and 3 for dm 
   //
   // index = index of the state on which the operator has to be applied
@@ -351,6 +362,21 @@ class FermionOnSphereWithSU8Spin :  public ParticleOnSphereWithSU8Spin
 inline int FermionOnSphereWithSU8Spin::GetParticleStatistic()
 {
   return AbstractQHEParticle::FermionicStatistic;
+}
+
+// apply a^+_m1_s1 a_m2_s2 operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m1 = index of the creation operator
+// sigma1 = internal degree of freedom label of the creation operator
+// m2 = index of the annihilation operator
+// sigma2 = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline int FermionOnSphereWithSU8Spin::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
+{
+  return this->GenericAdA(index, (m1 << 3) + sigma1, (m2 << 3) + sigma2, coefficient);
 }
 
 // factorized code for any a^+_m_x a_n_y operator 

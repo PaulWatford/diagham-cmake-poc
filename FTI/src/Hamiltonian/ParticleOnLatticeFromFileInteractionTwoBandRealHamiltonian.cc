@@ -563,7 +563,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandRealHamiltonian::EvaluateInterac
 		      for (int sigma4 = sigma3; sigma4 < this->NbrInternalIndices; ++sigma4)
 			{
 			  if ((InternalIndicesFlags[sigma3 & 2][sigma4 & 2][sigma1 & 2][sigma2 & 2] == true) &&
-			      (((sigma1 & 2) + (sigma2 & 2)) == ((sigma3 & 2) + (sigma4 & 2))))
+			      ((((sigma1 & 2) == (sigma3 & 2)) && ((sigma2 & 2) == (sigma4 & 2)))))
 			    {
 			      if (sigma3 == sigma4)
 				{

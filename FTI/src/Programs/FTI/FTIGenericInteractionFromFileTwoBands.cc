@@ -136,7 +136,11 @@ int main(int argc, char** argv)
       cout << "interaction file " << Manager.GetString("interaction-file")<< " does not exist" << endl;
       return -1;
     }
-  
+
+  if ((Manager.GetBoolean("real-interaction") == true) && (Manager.GetBoolean("conserve-bandoccuption") == true))
+    {
+      cout << "warning, be sure that your interaction preserves band occupation when using --real-interaction" << endl;
+    }
     
   int NbrParticles = Manager.GetInteger("nbr-particles"); 
   int NbrSitesX = Manager.GetInteger("nbr-sitex"); 

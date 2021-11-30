@@ -107,7 +107,12 @@ int main(int argc, char** argv)
   Manager += MiscGroup;
 
   (*SystemGroup) += new SingleStringOption  ('\n', "multiple-states", "provide as a matrix a series of states whose S^2 computed");  
-  (*SystemGroup) += new SingleStringOption  ('\n', "spectrum", "provide the spectrum to automatically look for degenerate states");  
+  (*SystemGroup) += new SingleStringOption  ('\n', "spectrum", "provide the spectrum to automatically look for degenerate states");
+  (*SystemGroup) += new SingleIntegerOption ('\n', "energy-column", "indicates the energy column in the spectrum file (if greater or equal to 0)", -1);
+  (*SystemGroup) += new SingleIntegerOption ('\n', "sz-column", "indicates the sz column in the spectrum file (if greater or equal to 0)", -1);
+  (*SystemGroup) += new SingleIntegerOption ('\n', "momentum-column", "indicates the momentum quantum number column in the spectrum file (if greater or equal to 0)", -1);
+  (*SystemGroup) += new SingleIntegerOption ('\n', "szsym-column", "indicates the Sz<->-Sz quantum number column in the spectrum file (if greater or equal to 0)", -1);
+  (*SystemGroup) += new SingleIntegerOption ('\n', "invsym-column", "indicates the inversion sym quantum number column in the spectrum file (if greater or equal to 0)", -1);
   (*SystemGroup) += new BooleanOption  ('c', "complex", "consider complex wave function");
   (*OutputGroup) += new BooleanOption  ('\n', "export-eigenstate", "export the  S^2 eigenstates");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
@@ -270,10 +275,30 @@ int main(int argc, char** argv)
 	    {
 	      if (SzSymmetryFlag == true)
 		{
-		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		  int* TmpInvValues = SpectrumFile.GetAsIntegerArray(2);
-		  int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(1);
-		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(3);
+		  int SzValueColumnIndex = 0;
+		  if (Manager.GetInteger("sz-column") >= 0)
+		    {
+		      SzValueColumnIndex = Manager.GetInteger("sz-column");
+		    }
+		  int SzSymValueColumnIndex = 1;
+		  if (Manager.GetInteger("szssym-column") >= 0)
+		    {
+		      SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
+		    }
+		  int InvValueColumnIndex = 2;
+		  if (Manager.GetInteger("invsym-column") >= 0)
+		    {
+		      InvValueColumnIndex = Manager.GetInteger("invsym-column");
+		    }
+		  int EnergyColumnIndex = 3;
+		  if (Manager.GetInteger("energy-column") >= 0)
+		    {
+		      EnergyColumnIndex = Manager.GetInteger("energy-column");
+		    }
+		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		  int* TmpInvValues = SpectrumFile.GetAsIntegerArray(InvValueColumnIndex);
+		  int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(SzSymValueColumnIndex);
+		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		  int TmpIndex = 0; 
 		  while ((TmpIndex < TotalNbrEnergies) && 
 			 ((TmpSzValues[TmpIndex] != TotalSz) || 
@@ -302,9 +327,24 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		  int* TmpInvValues = SpectrumFile.GetAsIntegerArray(1);
-		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(2);
+		  int SzValueColumnIndex = 0;
+		  if (Manager.GetInteger("sz-column") >= 0)
+		    {
+		      SzValueColumnIndex = Manager.GetInteger("sz-column");
+		    }
+		  int InvValueColumnIndex = 1;
+		  if (Manager.GetInteger("invsym-column") >= 0)
+		    {
+		      InvValueColumnIndex = Manager.GetInteger("invsym-column");
+		    }
+		  int EnergyColumnIndex = 2;
+		  if (Manager.GetInteger("energy-column") >= 0)
+		    {
+		      EnergyColumnIndex = Manager.GetInteger("energy-column");
+		    }
+		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		  int* TmpInvValues = SpectrumFile.GetAsIntegerArray(InvValueColumnIndex);
+		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		  int TmpIndex = 0; 
 		  while ((TmpIndex < TotalNbrEnergies) && 
 			 ((TmpSzValues[TmpIndex] != TotalSz) ||
@@ -336,9 +376,24 @@ int main(int argc, char** argv)
 	    {
 	      if (SzSymmetryFlag == true)
 		{
-		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		  int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(1);
-		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(3);
+		  int SzValueColumnIndex = 0;
+		  if (Manager.GetInteger("sz-column") >= 0)
+		    {
+		      SzValueColumnIndex = Manager.GetInteger("sz-column");
+		    }
+		  int SzSymValueColumnIndex = 1;
+		  if (Manager.GetInteger("szssym-column") >= 0)
+		    {
+		      SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
+		    }
+		  int EnergyColumnIndex = 3;
+		  if (Manager.GetInteger("energy-column") >= 0)
+		    {
+		      EnergyColumnIndex = Manager.GetInteger("energy-column");
+		    }
+		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		  int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(SzSymValueColumnIndex);
+		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		  int TmpIndex = 0; 
 		  while ((TmpIndex < TotalNbrEnergies) && 
 			 ((TmpSzValues[TmpIndex] != TotalSz) || 
@@ -367,8 +422,18 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(1);
+		  int SzValueColumnIndex = 0;
+		  if (Manager.GetInteger("sz-column") >= 0)
+		    {
+		      SzValueColumnIndex = Manager.GetInteger("sz-column");
+		    }
+		  int EnergyColumnIndex = 1;
+		  if (Manager.GetInteger("energy-column") >= 0)
+		    {
+		      EnergyColumnIndex = Manager.GetInteger("energy-column");
+		    }
+		  int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		  double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		  int TmpIndex = 0; 
 		  while ((TmpIndex < TotalNbrEnergies) && (TmpSzValues[TmpIndex] != TotalSz))
 		    ++TmpIndex;
@@ -402,11 +467,36 @@ int main(int argc, char** argv)
 		{
 		  if (SzSymmetryFlag == true)
 		    {
-		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(1);
-		      int* TmpInvValues = SpectrumFile.GetAsIntegerArray(3);
-		      int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(2);
-		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(4);
+		      int SzValueColumnIndex = 0;
+		      if (Manager.GetInteger("sz-column") >= 0)
+			{
+			  SzValueColumnIndex = Manager.GetInteger("sz-column");
+			}
+		      int MomentumValueColumnIndex = 1;
+		      if (Manager.GetInteger("momentum-column") >= 0)
+			{
+			  MomentumValueColumnIndex = Manager.GetInteger("momentum-column");
+			}
+		      int SzSymValueColumnIndex = 2;
+		      if (Manager.GetInteger("szssym-column") >= 0)
+			{
+			  SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
+			}
+		      int InvValueColumnIndex = 3;
+		      if (Manager.GetInteger("invsym-column") >= 0)
+			{
+			  InvValueColumnIndex = Manager.GetInteger("invsym-column");
+			}
+		      int EnergyColumnIndex = 4;
+		      if (Manager.GetInteger("energy-column") >= 0)
+			{
+			  EnergyColumnIndex = Manager.GetInteger("energy-column");
+			}
+		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(MomentumValueColumnIndex);
+		      int* TmpInvValues = SpectrumFile.GetAsIntegerArray(InvValueColumnIndex);
+		      int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(SzSymValueColumnIndex);
+		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		      int TmpIndex = 0; 
 		      while ((TmpIndex < TotalNbrEnergies) && 
 			     ((TmpSzValues[TmpIndex] != TotalSz) || (TmpKValues[TmpIndex] != XMomentum) || 
@@ -435,10 +525,30 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
-		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(1);
-		      int* TmpInvValues = SpectrumFile.GetAsIntegerArray(2);
-		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(3);
+		      int SzValueColumnIndex = 0;
+		      if (Manager.GetInteger("sz-column") >= 0)
+			{
+			  SzValueColumnIndex = Manager.GetInteger("sz-column");
+			}
+		      int MomentumValueColumnIndex = 1;
+		      if (Manager.GetInteger("momentum-column") >= 0)
+			{
+			  MomentumValueColumnIndex = Manager.GetInteger("momentum-column");
+			}
+		      int InvValueColumnIndex = 2;
+		      if (Manager.GetInteger("invsym-column") >= 0)
+			{
+			  InvValueColumnIndex = Manager.GetInteger("invsym-column");
+			}
+		      int EnergyColumnIndex = 3;
+		      if (Manager.GetInteger("energy-column") >= 0)
+			{
+			  EnergyColumnIndex = Manager.GetInteger("energy-column");
+			}
+		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(MomentumValueColumnIndex);
+		      int* TmpInvValues = SpectrumFile.GetAsIntegerArray(InvValueColumnIndex);
+		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		      int TmpIndex = 0; 
 		      while ((TmpIndex < TotalNbrEnergies) && 
 			     ((TmpSzValues[TmpIndex] != TotalSz) || (TmpKValues[TmpIndex] != XMomentum) || 
@@ -470,10 +580,30 @@ int main(int argc, char** argv)
 		{
 		  if (SzSymmetryFlag == true)
 		    {
-		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(1);
-		      int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(2);
-		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(4);
+		      int SzValueColumnIndex = 0;
+		      if (Manager.GetInteger("sz-column") >= 0)
+			{
+			  SzValueColumnIndex = Manager.GetInteger("sz-column");
+			}
+		      int MomentumValueColumnIndex = 1;
+		      if (Manager.GetInteger("momentum-column") >= 0)
+			{
+			  MomentumValueColumnIndex = Manager.GetInteger("momentum-column");
+			}
+		      int SzSymValueColumnIndex = 2;
+		      if (Manager.GetInteger("szssym-column") >= 0)
+			{
+			  SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
+			}
+		      int EnergyColumnIndex = 4;
+		      if (Manager.GetInteger("energy-column") >= 0)
+			{
+			  EnergyColumnIndex = Manager.GetInteger("energy-column");
+			}
+		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(MomentumValueColumnIndex);
+		      int* TmpSzSymValues = SpectrumFile.GetAsIntegerArray(SzSymValueColumnIndex);
+		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		      int TmpIndex = 0; 
 		      while ((TmpIndex < TotalNbrEnergies) && 
 			     ((TmpSzValues[TmpIndex] != TotalSz) || (TmpKValues[TmpIndex] != XMomentum) || 
@@ -502,9 +632,24 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
-		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(0);
-		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(1);
-		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(2);
+		      int SzValueColumnIndex = 0;
+		      if (Manager.GetInteger("sz-column") >= 0)
+			{
+			  SzValueColumnIndex = Manager.GetInteger("sz-column");
+			}
+		      int MomentumValueColumnIndex = 1;
+		      if (Manager.GetInteger("momentum-column") >= 0)
+			{
+			  MomentumValueColumnIndex = Manager.GetInteger("momentum-column");
+			}
+		      int EnergyColumnIndex = 2;
+		      if (Manager.GetInteger("energy-column") >= 0)
+			{
+			  EnergyColumnIndex = Manager.GetInteger("energy-column");
+			}
+		      int* TmpSzValues = SpectrumFile.GetAsIntegerArray(SzValueColumnIndex);
+		      int* TmpKValues = SpectrumFile.GetAsIntegerArray(MomentumValueColumnIndex);
+		      double* TmpEnergies = SpectrumFile.GetAsDoubleArray(EnergyColumnIndex);
 		      int TmpIndex = 0; 
 		      while ((TmpIndex < TotalNbrEnergies) && 
 			     ((TmpSzValues[TmpIndex] != TotalSz) || (TmpKValues[TmpIndex] != XMomentum)))

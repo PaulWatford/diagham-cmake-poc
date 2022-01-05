@@ -344,7 +344,11 @@ inline LONGLONG& LongIntegerVector::operator [] (long i)
 
 inline ostream& LongIntegerVector::PrintComponent(ostream& str, long index)
 {
+#ifdef __GMP__
   str << this->Components[index];
+#else
+  str << ((long) this->Components[index]);
+#endif
   return str;
 }
 

@@ -276,7 +276,7 @@ public:
   // evaluate matrix trace
   //
   // return value = matrix trace 
-  virtual long Trace ();
+  virtual LONGLONG Trace ();
 #endif
   
   // evaluate matrix determinant (skrewing up matrix elements)
@@ -344,7 +344,11 @@ public:
 
 inline void LongIntegerMatrix::GetMatrixElement(int i, int j, double& x) const
 {
+#ifdef __GMP__
   x = mpz_get_d(this->Columns[j][i]);
+#else
+  x = ((double) this->Columns[j].Components[i]);
+#endif
 }
 
 // get a matrix element
@@ -355,7 +359,11 @@ inline void LongIntegerMatrix::GetMatrixElement(int i, int j, double& x) const
 
 inline void LongIntegerMatrix::GetMatrixElement(int i, int j, long& x) const
 { 
+#ifdef __GMP__
   x = mpz_get_si(this->Columns[j].Components[i]);
+#else
+  x = ((long) this->Columns[j].Components[i]);
+#endif
 }
 
 // get reference of a given matrix element
@@ -366,7 +374,11 @@ inline void LongIntegerMatrix::GetMatrixElement(int i, int j, long& x) const
 
 inline double& LongIntegerMatrix::operator () (int i, int j)
 {
+#ifdef __GMP__
   this->Dummy = mpz_get_d(this->Columns[j].Components[i]);
+#else
+  this->Dummy = ((double) this->Columns[j].Components[i]);
+#endif
   return this->Dummy;
 }
 

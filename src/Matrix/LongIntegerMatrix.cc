@@ -955,8 +955,16 @@ bool LongIntegerMatrix::WriteMatrix (ofstream& file)
   file << "# Nbr rows = " << this->NbrRow << endl;
   file << "# Nbr columns = " << this->NbrColumn << endl;
   for (int i = 0; i < this->NbrRow; ++i)
-    for (int j = 0; j < this->NbrColumn; ++j)
-      file << i << " " << j << " " << this->Columns[j][i] << endl;  
+    {
+      for (int j = 0; j < this->NbrColumn; ++j)
+	{
+#ifdef __GMP__
+	  file << i << " " << j << " " << this->Columns[j][i] << endl;
+#else
+	  file << i << " " << j << " " << ((long) this->Columns[j][i]) << endl;
+#endif	  
+	}
+    }
   return true;
 }
 
@@ -1036,15 +1044,35 @@ bool LongIntegerMatrix::ReadMatrix (ifstream& file)
 
 ostream& operator << (ostream& Str, const LongIntegerMatrix& P) 
 {
+#ifdef __GMP__  
   for (int i = 0; i < (P.NbrRow - 1); i++)
     {
       for (int j = 0; j < (P.NbrColumn - 1); j ++)
-	Str << P.Columns[j][i] << "    ";      
+	{
+	  Str << P.Columns[j][i] << "    ";
+	}
       Str << P.Columns[P.NbrColumn - 1][i] << endl;      
     }
   for (int j = 0; j < (P.NbrColumn - 1); j ++)
-    Str << P.Columns[j][P.NbrRow - 1] << "    ";      
-  Str << P.Columns[P.NbrColumn - 1][P.NbrRow - 1] << endl;      
+    {
+      Str << P.Columns[j][P.NbrRow - 1] << "    ";
+    }
+  Str << P.Columns[P.NbrColumn - 1][P.NbrRow - 1] << endl;
+#else
+  for (int i = 0; i < (P.NbrRow - 1); i++)
+    {
+      for (int j = 0; j < (P.NbrColumn - 1); j ++)
+	{
+	  Str << (long) P.Columns[j][i] << "    ";
+	}
+      Str << (long) P.Columns[P.NbrColumn - 1][i] << endl;      
+    }
+  for (int j = 0; j < (P.NbrColumn - 1); j ++)
+    {
+      Str << (long) P.Columns[j][P.NbrRow - 1] << "    ";
+    }
+  Str << (long) P.Columns[P.NbrColumn - 1][P.NbrRow - 1] << endl;
+#endif  
   return Str;
 }
 

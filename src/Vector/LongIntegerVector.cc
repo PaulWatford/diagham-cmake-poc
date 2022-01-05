@@ -159,12 +159,9 @@ LongIntegerVector::LongIntegerVector(long* array, long size)
     }
 #else
   this->Components = new LONGLONG [this->LargeDimension];
-  if (zeroFlag == true)
+  for (long i = 0l; i < this->LargeDimension; ++i)
     {
-      for (long i = 0l; i < this->LargeDimension; ++i)
-	{
-	  this->Components[i] = (LONGLONG) array[i];
-	}
+      this->Components[i] = (LONGLONG) array[i];
     }
 #endif  
   this->Flag.Initialize();
@@ -472,8 +469,14 @@ Vector* LongIntegerVector::EmptyCloneArray(int nbrVectors, bool zeroFlag)
 bool LongIntegerVector::IsNullVector()
 {
   long i = 0l;
+#ifdef __GMP__
   while ((i < this->LargeDimension) && (mpz_sgn(this->Components[i]) == 0))
-    ++i;
+#else      
+    while ((i < this->LargeDimension) && (this->Components[i] == ((LONGLONG) 0l)))
+#endif
+    {
+      ++i;
+    }
   if (i == this->LargeDimension)
     return true;
   else
@@ -541,8 +544,10 @@ LongIntegerVector& LongIntegerVector::operator *= (const long& d)
 
 LongIntegerVector& LongIntegerVector::operator /= (const long& d)
 {
+#ifdef __GMP__
   mpz_t Tmp;
   mpz_init_set_si(Tmp, d);
+#endif           
   for (long i = 0; i < this->LargeDimension; ++i)
     {
 #ifdef __GMP__
@@ -551,7 +556,9 @@ LongIntegerVector& LongIntegerVector::operator /= (const long& d)
       this->Components[i] /= d;
 #endif           
     }
+#ifdef __GMP__
   mpz_clear(Tmp);
+#endif           
   return *this;
 }
 

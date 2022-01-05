@@ -82,7 +82,17 @@ class FQHEMPSFixedQSectorMatrix : public AbstractFQHEMPSMatrix
   // number of indices to keep when performing a trace for the torus geometry
   int TopologicalSectorNbrIndices;
 
-
+  // number of orbitals covered by the site-dependent matrices
+  int SiteDependentMatrixNbrOrbitals;
+  // site dependent MPS
+  SparseRealMatrix** SiteDependentMatrices;
+  // signed orbital indices associated to each site-dependent matrix
+  int* SiteDependentMatrixOrbitalIndices;
+  //  number of site-dependent matrices for each orbital
+  int* NbrSiteDependentMatrices;
+  // physical indices for each site-dependent matrix
+  unsigned long** SiteDependentPhysicalIndices;
+  
  public:
   
   // default constructor 
@@ -217,6 +227,36 @@ class FQHEMPSFixedQSectorMatrix : public AbstractFQHEMPSMatrix
   // configuration = array where the description of the physical index will be stored
   virtual void GetPhysicalIndex(int index, unsigned long* configuration);
 
+  // get a given physical index at a given orbital for the site-dependent MPS
+  //
+  // orbitalIndex = orbital index 
+  // index = index to retrieve
+  // configuration = array where the description of the physical index will be stored
+  virtual void GetSiteDependentPhysicalIndex(int orbitalIndex, int index, unsigned long* configuration);
+
+  // compute the site-dependent matrices
+  //
+  // initialOrbitalIndex = index of the first orbital
+  // lastOrbitalIndex = index of the last orbital
+  virtual void ComputeSiteDependentMatrices(int initialOrbitalIndex, int lastOrbitalIndex);
+
+  // get the site-dependent matrices (real version) computed through ComputeSiteDependentMatrices
+  //
+  // siteDependentMatrices = reference on the site-dependent matrices
+  // nbrSiteDependentMatrices = reference on the array providing the number of site-dependent matrices per orbital
+  // siteDependentMatrixOrbitalIndices = reference on the array providing the orbital indices 
+  // siteDependentPhysicalIndices = reference on the array providing the physical indices associated to each site-dependent matrix
+  // return value = number of orbitals covered by the site-dependent matrices
+  virtual int GetSiteDependentMatrices(SparseRealMatrix**& siteDependentMatrices, int*& nbrSiteDependentMatrices, int*& siteDependentMatrixOrbitalIndices, unsigned long**& siteDependentPhysicalIndices);
+
+protected:
+  
+  // convert an occupation configuration to the array version
+  //
+  // occupationConfiguration = occupation configuration
+  // configuration = array where the description of the physical index will be stored
+  virtual void CoreGetPhysicalIndex(unsigned long occupationConfiguration, unsigned long* configuration);
+  
 };
 
 // get the number of orbitals that associated to a set of B matrices

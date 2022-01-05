@@ -52,6 +52,10 @@ using std::ios;
 
 FQHEMPSFixedQSectorMatrix::FQHEMPSFixedQSectorMatrix()
 {
+  this->SiteDependentMatrixNbrOrbitals = 0;
+  this->SiteDependentMatrices = 0;
+  this->SiteDependentMatrixOrbitalIndices = 0;
+  this->NbrSiteDependentMatrices = 0;
 }
 
 // constructor from two MPS matrices (the number of B matrices has to be identical for all of them)
@@ -75,6 +79,11 @@ FQHEMPSFixedQSectorMatrix::FQHEMPSFixedQSectorMatrix(AbstractFQHEMPSMatrix* matr
       this->BMatrixGroupSize = this->QPeriodicity;
     }
   this->TorusFlag = matrix->IsTorus();
+  this->SiteDependentMatrixNbrOrbitals = 0;
+  this->SiteDependentMatrices = 0;
+  this->SiteDependentMatrixOrbitalIndices = 0;
+  this->NbrSiteDependentMatrices = 0;
+
   int NbrBMatricesPerOrbital = matrix->GetNbrMatrices();
   int NbrGroupBMatrices = 1;
   for (int i = 0; i < this->BMatrixGroupSize; ++i)
@@ -308,6 +317,18 @@ FQHEMPSFixedQSectorMatrix::~FQHEMPSFixedQSectorMatrix()
       if (this->GlobalIndices != 0)
 	delete[] this->GlobalIndices;
     }
+  if (this->SiteDependentMatrixNbrOrbitals != 0)
+    {
+      for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+	{
+	  delete[] this->SiteDependentMatrices[i];
+	  delete[] this->SiteDependentPhysicalIndices[i];
+	}
+      delete[] this->SiteDependentMatrices;
+      delete[] this->SiteDependentMatrixOrbitalIndices;
+      delete[] this->NbrSiteDependentMatrices;
+      delete[] this->SiteDependentPhysicalIndices;
+    }
 }
 
 // create the B matrices for the block state
@@ -439,23 +460,59 @@ void FQHEMPSFixedQSectorMatrix::GetMatrixBoundaryIndices(int& rowIndex, int& col
     }
 }
 
-// get a given physical indiex
+// get a given physical index
 //
 // index = index to retrieve
 // configuration = array where the description of the physical index will be stored
 
 void FQHEMPSFixedQSectorMatrix::GetPhysicalIndex(int index, unsigned long* configuration)
 {
+  this->CoreGetPhysicalIndex(this->PhysicalIndices[index], configuration);
+}
+
+// get a given physical index at a given orbital for the site-dependent MPS
+//
+// orbitalIndex = orbital index 
+// index = index to retrieve
+// configuration = array where the description of the physical index will be stored
+
+void FQHEMPSFixedQSectorMatrix::GetSiteDependentPhysicalIndex(int orbitalIndex, int index, unsigned long* configuration)
+{
+   if (this->SiteDependentMatrixNbrOrbitals == 0)
+    {
+      this->GetPhysicalIndex(index, configuration);
+      return;
+    }
+   for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+     {
+       if ((this->SiteDependentMatrixOrbitalIndices[i] == orbitalIndex) && (index < this->NbrSiteDependentMatrices[i]))
+	 {
+	   this->CoreGetPhysicalIndex(this->SiteDependentPhysicalIndices[i][index], configuration);
+	   return;
+	 }
+     }
+   this->GetPhysicalIndex(index, configuration);
+   return;   
+}
+
+
+// convert an occupation configuration to the array version
+//
+// occupationConfiguration = occupation configuration
+// configuration = array where the description of the physical index will be stored
+
+void FQHEMPSFixedQSectorMatrix::CoreGetPhysicalIndex(unsigned long occupationConfiguration, unsigned long* configuration)
+{  
   if (this->GetMaximumOccupation() == 1)
     {
       for (int i = 0; i < this->GetNbrOrbitals(); ++i)
 	{
-	  configuration[i] = (this->PhysicalIndices[index] >> i) & 0x1ul;
+	  configuration[i] = (occupationConfiguration >> i) & 0x1ul;
 	}
     }
   else
     {
-      unsigned long InitialState = this->PhysicalIndices[index];
+      unsigned long InitialState = occupationConfiguration;
       for (int i = 0; i < this->GetNbrOrbitals(); ++i)
 	{
 	  unsigned long TmpState = (~InitialState - 1ul) ^ (~InitialState);
@@ -481,3 +538,158 @@ void FQHEMPSFixedQSectorMatrix::GetPhysicalIndex(int index, unsigned long* confi
     }
 }
 
+// compute the site-dependent matrices
+//
+// initialOrbitalIndex = index of the first orbital
+// lastOrbitalIndex = index of the last orbital
+
+void FQHEMPSFixedQSectorMatrix::ComputeSiteDependentMatrices(int initialOrbitalIndex, int lastOrbitalIndex)
+{
+   if (this->SiteDependentMatrixNbrOrbitals != 0)
+    {
+      for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+	{
+	  delete[] this->SiteDependentMatrices[i];
+	  delete[] this->SiteDependentPhysicalIndices[i];
+	}
+      delete[] this->SiteDependentMatrices;
+      delete[] this->SiteDependentMatrixOrbitalIndices;
+      delete[] this->NbrSiteDependentMatrices;
+      delete[] this->SiteDependentPhysicalIndices;
+    }
+   if (initialOrbitalIndex < lastOrbitalIndex)
+     {
+       this->SiteDependentMatrixNbrOrbitals = lastOrbitalIndex - initialOrbitalIndex + 1;
+     }
+   else
+     {
+       this->SiteDependentMatrixNbrOrbitals = initialOrbitalIndex - lastOrbitalIndex  + 1;
+     }
+   if ((this->SiteDependentMatrixNbrOrbitals % this->BMatrixGroupSize) != 0)
+     {
+       cout << "FQHEMPSFixedQSectorMatrix::ComputeSiteDependentMatrices should have a number of orbitals being a multiple of " << this->BMatrixGroupSize << endl;
+       exit(0);
+     }
+
+   int GroupBMatrixDimension = this->RealBMatrices[0].GetNbrRow();
+   this->SiteDependentMatrixNbrOrbitals /= this->BMatrixGroupSize;
+   this->SiteDependentMatrixOrbitalIndices = new int [this->SiteDependentMatrixNbrOrbitals];
+   this->NbrSiteDependentMatrices = new int [this->SiteDependentMatrixNbrOrbitals];
+   this->SiteDependentMatrices = new SparseRealMatrix* [this->SiteDependentMatrixNbrOrbitals];
+   this->SiteDependentPhysicalIndices = new unsigned long* [this->SiteDependentMatrixNbrOrbitals];
+   
+   this->MPSMatrix->ComputeSiteDependentMatrices(initialOrbitalIndex, lastOrbitalIndex);   
+   int* FullSiteDependentMatrixOrbitalIndices;
+   int* FullNbrSiteDependentMatrices;
+   SparseRealMatrix** FullSiteDependentMatrices;
+   unsigned long** FullSiteDependentPhysicalIndices;
+   int FullSiteDependentMatrixNbrOrbitals = this->MPSMatrix->GetSiteDependentMatrices(FullSiteDependentMatrices, FullNbrSiteDependentMatrices, FullSiteDependentMatrixOrbitalIndices, FullSiteDependentPhysicalIndices);
+
+
+   for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+     {
+       this->SiteDependentMatrixOrbitalIndices[i] = FullSiteDependentMatrixOrbitalIndices[i * this->BMatrixGroupSize];
+
+       int NbrGroupBMatrices = 1;
+       for (int j = 0; j < this->BMatrixGroupSize; ++j)
+	 {
+	   NbrGroupBMatrices *= FullNbrSiteDependentMatrices[(i * this->BMatrixGroupSize) + j];	   
+	 }
+       SparseRealMatrix* TmpSparseGroupBMatrices = new SparseRealMatrix[NbrGroupBMatrices];
+       unsigned long** TmpPhysicalIndices = new unsigned long*[NbrGroupBMatrices];
+       for (int j = 0; j < NbrGroupBMatrices; ++j)
+	 {
+	   TmpPhysicalIndices[j] = new unsigned long[this->BMatrixGroupSize];
+	 }
+       
+       int TmpOrbitalIndex = this->BMatrixGroupSize - 1;
+       int Step = NbrGroupBMatrices / FullNbrSiteDependentMatrices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex];
+       for (int j = 0; j < NbrGroupBMatrices; j += Step)
+	 {
+	   TmpSparseGroupBMatrices[j].Copy(FullSiteDependentMatrices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex][j / Step]);
+	   TmpPhysicalIndices[j][TmpOrbitalIndex] = FullSiteDependentPhysicalIndices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex][0];
+	 }
+       --TmpOrbitalIndex;
+
+       while (Step > 1)
+	 {
+	   int TmpStep = Step / FullNbrSiteDependentMatrices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex];
+	   for (int l = 0; l < NbrGroupBMatrices; l += Step)
+	     {
+	       for (int j = 1; j < FullNbrSiteDependentMatrices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex]; ++j)
+	       {
+		 TmpSparseGroupBMatrices[l + j * TmpStep].Copy(TmpSparseGroupBMatrices[l]);
+		 for (int k = this->BMatrixGroupSize - 1; k > TmpOrbitalIndex; --k)
+		   TmpPhysicalIndices[l + j * TmpStep][k] = TmpPhysicalIndices[l][k];
+	       }
+	       for (int j = 0; j < FullNbrSiteDependentMatrices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex]; ++j)
+		 {
+		   TmpSparseGroupBMatrices[l + j * TmpStep].Multiply(FullSiteDependentMatrices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex][j]);
+		   TmpPhysicalIndices[l + j * TmpStep][TmpOrbitalIndex] = FullSiteDependentPhysicalIndices[(i * this->BMatrixGroupSize) + TmpOrbitalIndex][j];
+		 }	  
+	     }
+	   Step = TmpStep;
+	   --TmpOrbitalIndex;
+	 }
+     
+       this->NbrSiteDependentMatrices[i] = 0;
+       this->SiteDependentPhysicalIndices[i] = new unsigned long[NbrGroupBMatrices];
+       this->SiteDependentMatrices[i] = new SparseRealMatrix[NbrGroupBMatrices];
+       cout << "grouping " << this->BMatrixGroupSize << " B matrices (" << NbrGroupBMatrices << " matrices)" << "for orbitals starting at " << this->SiteDependentMatrixOrbitalIndices[i] << endl;
+       for (int k = 0; k < NbrGroupBMatrices; ++k)
+	 {
+	   SparseRealMatrix TmpSparseGroupBMatrices2 = TmpSparseGroupBMatrices[i].ExtractMatrix(GroupBMatrixDimension, GroupBMatrixDimension, this->GlobalIndices, this->GlobalIndices);	   
+	   if (TmpSparseGroupBMatrices2.GetNbrRow() > 0)
+	      {
+	        this->SiteDependentMatrices[i][this->NbrSiteDependentMatrices[i]] = TmpSparseGroupBMatrices2;
+	        this->SiteDependentPhysicalIndices[i][this->NbrSiteDependentMatrices[i]] = 0x0ul;
+	        if (this->GetMaximumOccupation() == 1)
+	    	 {
+	    	   for (int l = 0; l < this->BMatrixGroupSize; ++l)
+	    	     {
+	    	       this->SiteDependentPhysicalIndices[i][this->NbrSiteDependentMatrices[i]] |= TmpPhysicalIndices[k][l] << l;
+	    	     }
+	    	 }
+	        else
+	    	 {
+	    	   int TmpPos = 0;
+	    	   for (int l = 0; l < this->BMatrixGroupSize; ++l)
+	    	     {
+	    	       this->SiteDependentPhysicalIndices[i][this->NbrBMatrices] |= ((0x1ul << TmpPhysicalIndices[k][l]) - 0x1ul) << TmpPos;
+	    	       TmpPos += TmpPhysicalIndices[k][l];
+	    	       TmpPos++;
+	    	     }		   
+	    	 }
+	        ++this->NbrSiteDependentMatrices[i];
+	      }
+	   else
+	     {
+	       cout << "throwing away B matrix " << i << endl;
+	     }
+	 }
+       for (int j = 0; j < NbrGroupBMatrices; ++j)
+	 {
+	   delete[] TmpPhysicalIndices[j];
+	 }
+       delete[] TmpPhysicalIndices;
+     }
+}
+
+
+// get the site-dependent matrices (real version) computed through ComputeSiteDependentMatrices
+//
+// siteDependentMatrices = reference on the site-dependent matrices
+// nbrSiteDependentMatrices = reference on the array providing the number of site-dependent matrices per orbital
+// siteDependentMatrixOrbitalIndices = reference on the array providing the orbital indices 
+// siteDependentPhysicalIndices = reference on the array providing the physical indices associated to each site-dependent matrix
+// return value = number of orbitals covered by the site-dependent matrices
+
+int FQHEMPSFixedQSectorMatrix::GetSiteDependentMatrices(SparseRealMatrix**& siteDependentMatrices, int*& nbrSiteDependentMatrices, int*& siteDependentMatrixOrbitalIndices, unsigned long**& siteDependentPhysicalIndices)
+{
+  siteDependentMatrices = this->SiteDependentMatrices;
+  nbrSiteDependentMatrices = this->NbrSiteDependentMatrices;
+  siteDependentMatrixOrbitalIndices = this->SiteDependentMatrixOrbitalIndices;
+  siteDependentPhysicalIndices = this->SiteDependentPhysicalIndices;
+  return this->SiteDependentMatrixNbrOrbitals;
+}
+  

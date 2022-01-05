@@ -71,7 +71,19 @@ RealDiagonalMatrix FQHEMPSEvaluatePartialEntanglementSpectrum(AbstractFQHEMPSMat
 							      int leftPSector, int leftCFTSector, int leftQSector, int rightPSector, int rightCFTSector, int rightQSector, 
 							      double eigenvalueError, char* eigenstateFileName = 0);
 
+// convert the orbital weights into coefficients for the transfer matrices
+//
+// mPSMatrix = pointer to the MPS matrices
+// nbrBMatrices = number of B matrices
+// weightOrbitals = array of orbital weights
+// coefficients = array storing the coefficients for the transfer matrices
+// orbitalIndex = reference on the current orbital index (will be updated by this function)
+// reverseFlag = read the weight from the last orbital
+void ConvertWeightsToCoefficients(AbstractFQHEMPSMatrix* mPSMatrix, int nbrBMatrices, double* weightOrbitals, double* coefficients, int& orbitalIndex, bool reverseFlag);
 
+
+
+  
 int main(int argc, char** argv)
 {
   cout.precision(14); 
@@ -98,6 +110,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption ('\n', "infinite-cylinder", "evaluate the entanglement spectrum on the infinite cylinder");
   (*SystemGroup) += new BooleanOption  ('\n', "realspace-cut", "use real space partition instead of particle partition");
   (*SystemGroup) += new SingleStringOption  ('\n', "realspace-partition", "geometrical weights that define the real spac partition");
+  (*SystemGroup) += new BooleanOption  ('\n', "realspace-bgcharge", "use adaptive background charge to improve accuracy");
   (*SystemGroup) += new BooleanOption ('\n', "use-singlestate", "use a single real eigenstate of the E matrix  when evaluating the infinite entanglement spectrum");
   (*SystemGroup) += new BooleanOption ('\n', "orbital-es", "compute the orbital entanglement spectrum");
   (*SystemGroup) += new SingleIntegerOption ('\n', "nbr-orbitals", "number of orbitals for the A part (i negative, use (N_phi+1) / 2)", -1);
@@ -193,7 +206,7 @@ int main(int argc, char** argv)
   ofstream File2;
   File2.precision(14);
   
-  char* Extension = new char[32];  
+  char* Extension = new char[256];  
   if (Manager.GetBoolean("orbital-es"))
     {
       sprintf (Extension, "ent");
@@ -215,7 +228,19 @@ int main(int argc, char** argv)
 	      cout << "OrbitalSquareWeights is not defined or as a wrong value" << endl;
 	      return -1;
 	    }
-	  sprintf (Extension, "norb_%d.rsent", TmpNbrOrbitals);
+	  if (Manager.GetBoolean("realspace-bgcharge") == true)
+	    {
+	      if ((TmpNbrOrbitals & 1) == 1)
+		{
+		  cout << "The number of weights in " << Manager.GetString("realspace-partition") << " should be even when using --realspace-bgcharge" << endl;
+		  return -1;
+		}
+	      sprintf (Extension, "norb_%d.acc.rsent", TmpNbrOrbitals);
+	    }
+	  else
+	    {
+	      sprintf (Extension, "norb_%d.rsent", TmpNbrOrbitals);
+	    }
 	}
       else
 	{
@@ -408,11 +433,14 @@ int main(int argc, char** argv)
 	}
       if (Manager.GetBoolean("orbital-es") == false)
 	{
+	  // infinite cylinder real space ES with 
 	  if ((Manager.GetBoolean("diagonal-block") == true) || 
 	      ((Manager.GetString("left-eigenstate") != 0) && (Manager.GetString("right-eigenstate") != 0)
 	       && (strstr(Manager.GetString("left-eigenstate"), "_diagblock_") != 0) 
 	       && (strstr(Manager.GetString("right-eigenstate"), "_diagblock_") != 0)))
 	    {
+
+	      // diagonal block E matrix eigenstates
 	      ComplexVector TmpLeftEigenstate (TmpDimension * TmpDimension, true);
 	      ComplexVector TmpRightEigenstate (TmpDimension * TmpDimension, true);
 	      int TmpBlockDimension = 0;
@@ -471,6 +499,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
+	      // standard E matrix eigenstates	      
 	      if (LeftEigenstate.GetVectorDimension() != (TmpDimension * TmpDimension))
 		{
 		  cout << "error, left eigenstate does not have the expected dimension (" << LeftEigenstate.GetVectorDimension() << " vs " << TmpDimension << ") " << endl;
@@ -482,35 +511,45 @@ int main(int argc, char** argv)
 		  return 0;
 		}
 	    }
+	  if (Manager.GetBoolean("realspace-bgcharge") == true)
+	    {
+	      if (((MaxNbrFluxQuantaA + 1) % (2* MPSMatrix->GetNbrOrbitals())) != 0)
+		{
+		  cout << "The number of weights should be a multiple of 2 * " << MPSMatrix->GetNbrOrbitals() << endl;
+		  return -1;
+		}
+	    }
+	  else
+	    {
+	      if (((MaxNbrFluxQuantaA + 1) % MPSMatrix->GetNbrOrbitals()) != 0)
+		{
+		  cout << "The number of weights should be a multiple of " << MPSMatrix->GetNbrOrbitals() << endl;
+		  return -1;
+		}
+	    }
 	  ComplexVector TmpEigenstate (RightEigenstate.GetVectorDimension());
 	  double* Coefficients = new double[NbrBMatrices];
 	  int TmpOrbitalIndex = 0;
-	  int NbrEMatrixEvolution = ((MaxNbrFluxQuantaB + 1) / MPSMatrix->GetNbrOrbitals());
-	  cout << "evolving right eigenstate with " << NbrEMatrixEvolution << " (covering " << (MaxNbrFluxQuantaB + 1) << " orbitals)" << endl;
 	  timeval TotalStartingTime;
 	  timeval TotalEndingTime;
 	  if (ShowTimeFlag == true)
 	    {
 	      gettimeofday (&(TotalStartingTime), 0);
 	    }
+	  int NbrEMatrixEvolution = 0;
+	  if (Manager.GetBoolean("realspace-bgcharge") == true)
+	    {
+	      NbrEMatrixEvolution = (MaxNbrFluxQuantaB + 1) / (2 * MPSMatrix->GetNbrOrbitals());
+	      cout << "evolving right eigenstate with " << NbrEMatrixEvolution << " transfer matrices and background charge (covering " << ((MaxNbrFluxQuantaB + 1) / 2) << " orbitals)" << endl;	      
+	    }
+	  else
+	    {
+	      NbrEMatrixEvolution = (MaxNbrFluxQuantaB + 1) / MPSMatrix->GetNbrOrbitals();
+	      cout << "evolving right eigenstate with " << NbrEMatrixEvolution << " transfer matrices (covering " << (MaxNbrFluxQuantaB + 1)<< " orbitals)" << endl;
+	    }
 	  for (int i = 0; i < NbrEMatrixEvolution; ++i)
 	    {		  
-	      unsigned long* TmpPhysicalIndex = new unsigned long[MPSMatrix->GetNbrOrbitals()];
-	      for (int j = 0; j < NbrBMatrices; ++j)
-		{
-		  double Tmp = 1.0;
-		  MPSMatrix->GetPhysicalIndex(j, TmpPhysicalIndex);
-		  for (int k = 0; k < MPSMatrix->GetNbrOrbitals(); ++k)
-		    {
-		      for (int l = 1; l <= TmpPhysicalIndex[k]; ++l)
-			{
-			  Tmp *= WeightBOrbitals[(TmpOrbitalIndex + k)] * WeightBOrbitals[(TmpOrbitalIndex + k)];
-			}
-		    }
-		  Coefficients[j] = Tmp;
-		}
-	      delete[] TmpPhysicalIndex;
-	      TmpOrbitalIndex += MPSMatrix->GetNbrOrbitals();
+	      ConvertWeightsToCoefficients(MPSMatrix, NbrBMatrices, WeightBOrbitals, Coefficients, TmpOrbitalIndex, false);
 	      TensorProductSparseMatrixHamiltonian* ETransposeHamiltonian = new TensorProductSparseMatrixHamiltonian(NbrBMatrices, BMatrices, BMatrices, Coefficients,
 														     Architecture.GetArchitecture()); 
 	      ETransposeHamiltonian->LowLevelMultiply(RightEigenstate, TmpEigenstate);
@@ -519,6 +558,23 @@ int main(int argc, char** argv)
 	      TmpEigenstate = TmpVector;
 	      delete ETransposeHamiltonian;
 	    }
+	  if (Manager.GetBoolean("realspace-bgcharge") == true)
+	    {
+	      cout << "evolving right eigenstate with " << NbrEMatrixEvolution << " transfer matrices and without background charge (covering " << ((MaxNbrFluxQuantaB + 1) / 2) << " orbitals)" << endl;	      
+	      MPSMatrix->ComputeSiteDependentMatrices(0, ((MaxNbrFluxQuantaB + 1) / 2) - 1);
+	      // SparseRealMatrix** SiteDependentMatrices;
+	      // MPSMatrix->GetSiteDependentMatrices(SiteDependentMatrices);
+	      for (int i = 0; i < NbrEMatrixEvolution; ++i)
+		{		  
+		  ConvertWeightsToCoefficients(MPSMatrix, NbrBMatrices, WeightBOrbitals, Coefficients, TmpOrbitalIndex, false);
+		  TensorProductSparseMatrixHamiltonian* ETransposeHamiltonian = new TensorProductSparseMatrixHamiltonian(NbrBMatrices, BMatrices, BMatrices, Coefficients, Architecture.GetArchitecture()); 
+		  ETransposeHamiltonian->LowLevelMultiply(RightEigenstate, TmpEigenstate);
+		  ComplexVector TmpVector = RightEigenstate;		  
+		  RightEigenstate = TmpEigenstate;
+		  TmpEigenstate = TmpVector;
+		  delete ETransposeHamiltonian;
+		}
+	    }
 	  if (ShowTimeFlag == true)
 	    {
 	      gettimeofday (&(TotalEndingTime), 0);
@@ -526,31 +582,26 @@ int main(int argc, char** argv)
 				    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));		      
 	      cout << "evolution done in " << Dt << "s" << endl;
 	    }
-	  NbrEMatrixEvolution = ((MaxNbrFluxQuantaA + 1) / MPSMatrix->GetNbrOrbitals());
-	  cout << "evolving left eigenstate with " << NbrEMatrixEvolution <<  " (covering " << (MaxNbrFluxQuantaA + 1) << " orbitals)" << endl;
-	  TmpOrbitalIndex = 0;
+
+	  NbrEMatrixEvolution = 0;
 	  if (ShowTimeFlag == true)
 	    {
 	      gettimeofday (&(TotalStartingTime), 0);
 	    }
+	  if (Manager.GetBoolean("realspace-bgcharge") == true)
+	    {
+	      NbrEMatrixEvolution = ((MaxNbrFluxQuantaA + 1) / (2 * MPSMatrix->GetNbrOrbitals()));
+	      cout << "evolving left eigenstate with " << NbrEMatrixEvolution <<  " transfer matrices and background charge(covering " << ((MaxNbrFluxQuantaA + 1) / 2) << " orbitals)" << endl;
+	    }
+	  else
+	    {
+	      NbrEMatrixEvolution = ((MaxNbrFluxQuantaA + 1) / MPSMatrix->GetNbrOrbitals());
+	      cout << "evolving left eigenstate with " << NbrEMatrixEvolution <<  " transfer matrices (covering " << (MaxNbrFluxQuantaA + 1) << " orbitals)" << endl;
+	    }
+	  TmpOrbitalIndex = 0;
 	  for (int i = 0; i < NbrEMatrixEvolution; ++i)
 	    {
-	      unsigned long* TmpPhysicalIndex = new unsigned long[MPSMatrix->GetNbrOrbitals()];
-	      for (int j = 0; j < NbrBMatrices; ++j)
-		{
-		  double Tmp = 1.0;
-		  MPSMatrix->GetPhysicalIndex(j, TmpPhysicalIndex);
-		  for (int k = 0; k <  MPSMatrix->GetNbrOrbitals(); ++k)
-		    {
-		      for (int l = 1; l <= TmpPhysicalIndex[k]; ++l)
-			{
-			  Tmp *= WeightAOrbitals[(TmpOrbitalIndex + (MPSMatrix->GetNbrOrbitals() - 1 - k))] * WeightAOrbitals[(TmpOrbitalIndex + (MPSMatrix->GetNbrOrbitals() - 1 - k))];
-			}
-		    }
-		  Coefficients[j] = Tmp;
-		}
-	      delete[] TmpPhysicalIndex;
-	      TmpOrbitalIndex += MPSMatrix->GetNbrOrbitals();
+	      ConvertWeightsToCoefficients(MPSMatrix, NbrBMatrices, WeightAOrbitals, Coefficients, TmpOrbitalIndex, true);
 	      TensorProductSparseMatrixHamiltonian* EHamiltonian = new TensorProductSparseMatrixHamiltonian(NbrBMatrices, ConjugateBMatrices, ConjugateBMatrices, 
 													    Coefficients, Architecture.GetArchitecture()); 
 	      EHamiltonian->LowLevelMultiply(LeftEigenstate, TmpEigenstate);
@@ -559,6 +610,21 @@ int main(int argc, char** argv)
 	      TmpEigenstate = TmpVector;
 	      delete EHamiltonian;
 	    }
+	  if (Manager.GetBoolean("realspace-bgcharge") == true)
+	    {
+	      cout << "evolving left eigenstate with " << NbrEMatrixEvolution <<  " transfer matrices and without background charge(covering " << ((MaxNbrFluxQuantaA + 1) / 2) << " orbitals)" << endl;
+	      MPSMatrix->ComputeSiteDependentMatrices(-1, -((MaxNbrFluxQuantaA + 1) / 2));
+	      for (int i = 0; i < NbrEMatrixEvolution; ++i)
+		{
+		  ConvertWeightsToCoefficients(MPSMatrix, NbrBMatrices, WeightAOrbitals, Coefficients, TmpOrbitalIndex, true);
+		  TensorProductSparseMatrixHamiltonian* EHamiltonian = new TensorProductSparseMatrixHamiltonian(NbrBMatrices, ConjugateBMatrices, ConjugateBMatrices, Coefficients, Architecture.GetArchitecture()); 
+		  EHamiltonian->LowLevelMultiply(LeftEigenstate, TmpEigenstate);
+		  ComplexVector TmpVector = LeftEigenstate;		  
+		  LeftEigenstate = TmpEigenstate;
+		  TmpEigenstate = TmpVector;
+		  delete EHamiltonian;
+		}
+	    }	  
 	  delete[] Coefficients;
 
 // 	  LeftEigenstate.PrintNonZero(cout) << endl;
@@ -585,6 +651,7 @@ int main(int argc, char** argv)
 	       && (strstr(Manager.GetString("left-eigenstate"), "_diagblock_") != 0) 
 	       && (strstr(Manager.GetString("right-eigenstate"), "_diagblock_") != 0)))
 	    {
+	      // infinite cylinder orbital ES with diagonal block E matrix eigenstates
 	      int TmpBlockDimension = 0;
 	      for (int CurrentPLevel = 0; CurrentPLevel <= PLevel; ++CurrentPLevel)
 		{
@@ -1262,4 +1329,40 @@ RealDiagonalMatrix FQHEMPSEvaluatePartialEntanglementSpectrum(AbstractFQHEMPSMat
 	}
     }
   return TmpRhoADiag;
+}
+
+// convert the orbital weights into coefficients for the transfer matrices
+//
+// mPSMatrix = pointer to the MPS matrices
+// nbrBMatrices = number of B matrices
+// weightOrbitals = array of orbital weights
+// coefficients = array storing the coefficients for the transfer matrices
+// orbitalIndex = reference on the current orbital index (will be updated by this function)
+// reverseFlag = read the weight from the last orbital
+
+void ConvertWeightsToCoefficients(AbstractFQHEMPSMatrix* mPSMatrix, int nbrBMatrices, double* weightOrbitals, double* coefficients, int& orbitalIndex, bool reverseFlag)
+{
+  unsigned long* TmpPhysicalIndex = new unsigned long[mPSMatrix->GetNbrOrbitals()];
+  for (int j = 0; j < nbrBMatrices; ++j)
+    {
+      double Tmp = 1.0;
+      mPSMatrix->GetPhysicalIndex(j, TmpPhysicalIndex);
+      for (int k = 0; k <  mPSMatrix->GetNbrOrbitals(); ++k)
+	{
+	  for (int l = 1; l <= TmpPhysicalIndex[k]; ++l)
+	    {
+	      if (reverseFlag == true)
+		{
+		  Tmp *= weightOrbitals[(orbitalIndex + (mPSMatrix->GetNbrOrbitals() - 1 - k))] * weightOrbitals[(orbitalIndex + (mPSMatrix->GetNbrOrbitals() - 1 - k))];
+		}
+	      else
+		{
+		  Tmp *= weightOrbitals[(orbitalIndex + k)] * weightOrbitals[(orbitalIndex + k)];
+		}
+	    }
+	}
+      coefficients[j] = Tmp;
+    }
+  delete[] TmpPhysicalIndex;
+  orbitalIndex += mPSMatrix->GetNbrOrbitals();
 }

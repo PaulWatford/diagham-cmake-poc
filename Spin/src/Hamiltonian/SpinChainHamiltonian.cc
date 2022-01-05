@@ -45,6 +45,13 @@ using std::endl;
 using std::ostream;
 
 
+// default constructor
+//
+
+SpinChainHamiltonian::SpinChainHamiltonian()
+{
+}
+
 // constructor from default data
 //
 // chain = reference on Hilbert space of the associated system

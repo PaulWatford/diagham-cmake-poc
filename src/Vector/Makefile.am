@@ -10,5 +10,6 @@ RealPtrVector.cc \
 PartialRealVector.cc \
 PartialComplexVector.cc \
 RationalVector.cc \
-LongRationalVector.cc
-
+LongRationalVector.cc \
+IntegerVector.cc \
+LongIntegerVector.cc

@@ -82,6 +82,8 @@ class Matrix
     RealElements = 0x0001,
     ComplexElements = 0x0002,
     LongRationalElements = 0x0004,
+    IntegerElements = 0x0008,
+    LongIntegerElements = 0x000c,
     Diagonal = 0x0010,
     TriDiagonal = 0x0020,
     Triangular = 0x0040,
@@ -247,6 +249,12 @@ class Matrix
   // accuracy = numerical accuracy used to define a zero 
   // return value = true if the matrix is diagonal
   virtual bool IsDiagonal(double accuracy = MACHINE_PRECISION);
+
+  // test if a matrix is the identity matrix
+  //
+  // accuracy = numerical accuracy used to define a zero 
+  // return value = true if the matrix is diagonal
+  virtual bool IsIdentity(double accuracy = MACHINE_PRECISION);
 
   // test if a matrix is symmetric
   //

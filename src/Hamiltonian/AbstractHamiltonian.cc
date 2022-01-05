@@ -39,6 +39,8 @@
 #include "Matrix/SparseRealMatrix.h"
 #include "Matrix/SparseComplexMatrix.h"
 #include "Matrix/HermitianMatrix.h"
+#include "Matrix/IntegerMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
 #include "MathTools/Complex.h"
 #include "BitmapTools/BitmapPicture/AbstractBitmapPicture.h"
 #include "BitmapTools/BitmapPicture/TgaFormat.h" 
@@ -294,6 +296,94 @@ RealMatrix& AbstractHamiltonian::GetHamiltonian (RealMatrix& M)
   return M;
 }
   
+// store the real part of Hamiltonian into an integer matrix
+//
+// M = reference on matrix where Hamiltonian has to be stored
+// scalingFactor = use an additional scaling factor before converting coefficients into integers
+// return value = reference on corresponding matrix 
+
+IntegerMatrix& AbstractHamiltonian::GetHamiltonian (IntegerMatrix& M, double scalingFactor)
+{
+  RealVector TmpV1 (this->GetHilbertSpaceDimension(), true);
+  RealVector TmpV2 (this->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); i++)
+    {
+      TmpV1[i] = 1.0;
+      if (this->IsHermitian())
+	this->HermitianLowLevelMultiply(TmpV1, TmpV2);
+      else
+	this->LowLevelMultiply(TmpV1, TmpV2);
+      if (this->LeftHamiltonianVectorMultiplicationFlag == false)
+	{
+	  for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	    {
+	      if (fabs(nearbyint(TmpV2[j] * scalingFactor) - (TmpV2[j] * scalingFactor)) > 1e-10)
+		{
+		  cout << "error when converting hamiltonian to int (" << j << "," << i << "): " << (TmpV2[j] * scalingFactor) << endl;
+		}
+	      M.SetMatrixElement(j, i, lrint(TmpV2[j] * scalingFactor));
+	    }
+	}
+      else
+	{
+	  for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	    {
+	      if (fabs(nearbyint(TmpV2[j] * scalingFactor) - (TmpV2[j] * scalingFactor)) > 1e-10)
+		{
+		  cout << "error when converting hamiltonian to int (" << j << "," << i << "): " << (TmpV2[j] * scalingFactor) << endl;
+		}
+	      M.SetMatrixElement(i, j, lrint(TmpV2[j] * scalingFactor));
+	    }
+	}
+      TmpV1[i] = 0.0;
+    }
+  return M;
+}
+
+// store the real part of Hamiltonian into a long integer matrix
+//
+// M = reference on matrix where Hamiltonian has to be stored
+// scalingFactor = use an additional scaling factor before converting coefficients into integers
+// return value = reference on corresponding matrix 
+
+LongIntegerMatrix& AbstractHamiltonian::GetHamiltonian (LongIntegerMatrix& M, double scalingFactor)
+{
+  RealVector TmpV1 (this->GetHilbertSpaceDimension(), true);
+  RealVector TmpV2 (this->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); i++)
+    {
+      TmpV1[i] = 1.0;
+      if (this->IsHermitian())
+	this->HermitianLowLevelMultiply(TmpV1, TmpV2);
+      else
+	this->LowLevelMultiply(TmpV1, TmpV2);
+      if (this->LeftHamiltonianVectorMultiplicationFlag == false)
+	{
+	  for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	    {
+	      if (fabs(nearbyint(TmpV2[j] * scalingFactor) - (TmpV2[j] * scalingFactor)) > 1e-10)
+		{
+		  cout << "error when converting hamiltonian to int (" << j << "," << i << "): " << (TmpV2[j] * scalingFactor) << endl;
+		}
+	      M.SetMatrixElement(j, i, lrint(TmpV2[j] * scalingFactor));
+	    }
+	}
+      else
+	{
+	  for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	    {
+	      if (fabs(nearbyint(TmpV2[j] * scalingFactor) - (TmpV2[j] * scalingFactor)) > 1e-10)
+		{
+		  cout << "error when converting hamiltonian to int (" << j << "," << i << "): " << (TmpV2[j] * scalingFactor) << endl;
+		}
+	      M.SetMatrixElement(i, j, lrint(TmpV2[j] * scalingFactor));
+	    }
+	}
+      TmpV1[i] = 0.0;
+    }
+  return M;
+}
+
 // store real part of Hamiltonian into a real sparse matrix
 //
 // M = reference on matrix where Hamiltonian has to be stored

@@ -75,4 +75,5 @@ SpinChainOBrienFendleyRealHamiltonianWithTranslations.cc \
 Potts3ChainDualOBrienFendleyHamiltonian.cc \
 Potts3ChainDualOBrienFendleyHamiltonianWithTranslations.cc \
 Potts3ChainDualOBrienFendleyRealHamiltonianWithTranslations.cc \
-SpinChainLongRangeXYZHamiltonian.cc
+SpinChainLongRangeXYZHamiltonian.cc \
+SpinChainJz2Hamiltonian.cc

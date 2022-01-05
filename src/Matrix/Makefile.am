@@ -26,7 +26,9 @@ SparseComplexMatrix.cc \
 SparseRealMatrix.cc \
 LongRationalMatrix.cc \
 ComplexUpperHessenbergMatrix.cc \
-RealUpperHessenbergMatrix.cc
+RealUpperHessenbergMatrix.cc \
+IntegerMatrix.cc \
+LongIntegerMatrix.cc
 
 libArray_a_SOURCES = \
 Double3DArray.cc \

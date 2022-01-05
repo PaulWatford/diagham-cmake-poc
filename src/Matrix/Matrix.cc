@@ -555,6 +555,43 @@ bool Matrix::IsDiagonal(double accuracy)
   return true;
 }
 
+// test if a matrix is the identity matrix
+//
+// accuracy = numerical accuracy used to define a zero 
+// return value = true if the matrix is diagonal
+
+bool Matrix::IsIdentity(double accuracy)
+{
+  if (this->IsDiagonal() == false)
+    {
+      return false;
+    }
+  if ((this->MatrixType & Matrix::RealElements) == Matrix::RealElements)
+    {
+      double Tmp;
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  this->GetMatrixElement(i, i, Tmp);
+	  if (fabs(1.0 - Tmp) > accuracy)
+	    return false;
+	}      
+      return true;
+    }
+  else
+    {
+      Complex Tmp;
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  this->GetMatrixElement(i, i, Tmp);
+	  if (Norm(1.0 - Tmp) > accuracy)
+	    return false;
+	}
+      return true;
+    }
+  return true;
+}
+
+
 // test if a matrix is symmetric
 //
 // accuracy = numerical accuracy used to define a zero 

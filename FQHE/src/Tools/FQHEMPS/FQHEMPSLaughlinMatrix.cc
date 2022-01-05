@@ -55,6 +55,11 @@ FQHEMPSLaughlinMatrix::FQHEMPSLaughlinMatrix()
   this->UniformChargeIndexRange = true;
   this->BosonicVersion = false;
   this->TorusFlag = false;
+  this->SiteDependentMatrixNbrOrbitals = 0;
+  this->SiteDependentMatrices = 0;
+  this->SiteDependentMatrixOrbitalIndices = 0;
+  this->NbrSiteDependentMatrices = 0;
+  this->SiteDependentPhysicalIndices = 0;
 }
 
 // constructor 
@@ -90,10 +95,16 @@ FQHEMPSLaughlinMatrix::FQHEMPSLaughlinMatrix(int laughlinIndex, int pLevel, int 
     {
       this->PhysicalIndices[i] = (unsigned long) i;
     }
+  this->SiteDependentMatrixNbrOrbitals = 0;
+  this->SiteDependentMatrices = 0;
+  this->SiteDependentMatrixOrbitalIndices = 0;
+  this->NbrSiteDependentMatrices = 0;
+  this->SiteDependentPhysicalIndices = 0;
   if (this->BosonicVersion == true)
     this->AlternateCreateBMatrices();
   else
     this->CreateBMatrices();
+  this->ComputeSiteDependentMatrices(-8, 3);
 }
 
 // constructor for the torus geometry
@@ -128,6 +139,11 @@ FQHEMPSLaughlinMatrix::FQHEMPSLaughlinMatrix(int laughlinIndex, int pLevel, int 
   this->TorusFluxInsertion = fluxInsertion;
   this->Kappa = sqrt(2.0 * M_PI * this->TorusAspectRatio / ((double) this->TorusNbrFluxQuanta));
   this->UniformChargeIndexRange = !trimChargeIndices;
+  this->SiteDependentMatrixNbrOrbitals = 0;
+  this->SiteDependentMatrices = 0;
+  this->SiteDependentMatrixOrbitalIndices = 0;
+  this->NbrSiteDependentMatrices = 0;
+  this->SiteDependentPhysicalIndices = 0;
   if ((this->TorusAngle != 0.0) || (this->TorusFluxInsertion != 0.0))
     {
       this->TwistedTorusFlag = true;
@@ -173,6 +189,11 @@ FQHEMPSLaughlinMatrix::FQHEMPSLaughlinMatrix(int laughlinIndex, int pLevel, char
   this->TwistedTorusFlag = false;
   this->Kappa = kappa;
   this->UniformChargeIndexRange = !trimChargeIndices;
+  this->SiteDependentMatrixNbrOrbitals = 0;
+  this->SiteDependentMatrices = 0;
+  this->SiteDependentMatrixOrbitalIndices = 0;
+  this->NbrSiteDependentMatrices = 0;
+  this->SiteDependentPhysicalIndices = 0;
   this->LoadMatrices(fileName);
 }
 
@@ -186,6 +207,18 @@ FQHEMPSLaughlinMatrix::~FQHEMPSLaughlinMatrix()
   delete[] this->NbrNValuesPerPLevel;
   delete[] this->NInitialValuePerPLevel;
   delete[] this->NLastValuePerPLevel;
+  if (this->SiteDependentMatrixNbrOrbitals != 0)
+    {
+      for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+	{
+	  delete[] this->SiteDependentMatrices[i];
+	  delete[] this->SiteDependentPhysicalIndices[i];
+	}
+      delete[] this->SiteDependentMatrices;
+      delete[] this->SiteDependentMatrixOrbitalIndices;
+      delete[] this->NbrSiteDependentMatrices;
+      delete[] this->SiteDependentPhysicalIndices;
+    }
 }
   
 // get the name describing the B matrices 
@@ -394,10 +427,23 @@ void FQHEMPSLaughlinMatrix::AlternateCreateBMatrices ()
 	    ++TmpNbrElementPerRow[this->GetMatrixIndex(i, k, j - 1)];
 	}
     }
+  int* TmpNbrElementPerRowInverseBMatrixZero = new int[MatrixSize];
+  for (int i = 0; i < MatrixSize; ++i)
+    TmpNbrElementPerRowInverseBMatrixZero[i] = 0;
+  for (int i = 0; i <= this->PLevel; ++i)
+    {
+      BosonOnDiskShort* TmpSpace = U1BosonBasis[i];
+      for (int j = this->NInitialValuePerPLevel[i]; j < this->NLastValuePerPLevel[i]; ++j)
+	{
+	  for (int k = 0; k < TmpSpace->GetHilbertSpaceDimension(); ++k)
+	    ++TmpNbrElementPerRowInverseBMatrixZero[this->GetMatrixIndex(i, k, j)];
+	}
+    }
   if (this->TwistedTorusFlag == false)
     {
       BMatrices = new SparseRealMatrix[this->NbrBMatrices];
       BMatrices[0] = SparseRealMatrix(MatrixSize, MatrixSize, TmpNbrElementPerRow);
+      InverseBMatrixZero = SparseRealMatrix(MatrixSize, MatrixSize, TmpNbrElementPerRow);      
       for (int i = 0; i <= this->PLevel; ++i)
 	{
 	  BosonOnDiskShort* TmpSpace = U1BosonBasis[i];
@@ -420,6 +466,10 @@ void FQHEMPSLaughlinMatrix::AlternateCreateBMatrices ()
 			}
 		    }
 		  BMatrices[0].SetMatrixElement(this->GetMatrixIndex(i, k, j - 1), this->GetMatrixIndex(i, k, j), Tmp);
+		  if (Tmp != 0.0)
+		    {
+		      InverseBMatrixZero.SetMatrixElement(this->GetMatrixIndex(i, k, j), this->GetMatrixIndex(i, k, j - 1), 1.0 / Tmp);
+		    }
 		}
 	    }
 	}
@@ -1223,3 +1273,275 @@ SparseRealMatrix** FQHEMPSLaughlinMatrix::GetSiteDependentMatrices(int nbrFluxQu
   return BMatrices;
 }
 
+// compute the site-dependent matrices
+//
+// initialOrbitalIndex = index of the first orbital
+// lastOrbitalIndex = index of the last orbital
+
+void FQHEMPSLaughlinMatrix::ComputeSiteDependentMatrices(int initialOrbitalIndex, int lastOrbitalIndex)
+{
+  if (this->TorusFlag == true)
+    {
+      cout << "FQHEMPSLaughlinMatrix::ComputeSiteDependentMatrices not implemented for the torus geometry" << endl;
+      exit(0);
+    }
+   if (this->BosonicVersion == false)
+     {
+       cout << "FQHEMPSLaughlinMatrix::ComputeSiteDependentMatrices only works using the MPS bosonic convention" << endl;
+       exit(0);      
+     }
+   if (this->SiteDependentMatrixNbrOrbitals != 0)
+    {
+      for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+	{
+	  delete[] this->SiteDependentMatrices[i];
+	  delete[] this->SiteDependentPhysicalIndices[i];
+	}
+      delete[] this->SiteDependentMatrices;
+      delete[] this->SiteDependentMatrixOrbitalIndices;
+      delete[] this->NbrSiteDependentMatrices;
+      delete[] this->SiteDependentPhysicalIndices;
+    }
+
+
+  int OrbitalZeroIndex = -1;
+   int OrbitalMinusOneIndex = -1;
+   if (initialOrbitalIndex < lastOrbitalIndex)
+     {
+       this->SiteDependentMatrixNbrOrbitals = lastOrbitalIndex - initialOrbitalIndex + 1;
+       this->SiteDependentMatrixOrbitalIndices = new int [this->SiteDependentMatrixNbrOrbitals];
+       for (int i = initialOrbitalIndex; i <= lastOrbitalIndex; ++i)
+	 {
+	   this->SiteDependentMatrixOrbitalIndices[i - initialOrbitalIndex] = i;
+	   if (i == 0)
+	     {
+	       OrbitalZeroIndex = i - initialOrbitalIndex;
+	     }
+	   else
+	     {
+	       if (i == -1)
+		 {
+		   OrbitalMinusOneIndex = i - initialOrbitalIndex;
+		 }	       
+	     }
+	 }
+     }
+   else
+     {
+       this->SiteDependentMatrixNbrOrbitals = initialOrbitalIndex - lastOrbitalIndex  + 1;
+       this->SiteDependentMatrixOrbitalIndices = new int [this->SiteDependentMatrixNbrOrbitals];
+       for (int i = initialOrbitalIndex; i >= lastOrbitalIndex; --i)
+	 {
+	   this->SiteDependentMatrixOrbitalIndices[i - lastOrbitalIndex] = i;
+	   if (i == 0)
+	     {
+	       OrbitalZeroIndex = i - lastOrbitalIndex;
+	     }
+	   else
+	     {
+	       if (i == -1)
+		 {
+		   OrbitalMinusOneIndex = i - lastOrbitalIndex;
+		 }	       
+	     }
+	 }
+     }
+   if (OrbitalZeroIndex == -1)
+     {
+       OrbitalZeroIndex = this->SiteDependentMatrixNbrOrbitals;
+     }
+   this->NbrSiteDependentMatrices = new int [this->SiteDependentMatrixNbrOrbitals];
+   this->SiteDependentMatrices = new SparseRealMatrix* [this->SiteDependentMatrixNbrOrbitals];
+   this->SiteDependentPhysicalIndices = new unsigned long* [this->SiteDependentMatrixNbrOrbitals];
+
+   //  computing all site-dependent matrices for positive orbital indices
+   SparseRealMatrix* TmpMatrices = new SparseRealMatrix [this->NbrBMatrices];
+   int TmpNbrMatrices = 0;
+   if ((OrbitalZeroIndex != this->SiteDependentMatrixNbrOrbitals) || (this->SiteDependentMatrixOrbitalIndices[0] > 0))
+     {
+       bool TmpFlag = false;
+       TmpNbrMatrices = 0;
+       for (int i = 0; (i < this->NbrBMatrices) && (TmpFlag == false); ++i)
+	 {
+	   TmpMatrices[i] = MemoryEfficientMultiply(this->RealBMatrices[i], this->InverseBMatrixZero);
+	   if (TmpMatrices[i].GetNbrRow() > 0)
+	     {
+	       ++TmpNbrMatrices;
+	     }
+	   else
+	     {
+	       TmpFlag = true;
+	     }
+	 }
+       if (OrbitalZeroIndex == this->SiteDependentMatrixNbrOrbitals)
+	 {
+	   int TmpIndex = 0;
+	   while (TmpIndex < this->SiteDependentMatrixOrbitalIndices[0])
+	     {
+	       TmpFlag = false;
+	       SparseRealMatrix* TmpMatrices2 = new SparseRealMatrix [TmpNbrMatrices];
+	       TmpMatrices2[0] = TmpMatrices[0];
+	       int TmpNbrMatrices2 = 1;
+	       for (int i = 1; (i < TmpNbrMatrices) && (TmpFlag == false); ++i)
+		 {
+		   SparseRealMatrix TmpMatrix = MemoryEfficientMultiply(this->RealBMatrices[0], TmpMatrices[i]);
+		   TmpMatrices2[i] = MemoryEfficientMultiply(TmpMatrix, this->InverseBMatrixZero);
+		   if (TmpMatrices2[i].GetNbrRow() > 0)
+		     {
+		       ++TmpNbrMatrices2;
+		     }
+		   else
+		     {
+		       TmpFlag = true;
+		     }
+		 }
+	       delete[] TmpMatrices;
+	       TmpNbrMatrices = TmpNbrMatrices2;
+	       TmpMatrices = TmpMatrices2;
+	       ++TmpIndex;
+	     }
+	   OrbitalZeroIndex = 0;
+	 }
+       this->NbrSiteDependentMatrices[OrbitalZeroIndex] = TmpNbrMatrices;
+       this->SiteDependentMatrices[OrbitalZeroIndex] = new SparseRealMatrix[TmpNbrMatrices];
+       for (int i = 0; i < TmpNbrMatrices; ++i)
+	 {	   
+	   this->SiteDependentMatrices[OrbitalZeroIndex][i] = TmpMatrices[i];
+	 }
+       OrbitalZeroIndex++;
+     }
+   for (; OrbitalZeroIndex < this->SiteDependentMatrixNbrOrbitals; ++OrbitalZeroIndex)
+     {
+       bool TmpFlag = false;
+       TmpMatrices[0] = this->SiteDependentMatrices[OrbitalZeroIndex - 1][0];
+       TmpNbrMatrices = 1;
+       for (int i = 1; (i < this->NbrSiteDependentMatrices[OrbitalZeroIndex - 1]) && (TmpFlag == false); ++i)
+	 {
+	   SparseRealMatrix TmpMatrix = MemoryEfficientMultiply(this->RealBMatrices[0], this->SiteDependentMatrices[OrbitalZeroIndex - 1][i]);
+	   TmpMatrices[i] = MemoryEfficientMultiply(TmpMatrix, this->InverseBMatrixZero);
+	   if (TmpMatrices[i].GetNbrRow() > 0)
+	     {
+	       ++TmpNbrMatrices;
+	     }
+	   else
+	     {
+	       TmpFlag = true;
+	     }
+	 }
+       this->NbrSiteDependentMatrices[OrbitalZeroIndex] = TmpNbrMatrices;
+       this->SiteDependentMatrices[OrbitalZeroIndex] = new SparseRealMatrix[this->NbrSiteDependentMatrices[OrbitalZeroIndex]];
+       for (int i = 0; i < this->NbrSiteDependentMatrices[OrbitalZeroIndex]; ++i)
+	 {
+	   this->SiteDependentMatrices[OrbitalZeroIndex][i] = TmpMatrices[i];
+	 }
+     }
+
+   //  computing all site-dependent matrices for negative orbital indices
+   if ((OrbitalMinusOneIndex != -1) || (this->SiteDependentMatrixOrbitalIndices[this->SiteDependentMatrixNbrOrbitals - 1] < 0))
+     {
+       bool TmpFlag = false;
+       TmpNbrMatrices = 0;
+       for (int i = 0; i < (this->NbrBMatrices) && (TmpFlag == false); ++i)
+	 {
+	   TmpMatrices[i] = MemoryEfficientMultiply(this->InverseBMatrixZero, this->RealBMatrices[i]);
+	   if (TmpMatrices[i].GetNbrRow() > 0)
+	     {
+	       ++TmpNbrMatrices;
+	     }
+	   else
+	     {
+	       TmpFlag = true;
+	     }
+	 }
+       if (OrbitalMinusOneIndex == -1)
+	 {
+	   TmpFlag = false;
+	   int TmpIndex = -1;
+	   while (TmpIndex > this->SiteDependentMatrixOrbitalIndices[this->SiteDependentMatrixNbrOrbitals - 1])
+	     {
+	       SparseRealMatrix* TmpMatrices2 = new SparseRealMatrix [TmpNbrMatrices];
+	       TmpMatrices2[0] = TmpMatrices[0];
+	       int TmpNbrMatrices2 = 1;	   
+	       for (int i = 1; (i < TmpNbrMatrices) && (TmpFlag == false); ++i)
+		 {
+		   SparseRealMatrix TmpMatrix = MemoryEfficientMultiply(this->InverseBMatrixZero, TmpMatrices[i]);
+		   TmpMatrices2[i] = MemoryEfficientMultiply(TmpMatrix, this->RealBMatrices[0]);
+		   if (TmpMatrices2[i].GetNbrRow() > 0)
+		     {
+		       ++TmpNbrMatrices2;
+		     }
+		   else
+		     {
+		       TmpFlag = true;
+		     }
+		 }
+	       delete[] TmpMatrices;
+	       TmpNbrMatrices = TmpNbrMatrices2;
+	       TmpMatrices = TmpMatrices2;
+	       --TmpIndex;
+	     }
+	   OrbitalMinusOneIndex = this->SiteDependentMatrixNbrOrbitals - 1;
+	 }
+       this->NbrSiteDependentMatrices[OrbitalMinusOneIndex] = TmpNbrMatrices;
+       this->SiteDependentMatrices[OrbitalMinusOneIndex] = new SparseRealMatrix[TmpNbrMatrices];
+       for (int i = 0; i < TmpNbrMatrices; ++i)
+	 {	   
+	   this->SiteDependentMatrices[OrbitalMinusOneIndex][i] = TmpMatrices[i];
+	 }
+       OrbitalMinusOneIndex--;
+     }
+   for (; OrbitalMinusOneIndex >= 0; --OrbitalMinusOneIndex)
+     {
+       bool TmpFlag = false;
+       TmpMatrices[0] = this->SiteDependentMatrices[OrbitalMinusOneIndex + 1][0];
+       TmpNbrMatrices = 1;
+       for (int i = 1; (i < this->NbrSiteDependentMatrices[OrbitalMinusOneIndex + 1]) && (TmpFlag == false); ++i)
+	 {
+	   SparseRealMatrix TmpMatrix = MemoryEfficientMultiply(this->InverseBMatrixZero, this->SiteDependentMatrices[OrbitalMinusOneIndex + 1][i]);
+	   TmpMatrices[i] = MemoryEfficientMultiply(TmpMatrix, this->RealBMatrices[0]);
+	   if (TmpMatrices[i].GetNbrRow() > 0)
+	     {
+	       ++TmpNbrMatrices;
+	     }
+	   else
+	     {
+	       TmpFlag = true;
+	     }
+	 }
+       this->NbrSiteDependentMatrices[OrbitalMinusOneIndex] = TmpNbrMatrices;
+       this->SiteDependentMatrices[OrbitalMinusOneIndex] = new SparseRealMatrix[this->NbrSiteDependentMatrices[OrbitalMinusOneIndex]];
+       for (int i = 0; i < this->NbrSiteDependentMatrices[OrbitalMinusOneIndex]; ++i)
+	 {
+	   this->SiteDependentMatrices[OrbitalMinusOneIndex][i] = TmpMatrices[i];
+	 }
+     }
+
+   for (int i = 0; i < this->SiteDependentMatrixNbrOrbitals; ++i)
+     {
+       this->SiteDependentPhysicalIndices[i] = new unsigned long[this->NbrSiteDependentMatrices[i]];
+       for (int j = 0; j < this->NbrSiteDependentMatrices[i]; ++j)
+	 {
+	   this->SiteDependentPhysicalIndices[i][j] = (unsigned long) j;
+	 }
+     }
+   
+   delete[] TmpMatrices;
+}
+
+// get the site-dependent matrices (real version) computed through ComputeSiteDependentMatrices
+//
+// siteDependentMatrices = reference on the site-dependent matrices
+// nbrSiteDependentMatrices = reference on the array providing the number of site-dependent matrices per orbital
+// siteDependentMatrixOrbitalIndices = reference on the array providing the orbital indices 
+// siteDependentPhysicalIndices = reference on the array providing the physical indices associated to each site-dependent matrix
+// return value = number of orbitals covered by the site-dependent matrices
+
+int FQHEMPSLaughlinMatrix::GetSiteDependentMatrices(SparseRealMatrix**& siteDependentMatrices, int*& nbrSiteDependentMatrices, int*& siteDependentMatrixOrbitalIndices, unsigned long**& siteDependentPhysicalIndices)
+{
+  siteDependentMatrices = this->SiteDependentMatrices;
+  nbrSiteDependentMatrices = this->NbrSiteDependentMatrices;
+  siteDependentMatrixOrbitalIndices = this->SiteDependentMatrixOrbitalIndices;
+  siteDependentPhysicalIndices = this->SiteDependentPhysicalIndices;
+  return this->SiteDependentMatrixNbrOrbitals;
+}
+  

@@ -51,6 +51,8 @@ class AbstractHilbertSpace;
 class AbstractBitmapPicture;
 class SparseRealMatrix;
 class SparseComplexMatrix;
+class IntegerMatrix;
+class LongIntegerMatrix;
 
 
 class AbstractHamiltonian
@@ -142,6 +144,20 @@ class AbstractHamiltonian
   // return value = reference on  corresponding real matrix 
   virtual SparseRealMatrix& GetHamiltonian (SparseRealMatrix& M);
 
+  // store the real part of Hamiltonian into an integer matrix
+  //
+  // M = reference on matrix where Hamiltonian has to be stored
+  // scalingFactor = use an additional scaling factor before converting coefficients into integers
+  // return value = reference on corresponding matrix 
+  virtual IntegerMatrix& GetHamiltonian (IntegerMatrix& M, double scalingFactor = 1.0);
+  
+  // store the real part of Hamiltonian into a long integer matrix
+  //
+  // M = reference on matrix where Hamiltonian has to be stored
+  // scalingFactor = use an additional scaling factor before converting coefficients into integers
+  // return value = reference on corresponding matrix 
+  virtual LongIntegerMatrix& GetHamiltonian (LongIntegerMatrix& M, double scalingFactor = 1.0);
+  
   // store real part of Hamiltonian into a matrix
   //
   // M = reference on matrix where Hamiltonian has to be stored

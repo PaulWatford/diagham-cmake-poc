@@ -378,6 +378,13 @@ class AbstractFQHEMPSMatrix
   // return value = reference on the output stream
   virtual ostream& PrintPhysicalIndex(ostream& str, int index);
 
+  // get a given physical index at a given orbital for the site-dependent MPS
+  //
+  // orbitalIndex = orbital index 
+  // index = index to retrieve
+  // configuration = array where the description of the physical index will be stored
+  virtual void GetSiteDependentPhysicalIndex(int orbitalIndex, int index, unsigned long* configuration);
+
   // print a given state of the auxiliary space
   //
   // str = reference on the output stream
@@ -391,6 +398,21 @@ class AbstractFQHEMPSMatrix
   // return value = string containing the label
   virtual char* GetAuxiliarySpaceLabel(int index);
 
+  // compute the site-dependent matrices
+  //
+  // initialOrbitalIndex = index of the first orbital
+  // lastOrbitalIndex = index of the last orbital
+  virtual void ComputeSiteDependentMatrices(int initialOrbitalIndex, int lastOrbitalIndex);
+
+  // get the site-dependent matrices (real version) computed through ComputeSiteDependentMatrices
+  //
+  // siteDependentMatrices = reference on the site-dependent matrices
+  // nbrSiteDependentMatrices = reference on the array providing the number of site-dependent matrices per orbital
+  // siteDependentMatrixOrbitalIndices = reference on the array providing the orbital indices 
+  // siteDependentPhysicalIndices = reference on the array providing the physical indices associated to each site-dependent matrix
+  // return value = number of orbitals covered by the site-dependent matrices
+  virtual int GetSiteDependentMatrices(SparseRealMatrix**& siteDependentMatrices, int*& nbrSiteDependentMatrices, int*& siteDependentMatrixOrbitalIndices, unsigned long**& siteDependentPhysicalIndices);
+  
 protected:
 
   // load the specific informations from the file header

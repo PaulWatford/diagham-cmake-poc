@@ -73,6 +73,10 @@ class SpinChainHamiltonian : public AbstractHamiltonian
 
  public:
 
+  // default constructor
+  //
+  SpinChainHamiltonian();
+
   // constructor from default data
   //
   // chain = pointer to Hilbert space of the associated system

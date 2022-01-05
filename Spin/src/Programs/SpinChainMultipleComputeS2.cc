@@ -281,7 +281,7 @@ int main(int argc, char** argv)
 		      SzValueColumnIndex = Manager.GetInteger("sz-column");
 		    }
 		  int SzSymValueColumnIndex = 1;
-		  if (Manager.GetInteger("szssym-column") >= 0)
+		  if (Manager.GetInteger("szsym-column") >= 0)
 		    {
 		      SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
 		    }
@@ -382,7 +382,7 @@ int main(int argc, char** argv)
 		      SzValueColumnIndex = Manager.GetInteger("sz-column");
 		    }
 		  int SzSymValueColumnIndex = 1;
-		  if (Manager.GetInteger("szssym-column") >= 0)
+		  if (Manager.GetInteger("szsym-column") >= 0)
 		    {
 		      SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
 		    }
@@ -478,7 +478,7 @@ int main(int argc, char** argv)
 			  MomentumValueColumnIndex = Manager.GetInteger("momentum-column");
 			}
 		      int SzSymValueColumnIndex = 2;
-		      if (Manager.GetInteger("szssym-column") >= 0)
+		      if (Manager.GetInteger("szsym-column") >= 0)
 			{
 			  SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
 			}
@@ -591,7 +591,7 @@ int main(int argc, char** argv)
 			  MomentumValueColumnIndex = Manager.GetInteger("momentum-column");
 			}
 		      int SzSymValueColumnIndex = 2;
-		      if (Manager.GetInteger("szssym-column") >= 0)
+		      if (Manager.GetInteger("szsym-column") >= 0)
 			{
 			  SzSymValueColumnIndex = Manager.GetInteger("szsym-column");
 			}

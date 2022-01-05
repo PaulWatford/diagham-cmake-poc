@@ -579,6 +579,18 @@ void AbstractFQHEMPSMatrix::GetPhysicalIndex(int index, unsigned long* configura
     }
 }
 
+// get a given physical index at a given orbital for the site-dependent MPS
+//
+// orbitalIndex = orbital index 
+// index = index to retrieve
+// configuration = array where the description of the physical index will be stored
+
+void AbstractFQHEMPSMatrix::GetSiteDependentPhysicalIndex(int orbitalIndex, int index, unsigned long* configuration)
+{
+  this->GetPhysicalIndex(index, configuration);
+}
+
+
 // print a given physical index
 //
 // str = reference on the output stream
@@ -595,6 +607,7 @@ ostream& AbstractFQHEMPSMatrix::PrintPhysicalIndex(ostream& str, int index)
       str << " " << TmpConfiguration[i];
     }
   delete[] TmpConfiguration;
+  return str;
 }
 
 // get the array where the site-dependent matrices are stored
@@ -694,4 +707,29 @@ char* AbstractFQHEMPSMatrix::GetAuxiliarySpaceLabel(int index)
       sprintf (TmpString, "(x=%d, Q=%d, P=%d, i=%d)", TmpCFTSector, TmpQ, TmpPLevel, index);
     }
   return TmpString;
+}
+
+// compute the site-dependent matrices
+//
+// initialOrbitalIndex = index of the first orbital
+// lastOrbitalIndex = index of the last orbital
+
+void AbstractFQHEMPSMatrix::ComputeSiteDependentMatrices(int initialOrbitalIndex, int lastOrbitalIndex)
+{
+  cout << "ComputeSiteDependentMatrices is not available for " << this->GetName() << endl;
+}
+
+
+// get the site-dependent matrices (real version) computed through ComputeSiteDependentMatrices
+//
+// siteDependentMatrices = reference on the site-dependent matrices
+// nbrSiteDependentMatrices = reference on the array providing the number of site-dependent matrices per orbital
+// siteDependentMatrixOrbitalIndices = reference on the array providing the orbital indices 
+// siteDependentPhysicalIndices = reference on the array providing the physical indices associated to each site-dependent matrix
+// return value = number of orbitals covered by the site-dependent matrices
+
+int AbstractFQHEMPSMatrix::GetSiteDependentMatrices(SparseRealMatrix**& siteDependentMatrices, int*& nbrSiteDependentMatrices, int*& siteDependentMatrixOrbitalIndices, unsigned long**& siteDependentPhysicalIndices)
+{
+  cout << "GetSiteDependentMatrices is not available for " << this->GetName() << endl;
+  return 0;
 }

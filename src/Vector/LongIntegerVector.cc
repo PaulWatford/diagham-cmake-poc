@@ -719,20 +719,17 @@ bool LongIntegerVector::WriteAsciiVector (const char* fileName)
   ofstream File;
   File.precision(14);
   File.open(fileName, ios::binary | ios::out);
-  if (this->Dimension == -1)
-    {
-      long ReducedDimension = this->LargeDimension - 1;
-      for (long i = 0; i < ReducedDimension; ++i)
-	File << this->Components[i] << "  ";
-      File << this->Components[ReducedDimension] << endl;  
-    }
-  else
-    {
-      int ReducedDimension = this->Dimension - 1;
-      for (int i = 0; i < ReducedDimension; ++i)
-	File << this->Components[i] << "  ";
-      File << this->Components[ReducedDimension] << endl;  
-    }
+#ifdef __GMP__
+  long ReducedDimension = this->LargeDimension - 1l;
+  for (long i = 0; i < ReducedDimension; ++i)
+    File << this->Components[i] << "  ";
+  File << this->Components[ReducedDimension] << endl;  
+#else
+  long ReducedDimension = this->LargeDimension - 1l;
+  for (long i = 0; i < ReducedDimension; ++i)
+    File << (long) this->Components[i] << "  ";
+  File << (long) this->Components[ReducedDimension] << endl;  
+#endif
   File.close();
   this->Delocalize();
   return true;
@@ -923,6 +920,12 @@ bool LongIntegerVector::WriteAsciiVector (const char* fileName)
 ostream& operator << (ostream& str, LongIntegerVector& v)
 {
   for (long i = 0; i < v.LargeDimension; ++i)
-    str << v.Components[i] << endl;
+    {
+#ifdef __GMP__
+      str << v.Components[i] << endl;
+#else
+      str << (long) v.Components[i] << endl;
+#endif
+    }
   return str;
 }

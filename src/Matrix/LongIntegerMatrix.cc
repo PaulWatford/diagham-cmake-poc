@@ -1026,13 +1026,29 @@ bool LongIntegerMatrix::ReadMatrix (ifstream& file)
     this->Columns[i] = LongIntegerVector (this->NbrRow, true);
   int TmpColumnIndex;
   int TmpRowIndex;
+#ifdef __GMP__
   for (int i = 0; i < this->NbrRow; ++i)
-    for (int j = 0; j < this->NbrColumn; ++j)
-      {
-	file >> TmpRowIndex;
-	file >> TmpColumnIndex;
-	file >> this->Columns[TmpColumnIndex][TmpRowIndex];
-      }  
+    {
+      for (int j = 0; j < this->NbrColumn; ++j)
+	{
+	  file >> TmpRowIndex;
+	  file >> TmpColumnIndex;
+	  file >> this->Columns[TmpColumnIndex][TmpRowIndex];
+	}
+    }
+#else
+  long Tmp;
+  for (int i = 0; i < this->NbrRow; ++i)
+    {
+      for (int j = 0; j < this->NbrColumn; ++j)
+	{
+	  file >> TmpRowIndex;
+	  file >> TmpColumnIndex;
+	  file >> Tmp;
+	  this->Columns[TmpColumnIndex][TmpRowIndex] = (LONGLONG) Tmp;
+	}
+    }
+#endif
   return true;
 }
 

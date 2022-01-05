@@ -206,9 +206,6 @@ int main(int argc, char** argv)
 		  Hamiltonian->GetHamiltonian(TmpMatrix);
 #ifdef __GMP__
 		  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
-#else
-		  LONGLONG* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
-#endif		 
 		  char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
 		  sprintf (PolynomialOutputFileName, "%s_sz_%d_m_%d.charpol", OutputFileName, InitalSzValue, Mirror);		  
 		  ofstream OutputFile;
@@ -220,6 +217,9 @@ int main(int argc, char** argv)
 		    }
 		  OutputFile << endl;
 		  OutputFile.close();
+#else
+		  cout << "GMP library is required" << endl;
+#endif		 
 
 
 		  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
@@ -285,10 +285,11 @@ int main(int argc, char** argv)
 	  
 	  LongIntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
 	  Hamiltonian->GetHamiltonian(TmpMatrix);
+#ifdef __GMP__
 	  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
 
 
-		  char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
+	  char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
 	  sprintf (PolynomialOutputFileName, "%s_sz_%d.charpol", OutputFileName, InitalSzValue);
 	  ofstream OutputFile;
 	  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
@@ -299,6 +300,9 @@ int main(int argc, char** argv)
 	    }
 	  OutputFile << endl;
 	  OutputFile.close();
+#else
+		  cout << "GMP library is required" << endl;
+#endif		 
 	  	    
 	  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName, FirstRun, TmpEigenstateString);
 	  MainTaskOperation TaskOperation (&Task);

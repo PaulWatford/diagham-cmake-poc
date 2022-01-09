@@ -268,7 +268,7 @@ void LongIntegerMatrix::AddToMatrixElement(int i, int j, const long& x)
   else
     {
       unsigned long Tmp = (unsigned long) (-x);
-      mpz_add_ui(this->Columns[j].Components[i], this->Columns[j].Components[i], (unsigned long) Tmp);
+      mpz_sub_ui(this->Columns[j].Components[i], this->Columns[j].Components[i], (unsigned long) Tmp);
     }
 #else  
   this->Columns[j].Components[i] += x;
@@ -1117,36 +1117,84 @@ mpz_t* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
   mpz_neg(TmpTrace, TmpTrace);
   mpz_set(PolynomialCoefficients[this->NbrRow - 1], TmpTrace);
 
+  int* TmpNbrMatrixElements = new int[this->NbrRow];
+  int** TmpMatrixElementPositions = new int*[this->NbrRow];
+  int* TmpMatrixElementPositions2 = new int[this->NbrRow];  
+  for (int i = 0; i < this->NbrRow; ++i)
+    {
+      TmpNbrMatrixElements[i] = 0;
+      for (int j = 0; j < this->NbrColumn; ++j)
+	{
+	  if (mpz_sgn(this->Columns[i][j]) != 0)
+	    {
+	      TmpMatrixElementPositions2[TmpNbrMatrixElements[i]] = j;
+	      TmpNbrMatrixElements[i]++;
+	    }	  
+	}
+      if (TmpNbrMatrixElements[i] > 0)
+	{
+	  TmpMatrixElementPositions[i] = new int[TmpNbrMatrixElements[i]];
+	  for (int j = 0; j < TmpNbrMatrixElements[i]; ++j)
+	    {
+	      TmpMatrixElementPositions[i][j] =  TmpMatrixElementPositions2[j];
+	    }
+	}
+      else
+	{
+	  TmpMatrixElementPositions[i] = 0;
+	}
+    }     
+  delete[]  TmpMatrixElementPositions2;
+  
   for (int k = this->NbrRow - 2; k >= 0; --k)
     {
       for (int i = 0; i < this->NbrRow; ++i)
 	{
 	  mpz_add (TmpMatrix.Columns[i][i], TmpMatrix.Columns[i][i], PolynomialCoefficients[k + 1]);
 	}      
-      //     cout << TmpMatrix << endl;
+      // for (int i = 0; i < this->NbrRow; ++i)
+      // 	{
+      // 	  for (int j = 0; j < this->NbrColumn; ++j)
+      // 	    {
+      // 	      ScalarProduct(TmpMatrix2.Columns[i][j], this->Columns[i], TmpMatrix.Columns[j]);
+      // 	    }	  
+      // 	}
       for (int i = 0; i < this->NbrRow; ++i)
 	{
-	  for (int j = 0; j < this->NbrColumn; ++j)
+	  for (int j = i; j < this->NbrColumn; ++j)
 	    {
-	      ScalarProduct(TmpMatrix2.Columns[i][j], this->Columns[i], TmpMatrix.Columns[j]);
+	      mpz_set_ui(TmpMatrix2.Columns[i][j], 0ul);
+	      for (int l = 0; l < TmpNbrMatrixElements[i]; ++l)
+		{
+		  mpz_addmul(TmpMatrix2.Columns[i][j], this->Columns[i][TmpMatrixElementPositions[i][l]], TmpMatrix.Columns[j][TmpMatrixElementPositions[i][l]]);
+		}
 	    }	  
+	}
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  for (int j = 0; j < i; ++j)
+	    {
+	      mpz_set(TmpMatrix2.Columns[i][j], TmpMatrix2.Columns[j][i]);
+	    }
 	}
       LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
       TmpMatrix2 = TmpMatrix;
       TmpMatrix = TmpMatrix3;
-      // cout << TmpMatrix << endl;
-      // cout << "trace = " << TmpMatrix.Trace() << endl;
       TmpMatrix.Trace(TmpTrace);
       mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->NbrRow - k));
       mpz_neg(TmpTrace, TmpTrace);
       mpz_set(PolynomialCoefficients[k], TmpTrace);      
     }
-  //  for (int k = this->NbrRow; k >= 0; --k)
-  // for (int k = 0; k <= this->NbrRow; ++k)
-  //   {
-  //     cout << PolynomialCoefficients[k] << endl;
-  //   }  
   mpz_clear(TmpTrace);
+  for (int i = 0; i < this->NbrRow; ++i)
+    {
+      if (TmpNbrMatrixElements[i] > 0)
+	{
+	  delete[] TmpMatrixElementPositions[i];
+	}
+    }
+  delete[] TmpNbrMatrixElements;
+  delete[] TmpMatrixElementPositions;
   return PolynomialCoefficients;
 }
 #else
@@ -1176,7 +1224,9 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
 	{
 	  for (int j = 0; j < this->NbrColumn; ++j)
 	    {
-	      TmpMatrix2.Columns[i][j] = this->Columns[i] * TmpMatrix.Columns[j];
+		{
+		  TmpMatrix2.Columns[i][j] = this->Columns[i] * TmpMatrix.Columns[j];
+		}
 	    }	  
 	}
       LongIntegerMatrix TmpMatrix3 = TmpMatrix2;

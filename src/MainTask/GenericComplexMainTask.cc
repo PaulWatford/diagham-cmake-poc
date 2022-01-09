@@ -608,6 +608,22 @@ int GenericComplexMainTask::ExecuteMainTask()
 	      if (this->ComputeEnergyFlag == true)
 		File << " " << (HRep(0, 0)  - this->EnergyShift) ;
 	      File << endl;	      
+	      if (this->OutputFileName != 0)
+		{
+		  this->WriteResult(File, HRep(0, 0)  - this->EnergyShift, false);
+		  if (this->ComputeEnergyFlag == true)
+		    File << " " << (HRep(0, 0)  - this->EnergyShift) ;
+		  File << endl;	
+		}      
+	      if (this->EvaluateAllEigenvectors == true)
+		{
+		  ComplexMatrix Q(1, 1, true);
+		  Q.SetMatrixElement(0, 0, 1.0);
+		  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 16];
+		  sprintf (TmpVectorName, "%s.eigenvec.mat", this->EigenvectorFileName);
+		  Q.WriteMatrix(TmpVectorName);
+		  delete[] TmpVectorName;
+		}
 	      if (this->EvaluateEigenvectors)
 		{
 		  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 16];

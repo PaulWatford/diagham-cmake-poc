@@ -6,9 +6,10 @@
 //                  Copyright (C) 2001-2002 Nicolas Regnault                  //
 //                                                                            //
 //                                                                            //
-//                       class of spin chain hamiltonian                      //
+//              class of spin chain hamiltonian implementing the              //
+//                             O'Brien-Fendley model                          //
 //                                                                            //
-//                        last modification : 15/03/2001                      //
+//                        last modification : 06/01/2022                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -28,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#include "Hamiltonian/SpinChainAKLTHamiltonian.h"
+#include "Hamiltonian/SpinChainOBrienFendleyHamiltonian.h"
 #include "Vector/RealVector.h"
 #include "Vector/ComplexVector.h"
 #include "Matrix/RealTriDiagonalSymmetricMatrix.h"
@@ -45,13 +46,6 @@ using std::endl;
 using std::ostream;
 
 
-// default constructor
-//
-
-SpinChainAKLTHamiltonian::SpinChainAKLTHamiltonian()
-{
-}
-
 // constructor from default datas
 //
 // chain = reference on Hilbert space of the associated system
@@ -59,12 +53,13 @@ SpinChainAKLTHamiltonian::SpinChainAKLTHamiltonian()
 // squareFactor = numerical factor in front of the 1/3 (S_i S_i+1)^2 term
 // periodicBoundaryConditions = true if periodic boundary conditions have to be used
 
-SpinChainAKLTHamiltonian::SpinChainAKLTHamiltonian(AbstractSpinChain* chain, int nbrSpin, double squareFactor, bool periodicBoundaryConditions)
+SpinChainOBrienFendleyHamiltonian::SpinChainOBrienFendleyHamiltonian(AbstractSpinChain* chain, int nbrSpin, bool periodicBoundaryConditions)
 {
   this->Chain = chain;
   this->NbrSpin = nbrSpin;
   this->SzSzContributions = new double [this->Chain->GetHilbertSpaceDimension()];
-  this->SquareFactor = squareFactor / 3.0;
+  this->SquareFactor = 1.0;
+  this->LinearFactor = -1.0;
   this->PeriodicBoundaryConditions = periodicBoundaryConditions;
   this->EvaluateDiagonalMatrixElements();
 }
@@ -72,65 +67,10 @@ SpinChainAKLTHamiltonian::SpinChainAKLTHamiltonian(AbstractSpinChain* chain, int
 // destructor
 //
 
-SpinChainAKLTHamiltonian::~SpinChainAKLTHamiltonian() 
+SpinChainOBrienFendleyHamiltonian::~SpinChainOBrienFendleyHamiltonian() 
 {
-  delete[] this->SzSzContributions;
 }
 
-// set Hilbert space
-//
-// hilbertSpace = pointer to Hilbert space to use
-
-void SpinChainAKLTHamiltonian::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
-{
-  delete[] this->SzSzContributions;
-  this->Chain = (AbstractSpinChain*) hilbertSpace;
-  this->SzSzContributions = new double [this->Chain->GetHilbertSpaceDimension()];
-  this->EvaluateDiagonalMatrixElements();
-}
-
-// get Hilbert space on which Hamiltonian acts
-//
-// return value = pointer to used Hilbert space
-
-AbstractHilbertSpace* SpinChainAKLTHamiltonian::GetHilbertSpace ()
-{
-  return this->Chain;
-}
-
-// set chain
-// 
-// chain = reference on Hilbert space of the associated system
-// return value = reference on current Hamiltonian
-
-SpinChainAKLTHamiltonian& SpinChainAKLTHamiltonian::SetChain(AbstractSpinChain* chain)
-{  
-  delete[] this->SzSzContributions;
-  this->Chain = chain;
-  this->SzSzContributions = new double [this->Chain->GetHilbertSpaceDimension()];
-  this->EvaluateDiagonalMatrixElements();
-  return *this;  
-}
-
-// return dimension of Hilbert space where Hamiltonian acts
-//
-// return value = corresponding matrix elementdimension
-
-int SpinChainAKLTHamiltonian::GetHilbertSpaceDimension ()
-{
-  return this->Chain->GetHilbertSpaceDimension();
-}
-
-// shift Hamiltonian from a given energy
-//
-// shift = shift value
-
-void SpinChainAKLTHamiltonian::ShiftHamiltonian (double shift)
-{
-  for (int i = 0; i < this->Chain->GetHilbertSpaceDimension(); i ++)
-    this->SzSzContributions[i] += shift;
-}
-  
 // multiply a vector by the current hamiltonian for a given range of indices 
 // and add result to another vector, low level function (no architecture optimization)
 //
@@ -140,8 +80,8 @@ void SpinChainAKLTHamiltonian::ShiftHamiltonian (double shift)
 // nbrComponent = number of components to evaluate
 // return value = reference on vector where result has been stored
 
-RealVector& SpinChainAKLTHamiltonian::LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
-							  int firstComponent, int nbrComponent)
+RealVector& SpinChainOBrienFendleyHamiltonian::LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+								   int firstComponent, int nbrComponent)
 {
   int LastComponent = firstComponent + nbrComponent;
   int dim = this->Chain->GetHilbertSpaceDimension();
@@ -161,35 +101,15 @@ RealVector& SpinChainAKLTHamiltonian::LowLevelAddMultiply(RealVector& vSource, R
 	  if (pos != dim)
 	    {
 	      Coef2 = 0.5 * Coef * TmpValue;
-	      vDestination[pos] += Coef2;
-	      Coef2 *= this->SquareFactor;
-	      vDestination[pos] += Coef2 * this->Chain->SziSzj(j, j + 1, i);
+	      vDestination[pos] += this->LinearFactor * Coef2;
 	    }
-	  pos = this->Chain->SmiSpjSmiSpj(j, j + 1, j, j+1, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
-	  pos = this->Chain->SmiSpjSmiSpj(j + 1, j, j, j+1, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
-	  pos = this->Chain->SziSzjSmiSpj(j, j + 1, j, j+1, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.5 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
-
 	  pos = this->Chain->SmiSpj(j + 1, j, i, Coef);
 	  if (pos != dim)
 	    {
 	      Coef2 = 0.5 * Coef * TmpValue;
-	      vDestination[pos] += Coef2;
-	      Coef2 *= this->SquareFactor;
-	      vDestination[pos] += Coef2 * this->Chain->SziSzj(j, j + 1, i);
+	      vDestination[pos] += this->LinearFactor * Coef2;
 	    }
-	  pos = this->Chain->SmiSpjSmiSpj(j, j + 1, j + 1, j, i, Coef);
+	  pos = this->Chain->SmiSpjSmiSpj(j, j + 1, j, j + 1, i, Coef);
 	  if (pos != dim)
 	    {
 	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
@@ -199,11 +119,6 @@ RealVector& SpinChainAKLTHamiltonian::LowLevelAddMultiply(RealVector& vSource, R
 	    {
 	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
 	    }	  
-	  pos = this->Chain->SziSzjSmiSpj(j, j + 1, j + 1, j, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.5 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
 	}
       if (this->PeriodicBoundaryConditions == true)
 	{
@@ -211,35 +126,15 @@ RealVector& SpinChainAKLTHamiltonian::LowLevelAddMultiply(RealVector& vSource, R
 	  if (pos != dim)
 	    {
 	      Coef2 = 0.5 * Coef * TmpValue;
-	      vDestination[pos] += Coef2;
-	      Coef2 *= this->SquareFactor;
-	      vDestination[pos] += Coef2 * this->Chain->SziSzj(MaxPos, 0, i);
+	      vDestination[pos] += this->LinearFactor * Coef2;
 	    }
-	  pos = this->Chain->SmiSpjSmiSpj(MaxPos, 0, MaxPos, 0, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
-	  pos = this->Chain->SmiSpjSmiSpj(0, MaxPos, MaxPos, 0, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
-	  pos = this->Chain->SziSzjSmiSpj(0, MaxPos, MaxPos, 0, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.5 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
-	  
 	  pos = this->Chain->SmiSpj(0, MaxPos, i, Coef);
 	  if (pos != dim)
 	    {
 	      Coef2 = 0.5 * Coef * TmpValue;
-	      vDestination[pos] += Coef2;
-	      Coef2 *= this->SquareFactor;
-	      vDestination[pos] += Coef2 * this->Chain->SziSzj(MaxPos, 0, i);
+	      vDestination[pos] += this->LinearFactor * Coef2;
 	    }
-	  pos = this->Chain->SmiSpjSmiSpj(MaxPos, 0, 0, MaxPos, i, Coef);
+	  pos = this->Chain->SmiSpjSmiSpj(MaxPos, 0, MaxPos, 0, i, Coef);
 	  if (pos != dim)
 	    {
 	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
@@ -249,11 +144,6 @@ RealVector& SpinChainAKLTHamiltonian::LowLevelAddMultiply(RealVector& vSource, R
 	    {
 	      vDestination[pos] += (0.25 * this->SquareFactor * Coef) * TmpValue;	      
 	    }	  
-	  pos = this->Chain->SziSzjSmiSpj(MaxPos, 0, 0, MaxPos, i, Coef);
-	  if (pos != dim)
-	    {
-	      vDestination[pos] += (0.5 * this->SquareFactor * Coef) * TmpValue;	      
-	    }	  
 	}
     }
   return vDestination;
@@ -262,27 +152,12 @@ RealVector& SpinChainAKLTHamiltonian::LowLevelAddMultiply(RealVector& vSource, R
 // evaluate diagonal matrix elements
 // 
 
-void SpinChainAKLTHamiltonian::EvaluateDiagonalMatrixElements()
+void SpinChainOBrienFendleyHamiltonian::EvaluateDiagonalMatrixElements()
 {
   int dim = this->Chain->GetHilbertSpaceDimension();
-
-  // SzSz part
-  double Tmp;
-  int MaxSite = this->NbrSpin - 1;
-  for (int i = 0; i < dim; i++)
+  for (int i = 0; i < dim; ++i)
     {
-      // SzSz part
       this->SzSzContributions[i] = 0.0;
-      for (int j = 0; j < MaxSite; j++)
-	{
-	  Tmp = this->Chain->SziSzj(j, j + 1, i);
-	  this->SzSzContributions[i] += (1.0 + (this->SquareFactor * Tmp)) * Tmp;
-	}
-      if (this->PeriodicBoundaryConditions == true)
-	{
-	  Tmp = this->Chain->SziSzj(MaxSite, 0, i);
-	  this->SzSzContributions[i] += (1.0 + (this->SquareFactor * Tmp)) * Tmp;
-	}
     }
 }
 

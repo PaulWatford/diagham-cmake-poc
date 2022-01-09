@@ -6,9 +6,10 @@
 //                  Copyright (C) 2001-2002 Nicolas Regnault                  //
 //                                                                            //
 //                                                                            //
-//                    class of spin chain AKLT hamiltonian                    //
+//              class of spin chain hamiltonian implementing the              //
+//                             O'Brien-Fendley model                          //
 //                                                                            //
-//                        last modification : 02/04/2013                      //
+//                        last modification : 06/01/2022                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -28,90 +29,43 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef SPINCHAINAKLTHAMILTONIAN_H
-#define SPINCHAINAKLTHAMILTONIAN_H
+#ifndef SPINCHAINTOBRIENFENDLEYHAMILTONIAN_H
+#define SPINCHAINTOBRIENFENDLEYHAMILTONIAN_H
 
 
 #include "config.h"
 #include "HilbertSpace/AbstractSpinChain.h"
-#include "Hamiltonian/AbstractHamiltonian.h"
+#include "Hamiltonian/SpinChainAKLTHamiltonian.h"
 
 
 #include <iostream>
 
 
 using std::ostream;
+
 class MathematicaOutput;
 
 
-class SpinChainAKLTHamiltonian : public AbstractHamiltonian
+class SpinChainOBrienFendleyHamiltonian : public SpinChainAKLTHamiltonian
 {
 
  protected:
   
-  // pointer to the Hilbert space of the system
-  AbstractSpinChain* Chain;
+  // numerical factor in front of the (S_i S_i+1) term
+  double LinearFactor;
 
-  // numerical factor in front of the 1/3 (S_i S_i+1)^2 term
-  double SquareFactor;
-
-  // number of spins
-  int NbrSpin;
-
-  // flag to indicate if  periodic boundary conditions should be used
-  bool PeriodicBoundaryConditions;
-
-  // array to store the diagonal contribution of the Hamiltonian
-  double* SzSzContributions;
-
- public:
-
-  // default constructor
-  //
-  SpinChainAKLTHamiltonian();
+public:
 
   // constructor
   //
   // chain = pointer to the Hilbert space of the system
   // nbrSpin = number of spins
-  // squareFactor = numerical factor in front of the 1/3 (S_i S_i+1)^2 term
   // periodicBoundaryConditions = true if periodic boundary conditions have to be used
-  SpinChainAKLTHamiltonian(AbstractSpinChain* chain, int nbrSpin, double squareFactor = 1.0, bool periodicBoundaryConditions = false);
+  SpinChainOBrienFendleyHamiltonian(AbstractSpinChain* chain, int nbrSpin, bool periodicBoundaryConditions = false);
 
   // destructor
   //
-  ~SpinChainAKLTHamiltonian();
-
-  // clone hamiltonian without duplicating datas
-  //
-  // return value = pointer to cloned hamiltonian
-  AbstractHamiltonian* Clone ();
-
-  // set chain
-  // 
-  // chain = pointer on Hilbert space of the associated system
-  // return value = reference on current Hamiltonian
-  SpinChainAKLTHamiltonian& SetChain(AbstractSpinChain* chain);
-
-  // set Hilbert space
-  //
-  // hilbertSpace = pointer to Hilbert space to use
-  void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
-
-  // get Hilbert space on which Hamiltonian acts
-  //
-  // return value = pointer to used Hilbert space
-  AbstractHilbertSpace* GetHilbertSpace ();
-
-  // return dimension of Hilbert space where Hamiltonian acts
-  //
-  // return value = corresponding matrix elementdimension
-  int GetHilbertSpaceDimension ();
-  
-  // shift Hamiltonian from a given energy
-  //
-  // shift = shift value
-  void ShiftHamiltonian (double shift);
+  ~SpinChainOBrienFendleyHamiltonian();
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)

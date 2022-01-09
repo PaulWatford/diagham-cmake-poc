@@ -681,11 +681,20 @@ int GenericRealMainTask::ExecuteMainTask()
 		    File << " " << (HRep(0, 0)  - this->EnergyShift) ;
 		  File << endl;	
 		}      
+	      if (this->EvaluateAllEigenvectors == true)
+		{
+		  RealMatrix Q(1, 1);
+		  Q.SetMatrixElement(0, 0, 1.0);
+		  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 16];
+		  sprintf (TmpVectorName, "%s.eigenvec.mat", this->EigenvectorFileName);
+		  Q.WriteMatrix(TmpVectorName);
+		  delete[] TmpVectorName;
+		}
 	      if (this->EvaluateEigenvectors)
 		{
 		  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 16];
 		  RealVector TmpEigenvector(1);
-		  TmpEigenvector[0]=1.0;
+		  TmpEigenvector[0] = 1.0;
 		  sprintf (TmpVectorName, "%s.0.vec", this->EigenvectorFileName);
 		  if (FakeComplex)
 		    {

@@ -45,6 +45,8 @@ class Matrix;
 class RealSymmetricMatrix;
 class HermitianMatrix;
 class AbstractHilbertSpace;
+class IntegerMatrix;
+class LongIntegerMatrix;
 #ifdef USE_OUTPUT
 class MathematicaOutput;
 #endif
@@ -92,11 +94,25 @@ class AbstractOperator
   // return value = reference on  corresponding hermitian matrix
   virtual HermitianMatrix& GetOperator (HermitianMatrix& M);
   
-  // store real part of operator into a real symmetric matrix
+  // store the real part of an operator into an integer matrix
   //
-  // M = reference on matrix where operator has to be stored
+  // M = reference on matrix where the operator has to be stored
   // return value = reference on  corresponding real symmetric matrix 
   virtual RealSymmetricMatrix& GetOperator (RealSymmetricMatrix& M);
+  
+  // store the real part of an operator into a long integer matrix
+  //
+  // M = reference on matrix where the operator has to be stored
+  // scalingFactor = use an additional scaling factor before converting coefficients into integers
+  // return value = reference on corresponding matrix 
+  virtual IntegerMatrix& GetOperator (IntegerMatrix& M, double scalingFactor = 1.0);
+  
+  // store the real part of Hamiltonian into a long integer matrix
+  //
+  // M = reference on matrix where Hamiltonian has to be stored
+  // scalingFactor = use an additional scaling factor before converting coefficients into integers
+  // return value = reference on corresponding matrix 
+  virtual LongIntegerMatrix& GetOperator (LongIntegerMatrix& M, double scalingFactor = 1.0);
   
   // store real part of operator into a matrix
   //

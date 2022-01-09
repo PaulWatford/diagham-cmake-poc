@@ -1,7 +1,14 @@
+#include "Hamiltonian/SpinChainOBrienFendleyHamiltonian.h"
 #include "Hamiltonian/SpinChainOBrienFendleyHamiltonianWithTranslations.h"
 #include "Hamiltonian/SpinChainOBrienFendleyRealHamiltonianWithTranslations.h"
 
+#include "HilbertSpace/Spin1_2Chain.h"
+#include "HilbertSpace/Spin1_2ChainNew.h"
+#include "HilbertSpace/Spin1_2ChainMirrorSymmetry.h"
+#include "HilbertSpace/Spin1Chain.h"
+#include "HilbertSpace/Spin3_2Chain.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslations.h"
+#include "HilbertSpace/Spin1ChainWithInversionSymmetry.h"
 #include "HilbertSpace/Spin1ChainWithTranslations.h"
 #include "HilbertSpace/Spin1ChainWithTranslationsAndSzSymmetry.h"
 #include "HilbertSpace/Spin1ChainWithTranslationsAndInversionSymmetry.h"
@@ -15,6 +22,10 @@
 
 #include "MainTask/GenericRealMainTask.h"
 #include "MainTask/GenericComplexMainTask.h"
+
+#include "Matrix/RealMatrix.h"
+#include "Matrix/IntegerMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
 
 #include "GeneralTools/FilenameTools.h"
 
@@ -65,6 +76,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleDoubleOption ('\n', "quadratic-factor", "if --linear-factor is different from 1.0, set the coefficient in front of the quadratic term", 0.0);
   (*SystemGroup) += new  SingleIntegerOption ('\n', "set-szsymmetry", "if non zero, set the Sz<->-Sz symmetry sector", 0);
   (*SystemGroup) += new  SingleIntegerOption ('\n', "set-inversionsymmetry", "if non zero, set the inversion symmetry sector", 0);
+  (*SystemGroup) += new  BooleanOption ('\n', "disable-momentum", "disable the translation symmetry");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-szsymmetry", "disable the Sz<->-Sz symmetry");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-inversionsymmetry", "disable the inversion symmetry");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-realhamiltonian", "do not use a real Hamiltonian at the inversion symmetric points");
@@ -76,6 +88,7 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
+  (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -91,48 +104,86 @@ int main(int argc, char** argv)
 
   int SpinValue = Manager.GetInteger("spin");
   int NbrSpins = Manager.GetInteger("nbr-spin");
-
+  bool UseMomentum = !(Manager.GetBoolean("disable-momentum"));
+  
   char* OutputFileName = new char [512];
+  char* MomentumFlagString = new char [256];
+  if (UseMomentum == true)
+    {
+      sprintf(MomentumFlagString, "periodicobrienfendley");
+    }
+  else
+    {
+      sprintf(MomentumFlagString, "periodicobrienfendley_nomomentum");
+    }
   char* CommentLine = new char [512];
   if ((SpinValue & 1) == 0)
     {
       if (Manager.GetDouble("additional-quadratic") != 0.0)
 	{
-	  sprintf (OutputFileName, "spin_%d_periodicobrienfendley_quadratic_%.6f_n_%d", (SpinValue / 2), 
+	  sprintf (OutputFileName, "spin_%d_%s_quadratic_%.6f_n_%d", (SpinValue / 2), MomentumFlagString, 
 		   Manager.GetDouble("additional-quadratic"), NbrSpins);
 	}
       else
 	{
 	  if (Manager.GetDouble("linear-factor") != 1.0)
 	    {
-	      sprintf (OutputFileName, "spin_%d_periodicobrienfendley_linear_%.6f_quadratic_%.6f_n_%d", (SpinValue / 2), 
+	      sprintf (OutputFileName, "spin_%d_%s_linear_%.6f_quadratic_%.6f_n_%d", (SpinValue / 2), MomentumFlagString, 
 		       Manager.GetDouble("linear-factor"),  Manager.GetDouble("quadratic-factor"), NbrSpins);
 	    }
 	  else
 	    {
-	      sprintf (OutputFileName, "spin_%d_periodicobrienfendley_n_%d", (SpinValue / 2), NbrSpins);
+	      sprintf (OutputFileName, "spin_%d_%s_n_%d", (SpinValue / 2), MomentumFlagString, NbrSpins);
 	    }
 	}
       if (Manager.GetBoolean("disable-szsymmetry") == false)
 	{
 	  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
 	    {
-	      sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K SzSym InvSym ", (SpinValue / 2), NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K SzSym InvSym ", (SpinValue / 2), NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz SzSym InvSym ", (SpinValue / 2), NbrSpins);
+		}
 	    }
 	  else
 	    {
-	      sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K SzSym ", (SpinValue / 2), NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K SzSym ", (SpinValue / 2), NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz SzSym ", (SpinValue / 2), NbrSpins);
+		}		  
 	    }
 	}
       else
 	{
 	  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
 	    {
-	      sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K InvSym ", (SpinValue / 2), NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K InvSym ", (SpinValue / 2), NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz InvSym ", (SpinValue / 2), NbrSpins);
+		}
 	    }
 	  else
 	    {
-	      sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K ", (SpinValue / 2), NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz K ", (SpinValue / 2), NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d chain with %d sites \n# 2Sz ", (SpinValue / 2), NbrSpins);
+		}
 	    }
 	}
     }
@@ -140,33 +191,61 @@ int main(int argc, char** argv)
     {
       if (Manager.GetDouble("additional-quadratic") != 0.0)
 	{
-	  sprintf (OutputFileName, "spin_%d_2_periodicobrienfendley_quadratic_%.6f_n_%d", SpinValue, 
+	  sprintf (OutputFileName, "spin_%d_2_%s_quadratic_%.6f_n_%d", SpinValue, MomentumFlagString, 
 		   Manager.GetDouble("additional-quadratic"), NbrSpins);
 	}
       else
 	{
-	  sprintf (OutputFileName, "spin_%d_2_periodicobrienfendley_n_%d", SpinValue, NbrSpins);
+	  sprintf (OutputFileName, "spin_%d_2_%s_n_%d", SpinValue, MomentumFlagString, NbrSpins);
 	}
       if (Manager.GetBoolean("disable-szsymmetry") == false)
 	{
 	  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
 	    {
-	      sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K SzSym InvSym ", SpinValue, NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K SzSym InvSym ", SpinValue, NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz SzSym InvSym ", SpinValue, NbrSpins);
+		}
 	    }
 	  else
 	    {
-	      sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K SzSym ", SpinValue, NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K SzSym ", SpinValue, NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz SzSym ", SpinValue, NbrSpins);
+		}
 	    }
 	}
       else
 	{
 	  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
 	    {
-	      sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K InvSym ", SpinValue, NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K InvSym ", SpinValue, NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz InvSym ", SpinValue, NbrSpins);
+		}
 	    }
 	  else
 	    {
-	      sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K ", SpinValue, NbrSpins);
+	      if (UseMomentum == true)
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz K ", SpinValue, NbrSpins);
+		}
+	      else
+		{
+		  sprintf (CommentLine, " periodic spin %d/2 chain with %d sites \n# 2Sz ", SpinValue, NbrSpins);
+		}
 	    }
 	}
     }
@@ -207,21 +286,90 @@ int main(int argc, char** argv)
       MaxInversionSymmetrySector = MinInversionSymmetrySector;
     }
 
-  if ((InitalSzValue == 0) && (Manager.GetBoolean("disable-szsymmetry") == false) && (SpinValue == 2))
+  if (UseMomentum == true)
     {
-      for (int Momentum = InitialMomentum; Momentum < MaxMomentum; ++Momentum)
+      if ((InitalSzValue == 0) && (Manager.GetBoolean("disable-szsymmetry") == false) && (SpinValue == 2))
 	{
-	  for (int SzSymmetrySector = MinSzSymmetrySector; SzSymmetrySector <= MaxSzSymmetrySector; SzSymmetrySector += 2)
+	  for (int Momentum = InitialMomentum; Momentum < MaxMomentum; ++Momentum)
 	    {
-	      if ((Manager.GetBoolean("disable-inversionsymmetry") == false)  && (SpinValue == 2) && ((Momentum == 0) || (((NbrSpins & 1) == 0) && (Momentum == (NbrSpins >> 1)))))
+	      for (int SzSymmetrySector = MinSzSymmetrySector; SzSymmetrySector <= MaxSzSymmetrySector; SzSymmetrySector += 2)
 		{
-		  for (int InversionSymmetrySector = MinInversionSymmetrySector; InversionSymmetrySector <= MaxInversionSymmetrySector; InversionSymmetrySector += 2)
+		  if ((Manager.GetBoolean("disable-inversionsymmetry") == false)  && (SpinValue == 2) && ((Momentum == 0) || (((NbrSpins & 1) == 0) && (Momentum == (NbrSpins >> 1)))))
+		    {
+		      for (int InversionSymmetrySector = MinInversionSymmetrySector; InversionSymmetrySector <= MaxInversionSymmetrySector; InversionSymmetrySector += 2)
+			{
+			  AbstractSpinChainWithTranslations* Chain = 0;
+			  switch (SpinValue)
+			    {
+			    case 2 :
+			      Chain = new Spin1ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, Momentum, InversionSymmetrySector, SzSymmetrySector, InitalSzValue);
+			      break;
+			    default :
+			      {
+				if ((SpinValue & 1) == 0)
+				  cout << "spin " << (SpinValue / 2) << " are not available" << endl;
+				else 
+				  cout << "spin " << SpinValue << "/2 are not available" << endl;
+				return -1;
+			      }
+			    }
+			  if (Chain->GetHilbertSpaceDimension() > 0)
+			    {
+			      Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
+			      cout << "2Sz = " << InitalSzValue << ", Sz<->-Sz sector=" << SzSymmetrySector << ",   inversion sector=" << InversionSymmetrySector << ",  K = " << Momentum << endl; 
+			      char* TmpSzString = new char[64];
+			      sprintf (TmpSzString, "%d %d %d %d ", InitalSzValue, Momentum, SzSymmetrySector, InversionSymmetrySector);
+			      char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
+			      sprintf (TmpEigenstateString, "%s_sz_%d_invsym_%d_szsym_%d_k_%d", OutputFileName, InitalSzValue, InversionSymmetrySector, SzSymmetrySector, Momentum);
+			      if (Manager.GetBoolean("disable-realhamiltonian") == false)
+				{
+				  Lanczos.SetRealAlgorithms();
+				  SpinChainOBrienFendleyRealHamiltonianWithTranslations* Hamiltonian = 0;
+				  if (Manager.GetDouble("linear-factor") == 1.0)
+				    {
+				      Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
+				    }
+				  else
+				    {
+				      Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
+				    }
+				  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
+							   FirstRun, TmpEigenstateString);
+				  MainTaskOperation TaskOperation (&Task);
+				  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+				  Lanczos.SetComplexAlgorithms();
+				  delete Hamiltonian;
+				}
+			      else
+				{
+				  SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian;
+				  if(Manager.GetDouble("linear-factor") == 1.0)
+				    { 
+				      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations  (Chain, NbrSpins);
+				    }
+				  else
+				    {
+				      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations (Chain, NbrSpins);
+				    }
+				  GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
+							      FirstRun, TmpEigenstateString);
+				  MainTaskOperation TaskOperation (&Task);
+				  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+				  delete Hamiltonian;
+				}
+			      FirstRun = false;
+			      delete[] TmpSzString;
+			    }
+			  delete Chain;
+			}
+		    }
+		  else
 		    {
 		      AbstractSpinChainWithTranslations* Chain = 0;
 		      switch (SpinValue)
 			{
 			case 2 :
-			  Chain = new Spin1ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, Momentum, InversionSymmetrySector, SzSymmetrySector, InitalSzValue);
+			  Chain = new Spin1ChainWithTranslationsAndSzSymmetry (NbrSpins, Momentum, SzSymmetrySector, InitalSzValue);
 			  break;
 			default :
 			  {
@@ -235,25 +383,93 @@ int main(int argc, char** argv)
 		      if (Chain->GetHilbertSpaceDimension() > 0)
 			{
 			  Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
-			  cout << "2Sz = " << InitalSzValue << ", Sz<->-Sz sector=" << SzSymmetrySector << ",   inversion sector=" << InversionSymmetrySector << ",  K = " << Momentum << endl; 
+			  cout << "2Sz = " << InitalSzValue << ", Sz<->-Sz sector=" << SzSymmetrySector << ",  K = " << Momentum << endl; 
 			  char* TmpSzString = new char[64];
-			  sprintf (TmpSzString, "%d %d %d %d ", InitalSzValue, Momentum, SzSymmetrySector, InversionSymmetrySector);
+			  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
+			    {
+			      sprintf (TmpSzString, "%d %d %d 0 ", InitalSzValue, Momentum, SzSymmetrySector);
+			    }
+			  else
+			    {
+			      sprintf (TmpSzString, "%d %d %d ", InitalSzValue, Momentum, SzSymmetrySector);
+			    }
 			  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
-			  sprintf (TmpEigenstateString, "%s_sz_%d_invsym_%d_szsym_%d_k_%d", OutputFileName, InitalSzValue, InversionSymmetrySector, SzSymmetrySector, Momentum);
+			  sprintf (TmpEigenstateString, "%s_sz_%d_szsym_%d_k_%d", OutputFileName, InitalSzValue, SzSymmetrySector, Momentum);
+			  SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian = 0;
+			  if(Manager.GetDouble("linear-factor") == 1.0)
+			    {			  
+			      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
+			    }
+			  else
+			    {
+			      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
+			    }
+			  GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
+						      FirstRun, TmpEigenstateString);
+			  MainTaskOperation TaskOperation (&Task);
+			  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+			  FirstRun = false;
+			  delete[] TmpSzString;
+			  delete Hamiltonian;
+			}
+		      delete Chain;
+		    }
+		}
+	    }      
+	  InitalSzValue +=2;
+	}
+      for (; InitalSzValue <= MaxSzValue; InitalSzValue +=2)
+	{
+	  for (int Momentum = InitialMomentum; Momentum < MaxMomentum; ++Momentum)
+	    {
+	      if ((Manager.GetBoolean("disable-inversionsymmetry") == false)  && (SpinValue == 2) && ((Momentum == 0) || (((NbrSpins & 1) == 0) && (Momentum == (NbrSpins >> 1)))))
+		{
+		  for (int InversionSymmetrySector = MinInversionSymmetrySector; InversionSymmetrySector <= MaxInversionSymmetrySector; InversionSymmetrySector += 2)
+		    {
+		      AbstractSpinChainWithTranslations* Chain = 0;
+		      switch (SpinValue)
+			{
+			case 2 :
+			  Chain = new Spin1ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, InversionSymmetrySector, InitalSzValue);
+			  break;
+			default :
+			  {
+			    if ((SpinValue & 1) == 0)
+			      cout << "spin " << (SpinValue / 2) << " are not available" << endl;
+			    else 
+			      cout << "spin " << SpinValue << "/2 are not available" << endl;
+			    return -1;
+			  }
+			}
+		      if (Chain->GetHilbertSpaceDimension() > 0)
+			{
+			  Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
+			  cout << "2Sz = " << InitalSzValue << ", inversion sector=" << InversionSymmetrySector << ",  K = " << Momentum << endl; 
+			  char* TmpSzString = new char[64];
+			  if (Manager.GetBoolean("disable-szsymmetry") == false)
+			    {
+			      sprintf (TmpSzString, "%d %d 0 %d", InitalSzValue, Momentum, InversionSymmetrySector);
+			    }
+			  else
+			    {
+			      sprintf (TmpSzString, "%d %d %d", InitalSzValue, Momentum, InversionSymmetrySector);
+			    }
+			  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
+			  sprintf (TmpEigenstateString, "%s_sz_%d_invsym_%d_k_%d", OutputFileName, InitalSzValue, InversionSymmetrySector, Momentum);
 			  if (Manager.GetBoolean("disable-realhamiltonian") == false)
 			    {
 			      Lanczos.SetRealAlgorithms();
 			      SpinChainOBrienFendleyRealHamiltonianWithTranslations* Hamiltonian = 0;
 			      if (Manager.GetDouble("linear-factor") == 1.0)
-			      	{
-			      	  Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
-			      	}
+				{
+				  Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
+				}
 			      else
-			      	{
-			      	  Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
-			      	}
+				{
+				  Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
+				}
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
-			      			       FirstRun, TmpEigenstateString);
+						       FirstRun, TmpEigenstateString);
 			      MainTaskOperation TaskOperation (&Task);
 			      TaskOperation.ApplyOperation(Architecture.GetArchitecture());
 			      Lanczos.SetComplexAlgorithms();
@@ -261,14 +477,14 @@ int main(int argc, char** argv)
 			    }
 			  else
 			    {
-			      SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian;
-			      if(Manager.GetDouble("linear-factor") == 1.0)
-				{ 
-				  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations  (Chain, NbrSpins);
+			      SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian ;
+			      if (Manager.GetDouble("linear-factor") == 1.0)
+				{
+				  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
 				}
 			      else
 				{
-				  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations (Chain, NbrSpins);
+				  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
 				}
 			      GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 							  FirstRun, TmpEigenstateString);
@@ -287,8 +503,11 @@ int main(int argc, char** argv)
 		  AbstractSpinChainWithTranslations* Chain = 0;
 		  switch (SpinValue)
 		    {
+		    case 1 :
+		      Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
+		      break;
 		    case 2 :
-		      Chain = new Spin1ChainWithTranslationsAndSzSymmetry (NbrSpins, Momentum, SzSymmetrySector, InitalSzValue);
+		      Chain = new Spin1ChainWithTranslations (NbrSpins, Momentum, InitalSzValue);
 		      break;
 		    default :
 		      {
@@ -299,30 +518,45 @@ int main(int argc, char** argv)
 			return -1;
 		      }
 		    }
+		  
 		  if (Chain->GetHilbertSpaceDimension() > 0)
 		    {
 		      Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
-		      cout << "2Sz = " << InitalSzValue << ", Sz<->-Sz sector=" << SzSymmetrySector << ",  K = " << Momentum << endl; 
+		      cout << "2Sz = " << InitalSzValue << ", K = " << Momentum << endl; 
+		      SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian = 0;
+		      if (Manager.GetDouble("linear-factor") == 1.0)
+			{
+			  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
+			}
+		      else
+			{
+			  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
+			}
 		      char* TmpSzString = new char[64];
 		      if (Manager.GetBoolean("disable-inversionsymmetry") == false)
 			{
-			  sprintf (TmpSzString, "%d %d %d 0 ", InitalSzValue, Momentum, SzSymmetrySector);
+			  if (Manager.GetBoolean("disable-szsymmetry") == false)
+			    {
+			      sprintf (TmpSzString, "%d %d 0 0", InitalSzValue, Momentum);
+			    }
+			  else
+			    {
+			      sprintf (TmpSzString, "%d %d 0", InitalSzValue, Momentum);
+			    }
 			}
 		      else
 			{
-			  sprintf (TmpSzString, "%d %d %d ", InitalSzValue, Momentum, SzSymmetrySector);
+			  if (Manager.GetBoolean("disable-szsymmetry") == false)
+			    {
+			      sprintf (TmpSzString, "%d %d 0", InitalSzValue, Momentum);
+			    }
+			  else
+			    {
+			      sprintf (TmpSzString, "%d %d", InitalSzValue, Momentum);
+			    }
 			}
 		      char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
-		      sprintf (TmpEigenstateString, "%s_sz_%d_szsym_%d_k_%d", OutputFileName, InitalSzValue, SzSymmetrySector, Momentum);
-		      SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian = 0;
-		      if(Manager.GetDouble("linear-factor") == 1.0)
-			{			  
-			  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
-			}
-		      else
-			{
-			  Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
-			}
+		      sprintf (TmpEigenstateString, "%s_sz_%d_k_%d", OutputFileName, InitalSzValue, Momentum);
 		      GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						  FirstRun, TmpEigenstateString);
 		      MainTaskOperation TaskOperation (&Task);
@@ -334,158 +568,83 @@ int main(int argc, char** argv)
 		  delete Chain;
 		}
 	    }
-	}      
-      InitalSzValue +=2;
+	}
     }
-  for (; InitalSzValue <= MaxSzValue; InitalSzValue +=2)
+  else
     {
-      for (int Momentum = InitialMomentum; Momentum < MaxMomentum; ++Momentum)
+      for (; InitalSzValue <= MaxSzValue; InitalSzValue +=2)
 	{
-	  if ((Manager.GetBoolean("disable-inversionsymmetry") == false)  && (SpinValue == 2) && ((Momentum == 0) || (((NbrSpins & 1) == 0) && (Momentum == (NbrSpins >> 1)))))
+	  AbstractSpinChain* Chain = 0;
+	  switch (SpinValue)
 	    {
-	      for (int InversionSymmetrySector = MinInversionSymmetrySector; InversionSymmetrySector <= MaxInversionSymmetrySector; InversionSymmetrySector += 2)
-		{
-		  AbstractSpinChainWithTranslations* Chain = 0;
-		  switch (SpinValue)
-		    {
-		    case 2 :
-		      Chain = new Spin1ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, InversionSymmetrySector, InitalSzValue);
-		      break;
-		    default :
-		      {
-			if ((SpinValue & 1) == 0)
-			  cout << "spin " << (SpinValue / 2) << " are not available" << endl;
-			else 
-			  cout << "spin " << SpinValue << "/2 are not available" << endl;
-			return -1;
-		      }
-		    }
-		  if (Chain->GetHilbertSpaceDimension() > 0)
-		    {
-		      Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
-		      cout << "2Sz = " << InitalSzValue << ", inversion sector=" << InversionSymmetrySector << ",  K = " << Momentum << endl; 
-		      char* TmpSzString = new char[64];
-		      if (Manager.GetBoolean("disable-szsymmetry") == false)
-			{
-			  sprintf (TmpSzString, "%d %d 0 %d", InitalSzValue, Momentum, InversionSymmetrySector);
-			}
-		      else
-			{
-			  sprintf (TmpSzString, "%d %d %d", InitalSzValue, Momentum, InversionSymmetrySector);
-			}
-		      char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
-		      sprintf (TmpEigenstateString, "%s_sz_%d_invsym_%d_k_%d", OutputFileName, InitalSzValue, InversionSymmetrySector, Momentum);
-		      if (Manager.GetBoolean("disable-realhamiltonian") == false)
-			{
-			  Lanczos.SetRealAlgorithms();
-			  SpinChainOBrienFendleyRealHamiltonianWithTranslations* Hamiltonian = 0;
-			  if (Manager.GetDouble("linear-factor") == 1.0)
-			    {
-			      Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
-			    }
-			  else
-			    {
-			      Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
-			    }
-			  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
-			  			   FirstRun, TmpEigenstateString);
-			  MainTaskOperation TaskOperation (&Task);
-			  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
-			  Lanczos.SetComplexAlgorithms();
-			  delete Hamiltonian;
-			}
-		      else
-			{
-			  SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian ;
-			  if (Manager.GetDouble("linear-factor") == 1.0)
-			    {
-			      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
-			    }
-			  else
-			    {
-			      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
-			    }
-			  GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
-						      FirstRun, TmpEigenstateString);
-			  MainTaskOperation TaskOperation (&Task);
-			  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
-			  delete Hamiltonian;
-			}
-		      FirstRun = false;
-		      delete[] TmpSzString;
-		    }
-		  delete Chain;
-		}
-	    }
-	  else
+	    case 1 :
+	      {
+		Chain = new Spin1_2Chain (NbrSpins, InitalSzValue, 1000000);
+	      }
+	      break;
+	    case 2 :
+	      {
+		Chain = new Spin1Chain (NbrSpins, InitalSzValue, 1000000);
+	      }
+	      break;
+	    case 3 :
+	      {
+		Chain = new Spin3_2Chain (NbrSpins, InitalSzValue, 1000000);
+	      }
+	      break;
+	    default :
+	      {
+		if ((SpinValue & 1) == 0)
+		  cout << "spin " << (SpinValue / 2) << " are not available" << endl;
+		else 
+		  cout << "spin " << SpinValue << "/2 are not available" << endl;
+		return -1;
+	      }
+	    }	  
+	  Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());		  
+	  SpinChainOBrienFendleyHamiltonian* Hamiltonian = 0;
+
+	  Hamiltonian = new SpinChainOBrienFendleyHamiltonian(Chain, NbrSpins, true);
+	  Lanczos.SetRealAlgorithms();
+	  
+	  char* TmpSzString = new char[64];
+	  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
+	  sprintf (TmpSzString, "%d", InitalSzValue);
+	  sprintf (TmpEigenstateString, "%s_sz_%d", OutputFileName, InitalSzValue);
+
+
+	  if (Manager.GetBoolean("export-charpolynomial"))
 	    {
-	      AbstractSpinChainWithTranslations* Chain = 0;
-	      switch (SpinValue)
+#ifdef __GMP__
+	      LongIntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+	      Hamiltonian->GetHamiltonian(TmpMatrix);
+	      mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+#else
+	      IntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+	      Hamiltonian->GetHamiltonian(TmpMatrix);
+	      long* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+#endif	       
+	      char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
+	      sprintf (PolynomialOutputFileName, "%s_sz_%d.charpol", OutputFileName, InitalSzValue);
+	      ofstream OutputFile;
+	      OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+	      OutputFile << CharacteristicPolynomial[0];
+	      for (int i = 1; i <= Chain->GetHilbertSpaceDimension(); ++i)
 		{
-		case 1 :
-		  Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
-		  break;
-		case 2 :
-		  Chain = new Spin1ChainWithTranslations (NbrSpins, Momentum, InitalSzValue);
-		  break;
-		default :
-		  {
-		    if ((SpinValue & 1) == 0)
-		      cout << "spin " << (SpinValue / 2) << " are not available" << endl;
-		    else 
-		      cout << "spin " << SpinValue << "/2 are not available" << endl;
-		    return -1;
-		  }
+		  OutputFile << "," << CharacteristicPolynomial[i];
 		}
-	      
-	      if (Chain->GetHilbertSpaceDimension() > 0)
-		{
-		  Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
-		  cout << "2Sz = " << InitalSzValue << ", K = " << Momentum << endl; 
-		  SpinChainOBrienFendleyHamiltonianWithTranslations* Hamiltonian = 0;
-		  if (Manager.GetDouble("linear-factor") == 1.0)
-		    {
-		      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
-		    }
-		  else
-		    {
-		      Hamiltonian = new SpinChainOBrienFendleyHamiltonianWithTranslations(Chain, NbrSpins);
-		    }
-		  char* TmpSzString = new char[64];
-		  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
-		    {
-		      if (Manager.GetBoolean("disable-szsymmetry") == false)
-			{
-			  sprintf (TmpSzString, "%d %d 0 0", InitalSzValue, Momentum);
-			}
-		      else
-			{
-			  sprintf (TmpSzString, "%d %d 0", InitalSzValue, Momentum);
-			}
-		    }
-		  else
-		    {
-		      if (Manager.GetBoolean("disable-szsymmetry") == false)
-			{
-			  sprintf (TmpSzString, "%d %d 0", InitalSzValue, Momentum);
-			}
-		      else
-			{
-			  sprintf (TmpSzString, "%d %d", InitalSzValue, Momentum);
-			}
-		    }
-		  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
-		  sprintf (TmpEigenstateString, "%s_sz_%d_k_%d", OutputFileName, InitalSzValue, Momentum);
-		  GenericComplexMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
-					      FirstRun, TmpEigenstateString);
-		  MainTaskOperation TaskOperation (&Task);
-		  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
-		  FirstRun = false;
-		  delete[] TmpSzString;
-		  delete Hamiltonian;
-		}
-	      delete Chain;
+	      OutputFile << endl;
+	      OutputFile.close();
 	    }
+	  	    
+	  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName, FirstRun, TmpEigenstateString);
+	  MainTaskOperation TaskOperation (&Task);
+	  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+	  FirstRun = false;
+	  delete Hamiltonian;
+	  delete Chain;
+	  delete[] TmpSzString;
+	  delete[] TmpEigenstateString;
 	}
     }
   return 0;

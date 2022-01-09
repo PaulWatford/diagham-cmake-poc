@@ -34,6 +34,8 @@
 #include "Matrix/RealTriDiagonalSymmetricMatrix.h"
 #include "Matrix/RealSymmetricMatrix.h"
 #include "Matrix/HermitianMatrix.h"
+#include "Matrix/IntegerMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
 #include "MathTools/Complex.h"
 #ifdef USE_OUTPUT
 #include "Output/MathematicaOutput.h"
@@ -93,6 +95,60 @@ RealSymmetricMatrix& AbstractOperator::GetOperator (RealSymmetricMatrix& M)
   return M;
 }
   
+// store the real part of an operator into an integer matrix
+//
+// M = reference on matrix where the operator has to be stored
+// scalingFactor = use an additional scaling factor before converting coefficients into integers
+// return value = reference on corresponding matrix 
+
+IntegerMatrix& AbstractOperator::GetOperator (IntegerMatrix& M, double scalingFactor)
+{
+  RealVector TmpV1 (this->GetHilbertSpaceDimension(), true);
+  RealVector TmpV2 (this->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); i++)
+    {
+      TmpV1[i] = 1.0;
+      this->Multiply(TmpV1, TmpV2);
+      for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	{
+	  if (fabs(nearbyint(TmpV2[j] * scalingFactor) - (TmpV2[j] * scalingFactor)) > 1e-10)
+	    {
+	      cout << "error when converting hamiltonian to int (" << j << "," << i << "): " << (TmpV2[j] * scalingFactor) << endl;
+	    }
+	  M.SetMatrixElement(j, i, lrint(TmpV2[j] * scalingFactor));
+	}
+      TmpV1[i] = 0.0;
+    }
+  return M;
+}
+
+// store the real part of an operator into a long integer matrix
+//
+// M = reference on matrix where the operator has to be stored
+// scalingFactor = use an additional scaling factor before converting coefficients into integers
+// return value = reference on corresponding matrix 
+
+LongIntegerMatrix& AbstractOperator::GetOperator (LongIntegerMatrix& M, double scalingFactor)
+{
+  RealVector TmpV1 (this->GetHilbertSpaceDimension(), true);
+  RealVector TmpV2 (this->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); i++)
+    {
+      TmpV1[i] = 1.0;
+      this->Multiply(TmpV1, TmpV2);
+      for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	{
+	  if (fabs(nearbyint(TmpV2[j] * scalingFactor) - (TmpV2[j] * scalingFactor)) > 1e-10)
+	    {
+	      cout << "error when converting hamiltonian to int (" << j << "," << i << "): " << (TmpV2[j] * scalingFactor) << endl;
+	    }
+	  M.SetMatrixElement(j, i, lrint(TmpV2[j] * scalingFactor));
+	}
+      TmpV1[i] = 0.0;
+    }
+  return M;
+}
+
 // store operator into a matrix
 //
 // M = reference on matrix where operator has to be stored

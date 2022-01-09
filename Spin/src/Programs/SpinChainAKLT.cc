@@ -15,6 +15,10 @@
 
 #include "MainTask/GenericRealMainTask.h"
 
+#include "Matrix/RealMatrix.h"
+#include "Matrix/IntegerMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
+
 #include "GeneralTools/FilenameTools.h"
 
 #include "Options/Options.h"
@@ -61,12 +65,14 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  BooleanOption ('\n', "use-periodic", "use periodic boundary conditions");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-szsymmetry", "disable the Sz<->-Sz symmetry");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-inversionsymmetry", "disable the inversion symmetry");
+  (*SystemGroup) += new  BooleanOption ('\n', "projector-normalization", "normalize the hamiltonian as a pure sum of projector");
   (*SystemGroup) += new  SingleDoubleOption ('\n', "additional-quadratic", "coefficient in front of the additional quadratic term (0 being the pure AKLT hamiltonian)", 0.0);
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
+  (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -85,11 +91,21 @@ int main(int argc, char** argv)
 
   char* OutputFileName = new char [512];
   char* CommentLine = new char [512];
-  char* BoundaryName = new char [16];
-  if (Manager.GetBoolean("use-periodic") == false)
-    sprintf (BoundaryName, "open");
+  char* BoundaryName = new char [64];
+  if (Manager.GetBoolean("projector-normalization") == false)
+    {
+      if (Manager.GetBoolean("use-periodic") == false)
+	sprintf (BoundaryName, "open");
+      else
+	sprintf (BoundaryName, "closed");
+    }
   else
-    sprintf (BoundaryName, "closed");
+    {
+      if (Manager.GetBoolean("use-periodic") == false)
+	sprintf (BoundaryName, "open_projnorm");
+      else
+	sprintf (BoundaryName, "closed_projnorm");
+    }
   if ((SpinValue & 1) == 0)
     {
       if (Manager.GetDouble("additional-quadratic") != 0.0)
@@ -201,6 +217,17 @@ int main(int argc, char** argv)
 		    {
 		      cout << "Sz = " << InitalSzValue << ", Sz<->-Sz sector=" << SzSymmetrySector << ", inversion sector=" << InversionSymmetrySector << endl; 
 		      SpinChainAKLTHamiltonian Hamiltonian (Chain, NbrSpins, 1.0 + 3.0 * Manager.GetDouble("additional-quadratic"), Manager.GetBoolean("use-periodic"));
+		      if (Manager.GetBoolean("projector-normalization"))
+			{
+			  if (Manager.GetBoolean("use-periodic"))
+			    {
+			      Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins)) / 3.0);
+			    }
+			  else
+			    {
+			      Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins - 2)) / 3.0);
+			    }
+			}
 		      char* TmpSzString = new char[64];
 		      sprintf (TmpSzString, "%d %d %d", InitalSzValue, SzSymmetrySector, InversionSymmetrySector);
 		      char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
@@ -237,6 +264,17 @@ int main(int argc, char** argv)
 		{
 		  cout << "Sz = " << InitalSzValue << ", Sz<->-Sz sector=" << SzSymmetrySector << endl; 
 		  SpinChainAKLTHamiltonian Hamiltonian (Chain, NbrSpins, 1.0 + 3.0 * Manager.GetDouble("additional-quadratic"), Manager.GetBoolean("use-periodic"));
+		  if (Manager.GetBoolean("projector-normalization"))
+		    {
+		      if (Manager.GetBoolean("use-periodic"))
+			{
+			  Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins)) / 3.0);
+			}
+		      else
+			{
+			  Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins - 2)) / 3.0);
+			}
+		    }
 		  char* TmpSzString = new char[64];
 		  sprintf (TmpSzString, "%d %d", InitalSzValue, SzSymmetrySector);
 		  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
@@ -279,6 +317,17 @@ int main(int argc, char** argv)
 		{
 		  cout << "Sz = " << InitalSzValue << ", inversion sector=" << InversionSymmetrySector << endl; 
 		  SpinChainAKLTHamiltonian Hamiltonian (Chain, NbrSpins, 1.0 + 3.0 * Manager.GetDouble("additional-quadratic"), Manager.GetBoolean("use-periodic"));
+		  if (Manager.GetBoolean("projector-normalization"))
+		    {
+		      if (Manager.GetBoolean("use-periodic"))
+			{
+			  Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins)) / 3.0);
+			}
+		      else
+			{
+			  Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins - 2)) / 3.0);
+			}
+		    }
 		  char* TmpSzString = new char[64];
 		  if (Manager.GetBoolean("disable-szsymmetry") == false)
 		    {
@@ -328,6 +377,17 @@ int main(int argc, char** argv)
 	    {
 	      cout << "Sz = " << InitalSzValue << endl; 
 	      SpinChainAKLTHamiltonian Hamiltonian (Chain, NbrSpins, 1.0 + 3.0 * Manager.GetDouble("additional-quadratic"), Manager.GetBoolean("use-periodic"));
+	      if (Manager.GetBoolean("projector-normalization"))
+		{
+		  if (Manager.GetBoolean("use-periodic"))
+		    {
+		      Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins)) / 3.0);
+		    }
+		  else
+		    {
+		      Hamiltonian.ShiftHamiltonian(((double) (2 * NbrSpins - 2)) / 3.0);
+		    }
+		}
 	      char* TmpSzString = new char[64];
 	      if (Manager.GetBoolean("disable-szsymmetry") == false)
 		{
@@ -339,6 +399,32 @@ int main(int argc, char** argv)
 		}
 	      char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 	      sprintf (TmpEigenstateString, "%s_sz_%d", OutputFileName, InitalSzValue);
+
+
+	      if (Manager.GetBoolean("export-charpolynomial"))
+		{
+#ifdef __GMP__
+		  LongIntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		  Hamiltonian.GetHamiltonian(TmpMatrix, 3.0);
+		  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+#else
+		  IntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		  Hamiltonian->GetHamiltonian(TmpMatrix);
+		  long* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+#endif	       
+		  char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
+		  sprintf (PolynomialOutputFileName, "%s_sz_%d.charpol", OutputFileName, InitalSzValue);
+		  ofstream OutputFile;
+		  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+		  OutputFile << CharacteristicPolynomial[0];
+		  for (int i = 1; i <= Chain->GetHilbertSpaceDimension(); ++i)
+		    {
+		      OutputFile << "," << CharacteristicPolynomial[i];
+		    }
+		  OutputFile << endl;
+		  OutputFile.close();
+		}
+	      
 	      GenericRealMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 				       FirstRun, TmpEigenstateString);
 	      MainTaskOperation TaskOperation (&Task);

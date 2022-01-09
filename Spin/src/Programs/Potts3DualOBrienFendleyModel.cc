@@ -149,7 +149,7 @@ int main(int argc, char** argv)
     }
   bool FirstRun = true;
 
-   if (UseMomentumFlag == true)
+  if (UseMomentumFlag == true)
     {
        for (; InitialQValue <= MaxQValue; ++InitialQValue)
 	{
@@ -241,6 +241,7 @@ int main(int argc, char** argv)
 	   sprintf (TmpQString, "%d", InitialQValue);
 	   char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 	   sprintf (TmpEigenstateString, "%s_q_%d", OutputFileName, InitialQValue);
+	   
 	   GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpQString, CommentLine, 0.0,  FullOutputFileName,
 				    FirstRun, TmpEigenstateString);
 	   MainTaskOperation TaskOperation (&Task);

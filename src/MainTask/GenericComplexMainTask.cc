@@ -604,10 +604,10 @@ int GenericComplexMainTask::ExecuteMainTask()
 	    }
 	  else
 	    {
-	      this->WriteResult(File, HRep(0, 0)  - this->EnergyShift, false);
-	      if (this->ComputeEnergyFlag == true)
-		File << " " << (HRep(0, 0)  - this->EnergyShift) ;
-	      File << endl;	      
+	      // this->WriteResult(File, HRep(0, 0)  - this->EnergyShift, false);
+	      // if (this->ComputeEnergyFlag == true)
+	      // 	File << " " << (HRep(0, 0)  - this->EnergyShift) ;
+	      // File << endl;	      
 	      if (this->OutputFileName != 0)
 		{
 		  this->WriteResult(File, HRep(0, 0)  - this->EnergyShift, false);

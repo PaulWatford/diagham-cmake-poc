@@ -173,6 +173,12 @@ class LongIntegerVector : public Vector
   // return value = true if the vector is a null vector
   bool IsNullVector();
 
+  // test if the current vector is proportional to another one
+  //
+  // vector = reference on the vector to compare to
+  // return value = true if the two vectors are proportional 
+  bool IsProportional(LongIntegerVector& vector);
+
   // sum two vectors
   //
   // vector = vector to add

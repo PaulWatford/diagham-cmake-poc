@@ -328,3 +328,13 @@ unsigned long AbstractSpinChainWithTranslations::FindCanonicalForm(unsigned long
   return state;
 }
 
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* AbstractSpinChainWithTranslations::GetBasisNormalization()
+{
+  cout << "warning, using dummy method AbstractSpinChainWithTranslations::GetBasisNormalization" << endl;
+  return 0;
+}
+

@@ -126,6 +126,11 @@ class Spin1ChainWithTranslations : public AbstractSpinChainWithTranslations
   // return value = pointer to cloned Hilbert space
   virtual AbstractHilbertSpace* Clone();
 
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+  
   // get the value of the spin (i.e. S) at a given site
   // 
   // site = site index

@@ -16,6 +16,10 @@
 #include "MainTask/GenericRealMainTask.h"
 #include "MainTask/GenericComplexMainTask.h"
 
+#include "Matrix/RealMatrix.h"
+#include "Matrix/IntegerMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
+
 #include "GeneralTools/FilenameTools.h"
 
 #include "Options/Options.h"
@@ -32,6 +36,15 @@
 using std::cout;
 using std::endl;
 using std::ofstream;
+
+
+// compute the characteritic polynomial for the real hamiltonians
+//
+// hamiltonian = pointer to the hamiltonian
+// chain = pointer to the Hilbert space
+// outputFileName = file name prefix for the characteritic polynomial
+void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName);
+
 
 
 int main(int argc, char** argv)
@@ -76,6 +89,7 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
+  (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -254,6 +268,12 @@ int main(int argc, char** argv)
 				  Hamiltonian = new SpinChainAKLTRealHamiltonianWithTranslations(Chain, NbrSpins, Manager.GetDouble("linear-factor"),
 												 Manager.GetDouble("quadratic-factor"));
 				}
+
+			      if (Manager.GetBoolean("export-charpolynomial"))
+				{
+				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+				}			      
+			      
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						       FirstRun, TmpEigenstateString);
 			      MainTaskOperation TaskOperation (&Task);
@@ -395,6 +415,12 @@ int main(int argc, char** argv)
 			      Hamiltonian = new SpinChainAKLTRealHamiltonianWithTranslations(Chain, NbrSpins, Manager.GetDouble("linear-factor"),
 											     Manager.GetDouble("quadratic-factor"));
 			    }
+			  
+			  if (Manager.GetBoolean("export-charpolynomial"))
+			    {
+			      SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+			    }
+			  
 			  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						   FirstRun, TmpEigenstateString);
 			  MainTaskOperation TaskOperation (&Task);
@@ -436,7 +462,9 @@ int main(int argc, char** argv)
 		  Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
 		  break;
 		case 2 :
-		  Chain = new Spin1ChainWithTranslations (NbrSpins, Momentum, InitalSzValue);
+		  {
+		    Chain = new Spin1ChainWithTranslations (NbrSpins, Momentum, InitalSzValue);
+		  }
 		  break;
 		default :
 		  {
@@ -501,4 +529,46 @@ int main(int argc, char** argv)
 	}
     }
   return 0;
+}
+
+
+// compute the characteritic polynomial for the real hamiltonians
+//
+// hamiltonian = pointer to the hamiltonian
+// chain = pointer to the Hilbert space
+// outputFileName = file name prefix for the characteritic polynomial
+
+void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName)
+{
+#ifdef __GMP__
+  RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
+  hamiltonian->GetHamiltonian(TmpRawMatrix);
+  double* TmpNormalizationFactors = chain->GetBasisNormalization();
+  for (int i = 0; i < chain->GetHilbertSpaceDimension(); ++i)
+    {
+      for (int j = 0; j < chain->GetHilbertSpaceDimension(); ++j)
+	{
+	  double Tmp;
+	  TmpRawMatrix.GetMatrixElement(i, j, Tmp);
+	  Tmp *= TmpNormalizationFactors[i];
+	  Tmp /= TmpNormalizationFactors[j];
+	  TmpRawMatrix.SetMatrixElement(i, j, Tmp);
+	}
+    }
+  LongIntegerMatrix TmpMatrix(TmpRawMatrix, 3.0);
+  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial();
+  char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
+  sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
+  ofstream OutputFile;
+  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+  OutputFile << CharacteristicPolynomial[0];
+  for (int i = 1; i <= chain->GetHilbertSpaceDimension(); ++i)
+    {
+      OutputFile << "," << CharacteristicPolynomial[i];
+    }
+  OutputFile << endl;
+  OutputFile.close();
+#else
+  cout << "GMP library is required for characteristic polynomials" << endl;
+#endif	       
 }

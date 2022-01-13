@@ -45,6 +45,14 @@ using std::endl;
 using std::ofstream;
 
 
+// compute the characteritic polynomial for the real hamiltonians
+//
+// hamiltonian = pointer to the hamiltonian
+// chain = pointer to the Hilbert space
+// outputFileName = file name prefix for the characteritic polynomial
+void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName);
+
+
 int main(int argc, char** argv)
 {
   cout.precision(14); 
@@ -333,6 +341,10 @@ int main(int argc, char** argv)
 				    {
 				      Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
 				    }
+				  if (Manager.GetBoolean("export-charpolynomial"))
+				    {
+				      SpinChainOBrienFendleyComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+				    }			      				  
 				  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 							   FirstRun, TmpEigenstateString);
 				  MainTaskOperation TaskOperation (&Task);
@@ -468,6 +480,10 @@ int main(int argc, char** argv)
 				{
 				  Hamiltonian = new SpinChainOBrienFendleyRealHamiltonianWithTranslations(Chain, NbrSpins);
 				}
+			      if (Manager.GetBoolean("export-charpolynomial"))
+				{
+				  SpinChainOBrienFendleyComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+				}			      				  
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						       FirstRun, TmpEigenstateString);
 			      MainTaskOperation TaskOperation (&Task);
@@ -648,4 +664,45 @@ int main(int argc, char** argv)
 	}
     }
   return 0;
+}
+
+// compute the characteritic polynomial for the real hamiltonians
+//
+// hamiltonian = pointer to the hamiltonian
+// chain = pointer to the Hilbert space
+// outputFileName = file name prefix for the characteritic polynomial
+
+void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName)
+{
+#ifdef __GMP__
+  RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
+  hamiltonian->GetHamiltonian(TmpRawMatrix);
+  double* TmpNormalizationFactors = chain->GetBasisNormalization();
+  for (int i = 0; i < chain->GetHilbertSpaceDimension(); ++i)
+    {
+      for (int j = 0; j < chain->GetHilbertSpaceDimension(); ++j)
+	{
+	  double Tmp;
+	  TmpRawMatrix.GetMatrixElement(i, j, Tmp);
+	  Tmp *= TmpNormalizationFactors[i];
+	  Tmp /= TmpNormalizationFactors[j];
+	  TmpRawMatrix.SetMatrixElement(i, j, Tmp);
+	}
+    }
+  LongIntegerMatrix TmpMatrix(TmpRawMatrix, 3.0);
+  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial();
+  char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
+  sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
+  ofstream OutputFile;
+  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+  OutputFile << CharacteristicPolynomial[0];
+  for (int i = 1; i <= chain->GetHilbertSpaceDimension(); ++i)
+    {
+      OutputFile << "," << CharacteristicPolynomial[i];
+    }
+  OutputFile << endl;
+  OutputFile.close();
+#else
+  cout << "GMP library is required for characteristic polynomials" << endl;
+#endif	       
 }

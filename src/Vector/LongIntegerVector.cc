@@ -483,6 +483,100 @@ bool LongIntegerVector::IsNullVector()
     return false;  
 }
 
+// test if the current vector is proportional to another one
+//
+// vector = reference on the vector to compare to
+// return value = true if the two vectors are proportional 
+
+bool LongIntegerVector::IsProportional(LongIntegerVector& vector)
+{
+  long FirstNonZeroCoefficient = 0l;
+#ifdef __GMP__
+  while ((FirstNonZeroCoefficient < this->LargeDimension) && (mpz_sgn(this->Components[FirstNonZeroCoefficient]) == 0))
+#else
+    while ((FirstNonZeroCoefficient < this->LargeDimension) && (this->Components[FirstNonZeroCoefficient] == ((LONGLONG) 0l)))
+#endif    
+    {
+      ++FirstNonZeroCoefficient;
+    }
+  if (FirstNonZeroCoefficient == this->LargeDimension)
+    {
+      return false;
+    }
+  for (long i = 0l; i < FirstNonZeroCoefficient; ++i)
+    {
+#ifdef __GMP__
+      if (mpz_sgn(vector.Components[i]) != 0)
+#else
+	if (vector.Components[i] != ((LONGLONG) 0l))
+#endif    
+	{
+	  return false;
+	}
+    }
+#ifdef __GMP__
+  if (mpz_sgn(vector.Components[FirstNonZeroCoefficient]) == 0)
+#else
+    if (vector.Components[FirstNonZeroCoefficient] == ((LONGLONG) 0l))
+#endif    
+      {
+	return false;
+      }
+  
+#ifdef __GMP__
+  mpz_t* SmallerVector = this->Components;
+  mpz_t* LargerVector = vector.Components;
+  if (mpz_cmpabs(this->Components[FirstNonZeroCoefficient], vector.Components[FirstNonZeroCoefficient]) > 0)
+    {
+      LargerVector = this->Components;
+      SmallerVector = vector.Components;	  
+    }
+  if (mpz_divisible_p(LargerVector[FirstNonZeroCoefficient], SmallerVector[FirstNonZeroCoefficient]) == 0)
+    {
+      return false;
+    }
+  mpz_t TmpFactor;
+  mpz_t TmpCoefficient;
+  mpz_init(TmpFactor);
+  mpz_init(TmpCoefficient);
+  mpz_divexact(TmpFactor, LargerVector[FirstNonZeroCoefficient], SmallerVector[FirstNonZeroCoefficient]);
+  for (long i = FirstNonZeroCoefficient + 1l; i < this->LargeDimension; ++i)
+    {	  
+      mpz_mul(TmpCoefficient, SmallerVector[i], TmpFactor);
+      if (mpz_cmp(LargerVector[i], TmpCoefficient) != 0)
+	{
+	  mpz_clear(TmpCoefficient);  
+	  mpz_clear(TmpFactor);  
+	  return false;
+	}
+    }
+  mpz_clear(TmpCoefficient);  
+  mpz_clear(TmpFactor);  
+  return true;
+#else
+  LONGLONG* SmallerVector = this->Components;
+  LONGLONG* LargerVector = vector.Components;
+  if (abs(this->Components[FirstNonZeroCoefficient]) > abs(vector.Components[FirstNonZeroCoefficient]))
+    {
+      LargerVector = this->Components;
+      SmallerVector = vector.Components;	  
+    }
+  if ((LargerVector[FirstNonZeroCoefficient] % SmallerVector[FirstNonZeroCoefficient]) != 0)
+    {
+      return false;
+    }
+  LONGLONG TmpFactor = LargerVector[FirstNonZeroCoefficient] / SmallerVector[FirstNonZeroCoefficient];
+  for (long i = FirstNonZeroCoefficient + 1l; i < this->LargeDimension; ++i)
+    {	  
+      if (LargerVector[i] != (TmpFactor * SmallerVector[i]))
+	{
+	  return false;
+	}
+    }
+  return true;
+#endif
+}
+
 // sum two vectors
 //
 // vector = vector to add

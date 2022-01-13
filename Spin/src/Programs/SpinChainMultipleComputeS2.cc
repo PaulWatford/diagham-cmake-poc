@@ -1473,7 +1473,28 @@ int main(int argc, char** argv)
       char* LinePrefix = new char[512];
       if ((Momentum1DFlag == false) && (Momentum2DFlag == false))
 	{
-	  sprintf (LinePrefix, "%d ", TotalSz);
+	  if (InversionFlag == true)
+	    {
+	      if (SzSymmetryFlag == true)
+		{
+		  sprintf (LinePrefix, "%d %d %d ", TotalSz, SzSymmetrySector, InversionSector);
+		}
+	      else
+		{
+		  sprintf (LinePrefix, "%d %d ", TotalSz, InversionSector);
+		}
+	    }
+	  else
+	    {
+	      if (SzSymmetryFlag == true)
+		{
+		  sprintf (LinePrefix, "%d %d ", TotalSz, SzSymmetrySector);
+		}
+	      else
+		{
+		  sprintf (LinePrefix, "%d ", TotalSz);
+		}
+	    }
 	}
       else
 	{

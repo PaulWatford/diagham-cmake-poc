@@ -71,6 +71,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleDoubleOption ('z', "djz-value", "delta compare to the coupling constant value along z", 0.0);
   (*SystemGroup) += new  SingleDoubleOption ('\n', "hz-value", "amplitude of the Zeeman term along the z axis", 0.0);
   (*SystemGroup) += new  SingleDoubleOption ('\n', "jzjz-value", "amplitude of an additional local jz^2 term", 0.0);
+  (*SystemGroup) += new  SingleDoubleOption ('\n', "jxy4-value", "amplitude of x-y couplingh term between spins distant by 4 sites", 0.0);
   (*SystemGroup) += new  BooleanOption ('\n', "use-periodic", "use periodic boundary conditions");
   (*SystemGroup) += new  BooleanOption ('\n', "use-mirror", "use the mirror symmetry");
   (*SystemGroup) += new  SingleDoubleOption ('\n', "random-hzvalue", "amplitude of the random Zeeman term on each site", 0.0);
@@ -166,24 +167,24 @@ int main(int argc, char** argv)
 	{
 	  if ((Manager.GetDouble("hz-value") == 0.0) && (Manager.GetDouble("random-hzvalue") == 0.0) && (Manager.GetDouble("random-gaussianhzvalue") == 0.0))
 	    {
-	      sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"));
+	      sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_jxy4_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"));
 	    }
 	  else
 	    {
 	      if ((Manager.GetDouble("random-hzvalue") == 0.0) && (Manager.GetDouble("random-gaussianhzvalue") == 0.0))
 		{
-		  sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_hz_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("hz-value"));
+		  sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_jxy4_%.6f_hz_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"), Manager.GetDouble("hz-value"));
 		}
 	      else
 		{
 		  if (Manager.GetDouble("random-gaussianhzvalue") == 0.0)
 		    {
-		      sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_hz_%.6f_randomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), 
+		      sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_jxy4_%.6f_hz_%.6f_randomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"), 
 			       Manager.GetDouble("hz-value"), Manager.GetDouble("random-hzvalue"), Manager.GetInteger("run-id"));
 		    }
 		  else
 		    {
-		      sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_hz_%.6f_gaussianrandomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), 
+		      sprintf (OutputParameterFileName, "j_%.6f_jzjz_%.6f_jxy4_%.6f_hz_%.6f_gaussianrandomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"), 
 			       Manager.GetDouble("hz-value"), Manager.GetDouble("random-gaussianhzvalue"), Manager.GetInteger("run-id"));
 		    }
 		}
@@ -228,27 +229,27 @@ int main(int argc, char** argv)
 	  if ((Manager.GetDouble("hz-value") == 0.0) && (Manager.GetDouble("random-hzvalue") == 0.0)
 	      && (Manager.GetDouble("random-gaussianhzvalue") == 0.0))
 	    {
-	      sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"));
+	      sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_jxy4_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"));
 	    }
 	  else
 	    {
 	      if ((Manager.GetDouble("random-hzvalue") == 0.0) && (Manager.GetDouble("random-gaussianhzvalue") == 0.0))
 		{
-		  sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_hz_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), 
+		  sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_jxy4_%.6f_hz_%.6f", Manager.GetDouble("j-value"), Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"), 
 			   Manager.GetDouble("hz-value"));
 		}
 	      else
 		{
 		  if (Manager.GetDouble("random-gaussianhzvalue") == 0.0)
 		    {
-		      sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_hz_%.6f_randomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), 
-			       Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), 
+		      sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_jxy4_%.6f_hz_%.6f_randomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), 
+			       Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"), 
 			       Manager.GetDouble("hz-value"), Manager.GetDouble("random-hzvalue"), Manager.GetInteger("run-id"));
 		    }
 		  else
 		    {
-		      sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_hz_%.6f_gaussianrandomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), 
-			       Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), 
+		      sprintf (OutputParameterFileName, "j_%.6f_djz_%.6f_jzjz_%.6f_jxy4_%.6f_hz_%.6f_gaussianrandomhz_%.6f_runid_%ld", Manager.GetDouble("j-value"), 
+			       Manager.GetDouble("djz-value"), Manager.GetDouble("jzjz-value"), Manager.GetDouble("jxy4-value"), 
 			       Manager.GetDouble("hz-value"), Manager.GetDouble("random-gaussianhzvalue"), Manager.GetInteger("run-id"));
 		    }
 		}
@@ -267,12 +268,18 @@ int main(int argc, char** argv)
   for (int i = 0; i < NbrSpins; ++i)
     JzValues[i] = JValues[i] + TmpDeltaJz;
   double* Jz2Values = 0;
+  double* Jxy4Values = 0;
   if (Manager.GetDouble("jzjz-value") != 0.0)
     {
       Jz2Values = new double [NbrSpins];
+      Jxy4Values = new double [NbrSpins];
       double TmpJz2 = Manager.GetDouble("jzjz-value");
+      double TmpJxy4 = Manager.GetDouble("jxy4-value");
       for (int i = 0; i < NbrSpins; ++i)
-	Jz2Values[i] = TmpJz2;
+	{
+	  Jz2Values[i] = TmpJz2;
+	  Jxy4Values[i] = TmpJxy4;
+	}
     }
   double* HzValues = 0;
   if (Manager.GetString("fullhz-values") != 0)
@@ -449,11 +456,11 @@ int main(int argc, char** argv)
 	      cout << "WARNING: Hamiltonians with on-site Jz^2 are untested" << endl;
 	      if (HzValues == 0)
 		{
-		  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Manager.GetBoolean("use-periodic"));
+		  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Jxy4Values, Manager.GetBoolean("use-periodic"));
 		}
 	      else
 		{
-		  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, HzValues, Jz2Values, Manager.GetBoolean("use-periodic"));
+		  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Jxy4Values, HzValues, Manager.GetBoolean("use-periodic"));
 		}
 	    }
 	  char* TmpSzString = new char[64];

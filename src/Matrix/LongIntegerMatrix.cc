@@ -121,6 +121,52 @@ LongIntegerMatrix::LongIntegerMatrix(const LongIntegerMatrix& M)
     }
 }
 
+// copy constructor from a real matrrix (duplicating data)
+//
+// M = matrix to copy
+// scalingFactor = scaling factor to apply to M before casting it into an integer matrix
+
+LongIntegerMatrix::LongIntegerMatrix(const Matrix& M, double scalingFactor)
+{
+  this->MatrixType = Matrix::LongIntegerElements;
+  this->NbrColumn = M.GetNbrColumn();
+  this->NbrRow = M.GetNbrRow();
+  if ((this->NbrRow != 0) && ( this->NbrColumn != 0))
+    {
+      this->ColumnGarbageFlag = new int;
+      *(this->ColumnGarbageFlag) = 1;
+      this->TrueNbrRow = this->NbrRow;
+      this->TrueNbrColumn = this->NbrColumn;
+      this->Columns = new LongIntegerVector [this->NbrColumn];
+      double Tmp;
+      for (int i = 0; i < this->NbrColumn; i++)
+	{
+	  this->Columns[i] = LongIntegerVector (this->NbrRow);
+	  for (int j = 0; j < this->NbrRow; ++j)
+	    {
+	      M.GetMatrixElement(j, i, Tmp);
+	      Tmp *= scalingFactor;
+	      if (fabs(nearbyint(Tmp) - Tmp) > 1e-10)
+		{
+		  cout << "error when converting matrix to int (" << j << "," << i << "): " << Tmp << endl;
+		}
+	      else
+		{
+		  this->SetMatrixElement(j, i, lrint(Tmp));
+		}
+	    }
+	}
+    }
+  else
+    {
+      this->Columns = 0;
+      this->ColumnGarbageFlag = 0;
+      this->TrueNbrRow = 0;
+      this->TrueNbrColumn = 0;
+      this->MatrixType = Matrix::LongIntegerElements;
+    }
+}
+
 // destructor
 //
 
@@ -1072,8 +1118,24 @@ ostream& operator << (ostream& Str, const LongIntegerMatrix& P)
   for (int j = 0; j < (P.NbrColumn - 1); j ++)
     {
       Str << P.Columns[j][P.NbrRow - 1] << "    ";
-    }
+    }  
   Str << P.Columns[P.NbrColumn - 1][P.NbrRow - 1] << endl;
+  
+  // Str << "[";
+  // for (int i = 0; i < (P.NbrRow - 1); i++)
+  //   {
+  //     Str << "[";
+  //     for (int j = 0; j < (P.NbrColumn - 1); j ++)
+  // 	Str << P.Columns[j][i] << ",";      
+  //     Str << P.Columns[P.NbrColumn - 1][i] << "],";      
+  //   }
+  // Str << "[";
+  // for (int j = 0; j < (P.NbrColumn - 1); j ++)
+  //   Str << P.Columns[j][P.NbrRow - 1] << ",";      
+  // Str << P.Columns[P.NbrColumn - 1][P.NbrRow - 1] << "]";      
+  // Str << "]";
+  return Str;
+
 #else
   for (int i = 0; i < (P.NbrRow - 1); i++)
     {
@@ -1094,7 +1156,143 @@ ostream& operator << (ostream& Str, const LongIntegerMatrix& P)
 
 
 #ifdef __GMP__
-// compute the characteristic polynomial using the Faddeev–Le Verrier algorith and assuming a symmetric matrix
+// compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
+//
+
+mpz_t* LongIntegerMatrix::CharacteristicPolynomial()
+{
+  mpz_t* PolynomialCoefficients = new mpz_t [this->NbrRow + 1];
+  mpz_t TmpTrace;
+
+  for (int i = 0; i <= this->NbrRow; ++i)
+    {
+      mpz_init(PolynomialCoefficients[i]);
+    }
+  mpz_init(TmpTrace);
+  mpz_set_ui(PolynomialCoefficients[this->NbrRow], 1ul);
+  
+  LongIntegerMatrix TmpMatrix (this->NbrRow, this->NbrColumn);
+  TmpMatrix.Copy(*this);
+  LongIntegerMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
+
+  this->Trace(TmpTrace);
+  mpz_neg(TmpTrace, TmpTrace);
+  mpz_set(PolynomialCoefficients[this->NbrRow - 1], TmpTrace);
+
+  int* TmpNbrMatrixElements = new int[this->NbrRow];
+  int** TmpMatrixElementPositions = new int*[this->NbrRow];
+  int* TmpMatrixElementPositions2 = new int[this->NbrRow];  
+  for (int i = 0; i < this->NbrRow; ++i)
+    {
+      TmpNbrMatrixElements[i] = 0;
+      for (int j = 0; j < this->NbrColumn; ++j)
+	{
+	  if (mpz_sgn(this->Columns[j][i]) != 0)
+	    {
+	      TmpMatrixElementPositions2[TmpNbrMatrixElements[i]] = j;
+	      TmpNbrMatrixElements[i]++;
+	    }	  
+	}
+      if (TmpNbrMatrixElements[i] > 0)
+	{
+	  TmpMatrixElementPositions[i] = new int[TmpNbrMatrixElements[i]];
+	  for (int j = 0; j < TmpNbrMatrixElements[i]; ++j)
+	    {
+	      TmpMatrixElementPositions[i][j] =  TmpMatrixElementPositions2[j];
+	    }
+	}
+      else
+	{
+	  TmpMatrixElementPositions[i] = 0;
+	}
+    }     
+  delete[]  TmpMatrixElementPositions2;
+  
+  for (int k = this->NbrRow - 2; k >= 0; --k)
+    {
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  mpz_add (TmpMatrix.Columns[i][i], TmpMatrix.Columns[i][i], PolynomialCoefficients[k + 1]);
+	}      
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  for (int j = 0; j < this->NbrColumn; ++j)
+	    {
+	      mpz_set_ui(TmpMatrix2.Columns[j][i], 0ul);
+	      for (int l = 0; l < TmpNbrMatrixElements[i]; ++l)
+		{
+		  mpz_addmul(TmpMatrix2.Columns[j][i], this->Columns[TmpMatrixElementPositions[i][l]][i], TmpMatrix.Columns[j][TmpMatrixElementPositions[i][l]]);
+		}
+	    }	  
+	}
+      LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
+      TmpMatrix2 = TmpMatrix;
+      TmpMatrix = TmpMatrix3;
+      TmpMatrix.Trace(TmpTrace);
+      mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->NbrRow - k));
+      mpz_neg(TmpTrace, TmpTrace);
+      mpz_set(PolynomialCoefficients[k], TmpTrace);      
+    }
+  mpz_clear(TmpTrace);
+  for (int i = 0; i < this->NbrRow; ++i)
+    {
+      if (TmpNbrMatrixElements[i] > 0)
+	{
+	  delete[] TmpMatrixElementPositions[i];
+	}
+    }
+  delete[] TmpNbrMatrixElements;
+  delete[] TmpMatrixElementPositions;
+  return PolynomialCoefficients;
+}
+#else
+// compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
+//
+
+LONGLONG* LongIntegerMatrix::CharacteristicPolynomial()
+{
+  LONGLONG* PolynomialCoefficients = new LONGLONG [this->NbrRow + 1];
+
+  PolynomialCoefficients[this->NbrRow] = 1l;
+  
+  LongIntegerMatrix TmpMatrix (this->NbrRow, this->NbrColumn);
+  TmpMatrix.Copy(*this);
+  LongIntegerMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
+
+  double TmpCoefficient = -this->Trace();
+  PolynomialCoefficients[this->NbrRow - 1] = TmpCoefficient;
+
+  for (int k = this->NbrRow - 2; k >= 0; --k)
+    {
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  TmpMatrix.Columns[i][i] += PolynomialCoefficients[k + 1];
+	}      
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  for (int j = 0; j < this->NbrColumn; ++j)
+	    {
+	      TmpMatrix2.Columns[j][i] = (LONGLONG) 0l;
+	      for (int l = 0; l < this->NbrColumn; ++l)
+		{
+		  TmpMatrix2.Columns[j][i] = this->Columns[l][i] * TmpMatrix.Columns[j][l];
+		}
+	    }	  
+	}
+      LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
+      TmpMatrix2 = TmpMatrix;
+      TmpMatrix = TmpMatrix3;
+      TmpCoefficient = -(TmpMatrix.Trace() / ((LONGLONG) (this->NbrRow - k)));
+      PolynomialCoefficients[k] = TmpCoefficient;
+      
+    }
+  return PolynomialCoefficients;
+}
+#endif
+
+
+#ifdef __GMP__
+// compute the characteristic polynomial using the Faddeev–Le Verrier algorithm and assuming a symmetric matrix
 //
 
 mpz_t* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
@@ -1198,7 +1396,7 @@ mpz_t* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
   return PolynomialCoefficients;
 }
 #else
-// compute the characteristic polynomial using the Faddeev–Le Verrier algorith and assuming a symmetric matrix
+// compute the characteristic polynomial using the Faddeev–Le Verrier algorithm and assuming a symmetric matrix
 //
 
 LONGLONG* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
@@ -1239,3 +1437,21 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
   return PolynomialCoefficients;
 }
 #endif
+
+// compute the number of columns equal to a zero vector
+//
+// return value = number of null columns 
+
+int LongIntegerMatrix::NbrNullColumns()
+{
+  int TmpNbrZeroColumns = 0;
+  for (int i = 0; i < this->NbrColumn; ++i)
+    {
+      if (this->Columns[i].IsNullVector() == true)
+	{
+	  TmpNbrZeroColumns++;
+	}
+    }
+  return TmpNbrZeroColumns;
+}
+

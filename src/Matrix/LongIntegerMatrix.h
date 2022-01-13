@@ -75,16 +75,22 @@ public:
   // zero = tue if matrix elements have to be set to zero
   LongIntegerMatrix(int nbrRow, int nbrColumn, bool zero = false);
 
-  // constructor from matrix elements (without duplicating datas)
+  // constructor from matrix elements (without duplicating data)
   //
   // columns = pointer an array of vector
   // nbrColumn = number of columns
   LongIntegerMatrix(LongIntegerVector* columns, int nbrColumn);
 
-  // copy constructor (without duplicating datas)
+  // copy constructor (without duplicating data)
   //
   // M = matrix to copy
   LongIntegerMatrix(const LongIntegerMatrix& M);
+
+  // copy constructor from a real matrrix (duplicating data)
+  //
+  // M = matrix to copy
+  // scalingFactor = scaling factor to apply to M before casting it into an integer matrix
+  LongIntegerMatrix(const Matrix& M, double scalingFactor = 1.0);
 
   // destructor
   //
@@ -295,6 +301,14 @@ public:
   // return value = rank
   //  virtual int Rank(double accuracy = MACHINE_PRECISION);
 
+  // compute the characteristic polynomial using the Faddeev–Le Verrier algorith
+  //
+#ifdef __GMP__
+  virtual mpz_t* CharacteristicPolynomial();
+#else
+  virtual LONGLONG* CharacteristicPolynomial();
+#endif
+
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith and assuming a symmetric matrix
   //
 #ifdef __GMP__
@@ -333,6 +347,11 @@ public:
   // P = matrix to print
   // return value = reference on output stream
   friend ostream& operator << (ostream& Str, const LongIntegerMatrix& P);
+
+  // compute the number of columns equal to a zero vector
+  //
+  // return value = number of null columns 
+  int NbrNullColumns();
 
 };
 

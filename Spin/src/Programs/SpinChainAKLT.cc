@@ -11,6 +11,8 @@
 #include "Architecture/AbstractArchitecture.h"
 #include "Architecture/ArchitectureOperation/MainTaskOperation.h"
 
+#include "Operator/SpinS2Operator.h"
+
 #include "LanczosAlgorithm/LanczosManager.h"
 
 #include "MainTask/GenericRealMainTask.h"
@@ -35,6 +37,15 @@
 using std::cout;
 using std::endl;
 using std::ofstream;
+
+
+// evaluate Hilbert space dimension for a spin 1 system with a fixed total Sz
+//
+// totalSz = twice the total Sz value
+// sz = twice the current Sz value
+// nbrSites = number of sites
+// return value = Hilbert space dimension
+long ComputeSpin1HilbertSpaceDimension(int totalSz, int sz, int nbrSites);
 
 
 int main(int argc, char** argv)
@@ -73,6 +84,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
   (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
+  (*ToolsGroup) += new BooleanOption  ('\n', "export-sresolvedcharpolynomial", "export the hamiltonian characteristic polynomial resolved in S quantum number");  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -401,28 +413,147 @@ int main(int argc, char** argv)
 	      sprintf (TmpEigenstateString, "%s_sz_%d", OutputFileName, InitalSzValue);
 
 
-	      if (Manager.GetBoolean("export-charpolynomial"))
+	      if ((Manager.GetBoolean("export-charpolynomial")) || (Manager.GetBoolean("export-sresolvedcharpolynomial")))
 		{
-#ifdef __GMP__
-		  LongIntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
-		  Hamiltonian.GetHamiltonian(TmpMatrix, 3.0);
-		  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
-#else
-		  IntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
-		  Hamiltonian->GetHamiltonian(TmpMatrix);
-		  long* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
-#endif	       
-		  char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
-		  sprintf (PolynomialOutputFileName, "%s_sz_%d.charpol", OutputFileName, InitalSzValue);
-		  ofstream OutputFile;
-		  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
-		  OutputFile << CharacteristicPolynomial[0];
-		  for (int i = 1; i <= Chain->GetHilbertSpaceDimension(); ++i)
+		  if (Manager.GetBoolean("export-sresolvedcharpolynomial"))
 		    {
-		      OutputFile << "," << CharacteristicPolynomial[i];
+#ifdef __GMP__
+		      SpinS2Operator S2Operator(Chain, NbrSpins);
+		      LongIntegerMatrix TmpMatrixS2(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		      LongIntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		      LongIntegerMatrix TmpMatrix2(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		      LongIntegerMatrix TmpProjector(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		      int MinSValue = 0;
+		      int MaxSValue = 2 * NbrSpins;	  
+		      long* SU2Degeneracy = new long [((MaxSValue - MinSValue) / 2) + 1];
+		      for (int k = MinSValue; k <= MaxSValue; k += 2)
+			{
+			  SU2Degeneracy[(k - MinSValue) >> 1] = ComputeSpin1HilbertSpaceDimension(k, 0, NbrSpins);
+			}
+		      for (int k = MinSValue; k < MaxSValue; k += 2)
+			{
+			  SU2Degeneracy[(k - MinSValue) >> 1] -= SU2Degeneracy[1 + ((k - MinSValue) >> 1)];
+			}
+		      for (int s = MinSValue; s <= MaxSValue; s += 2)
+			{
+			  cout << "computing 2S=" << s << " sector" << endl;
+			  cout << "  building projected hamiltonian" << endl;
+			  TmpProjector.SetToIdentity();
+			  long TmpNormalisation = 1l;
+			  for (int j = MinSValue; j <= MaxSValue; j += 2)
+			    {
+			      if (j != s)
+				{
+				  long TmpShift;
+				  S2Operator.GetOperator(TmpMatrixS2);
+				  TmpShift = ((long) (-j * (j + 2))) >> 2;
+				  for (int k = 0; k < Chain->GetHilbertSpaceDimension(); ++k)
+				    {
+				      TmpMatrixS2.AddToMatrixElement(k, k, TmpShift);
+				    }
+				  TmpProjector.Multiply(TmpMatrixS2);
+				  TmpNormalisation *= ((long) ((s * (s + 2)) - (j * (j + 2)))) >> 2;
+				}
+			    }
+			  
+			  Hamiltonian.GetHamiltonian(TmpMatrix, 3.0);
+			  TmpMatrix2 = TmpMatrix * TmpProjector;
+			  TmpMatrix = TmpProjector * TmpMatrix2;
+			  TmpMatrix /= (TmpNormalisation);
+			  //			  cout << TmpMatrix << endl;
+			  cout << "  simplifying projected hamiltonian" << endl;
+			  cout << "    nbr null columns=" << TmpMatrix.NbrNullColumns() << endl;
+			  int* TmpProportionalColums = new int [TmpMatrix.GetNbrColumn()];
+			  for (int i = 0; i < TmpMatrix.GetNbrColumn(); ++i)
+			    {
+			      TmpProportionalColums[i] = -1;
+			    }
+			  int TmpNbrProportionalColums = 0;
+			  for (int i = 0; i < (TmpMatrix.GetNbrColumn() - 1); ++i)
+			    {
+			      if (TmpProportionalColums[i] == -1)
+				{
+				  for (int j = i + 1; j < TmpMatrix.GetNbrColumn(); ++j)
+				    {
+				      if (TmpProportionalColums[j] == -1)
+					{
+					  if (TmpMatrix[i].IsProportional(TmpMatrix[j]) == true)
+					    {
+					      TmpProportionalColums[j] = i;
+					      ++TmpNbrProportionalColums;
+					    }
+					}
+				    }
+				}
+			    }
+			  cout << "    nbr proportional columns=" << TmpNbrProportionalColums << endl;
+			  cout << "  computing characteristic polynomial" << endl;
+			  mpz_t TmpNormalisation2;
+			  mpz_init_set_si(TmpNormalisation2, TmpNormalisation);
+			  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+			  for (int i = 1; i <= SU2Degeneracy[(s - MinSValue) >> 1]; ++i)
+			    {		  
+			      for (int j = 0; j < i; ++j)
+				{
+				  mpz_divexact(CharacteristicPolynomial[Chain->GetHilbertSpaceDimension() - i], CharacteristicPolynomial[Chain->GetHilbertSpaceDimension() - i], TmpNormalisation2);
+				}
+			    }
+			  cout << "  testing polynomial (checking if compatible with 2S=" << s << " with dim=" << SU2Degeneracy[(s - MinSValue) >> 1] << ")" << endl;
+			  int PolynomialTestingFlag = 0;
+			  for (int i = 0; i < (Chain->GetHilbertSpaceDimension() - SU2Degeneracy[(s - MinSValue) >> 1]); ++i)
+			    {
+			      if (mpz_sgn( CharacteristicPolynomial[i]) != 0)
+				{
+				  PolynomialTestingFlag++;
+				}
+			    }
+			  if (PolynomialTestingFlag == 0)
+			    {
+			      cout << "  all clear" << endl;
+			    }
+			  else
+			    {
+			      cout << "  " << PolynomialTestingFlag << " error(s) detected" << endl;
+			    }
+			  
+			  char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
+			  sprintf (PolynomialOutputFileName, "%s_sz_%d_s_%d.charpol", OutputFileName, InitalSzValue, s);
+			  ofstream OutputFile;
+			  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+			  OutputFile << CharacteristicPolynomial[ Chain->GetHilbertSpaceDimension() - SU2Degeneracy[(s - MinSValue) >> 1]];
+			  for (int i = Chain->GetHilbertSpaceDimension() - SU2Degeneracy[(s - MinSValue) >> 1] + 1; i <= Chain->GetHilbertSpaceDimension(); ++i)
+			    {
+			      OutputFile << "," << CharacteristicPolynomial[i];
+			    }
+			  OutputFile << endl;
+			}
+#else
+		      cout << "GMP library is required" << endl;
+#endif
 		    }
-		  OutputFile << endl;
-		  OutputFile.close();
+		  else
+		    {
+#ifdef __GMP__
+		      LongIntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		      Hamiltonian.GetHamiltonian(TmpMatrix, 3.0);
+		      mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+#else
+		      IntegerMatrix TmpMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		      Hamiltonian.GetHamiltonian(TmpMatrix);
+		      long* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
+#endif	       
+		      char* PolynomialOutputFileName = new char[strlen(OutputFileName) + 256];
+		      sprintf (PolynomialOutputFileName, "%s_sz_%d.charpol", OutputFileName, InitalSzValue);
+		      ofstream OutputFile;
+		      OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+		      OutputFile << CharacteristicPolynomial[0];
+		      for (int i = 1; i <= Chain->GetHilbertSpaceDimension(); ++i)
+			{
+			  OutputFile << "," << CharacteristicPolynomial[i];
+			}
+		      OutputFile << endl;
+		      OutputFile.close();
+		    }
 		}
 	      
 	      GenericRealMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
@@ -436,4 +567,35 @@ int main(int argc, char** argv)
 	}
     }
   return 0;
+}
+
+
+// evaluate Hilbert space dimension for a spin 1 system with a fixed total Sz
+//
+// totalSz = twice the total Sz value
+// sz = twice the current Sz value
+// nbrSites = number of sites
+// return value = Hilbert space dimension
+
+long ComputeSpin1HilbertSpaceDimension(int totalSz, int sz, int nbrSites)
+{
+  if (nbrSites == 0)
+    {
+      if (sz == totalSz)
+	{
+	  return 1l;	  
+	}
+      else
+	{
+	  return 0l;	  
+	}
+    }
+  if (((sz + 2 * nbrSites) < totalSz) || ((sz - 2 * nbrSites) > totalSz))
+    {
+      return 0l;
+    }
+  long TmpDimension = ComputeSpin1HilbertSpaceDimension(totalSz, sz - 2, nbrSites - 1);
+  TmpDimension += ComputeSpin1HilbertSpaceDimension(totalSz, sz, nbrSites - 1);
+  TmpDimension += ComputeSpin1HilbertSpaceDimension(totalSz, sz + 2, nbrSites - 1);
+  return TmpDimension;
 }

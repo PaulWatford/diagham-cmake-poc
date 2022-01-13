@@ -1503,6 +1503,21 @@ void Spin1ChainWithTranslations::ComputeRescalingFactors()
     }
 }
 
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* Spin1ChainWithTranslations::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      TmpNorm[i] = 1.0 / sqrt((double) this->NbrStateInOrbit[i]);
+    }
+  return TmpNorm;
+}
+  
+
 // evaluate entanglement matrix of a subsystem of the whole system described by a given ground state. The entanglement matrix density matrix is only evaluated in a given Sz sector.
 // 
 // nbrSites = number of sites that are part of the A subsytem 

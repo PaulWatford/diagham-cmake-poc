@@ -52,16 +52,10 @@ class SpinChainJz2Hamiltonian : public SpinChainHamiltonian
   // array containing the amplitude of the on-site Jz^2 term
   double* Jz2;
 
+  // array containing coupling constants between spins along x-y between separated by four sites
+  double* HalfJxy4;
+  
   public:
-
-  // constructor from default data
-  //
-  // chain = pointer to Hilbert space of the associated system
-  // nbrSpin = number of spin
-  // j = array containing coupling constants between spins
-  // jz2 = array containing the amplitude of the on-site Jz^2 term
-  // periodicBoundaryConditions = true if periodic boundary conditions have to be used
-  SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int nbrSpin, double* j, double* jz2, bool periodicBoundaryConditions = false);
 
   // constructor from default data
   //
@@ -70,8 +64,9 @@ class SpinChainJz2Hamiltonian : public SpinChainHamiltonian
   // j = array containing coupling constants between spins along x and z
   // jz = array containing coupling constants between spins along z
   // jz2 = array containing the amplitude of the on-site Jz^2 term
+  // jxy4 = array containing coupling constants between spins along x-y between separated by four sites
   // periodicBoundaryConditions = true if periodic boundary conditions have to be used
-  SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int nbrSpin, double* j, double* jz, double* jz2, bool periodicBoundaryConditions = false);
+  SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int nbrSpin, double* j, double* jz, double* jz2, double* jxy4, bool periodicBoundaryConditions = false);
 
   // constructor with a generic magnetic field
   //
@@ -79,10 +74,11 @@ class SpinChainJz2Hamiltonian : public SpinChainHamiltonian
   // nbrSpin = number of spin
   // j = array containing coupling constants between spins along x and z
   // jz = array containing coupling constants between spins along z
-  // hz = array containing the amplitude of the Zeeman term along z
   // jz2 = array containing the amplitude of the on-site Jz^2 term
+  // jxy4 = array containing coupling constants between spins along x-y between separated by four sites
+  // hz = array containing the amplitude of the Zeeman term along z
   // periodicBoundaryConditions = true if periodic boundary conditions have to be used
-  SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int nbrSpin, double* j, double* jz, double* hz, double* jz2, bool periodicBoundaryConditions = false);
+  SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int nbrSpin, double* j, double* jz, double* jz2, double* jxy4, double* hz, bool periodicBoundaryConditions = false);
 
   // destructor
   //
@@ -93,7 +89,19 @@ class SpinChainJz2Hamiltonian : public SpinChainHamiltonian
   // return value = pointer to cloned hamiltonian
   AbstractHamiltonian* Clone ();
 
- protected:
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  RealVector& LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+				  int firstComponent, int nbrComponent);
+
+
+  protected:
  
   // evaluate all matrix elements
   //   

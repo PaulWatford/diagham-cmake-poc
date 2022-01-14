@@ -50,7 +50,8 @@ using std::ofstream;
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteritic polynomial
-void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName);
+// architecture = pointer to the architecture
+void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture);
 
 
 int main(int argc, char** argv)
@@ -343,7 +344,7 @@ int main(int argc, char** argv)
 				    }
 				  if (Manager.GetBoolean("export-charpolynomial"))
 				    {
-				      SpinChainOBrienFendleyComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+				      SpinChainOBrienFendleyComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture());
 				    }			      				  
 				  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 							   FirstRun, TmpEigenstateString);
@@ -482,7 +483,7 @@ int main(int argc, char** argv)
 				}
 			      if (Manager.GetBoolean("export-charpolynomial"))
 				{
-				  SpinChainOBrienFendleyComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+				  SpinChainOBrienFendleyComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture());
 				}			      				  
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						       FirstRun, TmpEigenstateString);
@@ -671,8 +672,9 @@ int main(int argc, char** argv)
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteritic polynomial
+// architecture = pointer to the architecture
 
-void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName)
+void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture)
 {
 #ifdef __GMP__
   RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
@@ -690,7 +692,8 @@ void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHami
 	}
     }
   LongIntegerMatrix TmpMatrix(TmpRawMatrix, 3.0);
-  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial();
+  cout << "Start computing characteristic polynomial (degree " << chain->GetHilbertSpaceDimension() << ")" << endl;
+  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
   char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
   sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
   ofstream OutputFile;

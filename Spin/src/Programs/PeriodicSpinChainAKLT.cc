@@ -43,7 +43,8 @@ using std::ofstream;
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteritic polynomial
-void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName);
+// architecture = pointer to the architecture
+void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture);
 
 
 
@@ -271,7 +272,7 @@ int main(int argc, char** argv)
 
 			      if (Manager.GetBoolean("export-charpolynomial"))
 				{
-				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture());
 				}			      
 			      
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
@@ -418,7 +419,7 @@ int main(int argc, char** argv)
 			  
 			  if (Manager.GetBoolean("export-charpolynomial"))
 			    {
-			      SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString);
+			      SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture());
 			    }
 			  
 			  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
@@ -537,8 +538,9 @@ int main(int argc, char** argv)
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteritic polynomial
+// architecture = pointer to the architecture
 
-void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName)
+void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture)
 {
 #ifdef __GMP__
   RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
@@ -556,7 +558,8 @@ void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWi
 	}
     }
   LongIntegerMatrix TmpMatrix(TmpRawMatrix, 3.0);
-  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial();
+  cout << "Start computing characteristic polynomial" << endl;
+  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
   char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
   sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
   ofstream OutputFile;

@@ -46,13 +46,15 @@
 using std::ostream;
 
 
+class AbstractArchitecture;
 
 
 class LongIntegerMatrix : public Matrix
 {
 
   friend class LongIntegerVector;
-
+  friend class LongIntegerMatrixCharacteristicPolynomialOperation;
+  
  protected:
 
   
@@ -281,8 +283,9 @@ public:
 #else
   // evaluate matrix trace
   //
+  // trace = reference on the integer where the trace will be stored
   // return value = matrix trace 
-  virtual LONGLONG Trace ();
+  virtual LONGLONG& Trace (LONGLONG& trace);
 #endif
   
   // evaluate matrix determinant (skrewing up matrix elements)
@@ -303,10 +306,11 @@ public:
 
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith
   //
+  // architecture = pointer to the architecture
 #ifdef __GMP__
-  virtual mpz_t* CharacteristicPolynomial();
+  virtual mpz_t* CharacteristicPolynomial(AbstractArchitecture* architecture = 0);
 #else
-  virtual LONGLONG* CharacteristicPolynomial();
+  virtual LONGLONG* CharacteristicPolynomial(AbstractArchitecture* architecture = 0);
 #endif
 
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith and assuming a symmetric matrix
@@ -429,16 +433,17 @@ inline mpz_t& LongIntegerMatrix::Trace(mpz_t& trace)
 #else
 // evaluate matrix trace
 //
+// trace = reference on the integer where the trace will be stored
 // return value = matrix trace 
 
-inline LONGLONG LongIntegerMatrix::Trace()
+inline LONGLONG& LongIntegerMatrix::Trace(LONGLONG& trace)
 {
-  LONGLONG Tmp = 0l;
+  trace = (LONGLONG) 0l;
   for (int i = 0 ; i < this->NbrRow; ++i)
     {
-      Tmp += this->Columns[i][i];
+      trace += this->Columns[i][i];
     }
-  return Tmp;
+  return trace;
 }
 #endif
 

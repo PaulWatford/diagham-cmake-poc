@@ -29,4 +29,5 @@ TensorVectorContractionOperation.cc \
 OperatorMultipleMatrixElementOperation.cc \
 MatrixFullDiagonalizeOperation.cc \
 MultipleVectorOperatorMultiplyOperation.cc \
-HermitianMatrixFromMatrixOperation.cc
+HermitianMatrixFromMatrixOperation.cc \
+LongIntegerMatrixCharacteristicPolynomialOperation.cc

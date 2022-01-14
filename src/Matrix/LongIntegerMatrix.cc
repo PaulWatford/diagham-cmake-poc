@@ -30,6 +30,7 @@
 
 #include "Matrix/LongIntegerMatrix.h"
 #include "Vector/LongIntegerVector.h"
+#include "Architecture/ArchitectureOperation/LongIntegerMatrixCharacteristicPolynomialOperation.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -1158,27 +1159,10 @@ ostream& operator << (ostream& Str, const LongIntegerMatrix& P)
 #ifdef __GMP__
 // compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
 //
+// architecture = pointer to the architecture
 
-mpz_t* LongIntegerMatrix::CharacteristicPolynomial()
+mpz_t* LongIntegerMatrix::CharacteristicPolynomial(AbstractArchitecture* architecture)
 {
-  mpz_t* PolynomialCoefficients = new mpz_t [this->NbrRow + 1];
-  mpz_t TmpTrace;
-
-  for (int i = 0; i <= this->NbrRow; ++i)
-    {
-      mpz_init(PolynomialCoefficients[i]);
-    }
-  mpz_init(TmpTrace);
-  mpz_set_ui(PolynomialCoefficients[this->NbrRow], 1ul);
-  
-  LongIntegerMatrix TmpMatrix (this->NbrRow, this->NbrColumn);
-  TmpMatrix.Copy(*this);
-  LongIntegerMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
-
-  this->Trace(TmpTrace);
-  mpz_neg(TmpTrace, TmpTrace);
-  mpz_set(PolynomialCoefficients[this->NbrRow - 1], TmpTrace);
-
   int* TmpNbrMatrixElements = new int[this->NbrRow];
   int** TmpMatrixElementPositions = new int*[this->NbrRow];
   int* TmpMatrixElementPositions2 = new int[this->NbrRow];  
@@ -1208,32 +1192,61 @@ mpz_t* LongIntegerMatrix::CharacteristicPolynomial()
     }     
   delete[]  TmpMatrixElementPositions2;
   
-  for (int k = this->NbrRow - 2; k >= 0; --k)
+  mpz_t* PolynomialCoefficients = 0;
+  if (architecture != 0)
     {
-      for (int i = 0; i < this->NbrRow; ++i)
+      LongIntegerMatrixCharacteristicPolynomialOperation TmpOperation(this, TmpNbrMatrixElements, TmpMatrixElementPositions);
+      TmpOperation.ApplyOperation(architecture);
+      PolynomialCoefficients = TmpOperation.GetCharacteristicPolynomial();
+    }
+  else
+    {
+      PolynomialCoefficients = new mpz_t [this->NbrRow + 1];
+      mpz_t TmpTrace;
+      
+      for (int i = 0; i <= this->NbrRow; ++i)
 	{
-	  mpz_add (TmpMatrix.Columns[i][i], TmpMatrix.Columns[i][i], PolynomialCoefficients[k + 1]);
-	}      
-      for (int i = 0; i < this->NbrRow; ++i)
+	  mpz_init(PolynomialCoefficients[i]);
+	}
+      mpz_init(TmpTrace);
+      mpz_set_ui(PolynomialCoefficients[this->NbrRow], 1ul);
+      
+      
+      LongIntegerMatrix TmpMatrix (this->NbrRow, this->NbrColumn);
+      TmpMatrix.Copy(*this);
+      LongIntegerMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
+      
+      this->Trace(TmpTrace);
+      mpz_neg(TmpTrace, TmpTrace);
+      mpz_set(PolynomialCoefficients[this->NbrRow - 1], TmpTrace);
+      
+      for (int k = this->NbrRow - 2; k >= 0; --k)
 	{
+	  for (int i = 0; i < this->NbrRow; ++i)
+	    {
+	      mpz_add (TmpMatrix.Columns[i][i], TmpMatrix.Columns[i][i], PolynomialCoefficients[k + 1]);
+	    }      
 	  for (int j = 0; j < this->NbrColumn; ++j)
 	    {
-	      mpz_set_ui(TmpMatrix2.Columns[j][i], 0ul);
-	      for (int l = 0; l < TmpNbrMatrixElements[i]; ++l)
+	      for (int i = 0; i < this->NbrRow; ++i)
 		{
-		  mpz_addmul(TmpMatrix2.Columns[j][i], this->Columns[TmpMatrixElementPositions[i][l]][i], TmpMatrix.Columns[j][TmpMatrixElementPositions[i][l]]);
-		}
-	    }	  
+		  mpz_set_ui(TmpMatrix2.Columns[j][i], 0ul);
+		  for (int l = 0; l < TmpNbrMatrixElements[i]; ++l)
+		    {
+		      mpz_addmul(TmpMatrix2.Columns[j][i], this->Columns[TmpMatrixElementPositions[i][l]][i], TmpMatrix.Columns[j][TmpMatrixElementPositions[i][l]]);
+		    }
+		}	  
+	    }
+	  LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
+	  TmpMatrix2 = TmpMatrix;
+	  TmpMatrix = TmpMatrix3;
+	  TmpMatrix.Trace(TmpTrace);
+	  mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->NbrRow - k));
+	  mpz_neg(TmpTrace, TmpTrace);
+	  mpz_set(PolynomialCoefficients[k], TmpTrace);      
 	}
-      LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
-      TmpMatrix2 = TmpMatrix;
-      TmpMatrix = TmpMatrix3;
-      TmpMatrix.Trace(TmpTrace);
-      mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->NbrRow - k));
-      mpz_neg(TmpTrace, TmpTrace);
-      mpz_set(PolynomialCoefficients[k], TmpTrace);      
+      mpz_clear(TmpTrace);
     }
-  mpz_clear(TmpTrace);
   for (int i = 0; i < this->NbrRow; ++i)
     {
       if (TmpNbrMatrixElements[i] > 0)
@@ -1248,8 +1261,9 @@ mpz_t* LongIntegerMatrix::CharacteristicPolynomial()
 #else
 // compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
 //
+// architecture = pointer to the architecture
 
-LONGLONG* LongIntegerMatrix::CharacteristicPolynomial()
+LONGLONG* LongIntegerMatrix::CharacteristicPolynomial(AbstractArchitecture* architecture)
 {
   LONGLONG* PolynomialCoefficients = new LONGLONG [this->NbrRow + 1];
 
@@ -1259,8 +1273,11 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomial()
   TmpMatrix.Copy(*this);
   LongIntegerMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
 
-  double TmpCoefficient = -this->Trace();
-  PolynomialCoefficients[this->NbrRow - 1] = TmpCoefficient;
+  LONGLONG TmpTrace;
+  this->Trace(TmpTrace);
+  TmpTrace *= (LONGLONG) -1l;
+  
+  PolynomialCoefficients[this->NbrRow - 1] = TmpTrace;
 
   for (int k = this->NbrRow - 2; k >= 0; --k)
     {
@@ -1282,8 +1299,9 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomial()
       LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
       TmpMatrix2 = TmpMatrix;
       TmpMatrix = TmpMatrix3;
-      TmpCoefficient = -(TmpMatrix.Trace() / ((LONGLONG) (this->NbrRow - k)));
-      PolynomialCoefficients[k] = TmpCoefficient;
+      TmpMatrix.Trace(TmpTrace);
+      TmpTrace /= -((LONGLONG) (this->NbrRow - k));
+      PolynomialCoefficients[k] = TmpTrace;
       
     }
   return PolynomialCoefficients;
@@ -1409,8 +1427,10 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
   TmpMatrix.Copy(*this);
   LongIntegerMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
 
-  double TmpCoefficient = -this->Trace();
-  PolynomialCoefficients[this->NbrRow - 1] = TmpCoefficient;
+  LONGLONG TmpTrace;
+  this->Trace(TmpTrace);
+  TmpTrace *= (LONGLONG) -1l;
+  PolynomialCoefficients[this->NbrRow - 1] = TmpTrace;
 
   for (int k = this->NbrRow - 2; k >= 0; --k)
     {
@@ -1430,9 +1450,9 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomialAssumingSymmetric()
       LongIntegerMatrix TmpMatrix3 = TmpMatrix2;
       TmpMatrix2 = TmpMatrix;
       TmpMatrix = TmpMatrix3;
-      TmpCoefficient = -(TmpMatrix.Trace() / ((LONGLONG) (this->NbrRow - k)));
-      PolynomialCoefficients[k] = TmpCoefficient;
-      
+      TmpMatrix.Trace(TmpTrace);
+      TmpTrace /= -((LONGLONG) (this->NbrRow - k));
+      PolynomialCoefficients[k] = TmpTrace;      
     }
   return PolynomialCoefficients;
 }

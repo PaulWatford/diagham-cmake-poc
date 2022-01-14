@@ -520,7 +520,7 @@ int main(int argc, char** argv)
 			  sprintf (PolynomialOutputFileName, "%s_sz_%d_s_%d.charpol", OutputFileName, InitalSzValue, s);
 			  ofstream OutputFile;
 			  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
-			  OutputFile << CharacteristicPolynomial[ Chain->GetHilbertSpaceDimension() - SU2Degeneracy[(s - MinSValue) >> 1]];
+			  OutputFile << CharacteristicPolynomial[Chain->GetHilbertSpaceDimension() - SU2Degeneracy[(s - MinSValue) >> 1]];
 			  for (int i = Chain->GetHilbertSpaceDimension() - SU2Degeneracy[(s - MinSValue) >> 1] + 1; i <= Chain->GetHilbertSpaceDimension(); ++i)
 			    {
 			      OutputFile << "," << CharacteristicPolynomial[i];

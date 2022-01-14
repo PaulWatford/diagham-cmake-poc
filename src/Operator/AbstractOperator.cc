@@ -34,6 +34,8 @@
 #include "Matrix/RealTriDiagonalSymmetricMatrix.h"
 #include "Matrix/RealSymmetricMatrix.h"
 #include "Matrix/HermitianMatrix.h"
+#include "Matrix/RealMatrix.h"
+#include "Matrix/ComplexMatrix.h"
 #include "Matrix/IntegerMatrix.h"
 #include "Matrix/LongIntegerMatrix.h"
 #include "MathTools/Complex.h"
@@ -149,6 +151,50 @@ LongIntegerMatrix& AbstractOperator::GetOperator (LongIntegerMatrix& M, double s
   return M;
 }
 
+// store the real part of an operator into a real matrix
+//
+// M = reference on matrix where the operator has to be stored
+// return value = reference on corresponding real  matrix 
+
+RealMatrix& AbstractOperator::GetOperator (RealMatrix& M)
+{
+  RealVector TmpV1 (this->GetHilbertSpaceDimension(), true);
+  RealVector TmpV2 (this->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); i++)
+    {
+      TmpV1[i] = 1.0;
+      this->Multiply(TmpV1, TmpV2);
+      for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	{
+	  M.SetMatrixElement(i, j, TmpV2[j]);
+	}
+      TmpV1[i] = 0.0;	
+    }
+  return M;  
+}
+  
+// store the real part of an operator into a complex matrix
+//
+// M = reference on matrix where the operator has to be stored
+// return value = reference on corresponding complex matrix 
+
+ComplexMatrix& AbstractOperator::GetOperator (ComplexMatrix& M)
+{
+  ComplexVector TmpV1 (this->GetHilbertSpaceDimension(), true);
+  ComplexVector TmpV2 (this->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); i++)
+    {
+      TmpV1[i] = 1.0;
+      this->Multiply(TmpV1, TmpV2);
+      for (int j = 0; j < this->GetHilbertSpaceDimension(); j++)
+	{
+	  M.SetMatrixElement(i, j, TmpV2[j]);
+	}
+      TmpV1[i] = 0.0;	
+    }
+  return M;  
+}
+  
 // store operator into a matrix
 //
 // M = reference on matrix where operator has to be stored
@@ -163,6 +209,12 @@ Matrix& AbstractOperator::GetOperator (Matrix& M)
       break;
       case (Matrix::ComplexElements | Matrix::Hermitian):
 	return this->GetOperator((HermitianMatrix&) M);
+      break;
+      case (Matrix::RealElements):
+	return this->GetOperator((RealMatrix&) M);
+      break;
+      case (Matrix::ComplexElements):
+	return this->GetOperator((ComplexMatrix&) M);
       break;
     default:
       return M;

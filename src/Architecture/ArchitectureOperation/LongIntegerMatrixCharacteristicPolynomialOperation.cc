@@ -239,7 +239,7 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
   LONGLONG TmpTrace;
 #endif
   this->AlgorithmInitialization(&TmpTrace);
- 
+
   for (int k = this->SourceMatrix->NbrRow - 2; k >= 0; --k)
     {
       for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
@@ -255,17 +255,34 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
       LongIntegerMatrix TmpMatrix = this->TemporaryMatrix2;
       this->TemporaryMatrix2 = this->TemporaryMatrix1;
       this->TemporaryMatrix1 = TmpMatrix;
+
       
+      bool ZeroFlag = true;
+      for (int i = 0; (i < this->TemporaryMatrix1.NbrColumn) && (ZeroFlag == true); ++i)
+	{
+	  ZeroFlag = this->TemporaryMatrix1.Columns[i].IsNullVector();
+	}
+      if (ZeroFlag == true)
+	{
+	  while (k >= 0)
+	    {
+	      mpz_set_ui(this->CharacteristicPolynomial[k], 0ul);
+	      --k;
+	    }	  
+	}
+      else
+	{
 #ifdef __GMP__
-      this->TemporaryMatrix1.Trace(TmpTrace);
-      mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->SourceMatrix->NbrRow - k));
-      mpz_neg(TmpTrace, TmpTrace);
-      mpz_set(this->CharacteristicPolynomial[k], TmpTrace);      
+	  this->TemporaryMatrix1.Trace(TmpTrace);
+	  mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->SourceMatrix->NbrRow - k));
+	  mpz_neg(TmpTrace, TmpTrace);
+	  mpz_set(this->CharacteristicPolynomial[k], TmpTrace);      
 #else
-      TmpTrace /= (LONGLONG) (this->SourceMatrix->NbrRow - k);
-      TmpTrace *= (LONGLONG) -1l;
-      this->CharacteristicPolynomial[k] = TmpTrace;
+	  TmpTrace /= (LONGLONG) (this->SourceMatrix->NbrRow - k);
+	  TmpTrace *= (LONGLONG) -1l;
+	  this->CharacteristicPolynomial[k] = TmpTrace;
 #endif
+	}
     }
 #ifdef __GMP__
   mpz_clear(TmpTrace);

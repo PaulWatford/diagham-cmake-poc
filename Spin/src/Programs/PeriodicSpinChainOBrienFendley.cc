@@ -45,11 +45,11 @@ using std::endl;
 using std::ofstream;
 
 
-// compute the characteritic polynomial for the real hamiltonians
+// compute the characteristic polynomial for the real hamiltonians
 //
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
-// outputFileName = file name prefix for the characteritic polynomial
+// outputFileName = file name prefix for the characteristic polynomial
 // architecture = pointer to the architecture
 void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture);
 
@@ -667,11 +667,11 @@ int main(int argc, char** argv)
   return 0;
 }
 
-// compute the characteritic polynomial for the real hamiltonians
+// compute the characteristic polynomial for the real hamiltonians
 //
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
-// outputFileName = file name prefix for the characteritic polynomial
+// outputFileName = file name prefix for the characteristic polynomial
 // architecture = pointer to the architecture
 
 void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture)

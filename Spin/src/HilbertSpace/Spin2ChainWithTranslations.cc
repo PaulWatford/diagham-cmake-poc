@@ -376,6 +376,21 @@ AbstractHilbertSpace* Spin2ChainWithTranslations::Clone()
   return new Spin2ChainWithTranslations (*this);
 }
 
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* Spin2ChainWithTranslations::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      TmpNorm[i] = 1.0 / sqrt((double) this->NbrStateInOrbit[i]);
+    }
+  return TmpNorm;
+}
+  
+
 // return value of twice spin projection on (Oz) for a given state
 //
 // index = index of the state to test

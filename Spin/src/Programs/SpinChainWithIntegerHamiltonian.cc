@@ -310,7 +310,7 @@ int main(int argc, char** argv)
 	       	  if (j != s)
 	      	    {
 		      long TmpShift;
-		      if ((NbrSpins & 1) == 0)
+		      if ((MinSValue & 1) == 0)
 			{
 			  S2Operator.GetOperator(TmpMatrixS2);
 			  TmpShift = ((long) (-j * (j + 2))) >> 2;
@@ -377,7 +377,7 @@ int main(int argc, char** argv)
 	      mpz_init_set_si(TmpNormalisation2, TmpNormalisation);
 	      mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomialAssumingSymmetric();
 	      for (int i = 1; i <= SU2Degeneracy[(s - MinSValue) >> 1]; ++i)
-		{		  
+		{
 		  for (int j = 0; j < i; ++j)
 		    {
 		      mpz_divexact(CharacteristicPolynomial[Chain->GetHilbertSpaceDimension() - i], CharacteristicPolynomial[Chain->GetHilbertSpaceDimension() - i], TmpNormalisation2);

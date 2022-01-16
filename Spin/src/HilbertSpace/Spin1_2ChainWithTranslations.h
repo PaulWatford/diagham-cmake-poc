@@ -125,6 +125,11 @@ class Spin1_2ChainWithTranslations : public AbstractSpinChainWithTranslations
   // return value = pointer to cloned Hilbert space
   virtual AbstractHilbertSpace* Clone();
 
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+  
   // return a list of all possible quantum numbers 
   //
   // return value = pointer to corresponding quantum number

@@ -460,6 +460,20 @@ AbstractHilbertSpace* Spin1_2ChainWithTranslations::Clone()
   return new Spin1_2ChainWithTranslations (*this);
 }
 
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* Spin1_2ChainWithTranslations::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      TmpNorm[i] = 1.0 / sqrt((double) this->NbrStateInOrbit[i]);
+    }
+  return TmpNorm;
+}
+  
 // return a list of all possible quantum numbers 
 //
 // return value = pointer to corresponding quantum number

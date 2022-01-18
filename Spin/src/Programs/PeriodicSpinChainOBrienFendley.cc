@@ -691,7 +691,7 @@ void SpinChainOBrienFendleyComputeCharacteristicPolynomial(SpinChainAKLTRealHami
 	  TmpRawMatrix.SetMatrixElement(i, j, Tmp);
 	}
     }
-  LongIntegerMatrix TmpMatrix(TmpRawMatrix, 3.0);
+  LongIntegerMatrix TmpMatrix(TmpRawMatrix);
   cout << "Start computing characteristic polynomial (degree " << chain->GetHilbertSpaceDimension() << ")" << endl;
   mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
   char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];

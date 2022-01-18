@@ -389,10 +389,32 @@ int main(int argc, char** argv)
 		{
 		  Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
 		  SpinChainHamiltonian* Hamiltonian = 0;
-		  if (HzValues == 0)
-		    Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, Manager.GetBoolean("use-periodic"));
+		  if (Jz2Values == 0)
+		    {
+		      if (HzValues == 0)
+			{
+			  Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, Manager.GetBoolean("use-periodic"));
+			}
+		      else
+			{
+			  Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, HzValues, Manager.GetBoolean("use-periodic"));
+			}
+		    }
 		  else
-		    Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, HzValues, Manager.GetBoolean("use-periodic"));
+		    {
+		      if (HzValues == 0)
+			{
+			  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Jxy4Values, Manager.GetBoolean("use-periodic"));
+			}
+		      else
+			{
+			  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Jxy4Values, HzValues, Manager.GetBoolean("use-periodic"));
+			}
+		    }
+		  // if (HzValues == 0)
+		  //   Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, Manager.GetBoolean("use-periodic"));
+		  // else
+		  //   Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, HzValues, Manager.GetBoolean("use-periodic"));
 		  char* TmpSzString = new char[64];
 		  char* TmpEigenstateString = new char[strlen(OutputFileName) + strlen(OutputParameterFileName) + 64];
 		  sprintf (TmpSzString, "%d %d", InitalSzValue, Mirror);
@@ -453,7 +475,6 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout << "WARNING: Hamiltonians with on-site Jz^2 are untested" << endl;
 	      if (HzValues == 0)
 		{
 		  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Jxy4Values, Manager.GetBoolean("use-periodic"));

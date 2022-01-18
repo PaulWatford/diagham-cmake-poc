@@ -95,9 +95,11 @@ SpinChainJz2Hamiltonian::SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int n
 	}
     }
   this->Jz2 = new double [this->NbrSpin];
+  this->Hz = new double [this->NbrSpin];
   for (int i = 0; i < this->NbrSpin; i++)
     {
       this->Jz2[i] = jz2[i];
+      this->Hz[i] = 0.0;
     }
   this->SzSzContributions = new double [this->Chain->GetHilbertSpaceDimension()];
   this->EvaluateDiagonalMatrixElements();
@@ -125,7 +127,7 @@ SpinChainJz2Hamiltonian::SpinChainJz2Hamiltonian(AbstractSpinChain* chain, int n
       this->Jz = new double [this->NbrSpin - 1];
       this->HalfJ = new double [this->NbrSpin - 1];
       this->HalfJxy4 = new double [this->NbrSpin - 1];
-      for (int i = 0; i < (this->NbrSpin - 3); i++)
+      for (int i = 0; i < (this->NbrSpin - 1); i++)
 	{
 	  this->J[i] = j[i];
 	  this->Jz[i] = jz[i];

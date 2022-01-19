@@ -411,14 +411,10 @@ int main(int argc, char** argv)
 			  Hamiltonian = new SpinChainJz2Hamiltonian(Chain, NbrSpins, JValues, JzValues, Jz2Values, Jxy4Values, HzValues, Manager.GetBoolean("use-periodic"));
 			}
 		    }
-		  // if (HzValues == 0)
-		  //   Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, Manager.GetBoolean("use-periodic"));
-		  // else
-		  //   Hamiltonian = new SpinChainHamiltonian(Chain, NbrSpins, JValues, JzValues, HzValues, Manager.GetBoolean("use-periodic"));
 		  char* TmpSzString = new char[64];
 		  char* TmpEigenstateString = new char[strlen(OutputFileName) + strlen(OutputParameterFileName) + 64];
 		  sprintf (TmpSzString, "%d %d", InitalSzValue, Mirror);
-		  sprintf (TmpEigenstateString, "%s_%s_sz_%d_m_%d", OutputFileName, OutputParameterFileName, InitalSzValue, Mirror);
+		  sprintf (TmpEigenstateString, "%s_%s_sz_%d_invsym_%d", OutputFileName, OutputParameterFileName, InitalSzValue, ((2 * Mirror) - 1));
 		  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 					   FirstRun, TmpEigenstateString);
 		  MainTaskOperation TaskOperation (&Task);

@@ -85,6 +85,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleIntegerOption ('\n', "momentum", "if non negative, only consider a given momentum sector", -1);
   (*SystemGroup) += new  BooleanOption ('\n', "disable-szsymmetry", "disable the Sz<->-Sz symmetry");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-inversionsymmetry", "disable the inversion symmetry");
+  (*SystemGroup) += new  SingleIntegerOption ('\n', "set-szsymmetry", "if non zero, set the Sz<->-Sz symmetry sector", 0);
+  (*SystemGroup) += new  SingleIntegerOption ('\n', "set-inversionsymmetry", "if non zero, set the inversion symmetry sector", 0);
   (*SystemGroup) += new  BooleanOption ('\n', "disable-realhamiltonian", "do not use a real Hamiltonian at the inversion symmetric points");
   (*SystemGroup) += new  SingleDoubleOption ('j', "j-value", "coupling constant value", 1.0);
   (*SystemGroup) += new  SingleDoubleOption ('\n', "nn-coupling", "add the term to ZZ nearest-neighbour interaction [will be j+nn-coupling]", 0.0);
@@ -193,17 +195,31 @@ int main(int argc, char** argv)
       MaxMomentum = InitialMomentum + 1;
     }
 
+  int MinSzSymmetrySector = -1;
+  int MaxSzSymmetrySector = 1;
+  if (Manager.GetInteger("set-szsymmetry") != 0)
+    {
+      MinSzSymmetrySector = Manager.GetInteger("set-szsymmetry");
+      MaxSzSymmetrySector = MinSzSymmetrySector;
+    }
+  int MinInversionSymmetrySector = -1;
+  int MaxInversionSymmetrySector = 1;
+  if (Manager.GetInteger("set-inversionsymmetry") != 0)
+    {
+      MinInversionSymmetrySector = Manager.GetInteger("set-inversionsymmetry");
+      MaxInversionSymmetrySector = MinInversionSymmetrySector;
+    }
 
   bool FirstRun = true;
   if ((InitalSzValue == 0) && (Manager.GetBoolean("disable-szsymmetry") == false) && (SpinValue <= 2))
     {
       for (int Momentum = InitialMomentum; Momentum < MaxMomentum; ++Momentum)
 	{
-	  for (int SzSymmetrySector = -1; SzSymmetrySector <= 1; SzSymmetrySector += 2)
+	  for (int SzSymmetrySector = MinSzSymmetrySector; SzSymmetrySector <= MaxSzSymmetrySector; SzSymmetrySector += 2)
 	    {
 	      if ((Manager.GetBoolean("disable-inversionsymmetry") == false)  && (SpinValue <= 2) && ((Momentum == 0) || (((NbrSpins & 1) == 0) && (Momentum == (NbrSpins >> 1)))))
 		{
-		  for (int InversionSymmetrySector = -1; InversionSymmetrySector <= 1; InversionSymmetrySector += 2)
+		  for (int InversionSymmetrySector = MinInversionSymmetrySector; InversionSymmetrySector <= MaxInversionSymmetrySector; InversionSymmetrySector += 2)
 		    {
 		      AbstractSpinChainWithTranslations* Chain = 0;
 		      switch (SpinValue)
@@ -359,7 +375,7 @@ int main(int argc, char** argv)
 	{
 	  if ((Manager.GetBoolean("disable-inversionsymmetry") == false)  && (SpinValue <= 2) && ((Momentum == 0) || (((NbrSpins & 1) == 0) && (Momentum == (NbrSpins >> 1)))))
 	    {
-	      for (int InversionSymmetrySector = -1; InversionSymmetrySector <= 1; InversionSymmetrySector += 2)
+	      for (int InversionSymmetrySector = MinInversionSymmetrySector; InversionSymmetrySector <= MaxInversionSymmetrySector; InversionSymmetrySector += 2)
 		{
 		  AbstractSpinChainWithTranslations* Chain = 0;
 		  switch (SpinValue)

@@ -97,7 +97,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
   (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
-  (*ToolsGroup) += new BooleanOption  ('\n', "export-sresolvedcharpolynomial", "export the hamiltonian characteristic polynomial resolved in S quantum number");  
+  (*ToolsGroup) += new BooleanOption  ('\n', "export-sresolvedcharpolynomial", "export the hamiltonian characteristic polynomial resolved in S quantum number");  (*ToolsGroup) += new  SingleIntegerOption ('\n', "sresolvedcharpolynomial-svalue", "when exporting the hamiltonian characteristic polynomial resolved in S quantum number, computing only one S sector (compute all of them if negative, should be set to twice S to be valid)", -1);  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -307,7 +307,22 @@ int main(int argc, char** argv)
 
 			      if (Manager.GetBoolean("export-charpolynomial"))
 				{
-				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue, 2 * NbrSpins, SU2Degeneracy);
+				  int MinSValue = InitalSzValue;
+				  int MaxSValue = 2 * NbrSpins;
+				  if (Manager.GetInteger("sresolvedcharpolynomial-svalue") >= 0)
+				    {
+				      MinSValue = Manager.GetInteger("sresolvedcharpolynomial-svalue");
+				      if ((MinSValue < InitalSzValue) || (MinSValue > (2 * NbrSpins)))
+					{
+					  cout << "warning, invalid S value provided by --sresolvedcharpolynomial-svalue" << endl;
+					  MinSValue = InitalSzValue;
+					}
+				      else
+					{
+					  MaxSValue = MinSValue;
+					}
+				    }
+				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), MinSValue, MaxSValue, SU2Degeneracy);
 				}			      
 			      
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,

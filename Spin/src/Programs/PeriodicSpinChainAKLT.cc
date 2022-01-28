@@ -49,8 +49,10 @@ using std::ofstream;
 // sResolvedFlag = true if the characteristic polynomial should be computed per S sector
 // minSValue = twice the minimum S value to consider (when sResolvedFlag is true)
 // minSValue = twice the maximum S value to consider (when sResolvedFlag is true)
+// globalMinSValue = twice the minimum S value that can be reached by the system
+// globalMaxSValue = twice the maximum S value that can be reached by the system
 // sU2Degeneracy = array providing the Hilbert space dimension per S value (when sResolvedFlag is true)
-void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue = 0, int maxSValue = 0, int* sU2Degeneracy = 0);
+void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue = 0, int maxSValue = 0, int globalMinSValue = 0, int globalMaxSValue = 0, int* sU2Degeneracy = 0);
 
 
 
@@ -322,7 +324,7 @@ int main(int argc, char** argv)
 					  MaxSValue = MinSValue;
 					}
 				    }
-				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), MinSValue, MaxSValue, SU2Degeneracy);
+				  SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), MinSValue, MaxSValue, 0, 2 * NbrSpins, SU2Degeneracy);
 				}			      
 			      
 			      GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
@@ -483,7 +485,22 @@ int main(int argc, char** argv)
 			  
 			  if (Manager.GetBoolean("export-charpolynomial"))
 			    {
-			      SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue, 2 * NbrSpins, SU2Degeneracy);
+			      int MinSValue = InitalSzValue;
+			      int MaxSValue = 2 * NbrSpins;
+			      if (Manager.GetInteger("sresolvedcharpolynomial-svalue") >= 0)
+				{
+				  MinSValue = Manager.GetInteger("sresolvedcharpolynomial-svalue");
+				  if ((MinSValue < InitalSzValue) || (MinSValue > (2 * NbrSpins)))
+				    {
+				      cout << "warning, invalid S value provided by --sresolvedcharpolynomial-svalue" << endl;
+				      MinSValue = InitalSzValue;
+				    }
+				  else
+				    {
+				      MaxSValue = MinSValue;
+				    }
+				}
+			      SpinChainAKLTComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), MinSValue, MaxSValue, 0, 2 * NbrSpins, SU2Degeneracy);
 			    }
 			  
 			  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
@@ -606,9 +623,11 @@ int main(int argc, char** argv)
 // sResolvedFlag = true if the characteristic polynomial should be computed per S sector
 // minSValue = twice the minimum S value to consider (when sResolvedFlag is true)
 // minSValue = twice the maximum S value to consider (when sResolvedFlag is true)
+// globalMinSValue = twice the minimum S value that can be reached by the system
+// globalMaxSValue = twice the maximum S value that can be reached by the system
 // sU2Degeneracy = array providing the Hilbert space dimension per S value (when sResolvedFlag is true)
 
-void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue, int maxSValue, int* sU2Degeneracy)
+void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue, int maxSValue, int globalMinSValue, int globalMaxSValue, int* sU2Degeneracy)
 {
 #ifdef __GMP__
   if (sResolvedFlag == false)
@@ -681,7 +700,7 @@ void SpinChainAKLTComputeCharacteristicPolynomial(SpinChainAKLTRealHamiltonianWi
 	      cout << "  building projected hamiltonian" << endl;
 	      TmpProjector.SetToIdentity();
 	      long TmpNormalisation = 1l;
-	      for (int j = minSValue; j <= maxSValue; j += 2)
+	      for (int j = globalMinSValue; j <= globalMaxSValue; j += 2)
 		{
 		  if (j != s)
 		    {

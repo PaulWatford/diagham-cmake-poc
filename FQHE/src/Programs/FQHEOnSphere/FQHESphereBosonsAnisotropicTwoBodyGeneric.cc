@@ -87,6 +87,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
   (*MiscGroup) += new SingleStringOption('\n', "conjugate-vector", "name of the file containing the state vector that will be used for inner product with H|psi_0>, where psi_0 is provided by --energy-expectation");
+  (*MiscGroup) += new SingleStringOption('\n', "store-vector", "name of the file containing the vector obtained by acting with H on the ground state");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -282,6 +283,14 @@ int main(int argc, char** argv)
       VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &State, &TmpState);
       Operation.ApplyOperation(Architecture.GetArchitecture());
       double TmpNorm = TmpState * TmpState;
+
+     char* StoreVectorFileName = Manager.GetString("store-vector");
+      if (StoreVectorFileName != 0)
+       {
+         TmpState.WriteVector(StoreVectorFileName);
+         cout << "Outputting H |GS>." << endl;           
+       }
+
 
       double EnergyValue;
       if (BraStateFileName == StateFileName)  

@@ -82,6 +82,7 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*MiscGroup) += new BooleanOption('\n', "energy-variance", "in addition to energy expectation, also evaluate energy variance sqrt[<H^2>-<H>^2]");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -178,7 +179,7 @@ int main(int argc, char** argv)
 											 
       double Shift = - 0.5 * ((double) (NbrBosons * NbrBosons)) / (0.5 * ((double) LzMax));
 
-      if (Manager.GetString("energy-expectation") != 0 )
+    if ( (Manager.GetString("energy-expectation") != 0 ) || (Manager.GetBoolean("energy-variance") != 0 ) )
 	{
 	  char* StateFileName = Manager.GetString("energy-expectation");
 	  if (IsFile(StateFileName) == false)
@@ -200,12 +201,20 @@ int main(int argc, char** argv)
 	  RealVector TmpState(Space->GetHilbertSpaceDimension());
 	  VectorHamiltonianMultiplyOperation Operation (Hamiltonian, &State, &TmpState);
 	  Operation.ApplyOperation(Architecture.GetArchitecture());
-	  double EnergyValue = State*TmpState;
+	  double EnergyValue = State * TmpState;
 	  cout << "< Energy > = "<<EnergyValue<<endl;
 	  cout << "< shifted energy > = "<<EnergyValue + Shift<<endl;
-	  return 0;
-	}
 
+      if (Manager.GetBoolean("energy-variance") != 0 )
+       {
+   	     RealVector TmpState2(Space->GetHilbertSpaceDimension());
+	     VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
+	     Operation2.ApplyOperation(Architecture.GetArchitecture());
+	     double varH = State * TmpState2 - EnergyValue * EnergyValue;
+	     cout << "(varH)^2 = " << varH << endl;
+       }   
+	  return 0;
+  	 }
       
       Hamiltonian->ShiftHamiltonian(Shift);
       char* EigenvectorName = 0;

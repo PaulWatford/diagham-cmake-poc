@@ -70,6 +70,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption ('r', "ratio", "ratio between the two torus lengths", 1.0);
   (*SystemGroup) += new SingleIntegerOption ('\n', "landau-level", "index of the Landau level (0 if LLL, negative for graphene -1, -2 etc.)", 0);
   (*SystemGroup) += new SingleDoubleOption ('\n', "coulomb-strength", "relative strength of Coulomb interaction", 1.0);
+  (*SystemGroup) += new SingleDoubleOption ('\n', "yukawa-mass", "mass parameter modifing Coulomb to Yukawa interaction with exponential decay V(r) = exp(-m r) e^2/r", 0.0);
   (*SystemGroup) += new SingleStringOption ('\n', "perturbation-file", "file describing an additional 2-body perturbation in terms of its pseudo-potentials (should include Name=)");
   (*SystemGroup) += new SingleDoubleOption ('\n', "perturbation-strength", "relative strength of the additional perturbation", 1.0);
   (*SystemGroup) += new SingleIntegerOption ('\n', "nbr-perturbation", "maximum number of pseudopotentials to consider (-1=all)", -1);
@@ -114,10 +115,18 @@ int main(int argc, char** argv)
   int offset=0;
   bool UsePerturbed=false;
   if ( Manager.GetDouble("coulomb-strength")==1.0)
-    offset+=sprintf(InteractionString+offset,"coulomb");
+    {
+      if (Manager.GetDouble("yukawa-mass")==0.0)
+	offset+=sprintf(InteractionString+offset,"coulomb");
+      else
+	offset+=sprintf(InteractionString+offset,"yukawa-%g", Manager.GetDouble("yukawa-mass"));
+    }
   else
     {
-      offset+=sprintf(InteractionString+offset,"coulomb_%g",Manager.GetDouble("coulomb-strength"));
+       if (Manager.GetDouble("yukawa-mass")==0.0)
+	 offset+=sprintf(InteractionString+offset,"coulomb_%g", Manager.GetDouble("coulomb-strength"));
+       else
+	 offset+=sprintf(InteractionString+offset,"yukawa-%g_%g", Manager.GetDouble("yukawa-mass"), Manager.GetDouble("coulomb-strength"));
       UsePerturbed=true;
     }
 
@@ -177,7 +186,7 @@ int main(int argc, char** argv)
 
       if (UsePerturbed)
 	Hamiltonian = new ParticleOnTorusPerturbedCoulombHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Manager.GetInteger("landau-level"),
-								      Manager.GetDouble("coulomb-strength"), PerturbationNbrPseudoPotentials, 
+								      Manager.GetDouble("coulomb-strength"), Manager.GetDouble("yukawa-mass"), PerturbationNbrPseudoPotentials, 
 								      PerturbationPseudoPotentials, Manager.GetDouble("perturbation-strength"),
 								      Architecture.GetArchitecture(), Memory);
       else Hamiltonian = new ParticleOnTorusCoulombHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Manager.GetInteger("landau-level"), Architecture.GetArchitecture(), Memory);

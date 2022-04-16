@@ -84,7 +84,7 @@ int main(int argc, char** argv)
   Manager += MiscGroup;
   Manager += ToolsGroup;
 
-  (*SystemGroup) += new SingleStringOption  ('i', "input-state", "vector file that corresponds to the inpit state");
+  (*SystemGroup) += new SingleStringOption  ('i', "input-state", "vector file that corresponds to the input state");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)

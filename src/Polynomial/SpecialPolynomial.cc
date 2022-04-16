@@ -30,7 +30,7 @@
 
 #include "SpecialPolynomial.h"
 #include "MathTools/FactorialCoefficient.h"
-
+#include <cassert>
 using std::ostream;
 using std::cout;
 using std::endl;

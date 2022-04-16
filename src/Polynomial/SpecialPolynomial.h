@@ -36,14 +36,81 @@
 #include "config.h"
 #include "MathTools/Complex.h"
 #include "Polynomial.h"
+#include "Vector/RealVector.h"
+
+#ifdef __GMP__
+#include <gmp.h>
+#endif
 
 
 // return a Laguerre Polynomial of rank n (optionally associated Laguerre function)
 // n = index
 // alpha = modifier
-Polynomial LaguerrePolynomial(int n, int alpha=0);
+Polynomial LaguerrePolynomial(int n, int alpha=0, bool verbose=false);
 
-  
+
+
+class LaguerrePolynomialRecursion
+{
+ public:
+  // constructor
+  // maximum order to be calculated
+  LaguerrePolynomialRecursion(int nmax);
+
+  // destructor
+  ~LaguerrePolynomialRecursion(){}
+
+  // return the value for a Laguerre Polynomial of rank n
+  // n = index
+  double EvaluateLaguerrePolynomial(int n, double x);
+
+  // evaluate all Laguerre polynomials at the given coordinate
+  void EvaluateLaguerrePolynomials(RealVector &, double x);
+
+#ifdef __GMP__
+  void CheckAgainstGMP(double xDouble, mp_bitcnt_t precision);
+#endif
+
+ protected:
+  // temporary array for values to be calculated
+  RealVector TmpValues;
+
+  // maximum order
+  int NMax;
+};
+
+
+#ifdef __GMP__
+
+class LaguerrePolynomialRecursionAP
+{
+ public:
+  // constructor
+  // maximum order to be calculated
+  LaguerrePolynomialRecursionAP(int nmax, mp_bitcnt_t precision);
+
+  // destructor
+  ~LaguerrePolynomialRecursionAP();
+
+  // return the value for a Laguerre Polynomial of rank n
+  // n = index
+  void EvaluateLaguerrePolynomial(int N, mpf_t &result, const mpf_t &x);
+
+  // evaluate all Laguerre polynomials at the given coordinate
+  void EvaluateLaguerrePolynomials(int N, mpf_t *output, mpf_t &x);
+
+
+ protected:
+  // temporary array for values to be calculated
+  mpf_t *TmpValues;
+  mpf_t TmpValue;
+  mpf_t TmpValue2;
+
+  // maximum order
+  int NMax;
+};
+
+#endif
 
 
 #endif

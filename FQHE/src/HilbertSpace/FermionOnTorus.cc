@@ -356,8 +356,7 @@ AbstractHilbertSpace* FermionOnTorus::Clone()
 
 void FermionOnTorus::SetTargetSpace(ParticleOnTorus* targetSpace)
 {
-  printf("Setting target space in FermionOnTorus\n
-");
+  printf("Setting target space in FermionOnTorus\n");
   this->TargetSpace = (FermionOnTorus*) targetSpace;
 }
 

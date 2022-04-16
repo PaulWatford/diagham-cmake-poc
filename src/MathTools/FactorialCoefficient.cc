@@ -31,7 +31,7 @@
 #include "config.h"
 #include "MathTools/FactorialCoefficient.h"
 #include "MathTools/LongRational.h"
-
+#include <limits>
 
 #include <iostream>
 
@@ -476,10 +476,36 @@ double FactorialCoefficient::GetNumericalValue()
 {
   double x = 1.0;
   double y = 1.0;
-  for (int i = 0; i <= this->NumeratorPosition; ++i)
-    x *= (double) this->Numerator[i];
-  for (int i = 0; i <= this->DenominatorPosition; ++i)
-    y *= (double) this->Denominator[i];
+  
+  // for (int i = 0; i <= this->NumeratorPosition; ++i)
+  //   x *= (double) this->Numerator[i];
+  // for (int i = 0; i <= this->DenominatorPosition; ++i)
+  //   y *= (double) this->Denominator[i];
+
+  x=(double) this->Numerator[NumeratorPosition];
+  int posNum=this->NumeratorPosition-1;
+  int posDen=this->DenominatorPosition;
+  while(posNum>=0)
+    {
+      if (std::numeric_limits<double>::max()/x>this->Numerator[posNum])
+	x *= (double) this->Numerator[posNum--];
+      else
+	{
+	  if (posDen>=0)
+	    x /= (double) this->Denominator[posDen--];
+	  else
+	    {
+	      std::cerr << "Cannot evaluate factorial coefficient - floating point overflow" << endl;
+	      exit(1);
+	    }
+	}	  
+    }
+
+  while(posDen>=0)
+    {
+      y*=(double) this->Denominator[posDen--];
+    }
+  
   return (x / y);
 }
 

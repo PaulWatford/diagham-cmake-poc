@@ -455,6 +455,16 @@ int FermionOnSphere::GetTargetHilbertSpaceDimension()
   return this->TargetSpace->HilbertSpaceDimension;
 }
 
+
+// return number of particles of the target space
+//
+// return value = Hilbert space dimension
+
+int FermionOnSphere::GetTargetNbrParticles()
+{
+  return this->TargetSpace->GetNbrParticles();
+}
+
 // apply a^+_m1 a^+_m2 a_n1 a_n2 operator to a given state (with m1+m2=n1+n2)
 //
 // index = index of the state on which the operator has to be applied

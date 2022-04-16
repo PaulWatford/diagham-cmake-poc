@@ -144,7 +144,17 @@ class BosonOnTorus :  public ParticleOnTorus
   // set a different target space (for all basic operations)
   //
   // targetSpace = pointer to the target space
-  void SetTargetSpace(ParticleOnTorus* targetSpace);
+  virtual void SetTargetSpace(ParticleOnTorus* targetSpace);
+
+  // return Hilbert space dimension of the target space
+  //
+  // return value = Hilbert space dimension
+  virtual int GetTargetHilbertSpaceDimension();
+
+  // return number of particles of the target space
+  //
+  // return value = number of particles of the target space
+  virtual int GetTargetNbrParticles();
 
   // get the particle statistic 
   //
@@ -228,8 +238,8 @@ class BosonOnTorus :  public ParticleOnTorus
 
   // get a pointer to the target space
   // return value = target space
-  ParticleOnTorus* GetTargetSpace()
-  { return (ParticleOnTorus*) this->TargetSpace;}
+  //  ParticleOnTorus* GetTargetSpace()
+  //  { return (ParticleOnTorus*) this->TargetSpace;}
 
   // print a given State
   //

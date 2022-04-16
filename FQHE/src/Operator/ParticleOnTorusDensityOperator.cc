@@ -54,7 +54,11 @@ ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* 
   this->Ratio = ratio;
   this->Qx = qx;
   this->CalculateFormFactor();
-}
+  if (fabs(Imag(FormFactor))> 1e-12)
+    cout << "Form factor in ParticleOnTorusDensityOperator is complex"<<std::endl;
+  else
+    cout << "Form factor in ParticleOnTorusDensityOperator is real"<<std::endl;
+  }
 
 // constructor when dealing with two different Hilbert spaces
 //
@@ -71,6 +75,10 @@ ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* 
   this->Ratio = ratio;
   this->Qx = qx;
   this->CalculateFormFactor();
+  if (fabs(Imag(FormFactor))> 1e-12)
+    cout << "Form factor in ParticleOnTorusDensityOperator is complex"<<std::endl;
+  else
+    cout << "Form factor in ParticleOnTorusDensityOperator is real"<<std::endl;
 }
 
 // copy constructor

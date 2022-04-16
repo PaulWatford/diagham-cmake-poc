@@ -292,6 +292,11 @@ class FermionOnSphere :  public ParticleOnSphere
   // return value = Hilbert space dimension
   virtual int GetTargetHilbertSpaceDimension();
 
+  // return number of particles of the target space
+  //
+  // return value = number of particles of the target space
+  virtual int GetTargetNbrParticles();
+
   // apply a^+_m1 a^+_m2 a_n1 a_n2 operator to a given state (with m1+m2=n1+n2)
   //
   // index = index of the state on which the operator has to be applied

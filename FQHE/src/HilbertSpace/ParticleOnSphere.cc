@@ -56,6 +56,7 @@ ParticleOnSphere::~ParticleOnSphere ()
 
 void ParticleOnSphere::SetTargetSpace(ParticleOnSphere* targetSpace)
 {
+  printf("Attention - trying to call SetTargetSpace on generic class ParticleOnSphere\n");
 }
 
 // return Hilbert space dimension of the target space
@@ -66,6 +67,16 @@ int ParticleOnSphere::GetTargetHilbertSpaceDimension()
 {
   return this->HilbertSpaceDimension;
 }
+
+
+// get the number of particles in the target space
+//
+// return value = number of particles in the target space
+int ParticleOnSphere::GetTargetNbrParticles()
+{
+  return 0;
+}  
+
 
 //return dimension of the subspace of the target space whose elements are related by the tz<->-tz and Z3 symmetry
 //

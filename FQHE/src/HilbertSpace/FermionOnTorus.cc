@@ -356,8 +356,30 @@ AbstractHilbertSpace* FermionOnTorus::Clone()
 
 void FermionOnTorus::SetTargetSpace(ParticleOnTorus* targetSpace)
 {
+  printf("Setting target space in FermionOnTorus\n
+");
   this->TargetSpace = (FermionOnTorus*) targetSpace;
 }
+
+// return Hilbert space dimension of the target space
+//
+// return value = Hilbert space dimension
+
+int FermionOnTorus::GetTargetHilbertSpaceDimension()
+{
+  return this->TargetSpace->HilbertSpaceDimension;
+}
+
+
+// return number of particles of the target space
+//
+// return value = Hilbert space dimension
+
+int FermionOnTorus::GetTargetNbrParticles()
+{
+  return this->TargetSpace->GetNbrParticles();
+}
+
 
 // return a list of all possible quantum numbers 
 //

@@ -22,6 +22,8 @@
 #include "Operator/ParticleOnSphereDensityOperator.h"
 
 #include "Operator/ParticleOnTorusDensityOperator.h" //added by ba340
+#include "Operator/ParticleOnTorusAnnihilationOperator.h"
+#include "Operator/ParticleOnTorusCreationOperator.h"
 
 #include "LanczosAlgorithm/LanczosManager.h" //added by ba340
 #include "LanczosAlgorithm/AbstractLanczosAlgorithm.h" //added by ba340
@@ -113,11 +115,13 @@ int main ( int argc, char** argv )
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-epsilon", "spectral response epsilon (default = 1E-2)",1E-2);
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-omega-interval", "spectral response omega step size (default = 1E-2)",1E-2);
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-spectral-resolution", "spectral response omega step size (default = 1E-2)",1E-2);
-    (*SystemGroup) += new SingleIntegerOption ('y', "sr-qy-momentum", "constrain the momentum of the creation operator to this value", -1);
+    (*SystemGroup) += new SingleIntegerOption ('y', "sr-qy-momentum", "constrain the momentum of the applied operator to this value", -1);
+    (*SystemGroup) += new BooleanOption ('A', "sr-spectral-function", "calculate the spectral function, applying c_qy instead of rho_{qx,qy}.");
 
     (*CoulombGroup) += new BooleanOption ('\n', "use-coulomb", "allocate a Coulomb Hamiltonian instead of a generic Hamiltonian");
     (*CoulombGroup) += new SingleIntegerOption ('\n', "coulomb-LL", "Landau-level parameter for Coulomb Hamiltonian",0);
     (*CoulombGroup) += new SingleDoubleOption ('\n', "coulomb-strength", "relative strength of Coulomb interaction", 1.0);
+    (*SystemGroup) += new SingleDoubleOption ('\n', "yukawa-mass", "mass parameter modifing Coulomb to Yukawa interaction with exponential decay V(r) = exp(-m r) e^2/r", 0.0);
     (*CoulombGroup) += new SingleStringOption ('\n', "perturbation-file", "file describing an additional 2-body perturbation in terms of its pseudo-potentials (should include Name=)");
     (*CoulombGroup) += new SingleDoubleOption ('\n', "perturbation-strength", "relative strength of the additional perturbation", 1.0);
     (*CoulombGroup) += new SingleIntegerOption ('\n', "nbr-perturbation", "maximum number of pseudopotentials to consider (-1=all)", -1);
@@ -160,7 +164,7 @@ int main ( int argc, char** argv )
     int NbrFluxQuanta = 0;
     int Momentum = 0;
     double Ratio = 0;
-    bool Statistics = false;
+    bool Statistics = true;
     
     long Memory = ((unsigned long) Manager.GetInteger("memory")) << 20;
     if (Architecture.GetArchitecture()->GetLocalMemory() > 0)
@@ -193,12 +197,20 @@ int main ( int argc, char** argv )
 	InteractionName = new char [256];
 	int offset=0;
 	if ( Manager.GetDouble("coulomb-strength")==1.0)
-	  offset+=sprintf(InteractionName+offset,"coulomb");
-	else
-	  {
-	    offset+=sprintf(InteractionName+offset,"coulomb_%g",Manager.GetDouble("coulomb-strength"));
-	    UsePerturbed=true;
-	  }
+    {
+      if (Manager.GetDouble("yukawa-mass")==0.0)
+	offset+=sprintf(InteractionName+offset,"coulomb");
+      else
+	offset+=sprintf(InteractionName+offset,"yukawa-%g", Manager.GetDouble("yukawa-mass"));
+    }
+  else
+    {
+       if (Manager.GetDouble("yukawa-mass")==0.0)
+	 offset+=sprintf(InteractionName+offset,"coulomb_%g", Manager.GetDouble("coulomb-strength"));
+       else
+	 offset+=sprintf(InteractionName+offset,"yukawa-%g_%g", Manager.GetDouble("yukawa-mass"), Manager.GetDouble("coulomb-strength"));
+      UsePerturbed=true;
+    }
 	if (Manager.GetString("perturbation-file")!=NULL)
 	  {      
 	    UsePerturbed=true;
@@ -233,7 +245,11 @@ int main ( int argc, char** argv )
       }
 
     char* OutputNamePrefix = new char [1024];
-    sprintf (OutputNamePrefix, "fermions_torus_spec_resp_kysym_%s_n_%d_2s_%d_ratio_%f", InteractionName, NbrParticles, NbrFluxQuanta, Ratio);
+
+    if (Manager.GetBoolean("sr-spectral-function"))
+      sprintf (OutputNamePrefix, "fermions_torus_spec_func_kysym_%s_n_%d_2s_%d_ratio_%f", InteractionName, NbrParticles, NbrFluxQuanta, Ratio);
+    else
+      sprintf (OutputNamePrefix, "fermions_torus_spec_resp_kysym_%s_n_%d_2s_%d_ratio_%f", InteractionName, NbrParticles, NbrFluxQuanta, Ratio);
     
     RealVector* RealState = new RealVector();
     
@@ -266,63 +282,108 @@ int main ( int argc, char** argv )
 	qy = TargetQyMomentum;
 	Max = TargetQyMomentum;
       }
-  
-    for (; qy <= Max; ++qy)
-      {
-	ParticleOnTorus* TargetSpace = GetHilbertSpace(Statistics, NbrParticles, NbrFluxQuanta, (Momentum+qy)%NbrFluxQuanta);
-	Space->SetTargetSpace(TargetSpace);
-	ComplexVector* TargetVector = new ComplexVector(TargetSpace->GetHilbertSpaceDimension(),true);
-	ComplexVector* TmpTargetVector = new ComplexVector(TargetSpace->GetHilbertSpaceDimension());
-	for (int qx=0;qx<NbrFluxQuanta;++qx)
-	{
-	  //ky labels momentum eigenstates on the torus
-	  for (int ky=0;ky<NbrFluxQuanta;++ky)
-	  {
-	    ParticleOnTorusDensityOperator Operator (Space,(ky+qy)%NbrFluxQuanta,ky,qx,Ratio);
-	    VectorOperatorMultiplyOperation Operation(&Operator,ComplexState,TmpTargetVector);
-	    Operation.ApplyOperation(Architecture.GetArchitecture());
-	    (*TargetVector) += (*TmpTargetVector);
-	  }
-	}
-	delete TmpTargetVector; //remember to delete these pointers
-	sprintf(EigenvectorName,"%s_qy_%d", OutputNamePrefix, qy);
-	
-	//create hamiltonian
-	
-	AbstractQHEHamiltonian* Hamiltonian;
-	if (UseCoulomb)
-	  {
-	    if (UsePerturbed)
-	      Hamiltonian = new ParticleOnTorusPerturbedCoulombHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"),
-								      Manager.GetDouble("coulomb-strength"), PerturbationNbrPseudoPotentials, 
-								      PerturbationPseudoPotentials, Manager.GetDouble("perturbation-strength"),
-								      Architecture.GetArchitecture(), 0);
-	    else Hamiltonian = new ParticleOnTorusCoulombHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"), Architecture.GetArchitecture(), 0);
-	  }
-	else
-	  Hamiltonian = new ParticleOnTorusGenericHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), /*1024*/ 0);
 
-	double Shift = -10.0;	
-	Hamiltonian->ShiftHamiltonian(Shift);
+
+    if (Manager.GetBoolean("sr-spectral-function"))
+      {
+	// apply annihilation operator to get a spectral function
+
+	for (; qy <= Max; ++qy)
+	  {
+	    int TargetNbrParticles = NbrParticles-1;
+	    ParticleOnTorus* TargetSpace = GetHilbertSpace(Statistics, TargetNbrParticles, NbrFluxQuanta, (Momentum-qy+NbrFluxQuanta)%NbrFluxQuanta);
+	    Space->SetTargetSpace(TargetSpace);
+	    ComplexVector* TargetVector = new ComplexVector(TargetSpace->GetHilbertSpaceDimension(), true);
+	    ParticleOnTorusAnnihilationOperator Operator (Space, qy);
+	    VectorOperatorMultiplyOperation Operation(&Operator, ComplexState, TargetVector);
+	    Operation.ApplyOperation(Architecture.GetArchitecture());
+	    sprintf(EigenvectorName,"%s_qy_%d", OutputNamePrefix, qy);
 	
-	//main task
-	cout <<  "Manager at " <<  &Manager <<  endl;
-	FQHEOnTorusMainTask Task(&Manager, Space, &Lanczos, Hamiltonian, Momentum, Shift, OutputFileName, FirstRun, EigenvectorName,  qy,  TargetVector);
-	MainTaskOperation TaskOperation (&Task);
-	TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+	    //create Hamiltonian
 	
-	if (FirstRun==true)
-	    FirstRun = false;
+	    AbstractQHEHamiltonian* Hamiltonian;
+	    if (UseCoulomb)
+	      {
+		if (UsePerturbed)
+		  Hamiltonian = new ParticleOnTorusPerturbedCoulombHamiltonian (TargetSpace, TargetNbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"), Manager.GetDouble("coulomb-strength"), Manager.GetDouble("yukawa-mass"), PerturbationNbrPseudoPotentials, PerturbationPseudoPotentials, Manager.GetDouble("perturbation-strength"), Architecture.GetArchitecture(), 0);
+		else Hamiltonian = new ParticleOnTorusCoulombHamiltonian (TargetSpace, TargetNbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"), Architecture.GetArchitecture(), 0);
+	      }
+	    else
+	      Hamiltonian = new ParticleOnTorusGenericHamiltonian (TargetSpace, TargetNbrParticles, NbrFluxQuanta, Ratio, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), /*1024*/ 0);
+
+	    double Shift = -10.0;	
+	    Hamiltonian->ShiftHamiltonian(Shift);
+	
+	    //main task
+	    cout <<  "Manager at " <<  &Manager <<  endl;
+	    FQHEOnTorusMainTask Task(&Manager, TargetSpace, &Lanczos, Hamiltonian, Momentum, Shift, OutputFileName, FirstRun, EigenvectorName,  -1,  TargetVector);
+	    MainTaskOperation TaskOperation (&Task);
+	    TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+	
+	    if (FirstRun==true)
+	      FirstRun = false;
 	    
-	delete Hamiltonian;
-	delete TargetSpace;
+	    delete Hamiltonian;
+	    delete TargetSpace;
+
+	  }
 
       }
+    else
+      { // calculate a type of dynamical structure factor acting with density operator
+	
+	for (; qy <= Max; ++qy)
+	  {
+	    ParticleOnTorus* TargetSpace = GetHilbertSpace(Statistics, NbrParticles, NbrFluxQuanta, (Momentum+qy)%NbrFluxQuanta);
+	    Space->SetTargetSpace(TargetSpace);
+	    ComplexVector* TargetVector = new ComplexVector(TargetSpace->GetHilbertSpaceDimension(),true);
+	    ComplexVector* TmpTargetVector = new ComplexVector(TargetSpace->GetHilbertSpaceDimension());
+	    for (int qx=0;qx<NbrFluxQuanta;++qx)
+	      {
+		//ky labels momentum eigenstates on the torus
+		for (int ky=0;ky<NbrFluxQuanta;++ky)
+		  {
+		    ParticleOnTorusDensityOperator Operator (Space,(ky+qy)%NbrFluxQuanta,ky,qx,Ratio);
+		    VectorOperatorMultiplyOperation Operation(&Operator,ComplexState,TmpTargetVector);
+		    Operation.ApplyOperation(Architecture.GetArchitecture());
+		    (*TargetVector) += (*TmpTargetVector);
+		  }
+	      }
+	    delete TmpTargetVector; //remember to delete these pointers
+	    sprintf(EigenvectorName,"%s_qy_%d", OutputNamePrefix, qy);
+	
+	    //create Hamiltonian
+	
+	    AbstractQHEHamiltonian* Hamiltonian;
+	    if (UseCoulomb)
+	      {
+		if (UsePerturbed)
+		  Hamiltonian = new ParticleOnTorusPerturbedCoulombHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"), Manager.GetDouble("coulomb-strength"), Manager.GetDouble("yukawa-mass"), PerturbationNbrPseudoPotentials, PerturbationPseudoPotentials, Manager.GetDouble("perturbation-strength"), Architecture.GetArchitecture(), 0);
+		else Hamiltonian = new ParticleOnTorusCoulombHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"), Architecture.GetArchitecture(), 0);
+	      }
+	    else
+	      Hamiltonian = new ParticleOnTorusGenericHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), /*1024*/ 0);
+
+	    double Shift = -10.0;	
+	    Hamiltonian->ShiftHamiltonian(Shift);
+	
+	    //main task
+	    cout <<  "Manager at " <<  &Manager <<  endl;
+	    FQHEOnTorusMainTask Task(&Manager, TargetSpace, &Lanczos, Hamiltonian, Momentum, Shift, OutputFileName, FirstRun, EigenvectorName,  -1,  TargetVector);
+	    MainTaskOperation TaskOperation (&Task);
+	    TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+	
+	    if (FirstRun==true)
+	      FirstRun = false;
+	    
+	    delete Hamiltonian;
+	    delete TargetSpace;
+
+	  }
+      }
       
-      delete RealState;
-      delete Space;
-      
-   
+    delete RealState;
+    delete Space;
 
     return 0;
 }

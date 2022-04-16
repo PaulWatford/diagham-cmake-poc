@@ -30,7 +30,7 @@
 
 
 #include "config.h"
-#include "Operator/ParticleOnTorusCreationOperator.h"
+#include "Operator/ParticleOnTorusAnnihilationOperator.h"
 #include "Output/MathematicaOutput.h"
 #include "Vector/RealVector.h"
 #include "Vector/ComplexVector.h"
@@ -43,26 +43,32 @@ using std::endl;
 // constructor
 //
 // particle = hilbert space associated to the particles with the small number of particles
-// creationIndex = index of the creation operator
-ParticleOnTorusCreationOperator::ParticleOnTorusCreationOperator(ParticleOnTorus* particle, int creationIndex)
+// annihilationIndex = index of the annihilation operator
+ParticleOnTorusAnnihilationOperator::ParticleOnTorusAnnihilationOperator(ParticleOnTorus* particle, int annihilationIndex)
 {
   this->Particle = (ParticleOnTorus*) (particle->Clone());
-  this->CreationIndex = creationIndex;
+  this->AnnihilationIndex = annihilationIndex;
+
+  if (this->Particle->GetNbrParticles() - 1 != this->Particle->GetTargetNbrParticles())
+    {
+      printf("Mismatch of number of particles in ParticleOnTorusAnnihilationOperator\n");
+      exit(1);
+    }
 }
 
 // copy constructor
 //
 
-ParticleOnTorusCreationOperator::ParticleOnTorusCreationOperator(ParticleOnTorusCreationOperator& oper)
+ParticleOnTorusAnnihilationOperator::ParticleOnTorusAnnihilationOperator(ParticleOnTorusAnnihilationOperator& oper)
 {
   this->Particle = (ParticleOnTorus*) (oper.Particle->Clone());  
-  this->CreationIndex = oper.CreationIndex;
+  this->AnnihilationIndex = oper.AnnihilationIndex;
 }
 
 // destructor
 //
 
-ParticleOnTorusCreationOperator::~ParticleOnTorusCreationOperator()
+ParticleOnTorusAnnihilationOperator::~ParticleOnTorusAnnihilationOperator()
 {
 }
   
@@ -70,16 +76,16 @@ ParticleOnTorusCreationOperator::~ParticleOnTorusCreationOperator()
 //
 // return value = pointer to cloned hamiltonian
 
-AbstractOperator* ParticleOnTorusCreationOperator::Clone ()
+AbstractOperator* ParticleOnTorusAnnihilationOperator::Clone ()
 {
-  return new ParticleOnTorusCreationOperator(*this);
+  return new ParticleOnTorusAnnihilationOperator(*this);
 }
 
 // set Hilbert space
 //
 // hilbertSpace = pointer to Hilbert space to use
 
-void ParticleOnTorusCreationOperator::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
+void ParticleOnTorusAnnihilationOperator::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
 {
   this->Particle = (ParticleOnTorus*) hilbertSpace;
 }
@@ -88,7 +94,7 @@ void ParticleOnTorusCreationOperator::SetHilbertSpace (AbstractHilbertSpace* hil
 //
 // return value = pointer to used Hilbert space
 
-AbstractHilbertSpace* ParticleOnTorusCreationOperator::GetHilbertSpace ()
+AbstractHilbertSpace* ParticleOnTorusAnnihilationOperator::GetHilbertSpace ()
 {
   return this->Particle;
 }
@@ -97,7 +103,7 @@ AbstractHilbertSpace* ParticleOnTorusCreationOperator::GetHilbertSpace ()
 //
 // return value = corresponding matrix elementdimension
 
-int ParticleOnTorusCreationOperator::GetHilbertSpaceDimension ()
+int ParticleOnTorusAnnihilationOperator::GetHilbertSpaceDimension ()
 {
   return this->Particle->GetHilbertSpaceDimension();
 }
@@ -110,7 +116,7 @@ int ParticleOnTorusCreationOperator::GetHilbertSpaceDimension ()
 // nbrComponent = number of components to evaluate
 // return value = corresponding matrix element
 
-Complex ParticleOnTorusCreationOperator::PartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
+Complex ParticleOnTorusAnnihilationOperator::PartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
 {
   int Last = firstComponent + nbrComponent;
   int Dim = this->Particle->GetHilbertSpaceDimension();
@@ -118,7 +124,7 @@ Complex ParticleOnTorusCreationOperator::PartialMatrixElement (ComplexVector& V1
   int NbrFluxQuanta = this->Particle->GetNbrOrbitals();
   if (V2.GetVectorDimension() != Dim || V1.GetVectorDimension() != DimT)
     {
-      std::cout << "Vectors have wrong dimensions for given spaces in ParticleOnTorusCreationOperator::PartialMatrixElement"<<std::endl;
+      std::cout << "Vectors have wrong dimensions for given spaces in ParticleOnTorusAnnihilationOperator::PartialMatrixElement"<<std::endl;
       return 0.0;
     }
   Complex Element = 0.0;
@@ -129,7 +135,7 @@ Complex ParticleOnTorusCreationOperator::PartialMatrixElement (ComplexVector& V1
   for (int i = (int) firstComponent; i < Last; ++i)
     {
       Coefficient=1.0;
-      int targetIdx = this->Particle->Ad(i, this->CreationIndex, Coefficient);
+      int targetIdx = this->Particle->A(i, this->AnnihilationIndex, Coefficient);
       if (targetIdx < DimT)
 	Element += Conj(V1[targetIdx]) * V2[i] * Coefficient;
     }
@@ -145,7 +151,7 @@ Complex ParticleOnTorusCreationOperator::PartialMatrixElement (ComplexVector& V1
 // nbrComponent = number of components to evaluate
 // return value = reference on vector where result has been stored
 
-ComplexVector& ParticleOnTorusCreationOperator::LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+ComplexVector& ParticleOnTorusAnnihilationOperator::LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
 											   int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
@@ -159,7 +165,7 @@ ComplexVector& ParticleOnTorusCreationOperator::LowLevelAddMultiply(ComplexVecto
   for (int i = (int) firstComponent; i < Last; ++i)
     {
       Coefficient=1.0;
-      int targetIdx = this->Particle->Ad(i, this->CreationIndex, Coefficient);
+      int targetIdx = this->Particle->A(i, this->AnnihilationIndex, Coefficient);
       if (targetIdx < DimT)
 	vDestination[targetIdx] += vSource[i] * Coefficient;
     }

@@ -37,6 +37,7 @@ ParticleOnTorusWithMagneticTranslationsDensityOperator.cc \
 ParticleOnSphereCreationOperator.cc \
 ParticleOnSphereAnnihilationOperator.cc \
 ParticleOnTorusCreationOperator.cc \
+ParticleOnTorusAnnihilationOperator.cc \
 ParticleOnSphereLPlusOperator.cc \
 ParticleOnTorusDensityOperator.cc \
 ParticleOnSphereWithSpinAnnihilationOperator.cc \

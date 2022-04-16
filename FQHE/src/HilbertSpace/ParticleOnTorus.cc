@@ -42,6 +42,25 @@ ParticleOnTorus::~ParticleOnTorus ()
 {
 }
 
+
+// set a different target space (for all basic operations)
+//
+// targetSpace = pointer to the target space
+void ParticleOnTorus::SetTargetSpace(ParticleOnTorus* targetSpace)
+{
+  printf("Attention - trying to call SetTargetSpace on generic class ParticleOnTorus\n");
+}
+
+
+// set a different target space (for all basic operations)
+//
+// targetSpace = pointer to the target space
+void ParticleOnTorus::SetTargetSpace(ParticleOnSphere* targetSpace)
+{
+  this->SetTargetSpace((ParticleOnTorus*) targetSpace);
+}
+
+
 // evaluate a density matrix of a subsystem of the whole system described by a given ground state, using particle partition. The density matrix is only evaluated in a given Ky sector.
 // 
 // nbrBosonSector = number of particles that belong to the subsytem 

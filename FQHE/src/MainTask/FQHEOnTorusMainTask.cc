@@ -112,6 +112,11 @@ FQHEOnTorusMainTask::FQHEOnTorusMainTask(OptionManager* options, AbstractHilbert
     }
   this->Hamiltonian = hamiltonian;
   this->Space = space;
+  if (this->Hamiltonian->GetHilbertSpaceDimension() !=  this->Space->GetHilbertSpaceDimension())
+    {
+      printf("Error: Hamiltonian does not match Space dimension\n");
+      exit(1);
+    }
   this->KyValue = kyValue;
   this->KxValue = -1;
   this->KyOnlyFlag = true;

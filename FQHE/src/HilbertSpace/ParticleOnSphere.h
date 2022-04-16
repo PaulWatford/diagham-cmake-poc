@@ -94,6 +94,11 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // return value = Hilbert space dimension
   virtual int GetTargetHilbertSpaceDimension();
 
+  // get the number of particles in the target space
+  //
+  // return value = number of particles in the target space
+  virtual int GetTargetNbrParticles();
+
   // apply a^+_m1 a^+_m2 a_n1 a_n2 operator to a given state (with m1+m2=n1+n2), safe version i.e. works with any numbers of particles
   //
   // index = index of the state on which the operator has to be applied

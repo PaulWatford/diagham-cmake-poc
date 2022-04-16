@@ -272,7 +272,7 @@ bool FQHEOnTorusFindSystemInfoFromVectorFileName(char* filename, int& nbrParticl
 // NbrFluxQuanta (kyMax) = reference to the momentum for a single particle
 // Momentum (ky) = reference to the y momentum
 // Ratio = reference on the aspect ratio
-// Statistics = reference to flag for fermionic statistics
+// Statistics = reference to flag for fermionic statistics (if set to false on input, do not parse from filename)
 // return value = true if no error occured
 
 bool FQHEOnTorusFindSystemInfoFromVectorFileName_SpectralResponse(char* filename, int& NbrParticles, int& NbrFluxQuanta, int& Momentum, double& Ratio, bool& Statistics)

@@ -308,6 +308,25 @@ void BosonOnTorus::SetTargetSpace(ParticleOnTorus* targetSpace)
   this->TargetSpace = (BosonOnTorus*) targetSpace;
 }
 
+// return Hilbert space dimension of the target space
+//
+// return value = Hilbert space dimension
+
+int BosonOnTorus::GetTargetHilbertSpaceDimension()
+{
+  return this->TargetSpace->HilbertSpaceDimension;
+}
+
+
+// return number of particles of the target space
+//
+// return value = Hilbert space dimension
+
+int BosonOnTorus::GetTargetNbrParticles()
+{
+  return this->TargetSpace->GetNbrParticles();
+}
+
 // get momemtum value of a given state
 //
 // index = state index

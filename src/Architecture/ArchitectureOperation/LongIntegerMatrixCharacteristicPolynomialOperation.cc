@@ -266,7 +266,11 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
 	{
 	  while (k >= 0)
 	    {
+#ifdef __GMP__
 	      mpz_set_ui(this->CharacteristicPolynomial[k], 0ul);
+#else
+	      this->CharacteristicPolynomial[k] = (LONGLONG) 0l;
+#endif
 	      --k;
 	    }	  
 	}

@@ -40,6 +40,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('n', "max-denominator", "maximum denominator allowed for a rational number", 1000l);
   (*SystemGroup) += new SingleDoubleOption ('f', "filter-error", "if non zero, only shows lines of the input file for which the error between the double number and the closest rational is lower than a give threshold", 0.0);
   (*SystemGroup) += new SingleDoubleOption ('\n', "shift-numbers", "shift all the double numbers by a given amount", 0.0);
+  (*SystemGroup) += new SingleDoubleOption ('\n', "rescale", "rescale all the double numbers", 1.0);
   (*SystemGroup) += new BooleanOption  ('\n', "add-index", "add an index to each output line");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -80,7 +81,7 @@ int main(int argc, char** argv)
   double MaxError = Manager.GetDouble("filter-error");
   long MaxDenominator = Manager.GetInteger("max-denominator");
   double Shift = Manager.GetDouble("shift-numbers");
-
+  double Rescale = Manager.GetDouble("rescale");
   if (Manager.GetBoolean("std-output") == false)
     {
       ofstream File;
@@ -88,7 +89,7 @@ int main(int argc, char** argv)
       File.precision(14);
       for (int i = 0; i < NbrLines; ++i)
 	{
-	  double Error = TmpRational.GetClosestRational(TmpNumbers[i] + Shift, MaxDenominator);
+	  double Error = TmpRational.GetClosestRational((TmpNumbers[i] + Shift) * Rescale, MaxDenominator);
 	  if ((MaxError == 0.0) || (fabs(Error) < MaxError))
 	    {
 	      if (AddIndexFlag == true)
@@ -108,7 +109,7 @@ int main(int argc, char** argv)
     {
       for (int i = 0; i < NbrLines; ++i)
 	{
-	  double Error = TmpRational.GetClosestRational(TmpNumbers[i] + Shift, MaxDenominator);
+	  double Error = TmpRational.GetClosestRational((TmpNumbers[i] + Shift) * Rescale, MaxDenominator);
 	  if ((MaxError == 0.0) || (fabs(Error) < MaxError))
 	    {
 	      if (AddIndexFlag == true)

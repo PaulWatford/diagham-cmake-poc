@@ -18,6 +18,11 @@
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzSymmetry.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndInversionSymmetry.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzInversionSymmetries.h"
+#include "HilbertSpace/Spin1_2ChainLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzSymmetryLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndInversionSymmetryLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzInversionSymmetriesLong.h"
 #include "HilbertSpace/Spin1ChainWithTranslations.h"
 #include "HilbertSpace/Spin1ChainWithTranslationsAndSzSymmetry.h"
 #include "HilbertSpace/Spin1ChainWithTranslationsAndInversionSymmetry.h"
@@ -294,7 +299,16 @@ int main(int argc, char** argv)
 	  switch (SpinValue)
 	    {
 	    case 1 :
-	      Space = new Spin1_2Chain (NbrSpins, TotalSz, 1000000);
+	      {
+		if (NbrSpins < 64)
+		  {
+		    Space = new Spin1_2Chain (NbrSpins, TotalSz, 1000000);
+		  }
+		else
+		  {
+		    Space = new Spin1_2ChainLong (NbrSpins, TotalSz, 1000000);
+		  }
+	      }
 	      break;
 	    case 2 :
 	      {
@@ -347,22 +361,50 @@ int main(int argc, char** argv)
 		  {
 		    if (SzSymmetrySector != 0)
 		      {
-			Space = new Spin1_2ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, XMomentum, 1, InversionSector, SzSymmetrySector, TotalSz, 1000000, 1000000);
+			if (NbrSpins < 64)
+			  {
+			    Space = new Spin1_2ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, XMomentum, 1, InversionSector, SzSymmetrySector, TotalSz, 1000000, 1000000);
+			  }
+			else
+			  {
+			    Space = new Spin1_2ChainWithTranslationsAndSzInversionSymmetriesLong (NbrSpins, XMomentum, 1, InversionSector, SzSymmetrySector, TotalSz, 1000000, 1000000);
+			  }
 		      }
 		    else
 		      {
-			Space = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, XMomentum, 1, InversionSector, TotalSz, 1000000, 1000000);
+			if (NbrSpins < 64)
+			  {
+			    Space = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, XMomentum, 1, InversionSector, TotalSz, 1000000, 1000000);
+			  }
+			else
+			  {
+			    Space = new Spin1_2ChainWithTranslationsAndInversionSymmetryLong (NbrSpins, XMomentum, 1, InversionSector, TotalSz, 1000000, 1000000);
+			  }
 		      }
 		  }
 		else
 		  {
 		    if (SzSymmetrySector != 0)
 		      {
-			Space = new Spin1_2ChainWithTranslationsAndSzSymmetry (NbrSpins, XMomentum, 1, SzSymmetrySector, TotalSz, 1000000, 1000000);
+			if (NbrSpins < 64)
+			  {
+			    Space = new Spin1_2ChainWithTranslationsAndSzSymmetry (NbrSpins, XMomentum, 1, SzSymmetrySector, TotalSz, 1000000, 1000000);
+			  }
+			else
+			  {
+			    Space = new Spin1_2ChainWithTranslationsAndSzSymmetryLong (NbrSpins, XMomentum, 1, SzSymmetrySector, TotalSz, 1000000, 1000000);
+			  }
 		      }
 		    else
 		      {
-			Space = new Spin1_2ChainWithTranslations (NbrSpins, XMomentum, 1, TotalSz, 1000000, 1000000);
+			if (NbrSpins < 64)
+			  {
+			    Space = new Spin1_2ChainWithTranslations (NbrSpins, XMomentum, 1, TotalSz, 1000000, 1000000);
+			  }
+			else
+			  {
+			    Space = new Spin1_2ChainWithTranslationsLong (NbrSpins, XMomentum, 1, TotalSz, 1000000, 1000000);
+			  }
 		      }
 		  }
 	      }

@@ -5,6 +5,10 @@
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzSymmetry.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndInversionSymmetry.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzInversionSymmetries.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzSymmetryLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndInversionSymmetryLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzInversionSymmetriesLong.h"
 #include "HilbertSpace/Spin1ChainWithTranslations.h"
 #include "HilbertSpace/Spin1ChainWithTranslationsAndSzSymmetry.h"
 #include "HilbertSpace/Spin1ChainWithTranslationsAndInversionSymmetry.h"
@@ -54,7 +58,8 @@ using std::ofstream;
 // minSValue = twice the minimum S value to consider (when sResolvedFlag is true)
 // minSValue = twice the maximum S value to consider (when sResolvedFlag is true)
 // sU2Degeneracy = array providing the Hilbert space dimension per S value (when sResolvedFlag is true)
-void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue, int maxSValue, int* sU2Degeneracy);
+// discardFourFactor = discard a global four factor used to ensure integer numbers
+void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue, int maxSValue, int* sU2Degeneracy, bool discardFourFactor = false);
 
 
 int main(int argc, char** argv)
@@ -91,6 +96,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleDoubleOption ('j', "j-value", "coupling constant value", 1.0);
   (*SystemGroup) += new  SingleDoubleOption ('\n', "nn-coupling", "add the term to ZZ nearest-neighbour interaction [will be j+nn-coupling]", 0.0);
   (*SystemGroup) += new  SingleDoubleOption ('\n', "nnn-coupling", "next-nearest-neighbour interaction", 0.0);
+  (*SystemGroup) += new  SingleDoubleOption ('\n', "shift-energies", "shift energies by a constant value", 0.0);
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
@@ -100,7 +106,8 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
   (*ToolsGroup) += new BooleanOption  ('\n', "export-sresolvedcharpolynomial", "export the hamiltonian characteristic polynomial resolved in S quantum number");  
-  (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
+  (*ToolsGroup) += new BooleanOption  ('\n', "charpolynomial-nofour", "when exporting the hamiltonian characteristic polynomial, do not include a global 4 factor");  
+   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
     {
@@ -225,7 +232,16 @@ int main(int argc, char** argv)
 		      switch (SpinValue)
 			{
  			case 1 :
- 			  Chain = new Spin1_2ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, Momentum, 1, InversionSymmetrySector, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
+			  {
+			    if (NbrSpins < 64)
+			      {
+				Chain = new Spin1_2ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, Momentum, 1, InversionSymmetrySector, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
+			      }
+			    else
+			      {
+				Chain = new Spin1_2ChainWithTranslationsAndSzInversionSymmetriesLong (NbrSpins, Momentum, 1, InversionSymmetrySector, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
+			      }
+			  }
  			  break;
 			case 2 :
 			  Chain = new Spin1ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, Momentum, InversionSymmetrySector, SzSymmetrySector, InitalSzValue);
@@ -253,6 +269,7 @@ int main(int argc, char** argv)
 			      Lanczos.SetRealAlgorithms();
 			      SpinChainRealHamiltonianWithTranslations Hamiltonian (Chain, NbrSpins, JValue, NNCoupling, NNNCoupling);
 
+			      Hamiltonian.ShiftHamiltonian(Manager.GetDouble("shift-energies"));
 			      if (Manager.GetBoolean("export-charpolynomial"))
 				{
 				  int* SU2Degeneracy = 0;
@@ -265,8 +282,16 @@ int main(int argc, char** argv)
 					    {
 					    case 1 :
 					      {
-						Spin1_2ChainWithTranslationsAndInversionSymmetry TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
-						SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+						if (NbrSpins < 64)
+						  {
+						    Spin1_2ChainWithTranslationsAndInversionSymmetry TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
+						    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+						  }
+						else
+						  {
+						    Spin1_2ChainWithTranslationsAndInversionSymmetryLong TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
+						    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+						  }
 					      }
 					      break;
 					    case 2 :
@@ -296,7 +321,7 @@ int main(int argc, char** argv)
 					    }
 					}
 				    }
-				  SpinChainComputeCharacteristicPolynomial(&Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue, SpinValue * NbrSpins, SU2Degeneracy);
+				  SpinChainComputeCharacteristicPolynomial(&Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue, SpinValue * NbrSpins, SU2Degeneracy, Manager.GetBoolean("charpolynomial-nofour"));
 				}			      
 
 
@@ -309,6 +334,7 @@ int main(int argc, char** argv)
 			  else
 			    {
 			      SpinChainHamiltonianWithTranslations Hamiltonian (Chain, NbrSpins, JValue, NNCoupling, NNNCoupling);
+			      Hamiltonian.ShiftHamiltonian(Manager.GetDouble("shift-energies"));
 			      GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 							  FirstRun, TmpEigenstateString);
 			      MainTaskOperation TaskOperation (&Task);
@@ -326,7 +352,16 @@ int main(int argc, char** argv)
 		  switch (SpinValue)
 		    {
 		    case 1 :
-		      Chain = new Spin1_2ChainWithTranslationsAndSzSymmetry (NbrSpins, Momentum, 1, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
+		      {
+			if (NbrSpins < 64)
+			  {
+			    Chain = new Spin1_2ChainWithTranslationsAndSzSymmetry (NbrSpins, Momentum, 1, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
+			  }
+			else
+			  {
+			    Chain = new Spin1_2ChainWithTranslationsAndSzSymmetryLong (NbrSpins, Momentum, 1, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
+			  }
+		      }
 		      break;
 		    case 2 :
 		      Chain = new Spin1ChainWithTranslationsAndSzSymmetry (NbrSpins, Momentum, SzSymmetrySector, InitalSzValue);
@@ -356,6 +391,7 @@ int main(int argc, char** argv)
 		      char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 		      sprintf (TmpEigenstateString, "%s_sz_%d_szsym_%d_k_%d", OutputFileName, InitalSzValue, SzSymmetrySector, Momentum);
 		      SpinChainHamiltonianWithTranslations Hamiltonian (Chain, NbrSpins, JValue, NNCoupling, NNNCoupling);
+		      Hamiltonian.ShiftHamiltonian(Manager.GetDouble("shift-energies"));
 		      GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						  FirstRun, TmpEigenstateString);
 		      MainTaskOperation TaskOperation (&Task);
@@ -381,7 +417,16 @@ int main(int argc, char** argv)
 		  switch (SpinValue)
 		    {
  		    case 1 :
- 		      Chain = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, 1, InversionSymmetrySector, InitalSzValue, 1000000, 1000000);
+		      {
+			if (NbrSpins < 64)
+			  {
+			    Chain = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, 1, InversionSymmetrySector, InitalSzValue, 1000000, 1000000);
+			  }
+			else
+			  {
+			    Chain = new Spin1_2ChainWithTranslationsAndInversionSymmetryLong (NbrSpins, Momentum, 1, InversionSymmetrySector, InitalSzValue, 1000000, 1000000);
+			  }
+		      }
  		      break;
 		    case 2 :
 		      Chain = new Spin1ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, InversionSymmetrySector, InitalSzValue);
@@ -414,7 +459,7 @@ int main(int argc, char** argv)
 			{
 			  Lanczos.SetRealAlgorithms();
 			  SpinChainRealHamiltonianWithTranslations Hamiltonian (Chain, NbrSpins, JValue, NNCoupling, NNNCoupling);
-
+			  Hamiltonian.ShiftHamiltonian(Manager.GetDouble("shift-energies"));
 			  if (Manager.GetBoolean("export-charpolynomial"))
 			    {
 			      int* SU2Degeneracy = 0;
@@ -427,8 +472,16 @@ int main(int argc, char** argv)
 					{
 					case 1 :
 					  {
-					    Spin1_2ChainWithTranslationsAndInversionSymmetry TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
-					    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+					    if (NbrSpins < 64)
+					      {
+						Spin1_2ChainWithTranslationsAndInversionSymmetry TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
+						SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+					      }
+					    else
+					      {
+						Spin1_2ChainWithTranslationsAndInversionSymmetryLong TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
+						SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+					      }
 					  }
 					  break;
 					case 2 :
@@ -444,7 +497,7 @@ int main(int argc, char** argv)
 				      SU2Degeneracy[(k - InitalSzValue) >> 1] -= SU2Degeneracy[1 + ((k - InitalSzValue) >> 1)];
 				    }
 				}
-			      SpinChainComputeCharacteristicPolynomial(&Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue,  (SpinValue * NbrSpins), SU2Degeneracy);
+			      SpinChainComputeCharacteristicPolynomial(&Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue,  (SpinValue * NbrSpins), SU2Degeneracy, Manager.GetBoolean("charpolynomial-nofour"));
 			    }			      
 
 
@@ -457,6 +510,7 @@ int main(int argc, char** argv)
 		      else
 			{
 			  SpinChainHamiltonianWithTranslations Hamiltonian (Chain, NbrSpins, JValue, NNCoupling, NNNCoupling);
+			  Hamiltonian.ShiftHamiltonian(Manager.GetDouble("shift-energies"));
 			  GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						      FirstRun, TmpEigenstateString);
 			  MainTaskOperation TaskOperation (&Task);
@@ -474,7 +528,16 @@ int main(int argc, char** argv)
 	      switch (SpinValue)
 		{
 		case 1 :
-		  Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
+		  {
+		    if (NbrSpins < 64)
+		      {
+			Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
+		      }
+		    else
+		      {
+			Chain = new Spin1_2ChainWithTranslationsLong (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
+		      }
+		  }
 		  break;
 		case 2 :
 		  Chain = new Spin1ChainWithTranslations (NbrSpins, Momentum, InitalSzValue);
@@ -497,6 +560,7 @@ int main(int argc, char** argv)
 		  Architecture.GetArchitecture()->SetDimension(Chain->GetHilbertSpaceDimension());	
 		  cout << "2Sz = " << InitalSzValue << ", K = " << Momentum << endl; 
 		  SpinChainHamiltonianWithTranslations Hamiltonian (Chain, NbrSpins, JValue, NNCoupling, NNNCoupling);
+		  Hamiltonian.ShiftHamiltonian(Manager.GetDouble("shift-energies"));
 		  char* TmpSzString = new char[64];
 		  if (Manager.GetBoolean("disable-inversionsymmetry") == false)
 		    {
@@ -547,8 +611,9 @@ int main(int argc, char** argv)
 // minSValue = twice the minimum S value to consider (when sResolvedFlag is true)
 // minSValue = twice the maximum S value to consider (when sResolvedFlag is true)
 // sU2Degeneracy = array providing the Hilbert space dimension per S value (when sResolvedFlag is true)
+// discardFourFactor = discard a global four factor used to ensure integer numbers
 
-void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue, int maxSValue, int* sU2Degeneracy)
+void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTranslations* hamiltonian, AbstractSpinChainWithTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, bool sResolvedFlag, int minSValue, int maxSValue, int* sU2Degeneracy, bool discardFourFactor)
 {
 #ifdef __GMP__
   if (sResolvedFlag == false)
@@ -569,11 +634,26 @@ void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTransl
 	    }
 	}
       cout << "Converting to integer matrix" << endl;
-      LongIntegerMatrix TmpMatrix(TmpRawMatrix, 4.0);
+      LongIntegerMatrix TmpMatrix;
+      if (discardFourFactor == false)
+	{
+	  TmpMatrix = LongIntegerMatrix(TmpRawMatrix, 4.0);
+	}
+      else
+	{
+	  TmpMatrix = LongIntegerMatrix(TmpRawMatrix);
+	}
       cout << "Start computing characteristic polynomial (degree " << chain->GetHilbertSpaceDimension() << ")" << endl;
       mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
       char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
-      sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
+      if (discardFourFactor == false)
+	{
+	  sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
+	}
+      else
+	{
+	  sprintf (PolynomialOutputFileName, "%s.no4.charpol", outputFileName);
+	}
       ofstream OutputFile;
       OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
       OutputFile << CharacteristicPolynomial[0];
@@ -651,7 +731,14 @@ void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTransl
 			}
 		    }
 		}
-	      TmpMatrix = LongIntegerMatrix (TmpRawMatrix, 4.0);
+	      if (discardFourFactor == false)
+		{
+		  TmpMatrix = LongIntegerMatrix(TmpRawMatrix, 4.0);
+		}
+	      else
+		{
+		  TmpMatrix = LongIntegerMatrix(TmpRawMatrix);
+		}
 	      TmpMatrix2 = TmpMatrix * TmpProjector;
 	      TmpMatrix = TmpProjector * TmpMatrix2;
 	      TmpMatrix /= (TmpNormalisation);
@@ -686,7 +773,14 @@ void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTransl
 		}
 	      
 	      char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
-	      sprintf (PolynomialOutputFileName, "%s_s_%d.charpol", outputFileName, s);
+	      if (discardFourFactor == false)
+		{
+		  sprintf (PolynomialOutputFileName, "%s_s_%d.charpol", outputFileName, s);
+		}
+	      else
+		{
+		  sprintf (PolynomialOutputFileName, "%s_s_%d.no4.charpol", outputFileName, s);
+		}		
 	      ofstream OutputFile;
 	      OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
 	      OutputFile << CharacteristicPolynomial[chain->GetHilbertSpaceDimension() - sU2Degeneracy[(s - minSValue) >> 1]];

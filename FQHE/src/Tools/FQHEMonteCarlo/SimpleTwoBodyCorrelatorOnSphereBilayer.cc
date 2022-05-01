@@ -204,7 +204,7 @@ void SimpleTwoBodyCorrelatorOnSphereBilayer::WriteDataFile(std::ostream &output)
       Normalization=Measures/Resolution*NbrParticles*NbrParticles;
       for (int i=0;i<Resolution-Range; ++i)
 	output << Units*acos(1.0-(double)(i+Range)/Resolution*2.0) <<"\t"
-	       << 2.0*this->CorrelationsUp[i]/Normalization << "\t" << this->CorrelationsIntra[i]/Normalization
+	       << 2.0*this->CorrelationsUp[i+Highres]/Normalization << "\t" << this->CorrelationsIntra[i+Highres]/Normalization
 	       << "\t" << 2.0*this->CorrelationsDown[i+Highres]/Normalization<< endl;
     }
 }
@@ -231,3 +231,65 @@ void SimpleTwoBodyCorrelatorOnSphereBilayer::SetParticleCollection(AbstractParti
   this->System->GetSpinorCoordinates(SpinorUCoordinates, SpinorVCoordinates);
 }
 
+
+
+// accessor function to return the legend and numerical values for legend
+void SimpleTwoBodyCorrelatorOnSphereBilayer::GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues)
+{
+  double Units;
+  if (this->PrintLength)
+    {
+      Units=this->Radius;
+      legendParameters = std::string("Distance[Radius] 'r'");
+    }
+  else
+    {
+      Units=1.0;
+      legendParameters = std::string("Distance[Absolute] 'r'");
+    }
+  legendValue = std::string("Correlator 'g_uu|g_ud|g_dd'");
+  parameterValues.Resize(3*(this->Highres+this->Resolution-this->Range));
+  int offset=this->Highres+this->Resolution-this->Range;
+  int pos=0;
+  for (int i=0;i<Highres;i++,pos++)
+    {
+      parameterValues[pos] = Units*acos(1-(double)i/(Resolution*(double)Highres/Range)*2.0);
+      parameterValues[pos+offset] = parameterValues[pos];
+      parameterValues[pos+2*offset] = parameterValues[pos];
+    }
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    {
+      parameterValues[pos] = Units*acos(1-(double)(i+Range)/Resolution*2.0);
+      parameterValues[pos+offset] = parameterValues[pos];
+      parameterValues[pos+2*offset] = parameterValues[pos];
+    }
+}
+
+// accessor function for average and error for variables with real measurements
+void SimpleTwoBodyCorrelatorOnSphereBilayer::GetRealVectorMeasurement(RealVector &values, RealVector &errors)
+{
+  values.Resize(3*(this->Highres+this->Resolution-this->Range));
+  errors.Resize(0);
+  double Units;
+  if (this->PrintLength)
+    Units=this->Radius;
+  else
+    Units=1.0;
+  double Normalization=Measures/(Resolution*(double)Highres/Range)*NbrParticles*NbrParticles;
+  int offset=this->Highres+this->Resolution-this->Range;
+  int pos=0;
+  for (int i=0;i<this->Highres;i++, pos++)
+    {
+      values[pos] = this->CorrelationsUp[i]/Normalization;
+      values[pos+offset] = this->CorrelationsIntra[i]/Normalization;;
+      values[pos+2*offset] = this->CorrelationsDown[i]/Normalization;
+    }
+
+  Normalization=Measures/Resolution*NbrParticles*NbrParticles;
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    {
+      values[pos] = this->CorrelationsUp[i+Highres]/Normalization;
+      values[pos+offset] = this->CorrelationsIntra[i+Highres]/Normalization;
+      values[pos+2*offset] = this->CorrelationsDown[i+Highres]/Normalization;
+    }
+}

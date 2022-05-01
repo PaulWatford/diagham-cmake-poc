@@ -72,7 +72,6 @@ class ParticleOnTorusPerturbedCoulombHamiltonian : public ParticleOnTorusGeneric
   double* Pseudopotentials;
   // Laguerre polynomial for the pseudopotentials
 #ifdef __GMP__
-  // LaguerrePolynomialRecursion * LaguerrePolynomialsStandard;
   LaguerrePolynomialRecursionAP * LaguerrePolynomials;
   // temporary array for mpf values
   mpf_t *TmpLaguerreArray;

@@ -141,8 +141,10 @@ ParticleOnTorusPerturbedCoulombHamiltonian::ParticleOnTorusPerturbedCoulombHamil
 ParticleOnTorusPerturbedCoulombHamiltonian::~ParticleOnTorusPerturbedCoulombHamiltonian() 
 {
   delete [] this->Pseudopotentials;
+#ifdef __GMP__
   delete this->LaguerrePolynomials;
   delete [] this->TmpLaguerreArray;
+#endif
 }
 
 // evaluate the numerical coefficient in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term

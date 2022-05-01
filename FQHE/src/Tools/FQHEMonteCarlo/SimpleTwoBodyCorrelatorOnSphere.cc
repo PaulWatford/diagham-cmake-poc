@@ -49,6 +49,7 @@ SimpleTwoBodyCorrelatorOnSphere::SimpleTwoBodyCorrelatorOnSphere()
 // range =  ranger over which high resolution is implemented
 SimpleTwoBodyCorrelatorOnSphere::SimpleTwoBodyCorrelatorOnSphere(int nbrFlux, int resolution, int highres, int range, bool printLength)
 {
+  this->Type = RealObservableT | VectorValued;
   this->Bins=resolution+highres-range+1;
   this->Resolution=resolution;
   this->Highres=highres;
@@ -180,3 +181,44 @@ void SimpleTwoBodyCorrelatorOnSphere::SetParticleCollection(AbstractParticleColl
   this->System->GetSpinorCoordinates(SpinorUCoordinates, SpinorVCoordinates);
 }
 
+// accessor function to return the legend and numerical values for legend
+void SimpleTwoBodyCorrelatorOnSphere::GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues)
+{
+  double Units;
+  if (this->PrintLength)
+    {
+      Units=this->Radius;
+      legendParameters = std::string("Distance[Radius] 'r'");
+    }
+  else
+    {
+      Units=1.0;
+      legendParameters = std::string("Distance[Absolute] 'r'");
+    }
+  legendValue = std::string("Correlator 'g(r)'");
+  parameterValues.Resize(this->Highres+this->Resolution-this->Range);
+  int pos=0;
+  for (int i=0;i<Highres;i++,pos++)
+    parameterValues[pos] = Units*acos(1-(double)i/(Resolution*(double)Highres/Range)*2.0);
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    parameterValues[pos] = Units*acos(1-(double)(i+Range)/Resolution*2.0);
+}
+
+// accessor function for average and error for variables with real measurements
+void SimpleTwoBodyCorrelatorOnSphere::GetRealVectorMeasurement(RealVector &values, RealVector &errors)
+{
+  values.Resize(this->Highres+this->Resolution-this->Range);
+  errors.Resize(0);
+  double Units;
+  if (this->PrintLength)
+    Units=this->Radius;
+  else
+    Units=1.0;
+  double Normalization=Measures/(Resolution*(double)Highres/Range)*NbrParticles*NbrParticles;
+  int pos=0;
+  for (int i=0;i<this->Highres;i++, pos++)
+    values[pos] = this->Correlations[i]/Normalization;
+  Normalization=Measures/Resolution*NbrParticles*NbrParticles;
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    values[pos] = this->Correlations[i+Highres]/Normalization;
+}

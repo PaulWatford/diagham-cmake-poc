@@ -42,6 +42,11 @@ class LaughlinSamplingFunctionOnDisk : public AbstractMCSamplingFunctionOnDisk
   int Exponent;
   // defect angle at origin
   double DefectAngle;
+  // value for spin
+  double Spin;
+  // remainder angle, and its square
+  double Gamma;
+  double InvGammaSqr;
 
   // pointers to coordinates (external)
   Complex *CoordinatesZ;
@@ -57,7 +62,7 @@ class LaughlinSamplingFunctionOnDisk : public AbstractMCSamplingFunctionOnDisk
   
  public:
   // constructor
-  LaughlinSamplingFunctionOnDisk(int nbrParticles, int exponent, double defectAngle=0.0);
+  LaughlinSamplingFunctionOnDisk(int nbrParticles, int exponent, double defectAngle=0.0, double spin=0.0);
   // virtual destructor
   virtual ~LaughlinSamplingFunctionOnDisk();
 

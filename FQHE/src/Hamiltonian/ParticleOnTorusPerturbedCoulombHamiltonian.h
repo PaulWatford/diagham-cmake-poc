@@ -74,15 +74,15 @@ class ParticleOnTorusPerturbedCoulombHamiltonian : public ParticleOnTorusGeneric
 #ifdef __GMP__
   // LaguerrePolynomialRecursion * LaguerrePolynomialsStandard;
   LaguerrePolynomialRecursionAP * LaguerrePolynomials;
+  // temporary array for mpf values
+  mpf_t *TmpLaguerreArray;
+  size_t ArraySize;
 #else
   LaguerrePolynomialRecursion * LaguerrePolynomials;
 #endif
 
   // temporary vector for values
   RealVector TmpLaguerre;
-  // temporary array for mpf values
-  mpf_t *TmpLaguerreArray;
-  size_t ArraySize;
 
  public:
 

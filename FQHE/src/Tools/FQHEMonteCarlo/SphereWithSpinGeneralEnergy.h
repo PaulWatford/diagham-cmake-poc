@@ -150,6 +150,12 @@ class SphereWithSpinGeneralEnergy : public AbstractObservable
   // system = particle collection
   virtual void SetParticleCollection(AbstractParticleCollection *system);
 
+  // accessor function to return the legend corresponding to the value of the observable
+  virtual std::string GetLegend() {return std::string("Energy 'E'");}
+
+  // accessor function for average and error for variables with real measurements
+  virtual void GetRealMeasurement(double &value, double &error);
+
   // additional routines for energy observables:
   
   // returns the total background energy

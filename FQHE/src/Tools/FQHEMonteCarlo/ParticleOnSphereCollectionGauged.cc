@@ -23,6 +23,10 @@ ParticleOnSphereCollectionGauged::ParticleOnSphereCollectionGauged(int N, long s
   this->Theta0 = (0.2*M_PI/sqrt((double)N/10.0));
   this->ThetaPhi.Resize(2*N);
   this->Randomize();
+
+  this->Distances = new RealSymmetricMatrix(NbrParticles, true);
+  this->DistancesUpToDate = false;
+
 }
 
 ParticleOnSphereCollectionGauged::ParticleOnSphereCollectionGauged(int N, AbstractRandomNumberGenerator *generator)
@@ -37,6 +41,10 @@ ParticleOnSphereCollectionGauged::ParticleOnSphereCollectionGauged(int N, Abstra
   this->Theta0 = (0.2*M_PI/sqrt((double)N/10.0));
   this->ThetaPhi.Resize(2*N);
   this->Randomize();
+
+  this->Distances = new RealSymmetricMatrix(NbrParticles, true);
+  this->DistancesUpToDate = false;
+
 }
 
 
@@ -65,6 +73,7 @@ ParticleOnSphereCollectionGauged::~ParticleOnSphereCollectionGauged()
       delete [] SpinorVCoordinates;
       if (!this->ExternalGenerator)
 	delete Generator;
+      delete [] Distances;
     }
 }
 
@@ -229,11 +238,32 @@ void ParticleOnSphereCollectionGauged::GetDistances(RealSymmetricMatrix &distanc
       distances(i,i)=0.0;
       for (int j=i+1; j<NbrParticles; ++j)
 	{
-	  distances(i,j)=Norm(this->SpinorUCoordinates[i].Re*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j].Re*this->SpinorVCoordinates[i]);
+	  distances(i,j)=(*this->Distances)(i,j)=Norm(this->SpinorUCoordinates[i].Re*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j].Re*this->SpinorVCoordinates[i]);
 	}
     }
+  this->DistancesUpToDate = false;
   return;
 }
+
+
+// get reference to internal matrix with particle distances
+const RealSymmetricMatrix& ParticleOnSphereCollectionGauged::GetDistances()
+{
+  if (!DistancesUpToDate)
+    {
+      for (int i=0; i<NbrParticles; ++i)
+	{
+	  // this->Distances(i,i)=0.0;
+	  for (int j=i+1; j<NbrParticles; ++j)
+	    {
+	      (*this->Distances)(i,j)=Norm(this->SpinorUCoordinates[i]*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j]*this->SpinorVCoordinates[i]);
+	    }
+	}
+    }
+  this->DistancesUpToDate = false;
+  return *this->Distances;
+}
+
 
 
 // toggle positions of first N/2 particles with the remaining N/2 positions

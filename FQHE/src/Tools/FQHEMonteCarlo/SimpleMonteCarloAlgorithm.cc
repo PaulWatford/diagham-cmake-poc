@@ -57,8 +57,15 @@ SimpleMonteCarloAlgorithm::SimpleMonteCarloAlgorithm(AbstractParticleCollection:
 {
   if (waveFunction==0)
     {
-      cout << "Invalid wavefunction" << endl;
-      exit(1);
+      if (samplingFunction!=0)
+	{
+	  cout << "Evaluating observables directly for sampling function." << endl;
+	}
+      else
+	{
+	  cout << "Invalid wavefunction" << endl;
+	  exit(1);
+	}
     }
   if (samplingFunction==0)
     {
@@ -147,6 +154,17 @@ void SimpleMonteCarloAlgorithm::AddObservable(AbstractObservable *O, int frequen
   O->SetParticleCollection(this->System);
 }
 
+
+// get pointer to the n-th observable
+// index = index of the observable, labeled from 0,...,NbrObservables-1
+AbstractObservable *SimpleMonteCarloAlgorithm::GetObservable(int index)
+{
+  if (index<this->NbrObservables)
+    return this->Observables[index];
+  else
+    return NULL;
+}
+
 // thermalize system with a number of microsteps
 // time = number of microsteps
 // startFromRandom = flag indicating if we want to restart from a random configuration
@@ -161,6 +179,7 @@ void SimpleMonteCarloAlgorithm::Thermalize(int time, bool startFromRandom)
 // time = number of points to average
 void SimpleMonteCarloAlgorithm::NormalizePsi(int time)
 {
+  if (this->WaveFunction==0) return;
   double SumSqrPsiValues=0.0;
   for (int t=0; t<time; ++t)
     {
@@ -199,12 +218,16 @@ void SimpleMonteCarloAlgorithm::Simulate(ostream &Output)
 	{
 	  this->PerformMicroSteps(DensityOfSamples);
 	  SamplingFctValue = this->SamplingFunction->GetFunctionValue();
-	  SamplingAmplitude = SqrNorm(SamplingFctValue);
-	  //cout << "SamplingFctValue=" <<SamplingFctValue<<endl;
-	  WaveFctValue = (*(this->WaveFunction))(System->GetPositions());
-	  //cout << "WaveFctValue=" <<WaveFctValue<<endl;	  
-	  Weight = SqrNorm(WaveFctValue)/SamplingAmplitude;
-	  //cout << "w="<<Weight<<" ratio="<<WaveFctValue/SamplingFctValue<<endl;
+	  if (this->WaveFunction!=NULL)
+	    {
+	      SamplingAmplitude = SqrNorm(SamplingFctValue);
+	      //cout << "SamplingFctValue=" <<SamplingFctValue<<endl;
+	      WaveFctValue = (*(this->WaveFunction))(System->GetPositions());
+	      //cout << "WaveFctValue=" <<WaveFctValue<<endl;	  
+	      Weight = SqrNorm(WaveFctValue)/SamplingAmplitude;
+	      //cout << "w="<<Weight<<" ratio="<<WaveFctValue/SamplingFctValue<<endl;
+	    }
+	  else Weight = 1.0;
 	  for (int i=0; i<NbrObservables; ++i)
 	    if (s%Frequencies[i]==0) Observables[i]->RecordValue(Weight);
 	}      
@@ -220,8 +243,7 @@ void SimpleMonteCarloAlgorithm::Simulate(ostream &Output)
        <<"% ======"<<endl;
 }
 
-
-// #define TESTING_MC
+//#define TESTING_MC
 
 // perform a number of Monte-Carlo microsteps
 // nbrSteps = number of steps

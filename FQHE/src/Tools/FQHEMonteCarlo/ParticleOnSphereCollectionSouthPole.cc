@@ -30,6 +30,9 @@ ParticleOnSphereCollectionSouthPole::ParticleOnSphereCollectionSouthPole(int N, 
   this->Theta0 = (0.2*M_PI/sqrt((double)N/10.0));
   this->ThetaPhi.Resize(2*N);
   this->Randomize();
+
+  this->Distances = new RealSymmetricMatrix(NbrParticles, true);
+  this->DistancesUpToDate = false;
 }
 
 ParticleOnSphereCollectionSouthPole::ParticleOnSphereCollectionSouthPole(int N, AbstractRandomNumberGenerator *generator)
@@ -47,6 +50,10 @@ ParticleOnSphereCollectionSouthPole::ParticleOnSphereCollectionSouthPole(int N, 
   this->Theta0 = (0.2*M_PI/sqrt((double)N/10.0));
   this->ThetaPhi.Resize(2*N);  
   this->Randomize();
+
+  this->Distances = new RealSymmetricMatrix(NbrParticles, true);
+  this->DistancesUpToDate = false;
+
 }
 
 
@@ -68,6 +75,8 @@ ParticleOnSphereCollectionSouthPole::ParticleOnSphereCollectionSouthPole(const P
   this->ExternalGenerator = tocopy.ExternalGenerator;
   this->ThetaPhi = tocopy.ThetaPhi;
   this->Theta0 = tocopy.Theta0;
+  this->Distances = tocopy.Distances;
+  this->DistancesUpToDate = tocopy.DistancesUpToDate;
 }
 
 ParticleOnSphereCollectionSouthPole::~ParticleOnSphereCollectionSouthPole()
@@ -81,6 +90,7 @@ ParticleOnSphereCollectionSouthPole::~ParticleOnSphereCollectionSouthPole()
       delete [] this->N3;
       if (!this->ExternalGenerator)
 	delete Generator;
+      delete [] Distances;
     }
 }
 
@@ -285,11 +295,31 @@ void ParticleOnSphereCollectionSouthPole::GetDistances(RealSymmetricMatrix &dist
       distances(i,i)=0.0;
       for (int j=i+1; j<NbrParticles; ++j)
 	{
-	  distances(i,j)=Norm(this->SpinorUCoordinates[i].Re*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j].Re*this->SpinorVCoordinates[i]);
+	  distances(i,j)=(*this->Distances)(i,j)=Norm(this->SpinorUCoordinates[i].Re*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j].Re*this->SpinorVCoordinates[i]);
 	}
     }
+  this->DistancesUpToDate = true;
   return;
 }
+
+// get reference to internal matrix with particle distances
+const RealSymmetricMatrix& ParticleOnSphereCollectionSouthPole::GetDistances()
+{
+  if (!DistancesUpToDate)
+    {
+      for (int i=0; i<NbrParticles; ++i)
+	{
+	  // this->Distances(i,i)=0.0;
+	  for (int j=i+1; j<NbrParticles; ++j)
+	    {
+	      (*this->Distances)(i,j)=Norm(this->SpinorUCoordinates[i]*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j]*this->SpinorVCoordinates[i]);
+	    }
+	}
+    }
+  this->DistancesUpToDate = false;
+  return *this->Distances;
+}
+
 
 
 // toggle positions of first N/2 particles with the remaining N/2 positions

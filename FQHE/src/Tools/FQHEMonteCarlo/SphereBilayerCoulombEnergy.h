@@ -109,6 +109,12 @@ class SphereBilayerCoulombEnergy : public AbstractObservable
   // system = particle collection
   virtual void SetParticleCollection(AbstractParticleCollection *system);
 
+  // accessor function to return the legend and numerical values for legend
+  virtual void GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues);
+
+  // accessor function for average and error for variables with real measurements
+  virtual void GetRealVectorMeasurement(RealVector &values, RealVector &errors);
+
   // additional routines for energy observables:
   // sep = layer separation
   // returns the total background energy for a layer separation 

@@ -32,5 +32,6 @@ ParticleOnSphereCollectionSouthPole.cc \
 ParticleOnSphereCollectionGauged.cc \
 AbstractParticleCollectionOnSphere.cc \
 AbstractMCSamplingFunctionOnSphere.cc \
-AbstractMCSamplingFunctionOnDisk.cc
+AbstractMCSamplingFunctionOnDisk.cc \
+StructureFactorOnSphere.cc
 

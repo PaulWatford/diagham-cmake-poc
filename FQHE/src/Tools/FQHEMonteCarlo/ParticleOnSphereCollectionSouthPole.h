@@ -61,6 +61,11 @@ class ParticleOnSphereCollectionSouthPole : public AbstractParticleCollectionOnS
   GarbageFlag Flag;
   RealVector ThetaPhi;
 
+  // fields to store distances for use across several objects
+  RealSymmetricMatrix *Distances;
+  bool DistancesUpToDate;
+
+
  public:
 
   // constructors:
@@ -124,6 +129,9 @@ class ParticleOnSphereCollectionSouthPole : public AbstractParticleCollectionOnS
   // get absolute values of all relative distances
   // distances = matrix in which to return the distances
   virtual void GetDistances(RealSymmetricMatrix &distances);
+
+  // get reference to internal matrix with particle distances
+  virtual const RealSymmetricMatrix& GetDistances();
 
   // toggle positions of first N/2 particles with the remaining N/2 positions
   //

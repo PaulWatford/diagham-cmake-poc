@@ -669,6 +669,15 @@ void SphereWithSpinGeneralEnergy::SetParticleCollection(AbstractParticleCollecti
     }
 }
 
+
+// accessor function for average and error for variables with real measurements
+void SphereWithSpinGeneralEnergy::GetRealMeasurement(double &value, double &error)
+{
+  value = this->Values->Average();
+  error = this->Values->ErrorEstimate();
+}
+
+
 // additional routines for energy observables:
 // returns the total background energy
 double SphereWithSpinGeneralEnergy::GetTotalBackgroundEnergy()

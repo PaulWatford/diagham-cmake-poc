@@ -73,6 +73,12 @@ class SimpleDensityOnDisk : public AbstractObservable
   // pointers to coordinates (external)
   Complex *CoordinatesZ;
 
+  // defect angle at origin
+  double DefectAngle;
+  // remainder angle, and its inverse
+  double Gamma;
+  double InvGamma;
+
   // Flag indicating whether variable is printed by default
   bool PrintFlag;
   
@@ -86,7 +92,8 @@ class SimpleDensityOnDisk : public AbstractObservable
   // resolution = total number of bins
   // highres = number of points in high resolution interval at small r
   // range =  ranger over which high resolution is implemented
-  SimpleDensityOnDisk(double rMax, int resolution, int highres, int range=0);
+  // defectAngle = (optional) defectAngle of the disk
+  SimpleDensityOnDisk(double rMax, int resolution, int highres, int range=0, double defectAngle=0.0);
   
   // destructor
   virtual ~SimpleDensityOnDisk();
@@ -123,23 +130,29 @@ class SimpleDensityOnDisk : public AbstractObservable
   // system = particle collection
   virtual void SetParticleCollection(AbstractParticleCollection *system);
 
+  // accessor function to return the legend and numerical values for legend
+  virtual void GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues);
+
+  // accessor function for average and error for variables with real measurements
+  virtual void GetRealVectorMeasurement(RealVector &values, RealVector &errors);
+
  private:
   // get bin index for a given radius
   int GetIndex(double radius)
   {
-    if (radius > this->MaxRadius) return this->Bins;
+    if (radius >= this->MaxRadius) return this->Resolution;
     else
-      return (int)(std::pow(radius/this->MaxRadius,2)*this->Resolution);
+      return (int)(std::pow(radius/this->MaxRadius,2.0*this->Gamma)*this->InvGamma*this->Resolution);
   }
 
   // get bin index for a radius on the high resolution grid
   int GetHighResIndex(double radius)
   {
-    if (radius > this->MaxRadius) return this->Bins;
+    if (radius >= this->MaxRadius) return this->Bins;
     else
       {
 	// std::cout << "radius="<<radius<<", maxR="<<MaxRadius<<", HighResRatio="<<HighResRatio<<", Res="<<Resolution <<std::endl;
-	return (int)(std::pow(radius/this->MaxRadius,2)*this->HighResRatio*this->Resolution);
+	return (int)(std::pow(radius/this->MaxRadius,2.0*this->Gamma)*this->InvGamma*this->HighResRatio*this->Resolution);
       }
   }
     

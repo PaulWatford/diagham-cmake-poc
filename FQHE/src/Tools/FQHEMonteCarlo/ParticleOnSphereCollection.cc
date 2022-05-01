@@ -33,6 +33,10 @@ ParticleOnSphereCollection::ParticleOnSphereCollection(int N, long seed)
       this->ThetaPhi[i<<1] = (2.0*acos(Norm(SpinorUCoordinates[i])));
       this->ThetaPhi[(i<<1)+1] = (Arg(SpinorVCoordinates[i])-Arg(SpinorUCoordinates[i]));
     }
+
+  this->Distances = new RealSymmetricMatrix(NbrParticles, true);
+  this->DistancesUpToDate = false;
+
 }
 
 ParticleOnSphereCollection::ParticleOnSphereCollection(int N, AbstractRandomNumberGenerator *generator)
@@ -59,6 +63,10 @@ ParticleOnSphereCollection::ParticleOnSphereCollection(int N, AbstractRandomNumb
       this->ThetaPhi[i<<1] = (2.0*acos(Norm(SpinorUCoordinates[i])));
       this->ThetaPhi[(i<<1)+1] = (Arg(SpinorVCoordinates[i])-Arg(SpinorUCoordinates[i]));
     }
+
+  this->Distances = new RealSymmetricMatrix(NbrParticles, true);
+  this->DistancesUpToDate = false;
+
 }
 
 
@@ -77,6 +85,10 @@ ParticleOnSphereCollection::ParticleOnSphereCollection(const ParticleOnSphereCol
   this->ExternalGenerator = tocopy.ExternalGenerator;
   this->ThetaPhi = tocopy.ThetaPhi;
   this->Theta0 = tocopy.Theta0;
+
+  this->Distances = tocopy.Distances;
+  this->DistancesUpToDate = tocopy.DistancesUpToDate;
+
 }
 
 ParticleOnSphereCollection::~ParticleOnSphereCollection()
@@ -87,6 +99,7 @@ ParticleOnSphereCollection::~ParticleOnSphereCollection()
       delete [] SpinorVCoordinates;
       if (!this->ExternalGenerator)
 	delete Generator;
+      delete Distances;
     }
 }
 
@@ -109,6 +122,7 @@ void ParticleOnSphereCollection::Move(int nbrParticle)
   this->ThetaPhi[nbrParticle<<1] = (2.0*acos(Norm(SpinorUCoordinates[nbrParticle])));
   this->ThetaPhi[(nbrParticle<<1)+1] = (Arg(SpinorVCoordinates[nbrParticle])-Arg(SpinorUCoordinates[nbrParticle]));
   // cout << "new coordinates: ("<<this->ThetaPhi[nbrParticle<<1]<<", " << this->ThetaPhi[(nbrParticle<<1)+1] << ")" <<endl;
+  this->DistancesUpToDate=false;
 }
 
 // randomly select a particle and move it
@@ -117,6 +131,7 @@ int ParticleOnSphereCollection::Move()
   this->LastMoved = (int) (((double) NbrParticles) * Generator->GetRealRandomNumber());
   if (LastMoved == NbrParticles) --LastMoved;
   this->Move(LastMoved);
+  this->DistancesUpToDate=false;
   return LastMoved;
 }
 
@@ -197,7 +212,9 @@ void ParticleOnSphereCollection::SetPosition(int nbrParticle, double theta, doub
   this->SpinorUCoordinates[nbrParticle].Re =c*(c2=cos(phi/2.0));
   this->SpinorUCoordinates[nbrParticle].Im =-c*(s2=sin(phi/2.0));      
   this->SpinorVCoordinates[nbrParticle].Re = s*c2;
-  this->SpinorVCoordinates[nbrParticle].Im = s*s2;  
+  this->SpinorVCoordinates[nbrParticle].Im = s*s2;
+
+  this->DistancesUpToDate=false;
 }
 
 double ParticleOnSphereCollection::GetRandomNumber()
@@ -221,24 +238,48 @@ void ParticleOnSphereCollection::Randomize()
       this->ThetaPhi[i<<1] = (2.0*acos(Norm(SpinorUCoordinates[i])));
       this->ThetaPhi[(i<<1)+1] = (Arg(SpinorVCoordinates[i])-Arg(SpinorUCoordinates[i]));
     }
+  this->DistancesUpToDate=false;
 }
 
 // get absolute values of all relative distances
-// distances = matrix in which to return the distances
+// distances = matrix in which to return the distances as d_ij=sin(\theta_ij/2)
 void ParticleOnSphereCollection::GetDistances(RealSymmetricMatrix &distances)
 {
   if ((distances.GetNbrRow()!=NbrParticles)||(distances.GetNbrColumn()!=NbrParticles))
     distances.Resize(NbrParticles,NbrParticles);
-  for (int i=0; i<NbrParticles; ++i)
+  if (!DistancesUpToDate)
     {
-      distances(i,i)=0.0;
-      for (int j=i+1; j<NbrParticles; ++j)
+      for (int i=0; i<NbrParticles; ++i)
 	{
-	  distances(i,j)=Norm(this->SpinorUCoordinates[i]*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j]*this->SpinorVCoordinates[i]);
+	  distances(i,i)=0.0;
+	  for (int j=i+1; j<NbrParticles; ++j)
+	    {
+	      distances(i,j) = (*this->Distances)(i,j)=Norm(this->SpinorUCoordinates[i]*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j]*this->SpinorVCoordinates[i]);
+	    }
 	}
     }
   return;
 }
+
+
+// get reference to internal matrix with particle distances
+const RealSymmetricMatrix& ParticleOnSphereCollection::GetDistances()
+{
+  if (!DistancesUpToDate)
+    {
+      for (int i=0; i<NbrParticles; ++i)
+	{
+	  // this->Distances(i,i)=0.0;
+	  for (int j=i+1; j<NbrParticles; ++j)
+	    {
+	      (*this->Distances)(i,j)=Norm(this->SpinorUCoordinates[i]*this->SpinorVCoordinates[j]-this->SpinorUCoordinates[j]*this->SpinorVCoordinates[i]);
+	    }
+	}
+    }
+  return *this->Distances;
+}
+  
+
 
 
 // toggle positions of first N/2 particles with the remaining N/2 positions
@@ -265,4 +306,6 @@ void ParticleOnSphereCollection::ToggleHalfHalf()
       SpinorVCoordinates[j] = SpinorVCoordinates[j+NUp];
       SpinorVCoordinates[j+NUp] = TmpC;
     }
+
+  this->DistancesUpToDate=false;
 }

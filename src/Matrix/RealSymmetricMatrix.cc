@@ -649,6 +649,32 @@ double& RealSymmetricMatrix::operator () (int i, int j)
     }
 }
 
+// get reference of a given matrix element
+//
+// i = line position
+// j = column position
+// return value = reference om matrix elememt
+
+double& RealSymmetricMatrix::operator () (int i, int j) const
+{
+  if (i == j)
+    {
+      return this->DiagonalElements[i];
+    }
+  else
+    {
+      if (i > j)
+	{
+	  int tmp = j;
+	  j = i;
+	  i = tmp;
+	}
+      long Tmp = ((long) j); 
+      Tmp -= (((long) i) * (((long) i) + 1l)) / 2l - ((long) i) * ((long) (this->NbrRow + this->Increment - 1)) + 1l;
+      return this->OffDiagonalElements[Tmp];
+    }
+}
+
 // Resize matrix
 //
 // nbrRow = new number of rows

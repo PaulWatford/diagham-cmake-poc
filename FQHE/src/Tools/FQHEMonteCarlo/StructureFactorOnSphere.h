@@ -6,9 +6,9 @@
 //                  Copyright (C) 2001-2008 Gunnar Moeller                    //
 //                                                                            //
 //                                                                            //
-//      class for a basic Monte Carlo algorith for particles on a sphere      //
+//        class for a binned correlation function on the sphere geometry      //
 //                                                                            //
-//                        last modification : 23/01/2008                      //
+//                        last modification : 19/10/2009                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -28,90 +28,72 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef SPHEREGENERALENERGY_H
-#define SPHEREGENERALENERGY_H
+#ifndef STRUCTUREFACTORONSPHERE_H
+#define STRUCTUREFACTORONSPHERE_H
 
 #include "config.h"
-
 #include "AbstractObservable.h"
 #include "ParticleOnSphereCollection.h"
-#include "MCObservables/WeightedRealObservable.h"
-
+#include "Polynomial/LegendrePolynomials.h"
+#include "MCObservables/WeightedRealVectorObservable.h"
 #include <iostream>
-using std::ostream;
 
-class SphereGeneralEnergy : public AbstractObservable
+
+class StructureFactorOnSphere : public AbstractObservable
 {
-  enum InteractionTypes
-    {
-      Unknown = 0x0000,
-      Polynomial = 0x0001,
-      AsymptoticExp = 0x0002
-    };
-  
  protected:
-  // Type of interaction
-  int InteractionType;
-
-  // Radius of the sphere in units of magnetic length
+    // Radius of the sphere in units of magnetic length
   double Radius;
 
   // Number of Flux quanta piercing the sphere
   int NbrFlux;
-  
-  // Number of parameters
-  int NbrParameters;
 
-  // Coefficients of polynomial interaction
-  double *Coefficients;
+  // number of structure factors
+  int NbrStructureFactor;
 
-  // Parameters for asymptotic form of interaction
-  // (number of values)
-  int NbrAsymptotics;
-  // (values for prefactors of asymptotic terms)
-  double *Asymptotics;
-  // (values for regularization of asymptotic terms)
-  double *AsymptoticsReg;
+  // total weight of observations
+  double Measures;
 
-  // number of observations made
-  int NbrObservations;
-
-  // system that the observable operates on
-  ParticleOnSphereCollection *System;
-
-  // number of particles in System:
+  // Number of particles
   int NbrParticles;
+
+  // object for generating legendre polynomials
+  LegendrePolynomials *LegendreBasis;
+
+  // current set of legendre values
+  double *CurrentLegendrePolynomials;
+
+  // number of structure factors to calculate
+  int NbrStructureFactors;
+
+  // observable to perform statistics
+  WeightedRealVectorObservable *StructureFactors;
+
+   // system that the observable operates on
+  ParticleOnSphereCollection *System;
 
   // pointers to spinor coordinates (external)
   Complex *SpinorUCoordinates;
   Complex *SpinorVCoordinates;
 
-  // core observable
-  WeightedRealObservable *Values;
-
-  // tables for storage of distances and their powers
-  double **RijSq;
-  double ***RijSqPowers;
-  int NumSqPowers;
-  double **GaussianIJ;
-
+  // Flag indicating whether variable is printed by default
+  bool PrintFlag;
   
  public:
 
-  // default constructor
-  SphereGeneralEnergy();
-
+  // standard constructor
+  StructureFactorOnSphere();
+  
   // constructor
-  // nbrFlux = Number of Flux piercing sphere
-  // parameters = file describing parameters of the interaction
-  SphereGeneralEnergy(int nbrFlux, const char* parameters);
-
-
+  // nbrFlux = number of flux piercing the sphere
+  StructureFactorOnSphere(int nbrFlux, int nbrStructureFactors);
+  
   // destructor
-  virtual ~SphereGeneralEnergy();
+  virtual ~StructureFactorOnSphere();
 
   // call to make an observation
-  virtual void RecordValue(double weight);  
+  // weight = relative weight of this sample
+  virtual void RecordValue(double weight);
 
   // print legend to the given stream
   // all = flag indicating whether to print all, or shortened information
@@ -121,44 +103,32 @@ class SphereGeneralEnergy : public AbstractObservable
   // all = flag indicating whether to print all, or shortened information
   virtual void PrintStatus(std::ostream &output, bool all = false);
 
+  // request whether observable should be printed
+  //
+  virtual bool IncludeInPrint();
+
+  // set print status
+  //
+  virtual void IncludeInPrint(bool newStatus);
+
   // print formatted data suitable for plotting
   // ouput = the target stream
   virtual void WriteDataFile(std::ostream &output);
+
+  // write binary data 
+  // ouput = the target stream
+  virtual void WriteBinaryData(std::ostream &output);
 
   // set particle collection that the observable operates on
   // system = particle collection
   virtual void SetParticleCollection(AbstractParticleCollection *system);
 
-  // accessor function to return the legend corresponding to the value of the observable
-  virtual std::string GetLegend() {return std::string("Energy 'E'");}
+  // accessor function to return the legend and numerical values for legend
+  virtual void GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues);
 
   // accessor function for average and error for variables with real measurements
-  virtual void GetRealMeasurement(double &value, double &error);
-
-  // get radius of sphere
-  // returns: radius
-  double GetRadius() {return Radius;}
-
-  // additional routines for energy observables:
-  // returns the total background energy
-  double GetTotalBackgroundEnergy();
-
-  // obtain value of the interaction for a given separation theta between particles
-  // theta = separation [as 2*R*(u_i v_j - u_j v_i)]
-  double GetPotentialValue(double R);
-
-  // plot effective interaction
-  // str = stream to write to
-  // numpoints = number of points to evaluate
-  ostream & PlotPotential(ostream &str, int numpoints=100);
-
- private:
-
-  // evaluate exponentials and powers of r^2
-  void EvaluateGaussianTables();
-
-
+  virtual void GetRealVectorMeasurement(RealVector &values, RealVector &errors);
   
 };
 
-#endif
+#endif // STRUCTUREFACTORONSPHERE_H

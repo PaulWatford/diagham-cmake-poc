@@ -32,7 +32,10 @@
 #define ABSTRACTOBSERVABLE_H
 
 #include "config.h"
-
+#include "GeneralTools/Warnings.h"
+#include "Vector/RealVector.h"
+#include "MathTools/Complex.h"
+#include "Vector/ComplexVector.h"
 #include <iostream>
 
 class AbstractParticleCollection;
@@ -80,6 +83,38 @@ class AbstractObservable
   // set particle collection that the observable operates on
   // system = particle collection
   virtual void SetParticleCollection(AbstractParticleCollection *system) = 0;
+
+  // check for real data
+  bool IsReal(){return (this->Type & RealObservableT)!=0;}
+
+  // check for complex data
+  bool IsComplex(){return (this->Type & ComplexObservableT)!=0;}
+
+  // check for real data
+  bool IsVectorValued(){return (this->Type & VectorValued)!=0;}
+
+  // accessor function to query a unique identifier for the observable
+  virtual std::string GetIdentifier()  { NoOverload(); return "";}
+
+  // accessor function to return the legend corresponding to the value of the observable
+  virtual std::string GetLegend()  { NoOverload(); return "";}
+
+  // accessor function for average and error for variables with real measurements
+  virtual void GetRealMeasurement(double &value, double &error)  { NoOverload(); }
+
+  // accessor function for average and error for variables with Complex measurements
+  virtual void GetComplexMeasurement(Complex &value, double &error)  { NoOverload(); }
+
+  // accessor function to return the legend and numerical values for legend
+  virtual void GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues)  { NoOverload(); }
+
+  // accessor function for average and error for variables with real measurements
+  // errors is returned as a vector of length zero if the observable does not provide error estimates.
+  virtual void GetRealVectorMeasurement(RealVector &values, RealVector &errors)  { NoOverload(); }
+
+  // accessor function for average and error for variables with Complex measurements
+  // errors is returned as a vector of length zero if the observable does not provide error estimates.
+  virtual void GetComplexVectorMeasurement(ComplexVector &values, RealVector &errors)  { NoOverload(); }
   
 };
 

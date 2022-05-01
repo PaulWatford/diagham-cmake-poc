@@ -203,6 +203,13 @@ class RealSymmetricMatrix : public Matrix
   // return value = reference om matrix elememt
   double& operator () (int i, int j);
 
+  // get reference of a given matrix element for read access only
+  //
+  // i = line position
+  // j = column position
+  // return value = reference om matrix elememt
+  double& operator () (int i, int j) const;
+
   // Resize matrix
   //
   // nbrRow = new number of rows

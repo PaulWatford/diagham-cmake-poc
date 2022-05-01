@@ -36,11 +36,19 @@ using std::cout;
 using std::endl;
 
 // constructor
-LaughlinSamplingFunctionOnDisk::LaughlinSamplingFunctionOnDisk(int nbrParticles, int exponent, double defectAngle)
+LaughlinSamplingFunctionOnDisk::LaughlinSamplingFunctionOnDisk(int nbrParticles, int exponent, double defectAngle, double spin)
 {
   this->NbrParticles=nbrParticles;
   this->Exponent=exponent;
+  if (defectAngle==1.0)
+    {
+      std::cout << "Defect angle has to be between 0 and 1"<<std::endl;
+      exit(1);
+    }
   this->DefectAngle = defectAngle;
+  this->Gamma = 1.0 - this->DefectAngle;
+  this->InvGammaSqr = 1.0/(this->Gamma * this->Gamma);
+  this->Spin = spin;
   this->System=NULL;
   this->ElementNorm=1.0;
   this->LogScale = 0.0;
@@ -87,7 +95,14 @@ double LaughlinSamplingFunctionOnDisk::GetTransitionRatio()
   double Base=ratio;
   for (int i=1; i<this->Exponent; ++i)
     ratio *= Base;
-  ratio *= std::exp(-(SqrNorm(CoordinatesZ[tomove])-SqrNorm(LastZ)));
+  if (this->DefectAngle!=0.0)
+    {
+      if (this->Spin!=0.0)
+	ratio *= std::pow(SqrNorm(CoordinatesZ[tomove])/SqrNorm(LastZ), this->DefectAngle*this->Spin);
+      ratio *= std::exp(this->InvGammaSqr*( -std::pow(SqrNorm(CoordinatesZ[tomove]), this->Gamma) + std::pow(SqrNorm(LastZ), this->Gamma)));
+    }
+  else
+    ratio *= std::exp(-SqrNorm(CoordinatesZ[tomove])+SqrNorm(LastZ));
   return ratio;
 }
 
@@ -102,10 +117,23 @@ Complex LaughlinSamplingFunctionOnDisk::GetFunctionValue()
   Complex Base=Result;
   for (int i=1; i<this->Exponent; ++i)
     Result *= Base;
-  double SumSqr=0.0;
-  for (int i = 0; i < this->NbrParticles; ++i)
-    SumSqr += SqrNorm(CoordinatesZ[i]);
-  Result *= std::exp(-0.5*SumSqr+this->LogScale);
+  if (this->DefectAngle!=0.0)
+    {
+      if (this->Spin!=0.0)
+	for (int i = 0; i < this->NbrParticles; ++i)
+	  Result *= std::pow(SqrNorm(CoordinatesZ[i]), 0.5*this->DefectAngle*this->Spin);
+      double SumExp = 0.0;
+      for (int i = 0; i < this->NbrParticles; ++i)
+	SumExp += std::pow(SqrNorm(CoordinatesZ[i]), 0.5*this->Gamma);
+      Result *= std::exp(-0.5*this->InvGammaSqr*SumExp + this->LogScale);
+    }
+  else
+    {
+      double SumSqr=0.0;
+      for (int i = 0; i < this->NbrParticles; ++i)
+	SumSqr += SqrNorm(CoordinatesZ[i]);
+      Result *= std::exp(-0.5*SumSqr+this->LogScale);
+    }
   return Result;
 }
 

@@ -23,7 +23,7 @@ SphereBilayerCoulombEnergy::SphereBilayerCoulombEnergy()
 // spacing = spacing of further layer separations
 SphereBilayerCoulombEnergy::SphereBilayerCoulombEnergy(int nbrFlux, int nbrSeparations, double lowestSeparation, double spacing)
 {
-  this->Type=AbstractObservable::VectorValued||AbstractObservable::RealObservableT;
+  this->Type=AbstractObservable::VectorValued|AbstractObservable::RealObservableT;
   if (nbrSeparations <= 0)
     {
       cout << "Number of layer separation must be > 0 in SphereBilayerCoulombEnergy" << endl;
@@ -157,6 +157,25 @@ void SphereBilayerCoulombEnergy::SetParticleCollection(AbstractParticleCollectio
   this->System->GetSpinorCoordinates(SpinorUCoordinates, SpinorVCoordinates);
 }
 
+// accessor function to return the legend and numerical values for legend
+void SphereBilayerCoulombEnergy::GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues)
+{
+  legendParameters = std::string("Separation 'd'");
+  legendValue = std::string("Energy 'E'");
+  parameterValues.Resize(this->NbrSeparations);
+  for (int i=0; i<this->NbrSeparations; ++i)
+    parameterValues[i] = this->Separations[i];
+}
+
+// accessor function for average and error for variables with real measurements
+void SphereBilayerCoulombEnergy::GetRealVectorMeasurement(RealVector &values, RealVector &errors)
+{
+  for (int i=0; i<this->NbrSeparations; ++i)
+    {
+      values[i]= this->Values->Average(i);
+      errors[i]= this->Values->ErrorEstimate(i);
+    }
+}
 
 // additional routines for energy observables:
 // sep = layer separation

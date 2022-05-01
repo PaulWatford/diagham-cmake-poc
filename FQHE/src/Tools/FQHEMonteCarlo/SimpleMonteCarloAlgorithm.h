@@ -110,6 +110,13 @@ class SimpleMonteCarloAlgorithm
   // frequency = integer value indicating on which microsteps observations are being made
   void AddObservable(AbstractObservable *O, int frequency = 1);
 
+  // query number of observables
+  int GetNbrObservables() {return this->NbrObservables;}
+
+  // get pointer to the n-th observable
+  // index = index of the observable, labeled from 0,...,NbrObservables-1
+  AbstractObservable *GetObservable(int index);
+
   // thermalize system with a number of microsteps
   // time = number of microsteps
   // startFromRandom = flag indicating if we want to restart from a random configuration

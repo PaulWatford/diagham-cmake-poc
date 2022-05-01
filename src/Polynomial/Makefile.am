@@ -8,4 +8,5 @@ IntegerPolynomial.cc \
 QDeformedBinomialCoefficients.cc \
 SpecialPolynomial.cc \
 RationalPolynomial.cc \
-LongRationalPolynomial.cc
+LongRationalPolynomial.cc \
+LegendrePolynomials.cc

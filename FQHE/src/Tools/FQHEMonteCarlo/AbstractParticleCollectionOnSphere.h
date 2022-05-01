@@ -73,6 +73,11 @@ class AbstractParticleCollectionOnSphere : public AbstractParticleCollection {
   // distances = matrix in which to return the distances
   virtual void GetDistances(RealSymmetricMatrix &distances) = 0;
 
+  // get reference to internal matrix with all relative distances
+  // return = matrix with distances
+  virtual const RealSymmetricMatrix& GetDistances() = 0;
+
+
   // toggle positions of first N/2 particles with the remaining N/2 positions
   //
   virtual void ToggleHalfHalf() = 0;

@@ -49,7 +49,7 @@ SimpleTwoBodyCorrelatorOnDisk::SimpleTwoBodyCorrelatorOnDisk()
 // range =  ranger over which high resolution is implemented
 SimpleTwoBodyCorrelatorOnDisk::SimpleTwoBodyCorrelatorOnDisk(double rMax, int resolution, int highres, int range)
 {
-  this->Type = RealObservableT & VectorValued;
+  this->Type = RealObservableT | VectorValued;
   this->PrintFlag=true;
   this->Bins=resolution+highres-range+1;
   this->Resolution=resolution;
@@ -192,6 +192,29 @@ void SimpleTwoBodyCorrelatorOnDisk::SetParticleCollection(AbstractParticleCollec
 
 
 
+// accessor function to return the legend and numerical values for legend
+void SimpleTwoBodyCorrelatorOnDisk::GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues)
+{
+  legendParameters = std::string("Radius 'r'");
+  legendValue = std::string("Density 'n'");
+  parameterValues.Resize(this->Highres+this->Resolution-this->Range);
+  int pos=0;
+  for (int i=0;i<Highres;i++,pos++)
+    parameterValues[pos] = this->GetHighResBinRadius(i+0.5);
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    parameterValues[pos] = this->GetBinRadius(i+Range+0.5);
+}
 
-
-
+// accessor function for average and error for variables with real measurements
+void SimpleTwoBodyCorrelatorOnDisk::GetRealVectorMeasurement(RealVector &values, RealVector &errors)
+{
+  values.Resize(this->Highres+this->Resolution-this->Range);
+  errors.Resize(0);
+  double Normalization=Measures/(Resolution*this->HighResRatio)*NbrParticles*NbrParticles;
+  int pos=0;
+  for (int i=0;i<this->Highres;i++, pos++)
+    values[pos] = this->Correlations[i]/Normalization;
+  Normalization=Measures/Resolution*NbrParticles*NbrParticles;
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    values[pos] = this->Correlations[i+Highres]/Normalization;
+}

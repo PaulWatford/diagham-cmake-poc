@@ -355,6 +355,13 @@ void SphereGeneralEnergy::SetParticleCollection(AbstractParticleCollection *syst
 }
 
 
+// accessor function for average and error for variables with real measurements
+void SphereGeneralEnergy::GetRealMeasurement(double &value, double &error)
+{
+  value = this->Values->Average();
+  error = this->Values->ErrorEstimate();
+}
+
 #ifdef HAVE_GSL  
 
 #include <gsl/gsl_integration.h>

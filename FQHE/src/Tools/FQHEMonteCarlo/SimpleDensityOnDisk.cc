@@ -47,9 +47,9 @@ SimpleDensityOnDisk::SimpleDensityOnDisk()
 // resolution = total number of bins
 // highres = number of points in high resolution interval at small r
 // range =  ranger over which high resolution is implemented
-SimpleDensityOnDisk::SimpleDensityOnDisk(double rMax, int resolution, int highres, int range)
+SimpleDensityOnDisk::SimpleDensityOnDisk(double rMax, int resolution, int highres, int range, double defectAngle)
 {
-  this->Type = RealObservableT & VectorValued;
+  this->Type = RealObservableT | VectorValued;
   this->PrintFlag=true;
   this->Bins=resolution+highres-range+1;
   this->Resolution=resolution;
@@ -69,6 +69,9 @@ SimpleDensityOnDisk::SimpleDensityOnDisk(double rMax, int resolution, int highre
     Correlations[j]=0.0;
   this->NbrParticles=0;
   this->MaxRadius = rMax; // the radius is also the inverse magnetic length
+  this->DefectAngle = defectAngle;
+  this->Gamma = 1.0-defectAngle;
+  this->InvGamma = 1.0/this->Gamma;
 }
   
 // destructor
@@ -97,7 +100,11 @@ void SimpleDensityOnDisk::RecordValue(double weight)
       Ri=Norm(CoordinatesZ[i]);
       index=this->GetIndex(Ri);
       if (index>=Range)
-	this->Correlations[index+Highres-Range]+=weight;  
+	{
+	  if (index>=this->Bins)
+	    std::cout << "INdex = "<<index<<", Highres="<<Highres<<", Range="<<Range<<", Bins="<<this->Bins<<std::endl;
+	  this->Correlations[index+Highres-Range]+=weight;  
+	}
       else
 	{
 	  index = this->GetHighResIndex(Ri);
@@ -151,7 +158,7 @@ void SimpleDensityOnDisk::WriteDataFile(std::ostream &output)
       double Units;
       double Normalization=Measures/Resolution*NbrParticles;
       output << "# Rmax="<<this->MaxRadius<<", weight out of range = "<< this->Correlations[this->Bins]/Normalization<<"\n";
-      output << "# r\tg(r)\n";
+      output << "# r\tn(r)\n";
       Normalization=Measures/(Resolution*this->HighResRatio)*NbrParticles;
       for (int i=0;i<Highres;i++)
 	output << this->GetHighResBinRadius(i+0.5)<<"\t"
@@ -186,6 +193,34 @@ void SimpleDensityOnDisk::SetParticleCollection(AbstractParticleCollection *syst
   // std::cout << "Particle collection registered in TwoBody Correlations"<<endl;
 }
 
+// accessor function to return the legend and numerical values for legend
+void SimpleDensityOnDisk::GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues)
+{
+  legendParameters = std::string("Radius 'r'");
+  legendValue = std::string("Density 'n'");
+  parameterValues.Resize(this->Highres+this->Resolution-this->Range);
+  int pos=0;
+  for (int i=0;i<Highres;i++,pos++)
+    parameterValues[pos] = this->GetHighResBinRadius(i+0.5);
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    parameterValues[pos] = this->GetBinRadius(i+Range+0.5);
+}
+
+// accessor function for average and error for variables with real measurements
+void SimpleDensityOnDisk::GetRealVectorMeasurement(RealVector &values, RealVector &errors)
+{
+  values.Resize(this->Highres+this->Resolution-this->Range);
+  errors.Resize(0);
+  double Normalization=Measures/Resolution*NbrParticles;
+  Normalization=Measures/(Resolution*this->HighResRatio)*NbrParticles;
+  int pos=0;
+  for (int i=0;i<Highres;i++, pos++)
+    values[pos] = this->Correlations[i]/Normalization;
+  Normalization=Measures/Resolution*NbrParticles;
+  for (int i=0;i<Resolution-Range; ++i, ++pos)
+    values[pos] = this->Correlations[i+Highres]/Normalization;
+
+}
 
 
 

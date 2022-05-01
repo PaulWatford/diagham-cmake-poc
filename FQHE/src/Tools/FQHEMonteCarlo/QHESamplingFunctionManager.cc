@@ -100,7 +100,8 @@ void QHESamplingFunctionManager::AddOptionGroup(OptionManager* manager)
       else if (this->GeometryID & QHESamplingFunctionManager::DiskGeometry)
 	{
 	  (*SamplingFunctionGroup) += new SingleIntegerOption  ('\n', "laughlin-exponent", "power to which the jastrow factors in sampling function are raised",2);
-	  (*SamplingFunctionGroup) += new SingleIntegerOption  ('\n', "defect-angle", "defect angle for disk geometry (units of 2pi)", 0.0, true, 0.0, true, 1.0);
+	  (*SamplingFunctionGroup) += new SingleDoubleOption  ('\n', "defect-angle", "defect angle for disk geometry (units of 2pi)", 0.0, true, 0.0, true, 1.0);
+	  (*SamplingFunctionGroup) += new SingleDoubleOption  ('\n', "geometric-spin", "spin j for Laughlin state", 0.0);
 	}
 
     }
@@ -226,8 +227,9 @@ AbstractMCSamplingFunction* QHESamplingFunctionManager::GetSamplingFunction()
 	    {
 	      int N = this->Options->GetInteger("nbr-particles");	      
 	      int m = this->Options->GetInteger("laughlin-exponent");
-	      int alpha = this->Options->GetInteger("defect-angle");
-	      AbstractMCSamplingFunction* rst  = new LaughlinSamplingFunctionOnDisk(N,m,alpha);
+	      double alpha = this->Options->GetDouble("defect-angle");
+	      double spin = this->Options->GetDouble("geometric-spin");
+	      AbstractMCSamplingFunction* rst  = new LaughlinSamplingFunctionOnDisk(N,m,alpha,spin);
 	      return rst;
 	    }
 	    return 0;

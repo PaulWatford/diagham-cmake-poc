@@ -123,11 +123,17 @@ class SimpleTwoBodyCorrelatorOnDisk : public AbstractObservable
   // system = particle collection
   virtual void SetParticleCollection(AbstractParticleCollection *system);
 
+  // accessor function to return the legend and numerical values for legend
+  virtual void GetVectorLegend(std::string &legendParameters, std::string &legendValue, RealVector &parameterValues);
+
+  // accessor function for average and error for variables with real measurements
+  virtual void GetRealVectorMeasurement(RealVector &values, RealVector &errors);
+  
  private:
   // get bin index for a given radius
   int GetIndex(double radius)
   {
-    if (radius > this->MaxRadius) return this->Bins;
+    if (radius > this->MaxRadius) return this->Resolution;
     else
       return (int)(std::pow(radius/this->MaxRadius,2)*this->Resolution);
   }

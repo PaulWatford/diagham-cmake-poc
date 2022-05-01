@@ -88,7 +88,7 @@ int main(int argc, char** argv)
     cout << "Sampler:  " << SamplingFunctionManager.GetDescription()<<endl;
 
   SimpleMonteCarloAlgorithm MonteCarloRoutine(AbstractParticleCollection::OnSphereCollection, NbrParticles, TestWaveFunction, SamplingFunction,
-						      &Manager);
+					      &Manager);
   
   if (Manager.GetString("interaction-params")==0)
     {
@@ -158,5 +158,75 @@ int main(int argc, char** argv)
       Correlations->WriteDataFile(LogFile);
     }
 
-}
+  // try out interface to query observed data
+  for (int i=0; i<MonteCarloRoutine.GetNbrObservables(); ++i)
+    {
+      AbstractObservable *TmpObs = MonteCarloRoutine.GetObservable(i);
+      if (TmpObs->IsVectorValued())
+	{
+	  std::string legendParameters;
+	  std::string legendValue;
+	  RealVector parameterValues;
+	  // accessor function to return the legend and numerical values for legend
+	  TmpObs->GetVectorLegend(legendParameters, legendValue, parameterValues);
+	  if (TmpObs->IsReal())
+	    {		  
+	      RealVector values, errors;
+	      TmpObs->GetRealVectorMeasurement(values, errors);
 
+	      cout << "Captured observations for observable "<<i<<":"<<endl;
+	      cout << legendParameters << "\t" << legendValue << endl;
+	      if (errors.GetVectorDimension()>0)
+		cout << "\terr(" << legendValue<<")"<<endl;
+	      for (int n=0; n<values.GetVectorDimension(); ++n)
+		{
+		  cout << parameterValues[n] << "\t" << values[n];
+		  if (errors.GetVectorDimension()>0)
+		    cout << "\t" << errors[n]<<endl;
+		  else
+		    cout << endl;
+		}
+	    }
+	  else
+	    {
+	      ComplexVector values;
+	      RealVector errors;
+	      TmpObs->GetComplexVectorMeasurement(values, errors);
+	      cout << "Captured observations for observable "<<i<<":"<<endl;
+	      cout << legendParameters << "\t" << legendValue << endl;
+	      if (errors.GetVectorDimension()>0)
+		cout << "\terr(" << legendValue<<")"<<endl;
+	      for (int n=0; n<values.GetVectorDimension(); ++n)
+		{
+		  cout << parameterValues[n] << "\t" << values[n];
+		  if (errors.GetVectorDimension()>0)
+		    cout << "\t" << errors[n]<<endl;
+		  else
+		    cout << endl;
+		}
+	    }
+	      
+	}
+      else // scalar observable
+	{
+	  std::string Legend = TmpObs->GetLegend();
+	  if (TmpObs->IsReal())
+	    {
+	      double value, error;
+	      TmpObs->GetRealMeasurement(value, error);
+	      cout << "Captured observations for observable "<<i<<":"<<endl;
+	      cout << Legend << "\t" << value << "\t" << error << endl;
+	    }
+	  else
+	    {
+	      Complex value;
+	      double error;
+	      TmpObs->GetComplexMeasurement(value, error);
+	      cout << "Captured observations for observable "<<i<<":"<<endl;
+	      cout << Legend << "\t" << value << "\t" << error << endl;
+	    }
+
+	}
+    }
+
+}

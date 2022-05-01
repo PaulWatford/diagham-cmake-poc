@@ -122,6 +122,13 @@ void SphereCoulombEnergy::SetParticleCollection(AbstractParticleCollection *syst
   this->System->GetSpinorCoordinates(SpinorUCoordinates, SpinorVCoordinates);
 }
 
+// accessor function for average and error for variables with real measurements
+void SphereCoulombEnergy::GetRealMeasurement(double &value, double &error)
+{
+  value = this->Values->Average();
+  error = this->Values->ErrorEstimate();
+}
+
 // additional routines for energy observables:
 // returns the total background energy
 double SphereCoulombEnergy::GetTotalBackgroundEnergy()

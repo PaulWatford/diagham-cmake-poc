@@ -16,6 +16,10 @@
 
 #include "GeneralTools/FilenameTools.h"
 
+#include "Matrix/RealMatrix.h"
+#include "Matrix/IntegerMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
+
 #include "Options/Options.h"
 
 
@@ -30,6 +34,15 @@
 using std::cout;
 using std::endl;
 using std::ofstream;
+
+
+// compute the characteristic polynomial for the real hamiltonians
+//
+// hamiltonian = pointer to the hamiltonian
+// chain = pointer to the Hilbert space
+// outputFileName = file name prefix for the characteristic polynomial
+// architecture = pointer to the architecture
+void PairHoppingComputeCharacteristicPolynomial(PairHoppingHamiltonian* hamiltonian, AbstractSpinChain* chain, char* outputFileName, AbstractArchitecture* architecture);
 
 
 int main(int argc, char** argv)
@@ -61,6 +74,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
+  (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -165,10 +179,17 @@ int main(int argc, char** argv)
 	  //     Chain->PrintState(cout, i) << endl;
 	  //   }
 	  PairHoppingHamiltonian Hamiltonian (Chain, NbrSpins, PValue, Manager.GetBoolean("use-periodic"));
+
 	  char* TmpString = new char[16];
 	  sprintf (TmpString, "");
 	  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 	  sprintf (TmpEigenstateString, "%s", OutputFileName);
+
+	  if (Manager.GetBoolean("export-charpolynomial"))
+	    {
+	      PairHoppingComputeCharacteristicPolynomial(&Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture());
+	    }
+	  
 	  GenericRealMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpString, CommentLine, 0.0,  FullOutputFileName,
 				   FirstRun, TmpEigenstateString);
 	  MainTaskOperation TaskOperation (&Task);
@@ -180,3 +201,52 @@ int main(int argc, char** argv)
     }
   return 0;
 }
+
+// compute the characteristic polynomial for the real hamiltonians
+//
+// hamiltonian = pointer to the hamiltonian
+// chain = pointer to the Hilbert space
+// outputFileName = file name prefix for the characteristic polynomial
+// architecture = pointer to the architecture
+// discardFourFactor = discard a global four factor used to ensure integer numbers
+
+void PairHoppingComputeCharacteristicPolynomial(PairHoppingHamiltonian* hamiltonian, AbstractSpinChain* chain, char* outputFileName, AbstractArchitecture* architecture)
+{
+#ifdef __GMP__
+  cout << "Computing the hamiltonian" << endl;
+  RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
+  hamiltonian->GetHamiltonian(TmpRawMatrix);
+  double* TmpNormalizationFactors = chain->GetBasisNormalization();
+  for (int i = 0; i < chain->GetHilbertSpaceDimension(); ++i)
+    {
+      for (int j = 0; j < chain->GetHilbertSpaceDimension(); ++j)
+	{
+	  double Tmp;
+	  TmpRawMatrix.GetMatrixElement(i, j, Tmp);
+	  Tmp *= TmpNormalizationFactors[i];
+	  Tmp /= TmpNormalizationFactors[j];
+	  TmpRawMatrix.SetMatrixElement(i, j, Tmp);
+	}
+    }
+  cout << "Converting to integer matrix" << endl;
+  LongIntegerMatrix TmpMatrix;
+  TmpMatrix = LongIntegerMatrix(TmpRawMatrix);
+
+  cout << "Start computing characteristic polynomial (degree " << chain->GetHilbertSpaceDimension() << ")" << endl;
+  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
+  char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
+  sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
+  ofstream OutputFile;
+  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+  OutputFile << CharacteristicPolynomial[0];
+  for (int i = 1; i <= chain->GetHilbertSpaceDimension(); ++i)
+    {
+      OutputFile << "," << CharacteristicPolynomial[i];
+    }
+  OutputFile << endl;
+  OutputFile.close();
+#else
+  cout << "GMP library is required for characteristic polynomials" << endl;
+#endif	       
+}
+

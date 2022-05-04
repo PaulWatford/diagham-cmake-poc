@@ -241,6 +241,7 @@ GenericRealMainTask::GenericRealMainTask(OptionManager* options, AbstractHilbert
 	{
 	  RealMatrix HRep (this->Hamiltonian->GetHilbertSpaceDimension(), this->Hamiltonian->GetHilbertSpaceDimension());
 	  this->Hamiltonian->GetHamiltonian(HRep);
+	  cout << HRep << endl;
 	}
     }  
   this->FriendlyShowHamiltonian = false;

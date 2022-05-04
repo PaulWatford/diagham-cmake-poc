@@ -400,6 +400,46 @@ class AbstractSpinChain : public AbstractHilbertSpace
   // return value = index of resulting state
   virtual int Pij (int i, int j, int state);
   
+  // return index of resulting state from application of a 3 sites permutation operator on a given state
+  //
+  // i = first position
+  // j = second position (j > i)
+  // k = third position  (k > j)
+  // state = index of the state to be applied on P_ijk operator
+  // return value = index of resulting state
+  virtual int Pijk (int i, int j, int k, int state);
+
+  // return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+  //
+  // i = first position
+  // j = second position (j > i)
+  // k = third position  (k > j)
+  // state = index of the state to be applied on P_ijk operator
+  // return value = index of resulting state
+  virtual int Pminusijk (int i, int j, int k, int state);
+
+  // return index of resulting state from application of a 3 sites permutation operator on a given state
+  //
+  // i = first position
+  // j = second position
+  // k = third position 
+  // state = index of the state to be applied on P_ijk operator
+  // coefficient = reference on the numerical coefficient
+  // nbrTranslations = reference on the number of translations to apply to the resulting state to obtain the canonical state
+  // return value = index of resulting state
+  virtual int Pijk (int i, int j, int k, int state, double& coefficient, int& nbrTranslation);
+
+  // return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+  //
+  // i = first position
+  // j = second position 
+  // k = third position 
+  // state = index of the state to be applied on P_ijk operator
+  // coefficient = reference on the numerical coefficient
+  // nbrTranslations = reference on the number of translations to apply to the resulting state to obtain the canonical state
+  // return value = index of resulting state
+  virtual int Pminusijk (int i, int j, int k, int state, double& coefficient, int& nbrTranslation);
+
   // return index of resulting state from application of four-site exchange operator on a given state
   //
   // i = first position
@@ -606,6 +646,11 @@ class AbstractSpinChain : public AbstractHilbertSpace
   virtual void CreateStateFromMPSDescription (ComplexMatrix* bMatrices, ComplexVector& state, int mPSRowIndex, int mPSColumnIndex, 
 					      long initialIndex = 0l, long nbrComponents = 0l);
 
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+ 
 };
 
 // return index of resulting state from application of S+_i S-_j operator on a given state

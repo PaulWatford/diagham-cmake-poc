@@ -343,11 +343,6 @@ class AbstractSpinChainWithTranslations : public AbstractSpinChain
   // return value = canonical form of the state
   virtual unsigned long FindCanonicalForm(unsigned long state, int& nbrTranslation);
 
-  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
-  //
-  // return value = pointer to normalization factors
-  virtual double* GetBasisNormalization();
- 
   // return the scaling factor when going from state i to state j
   //
   virtual double GetRescalingFactor(int i,int j) const {return 0;};

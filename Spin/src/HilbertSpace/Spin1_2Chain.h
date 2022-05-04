@@ -206,6 +206,24 @@ class Spin1_2Chain : public AbstractSpinChain
   // return value = index of resulting state
   virtual int Pij (int i, int j, int state);
 
+  // return index of resulting state from application of a 3 sites permutation operator on a given state
+  //
+  // i = first position
+  // j = second position (j > i)
+  // k = third position  (k > j)
+  // state = index of the state to be applied on P_ijk operator
+  // return value = index of resulting state
+  virtual int Pijk (int i, int j, int k, int state);
+
+  // return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+  //
+  // i = first position
+  // j = second position (j > i)
+  // k = third position  (k > j)
+  // state = index of the state to be applied on P_ijk operator
+  // return value = index of resulting state
+  virtual int Pminusijk (int i, int j, int k, int state);
+
   // return eigenvalue of Sz_i Sz_j associated to a given state
   //
   // i = first position
@@ -363,7 +381,11 @@ class Spin1_2Chain : public AbstractSpinChain
   // finalState = reference on the array where the monomial representation has to be stored
   virtual void GetBosonicOccupation (unsigned int index, int * finalState);
 
-
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+ 
  protected:
 
   // generate Spin 1/2 states

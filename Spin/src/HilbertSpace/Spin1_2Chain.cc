@@ -551,6 +551,48 @@ int Spin1_2Chain::Pij (int i, int j, int state)
     return this->FindStateIndex((tmpState & ~tmpMask) | tmpState3);
 }
 
+// return index of resulting state from application of a 3 sites permutation operator on a given state
+//
+// i = first position
+// j = second position (j > i)
+// k = third position  (k > j)
+// state = index of the state to be applied on P_ijk operator
+// return value = index of resulting state
+
+int Spin1_2Chain::Pijk (int i, int j, int k, int state)
+{  
+  unsigned long tmpState = this->StateDescription[state];
+  unsigned long tmpState2 = tmpState & (0x1ul << i);
+  unsigned long tmpState3 = tmpState & (0x1ul << j);
+  unsigned long tmpState4 = tmpState & (0x1ul << k);
+  tmpState &= ~((0x1ul << i) | (0x1ul << j) | (0x1ul << k));
+  tmpState |= tmpState2 << (j - i);
+  tmpState |= tmpState3 << (k - j);
+  tmpState |= tmpState4 >> (k - i);
+  return this->FindStateIndex(tmpState);
+}
+
+// return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+//
+// i = first position
+// j = second position (j > i)
+// k = third position  (k > j)
+// state = index of the state to be applied on P_ijk operator
+// return value = index of resulting state
+
+int Spin1_2Chain::Pminusijk (int i, int j, int k, int state)
+{  
+  unsigned long tmpState = this->StateDescription[state];
+  unsigned long tmpState2 = tmpState & (0x1ul << i);
+  unsigned long tmpState3 = tmpState & (0x1ul << j);
+  unsigned long tmpState4 = tmpState & (0x1ul << k);
+  tmpState &= ~((0x1ul << i) | (0x1ul << j) | (0x1ul << k));
+  tmpState |= tmpState3 >> (j - i);
+  tmpState |= tmpState4 >> (k - j);
+  tmpState |= tmpState2 << (k - i);
+  return this->FindStateIndex(tmpState);
+}
+
 // return eigenvalue of Sz_i Sz_j associated to a given state
 //
 // i = first position
@@ -1375,3 +1417,18 @@ unsigned long Spin1_2Chain::EncodeSiteState(int physicalState, int sitePosition)
 {
   return  physicalState << sitePosition;
 }
+
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* Spin1_2Chain::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      TmpNorm[i] = 1.0;
+    }
+  return TmpNorm;
+}
+ 

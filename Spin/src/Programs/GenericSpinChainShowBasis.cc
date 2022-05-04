@@ -5,6 +5,10 @@
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzSymmetry.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndInversionSymmetry.h"
 #include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzInversionSymmetries.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzSymmetryLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndInversionSymmetryLong.h"
+#include "HilbertSpace/Spin1_2ChainWithTranslationsAndSzInversionSymmetriesLong.h"
 
 #include "HilbertSpace/Spin1Chain.h"
 #include "HilbertSpace/Spin1ChainWithTranslations.h"
@@ -88,6 +92,8 @@ int main(int argc, char** argv)
 
   (*SystemGroup) += new BooleanOption  ('\n', "save-normalized-vector", "Save the phase-fixed vector for eigenvectors of PEPS transfer matrix");
 
+  (*SystemGroup) += new BooleanOption  ('\n', "unnormalize", "remove the symmetry factors from the basis (i.e. the sqrt(orbit size) factors)");
+  
   (*SystemGroup) += new SingleDoubleOption  ('\n', "hide-component", "hide state components (and thus the corresponding n-body state) whose absolute value is lower than a given error (0 if all components have to be shown", 0.0);
 
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
@@ -540,7 +546,14 @@ int main(int argc, char** argv)
 		  }
 		else
 		  {
-		    Space = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, 1, Manager.GetInteger("inversion-symmetry"), SzValue, 1000000, 1000000);
+		    if (NbrSpins < 32)
+		      {
+			Space = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, 1, Manager.GetInteger("inversion-symmetry"), SzValue, 1000000, 1000000);
+		      }
+		    else
+		      {
+			Space = new Spin1_2ChainWithTranslationsAndInversionSymmetryLong (NbrSpins, Momentum, 1, Manager.GetInteger("inversion-symmetry"), SzValue, 1000000, 1000000);
+		      }
 		  }
 	      }
 	    else
@@ -551,7 +564,14 @@ int main(int argc, char** argv)
 		  }
 		else
 		  {
-		    Space = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, SzValue, 1000000, 1000000);
+		    if (NbrSpins < 32)
+		      {
+			Space = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, SzValue, 1000000, 1000000);
+		      }
+		    else
+		      {
+			Space = new Spin1_2ChainWithTranslationsLong (NbrSpins, Momentum, 1, SzValue, 1000000, 1000000);
+		      }
 		  }
 	      }
 	  }
@@ -598,7 +618,7 @@ int main(int argc, char** argv)
 	    Space->PrintState(cout, i) << endl;
 	}
       else
-       {
+       {	 
  	 if (Manager.GetBoolean("complex-vector") == false)
 	   {
 	     RealVector State;
@@ -607,21 +627,49 @@ int main(int argc, char** argv)
 		 cout << "error while reading " << Manager.GetString("state") << endl;
 		 return -1;
 	       }
-	     for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
-	       if (fabs(State[i]) > Error)
-		 Space->PrintState(cout, i) << " : "  << State[i] << endl;
+	     if (Manager.GetBoolean("unnormalize") == false)
+	       {
+		 for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		   {
+		     if (fabs(State[i]) > Error)
+		       Space->PrintState(cout, i) << " : "  << State[i] << endl;
+		   }
+	       }
+	     else
+	       {
+		 double* NormalizationFactors = Space->GetBasisNormalization();
+		 for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		   {
+		     if (fabs(State[i]) > Error)
+		       Space->PrintState(cout, i) << " : "  << State[i] << " orb size=" << 1.0 / (NormalizationFactors[i] * NormalizationFactors[i]) << endl;
+		   }
+	       }
 	   }
 	 else
 	   {
 	     ComplexVector State;
 	     if (State.ReadVector(Manager.GetString("state")) == false)
 	       {
-	      cout << "error while reading " << Manager.GetString("state") << endl;
-	      return -1;
+		 cout << "error while reading " << Manager.GetString("state") << endl;
+		 return -1;
 	       }
-	     for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
-	       if (Norm(State[i]) > Error)
-		 Space->PrintState(cout, i) << " : "  << State[i] << endl;
+	     if (Manager.GetBoolean("unnormalize") == false)
+	       {
+		 for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		   {
+		     if (Norm(State[i]) > Error)
+		       Space->PrintState(cout, i) << " : "  << State[i] << endl;
+		   }
+	       }
+	     else
+	       {
+		 double* NormalizationFactors = Space->GetBasisNormalization();
+		 for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		   {
+		     if (Norm(State[i]) > Error)
+		       Space->PrintState(cout, i) << " : "  << (State[i] * NormalizationFactors[i]) << endl;
+		   }
+	       }
 	   }
        }
 

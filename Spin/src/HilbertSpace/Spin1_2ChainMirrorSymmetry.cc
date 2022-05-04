@@ -729,3 +729,24 @@ int Spin1_2ChainMirrorSymmetry::FindStateIndex(unsigned long stateDescription)
     }
 }
 
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* Spin1_2ChainMirrorSymmetry::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      if ((this->StateDescription[i] & SPIN1_2CHAIN_MIRRORSYMMETRIC_BIT) != 0x0ul)
+	{
+	  TmpNorm[i] = 1.0 / M_SQRT2;
+	}
+      else
+	{
+	  TmpNorm[i] = 1.0;
+	}
+    }
+  return TmpNorm;
+}
+ 

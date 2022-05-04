@@ -544,6 +544,66 @@ int AbstractSpinChain::Pij (int i, int j, int state)
   return this->HilbertSpaceDimension;
 }
 
+// return index of resulting state from application of a 3 sites permutation operator on a given state
+//
+// i = first position
+// j = second position (j > i)
+// k = third position  (k > j)
+// state = index of the state to be applied on P_ijk operator
+// return value = index of resulting state
+
+int AbstractSpinChain::Pijk (int i, int j, int k, int state)
+{
+  cout << "Warning: using dummy method AbstractSpinChain::Pijk" << endl;
+  return this->HilbertSpaceDimension;
+}
+
+// return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+//
+// i = first position
+// j = second position (j > i)
+// k = third position  (k > j)
+// state = index of the state to be applied on P_ijk operator
+// return value = index of resulting state
+
+int AbstractSpinChain::Pminusijk (int i, int j, int k, int state)
+{
+  cout << "Warning: using dummy method AbstractSpinChain::Pminusijk" << endl;
+  return this->HilbertSpaceDimension;
+}
+
+// return index of resulting state from application of a 3 sites permutation operator on a given state
+//
+// i = first position
+// j = second position
+// k = third position 
+// state = index of the state to be applied on P_ijk operator
+// coefficient = reference on the numerical coefficient
+// nbrTranslations = reference on the number of translations to apply to the resulting state to obtain the canonical state
+// return value = index of resulting state
+
+int AbstractSpinChain::Pijk (int i, int j, int k, int state, double& coefficient, int& nbrTranslation)
+{
+  cout << "Warning: using dummy method AbstractSpinChain::Pijk" << endl;
+  return this->HilbertSpaceDimension;
+}
+
+// return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+//
+// i = first position
+// j = second position 
+// k = third position 
+// state = index of the state to be applied on P_ijk operator
+// coefficient = reference on the numerical coefficient
+// nbrTranslations = reference on the number of translations to apply to the resulting state to obtain the canonical state
+// return value = index of resulting state
+
+int AbstractSpinChain::Pminusijk (int i, int j, int k, int state, double& coefficient, int& nbrTranslation)
+{
+  cout << "Warning: using dummy method AbstractSpinChain::Pminusijk" << endl;
+  return this->HilbertSpaceDimension;
+}
+
 // return index of resulting state from application of four-site exchange operator on a given state
 //
 // i = first position
@@ -818,4 +878,13 @@ void AbstractSpinChain::CreateStateFromMPSDescription (ComplexMatrix* bMatrices,
   cout << "warning, using undefined function AbstractSpinChain::CreateStateFromMPSDescription" << endl;
 }
 
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* AbstractSpinChain::GetBasisNormalization()
+{
+  cout << "warning, using dummy method AbstractSpinChain::GetBasisNormalization" << endl;
+  return 0;
+}
 

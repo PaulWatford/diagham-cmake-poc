@@ -27,6 +27,7 @@
 #include "MainTask/GenericComplexMainTask.h"
 
 #include "Matrix/RealMatrix.h"
+#include "Matrix/RealSymmetricMatrix.h"
 #include "Matrix/IntegerMatrix.h"
 #include "Matrix/LongIntegerMatrix.h"
 
@@ -233,7 +234,7 @@ int main(int argc, char** argv)
 			{
  			case 1 :
 			  {
-			    if (NbrSpins < 64)
+			    if (NbrSpins < 40)
 			      {
 				Chain = new Spin1_2ChainWithTranslationsAndSzInversionSymmetries (NbrSpins, Momentum, 1, InversionSymmetrySector, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
 			      }
@@ -282,7 +283,7 @@ int main(int argc, char** argv)
 					    {
 					    case 1 :
 					      {
-						if (NbrSpins < 64)
+						if (NbrSpins < 40)
 						  {
 						    Spin1_2ChainWithTranslationsAndInversionSymmetry TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
 						    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
@@ -353,7 +354,7 @@ int main(int argc, char** argv)
 		    {
 		    case 1 :
 		      {
-			if (NbrSpins < 64)
+			if (NbrSpins < 40)
 			  {
 			    Chain = new Spin1_2ChainWithTranslationsAndSzSymmetry (NbrSpins, Momentum, 1, SzSymmetrySector, InitalSzValue, 1000000, 1000000);
 			  }
@@ -418,7 +419,7 @@ int main(int argc, char** argv)
 		    {
  		    case 1 :
 		      {
-			if (NbrSpins < 64)
+			if (NbrSpins < 40)
 			  {
 			    Chain = new Spin1_2ChainWithTranslationsAndInversionSymmetry (NbrSpins, Momentum, 1, InversionSymmetrySector, InitalSzValue, 1000000, 1000000);
 			  }
@@ -472,7 +473,7 @@ int main(int argc, char** argv)
 					{
 					case 1 :
 					  {
-					    if (NbrSpins < 64)
+					    if (NbrSpins < 40)
 					      {
 						Spin1_2ChainWithTranslationsAndInversionSymmetry TmpHilbert(NbrSpins, Momentum, 1, InversionSymmetrySector, k, 1000000, 1000000);
 						SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
@@ -500,7 +501,28 @@ int main(int argc, char** argv)
 			      SpinChainComputeCharacteristicPolynomial(&Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue,  (SpinValue * NbrSpins), SU2Degeneracy, Manager.GetBoolean("charpolynomial-nofour"));
 			    }			      
 
+			  // RealMatrix TmpTransformation (Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+			  // for (int k = 0; k < (Chain->GetHilbertSpaceDimension() / 2); ++k)
+			  //   {
+			  //     TmpTransformation.SetMatrixElement(k, k, 1.0);
+			  //     TmpTransformation.SetMatrixElement(Chain->GetHilbertSpaceDimension() - 1 - k , k, 1.0);
+			  //     TmpTransformation.SetMatrixElement(k, k + (Chain->GetHilbertSpaceDimension() / 2), 1.0);
+			  //     TmpTransformation.SetMatrixElement(Chain->GetHilbertSpaceDimension() - 1 - k , k  + (Chain->GetHilbertSpaceDimension() / 2), -1.0);
+			  //   }
+			  // TmpTransformation /= M_SQRT2;
+			  //			  cout << TmpTransformation << endl;
+			  // RealMatrix TmpTransformation2 = TmpTransformation.DuplicateAndTranspose();
+			  // RealMatrix TmpTransformation3;
+			  // TmpTransformation3 = TmpTransformation * TmpTransformation2;
+			  // cout << TmpTransformation3 << endl;
 
+			  // RealSymmetricMatrix TmpHamiltonian(Chain->GetHilbertSpaceDimension(), true);
+			  // RealSymmetricMatrix TmpConjHamiltonian(Chain->GetHilbertSpaceDimension(), true);
+			  // Hamiltonian.GetHamiltonian(TmpHamiltonian);
+			  // cout << TmpHamiltonian << endl;			  
+			  // TmpHamiltonian.Conjugate(TmpTransformation, 0, 0, TmpConjHamiltonian);
+			  // cout << TmpConjHamiltonian << endl;
+			  
 			  GenericRealMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 						   FirstRun, TmpEigenstateString);
 			  MainTaskOperation TaskOperation (&Task);
@@ -529,7 +551,7 @@ int main(int argc, char** argv)
 		{
 		case 1 :
 		  {
-		    if (NbrSpins < 64)
+		    if (NbrSpins < 40)
 		      {
 			Chain = new Spin1_2ChainWithTranslations (NbrSpins, Momentum, 1, InitalSzValue, 1000000, 1000000);
 		      }

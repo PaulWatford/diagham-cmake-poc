@@ -277,6 +277,11 @@ class Spin1_2ChainMirrorSymmetry : public Spin1_2ChainNew
   // return value = flipped configuration
   virtual unsigned long ApplyMirrorSymmetry (unsigned long initialState);
 
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+ 
 };
 
 // factorized code that is used to symmetrize result of any spin operator

@@ -1494,3 +1494,18 @@ ComplexMatrix Spin1Chain::EvaluatePartialEntanglementMatrix (int nbrSites, int s
 
    return TmpEntanglementMatrix;
 }
+
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* Spin1Chain::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      TmpNorm[i] = 1.0;
+    }
+  return TmpNorm;
+}
+ 

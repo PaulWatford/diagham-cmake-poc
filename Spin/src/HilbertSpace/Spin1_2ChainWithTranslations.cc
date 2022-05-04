@@ -628,21 +628,63 @@ int Spin1_2ChainWithTranslations::Pij (int i, int j, int state, double& coeffici
   unsigned long tmpState2 = tmpState & tmpMask;
   unsigned long tmpState3 = ~tmpState & tmpMask;
   if ((tmpState2 == 0x0ul) || (tmpState3 == 0x0ul))
-    return this->HilbertSpaceDimension;
+    {
+      return this->HilbertSpaceDimension;
+    }
   else
     {
       tmpState &= ~tmpMask;
       tmpState |= tmpState3;
       coefficient = 1.0;
       return this->SymmetrizeResult(tmpState, this->NbrStateInOrbit[state], coefficient, nbrTranslation);
-//       tmpState = this->FindCanonicalForm((tmpState & ~tmpMask) | tmpState3, nbrTranslation, i);
-//       if (this->CompatibilityWithMomentum[i] == false)
-// 	return this->HilbertSpaceDimension;
-//       j = this->FindStateIndex(tmpState);
-//       coefficient *= this->RescalingFactors[this->NbrStateInOrbit[state]][i];
-//       return j;
     }
 }
+
+// return index of resulting state from application of a 3 sites permutation operator on a given state
+//
+// i = first position
+// j = second position (j > i)
+// k = third position  (k > j)
+// state = index of the state to be applied on P_ijk operator
+// coefficient = reference on the numerical coefficient
+// nbrTranslations = reference on the number of translations to apply to the resulting state to obtain the canonical state
+// return value = index of resulting state
+
+int Spin1_2ChainWithTranslations::Pijk (int i, int j, int k, int state, double& coefficient, int& nbrTranslation)
+{
+  unsigned long tmpState = this->StateDescription[state];
+  unsigned long tmpState2 = ((tmpState >> i) & 0x1ul) << j;
+  tmpState2 |= ((tmpState >> j) & 0x1ul) << k;
+  tmpState2 |= ((tmpState >> k) & 0x1ul) << i;
+  tmpState &= ~((0x1ul << i) | (0x1ul << j) | (0x1ul << k));
+  tmpState |= tmpState2;
+  coefficient = 1.0;
+  return this->SymmetrizeResult(tmpState, this->NbrStateInOrbit[state], coefficient, nbrTranslation);
+}
+
+// return index of resulting state from application of a 3 sites permutation inverse operator on a given state
+//
+// i = first position
+// j = second position (j > i)
+// k = third position  (k > j)
+// state = index of the state to be applied on P_ijk operator
+// coefficient = reference on the numerical coefficient
+// nbrTranslations = reference on the number of translations to apply to the resulting state to obtain the canonical state
+// return value = index of resulting state
+
+int Spin1_2ChainWithTranslations::Pminusijk (int i, int j, int k, int state, double& coefficient, int& nbrTranslation)
+{
+  unsigned long tmpState = this->StateDescription[state];
+  unsigned long tmpState2 = ((tmpState >> i) & 0x1ul) << k;
+  tmpState2 |= ((tmpState >> j) & 0x1ul) << i;
+  tmpState2 |= ((tmpState >> k) & 0x1ul) << j;
+  tmpState &= ~((0x1ul << i) | (0x1ul << j) | (0x1ul << k));
+  tmpState |= tmpState2;
+  coefficient = 1.0;
+  return this->SymmetrizeResult(tmpState, this->NbrStateInOrbit[state], coefficient, nbrTranslation);
+}
+
+
 
 // return index of resulting state from application of S-_i S+_j operator on a given state
 //

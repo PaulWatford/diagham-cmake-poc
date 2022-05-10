@@ -29,7 +29,7 @@
 
 #ifndef WARNINGS_H
 #define WARNINGS_H
-
+#include <stdexcept>
 #include "config.h"
 
 

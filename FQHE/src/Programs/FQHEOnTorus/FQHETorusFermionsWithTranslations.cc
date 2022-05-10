@@ -97,6 +97,8 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
   (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*MiscGroup) += new BooleanOption('\n', "energy-variance", "in addition to energy expectation, also evaluate energy variance sqrt[<H^2>-<H>^2]");
+
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -482,7 +484,7 @@ int main(int argc, char** argv)
 	  delete [] TmpName;
 	}
 
-      if (Manager.GetString("energy-expectation") != 0 )
+    if ( (Manager.GetString("energy-expectation") != 0 ) || (Manager.GetBoolean("energy-variance") != 0 ) )
 	{
 
 	  char* StateFileName = Manager.GetString("energy-expectation");
@@ -510,6 +512,16 @@ int main(int argc, char** argv)
 	
 	  Complex EnergyValue = InputState * TmpState;
           cout << "<Energy>= " << EnergyValue.Re << " " << EnergyValue.Im << endl;
+
+      if (Manager.GetBoolean("energy-variance") != 0 )
+       {
+   	     ComplexVector TmpState2(TotalSpace->GetHilbertSpaceDimension(), true);
+	     VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
+	     Operation2.ApplyOperation(Architecture.GetArchitecture());
+	     Complex varH = InputState * TmpState2 - EnergyValue * EnergyValue;
+	     cout << "(varH)^2 = " << varH.Re << " " << varH.Im << endl;
+       }   
+
 	  return 0;
 	}
 

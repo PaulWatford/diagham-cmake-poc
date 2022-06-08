@@ -31,6 +31,8 @@
 #ifndef INTEGERALGEBRATOOLS_H
 #define INTEGERALGEBRATOOLS_H
 
+#include "config.h"
+
 
 // find greatest common divider
 //
@@ -45,6 +47,20 @@ int FindGCD(int m, int n);
 // n = second integer (must be greater than m)
 // return value = GCD
 int RecursiveFindGCD(int m, int n);
+
+// find greatest common divider
+//
+// m = first integer  
+// n = second integer (must be greater than m)
+// return value = GCD
+LONGLONG FindGCD(LONGLONG m, LONGLONG n);
+
+// find greatest common divider (recurisive part of the method)
+//
+// m = first integer  
+// n = second integer (must be greater than m)
+// return value = GCD
+LONGLONG RecursiveFindGCD(LONGLONG m, LONGLONG n);
 
 // get all binomial coefficients up to a given number of element
 //

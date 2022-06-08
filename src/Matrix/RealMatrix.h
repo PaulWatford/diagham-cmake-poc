@@ -437,6 +437,10 @@ class RealMatrix : public Matrix
   // return value = reference on complex diagonal matrix
   ComplexDiagonalMatrix& LapackDiagonalize (ComplexDiagonalMatrix& M, ComplexMatrix& Q, bool leftFlag = false);
 
+  // compute the characteristic polynomial using the Faddeev–Le Verrier algorith
+  //
+  virtual double* CharacteristicPolynomial();
+
   // Output Stream overload
   //
   // Str = reference on output stream

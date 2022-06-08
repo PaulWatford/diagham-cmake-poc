@@ -324,6 +324,17 @@ class FermionOnTorusWithMagneticTranslations :  public ParticleOnTorusWithMagnet
   // return value = true if teh state satisfies the general Pauli exclusion principle
   bool HasPauliExclusions(int index, int pauliK, int pauliR);
 
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+
+  // find state index from an array of occupied orbitals
+  //
+  // stateDescription = array describing the state (stored as k1,k2,k3,...)
+  // return value = corresponding index, -1 if an error occured
+  virtual int FindStateIndex(int* stateDescription);
+
  protected:
 
   // find canonical form of a state description
@@ -389,9 +400,9 @@ class FermionOnTorusWithMagneticTranslations :  public ParticleOnTorusWithMagnet
   void GenerateSignLookUpTable();
 
   // generate all states corresponding to the constraints
-  // tmpDimension = max dimension of Hilbert space (to be reduced by symmetries)
+  //
   // return value = hilbert space dimension
-  long GenerateStates(long tmpDimension);
+  long GenerateStates();
 
   // generate all states corresponding to the constraints (without taking into the canonical form) 
   // 
@@ -726,6 +737,33 @@ inline int FermionOnTorusWithMagneticTranslations::FindStateIndex(unsigned long 
     return PosMid;
   else
     return PosMax;
+}
+
+// find state index from an array of occupied orbitals
+//
+// stateDescription = array describing the state (stored as k1,k2,k3,...)
+// return value = corresponding index, -1 if an error occured
+
+inline int FermionOnTorusWithMagneticTranslations::FindStateIndex(int* stateDescription)
+{
+  unsigned long TmpState = 0x0ul;
+  for (int i = 0; i < this->NbrFermions; ++i)
+    TmpState |= 0x1ul << (stateDescription[i]);
+  int TmpMaxMomentum = this->MaxMomentum;
+  while ((TmpState >> TmpMaxMomentum) == 0x0ul)
+    --TmpMaxMomentum;  
+  int TmpNbrTranslations = 0;
+  TmpState = this->FindCanonicalFormAndTestXMomentumConstraint(TmpState, TmpMaxMomentum, TmpNbrTranslations);
+  if (TmpNbrTranslations == -1)
+    {
+      return -1;
+    }
+  int TmpIndex = this->FindStateIndex(TmpState, TmpMaxMomentum);
+  if (TmpIndex == this->HilbertSpaceDimension)
+    {
+      return -1;      
+    }
+  return TmpIndex;
 }
 
 // get the C2 symmetric state of a given state 

@@ -60,6 +60,35 @@ int RecursiveFindGCD(int m, int n)
     return RecursiveFindGCD ((n % m), m);
 }
 
+// find greatest common divider
+//
+// m = first integer  
+// n = second integer (must be greater than m)
+// return value = GCD
+
+LONGLONG FindGCD(LONGLONG m, LONGLONG n)
+{
+  if (m < n)
+    return RecursiveFindGCD (m, n);
+  else
+    return RecursiveFindGCD (n, m);
+  return n;
+}
+
+// find greatest common divider (recurisive part of the method)
+//
+// m = first integer  
+// n = second integer (must be greater than m)
+// return value = GCD
+
+LONGLONG RecursiveFindGCD(LONGLONG m, LONGLONG n)
+{
+  if (m == ((LONGLONG) 0))
+    return n;
+  else
+    return RecursiveFindGCD ((n % m), m);
+}
+
 // get all binomial coefficients up to a given number of element
 //
 // n = maximum number of elements

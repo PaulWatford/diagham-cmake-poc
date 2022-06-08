@@ -1730,6 +1730,51 @@ ComplexDiagonalMatrix& RealMatrix::LapackDiagonalize (ComplexDiagonalMatrix& M, 
   return M;
 }
 
+// compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
+//
+
+double* RealMatrix::CharacteristicPolynomial()
+{
+  double* PolynomialCoefficients = new double [this->NbrRow + 1];
+
+  PolynomialCoefficients[this->NbrRow] = 1l;
+  
+  RealMatrix TmpMatrix (this->NbrRow, this->NbrColumn);
+  TmpMatrix.Copy(*this);
+  RealMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
+
+  double TmpTrace;
+  TmpTrace = -this->Tr();
+  
+  PolynomialCoefficients[this->NbrRow - 1] = TmpTrace;
+
+  for (int k = this->NbrRow - 2; k >= 0; --k)
+    {
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  TmpMatrix.Columns[i][i] += PolynomialCoefficients[k + 1];
+	}      
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  for (int j = 0; j < this->NbrColumn; ++j)
+	    {
+	      TmpMatrix2.Columns[j][i] = 0.0;
+	      for (int l = 0; l < this->NbrColumn; ++l)
+		{
+		  TmpMatrix2.Columns[j][i] += this->Columns[l][i] * TmpMatrix.Columns[j][l];
+		}
+	    }	  
+	}
+      RealMatrix TmpMatrix3 = TmpMatrix2;
+      TmpMatrix2 = TmpMatrix;
+      TmpMatrix = TmpMatrix3;
+      TmpTrace = TmpMatrix.Tr();
+      TmpTrace /= -((double) (this->NbrRow - k));
+      PolynomialCoefficients[k] = TmpTrace;
+      
+    }
+  return PolynomialCoefficients;
+}
 // Output Stream overload
 //
 // Str = reference on output stream

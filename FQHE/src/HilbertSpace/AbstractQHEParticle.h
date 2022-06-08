@@ -154,7 +154,11 @@ class AbstractQHEParticle :  public AbstractHilbertSpace
   // timeCoherence = true if time coherence has to be used
   virtual void InitializeWaveFunctionEvaluation (bool timeCoherence = false);
   
-
+  // get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+  //
+  // return value = pointer to normalization factors
+  virtual double* GetBasisNormalization();
+ 
  protected:
 
   // forge an eigenstate from a description given by a file

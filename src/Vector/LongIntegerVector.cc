@@ -577,6 +577,84 @@ bool LongIntegerVector::IsProportional(LongIntegerVector& vector)
 #endif
 }
 
+// normalize the state through division by the component GCD
+//
+
+void LongIntegerVector::Normalize()
+{
+  long i = 0l;
+#ifdef __GMP__
+  while ((i < this->LargeDimension) && (mpz_sgn(this->Components[i]) == 0))
+#else      
+    while ((i < this->LargeDimension) && (this->Components[i] == ((LONGLONG) 0l)))
+#endif
+    {
+      ++i;
+    }
+  if (i == this->LargeDimension)
+    {
+      return;
+    }
+  long j = i + 1l;
+#ifdef __GMP__
+  while ((j < this->LargeDimension) && (mpz_sgn(this->Components[j]) == 0))
+#else      
+    while ((j < this->LargeDimension) && (this->Components[j] == ((LONGLONG) 0l)))
+#endif
+    {
+      ++j;
+    }
+   if (j == this->LargeDimension)
+    {
+      return;
+    }   
+#ifdef __GMP__
+  mpz_t TmpFactor;
+  mpz_t TmpFactor2;
+  mpz_init(TmpFactor);
+  mpz_init(TmpFactor2);
+  mpz_gcd(TmpFactor, this->Components[i], this->Components[j]);
+  j++;
+  while ((j < this->LargeDimension) && (mpz_cmp_si(TmpFactor, 1l) != 0))
+    {
+      if (mpz_sgn(this->Components[j]) != 0)
+	{
+	  mpz_gcd(TmpFactor2, TmpFactor, this->Components[j]);
+	  mpz_swap(TmpFactor2, TmpFactor);
+	}
+      ++j;
+    }
+  if (mpz_cmp_si(TmpFactor, 1l) != 0)
+    {
+      for (i = 0l; i < this->LargeDimension; ++i)
+	{
+	  mpz_divexact (this->Components[i], this->Components[i], TmpFactor);
+	}
+    }
+  mpz_clear(TmpFactor);  
+  mpz_clear(TmpFactor2);  
+#else
+  LONGLONG TmpFactor = FindGCD(this->Components[i], this->Components[j]);
+  j++;
+  while ((j < this->LargeDimension) && (TmpFactor != ((LONGLONG) 1l)))
+    {
+      if (this->Components[j] != ((LONGLONG) 0l))
+	{
+	  TmpFactor =  FindGCD(TmpFactor, this->Components[j]);	  
+	}
+      ++j;
+    }
+  if (TmpFactor != ((LONGLONG) 1l))
+    {
+      for (i = 0l; i < this->LargeDimension; ++i)
+	{
+	  this->Components[i] /= TmpFactor;
+	}
+    }
+#endif  
+  return;
+}
+
 // sum two vectors
 //
 // vector = vector to add

@@ -614,8 +614,19 @@ int main(int argc, char** argv)
         }
       if (Manager.GetString("state") == 0)
         {
-	  for (int i = 0; i <  Space->GetHilbertSpaceDimension(); ++i)
-	    Space->PrintState(cout, i) << endl;
+	  if (Manager.GetBoolean("unnormalize") == false)
+	    {
+	      for (int i = 0; i <  Space->GetHilbertSpaceDimension(); ++i)
+		Space->PrintState(cout, i) << endl;
+	    }
+	  else
+	    {
+	      double* NormalizationFactors = Space->GetBasisNormalization();
+	      for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		{
+		  Space->PrintState(cout, i) << " orb size=" << 1.0 / (NormalizationFactors[i] * NormalizationFactors[i]) << endl;
+		}
+	    }
 	}
       else
        {	 

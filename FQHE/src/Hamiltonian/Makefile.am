@@ -176,4 +176,7 @@ ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian.cc \
 ParticleOnTorusPerturbedCoulombHamiltonian.cc \
 ParticleOnLatticeWithSpinChernInsulatorRealHamiltonian.cc \
 ParticleOnLatticeQuantumSpinHallTwoBandRealHamiltonian.cc \
-ParticleOnThinAnnulusGenericHamiltonian.cc
+ParticleOnThinAnnulusGenericHamiltonian.cc \
+ParticleOnTorusPairHoppingHamiltonian.cc \
+ParticleOnTorusPairHoppingRealHamiltonian.cc
+

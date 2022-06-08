@@ -179,6 +179,10 @@ class LongIntegerVector : public Vector
   // return value = true if the two vectors are proportional 
   bool IsProportional(LongIntegerVector& vector);
 
+  // normalize the state through division by the component GCD
+  //
+  void Normalize();
+
   // sum two vectors
   //
   // vector = vector to add

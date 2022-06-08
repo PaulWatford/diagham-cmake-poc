@@ -113,7 +113,10 @@ FermionOnTorusWithMagneticTranslations::FermionOnTorusWithMagneticTranslations (
   cout << "Max dimension: " << TmpDimension << endl;
   if (TmpDimension>INT_MAX)
     cout << "Max-Dimension surpasses integer representation..."<<endl;
-  this->LargeHilbertSpaceDimension = this->GenerateStates(TmpDimension);
+  this->StateDescription = new unsigned long [TmpDimension];
+  this->StateMaxMomentum = new int [TmpDimension];
+  this->LargeHilbertSpaceDimension = this->RawGenerateStates(this->NbrFermions, this->MaxMomentum - 1, this->MaxMomentum - 1, 0l, 0);
+  this->LargeHilbertSpaceDimension = this->GenerateStates();
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
@@ -121,22 +124,29 @@ FermionOnTorusWithMagneticTranslations::FermionOnTorusWithMagneticTranslations (
   cout << "Actual dimension: " << this->LargeHilbertSpaceDimension << endl;
 
   this->Flag.Initialize();
-  this->GenerateLookUpTable(1000000);
+  if (this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->GenerateLookUpTable(1000000);
 #ifdef __DEBUG__
-  int UsedMemory = 0;
-  UsedMemory += 2 * this->HilbertSpaceDimension * sizeof(int);
-  UsedMemory += this->NbrMomentum * sizeof(int);
-//  UsedMemory += this->NbrMomentum * this->LookUpTableMemorySize * sizeof(int);
-  UsedMemory +=  (1 << MaximumSignLookUp) * sizeof(double);
-  cout << "memory requested for Hilbert space = ";
-  if (UsedMemory >= 1024)
-    if (UsedMemory >= 1048576)
-      cout << (UsedMemory >> 20) << "Mo" << endl;
-    else
-      cout << (UsedMemory >> 10) << "ko" <<  endl;
-  else
-    cout << UsedMemory << endl;
+      int UsedMemory = 0;
+      UsedMemory += 2 * this->HilbertSpaceDimension * sizeof(int);
+      UsedMemory += this->NbrMomentum * sizeof(int);
+      //  UsedMemory += this->NbrMomentum * this->LookUpTableMemorySize * sizeof(int);
+      UsedMemory +=  (1 << MaximumSignLookUp) * sizeof(double);
+      cout << "memory requested for Hilbert space = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
 #endif
+    }
+  else
+    {
+      this->LookUpTableShift = 0;
+    }
 }
 
 // copy constructor (without duplicating datas)
@@ -194,18 +204,21 @@ FermionOnTorusWithMagneticTranslations::~FermionOnTorusWithMagneticTranslations 
       delete[] this->StateDescription;
       delete[] this->StateMaxMomentum;
 
-      delete[] this->LookUpTableShift;
-      for (int i = 0; i < this->NbrMomentum; ++i)
-	delete[] this->LookUpTable[i];
-      delete[] this->LookUpTable;
-
-      delete[] this->SignLookUpTable;
-      delete[] this->NbrParticleLookUpTable;
-
-      for (int i = 1; i <= this->MaxMomentum ; ++i)
-	delete[] this->RescalingFactors[i];
-      delete[] this->RescalingFactors;
-      delete[] this->NbrStateInOrbit;
+      if (this->LargeHilbertSpaceDimension > 0l)
+	{
+	  delete[] this->LookUpTableShift;
+	  for (int i = 0; i < this->NbrMomentum; ++i)
+	    delete[] this->LookUpTable[i];
+	  delete[] this->LookUpTable;
+	  
+	  delete[] this->SignLookUpTable;
+	  delete[] this->NbrParticleLookUpTable;
+	  
+	  for (int i = 1; i <= this->MaxMomentum ; ++i)
+	    delete[] this->RescalingFactors[i];
+	  delete[] this->RescalingFactors;
+	  delete[] this->NbrStateInOrbit;
+	}
     }
 }
 
@@ -789,14 +802,11 @@ string convBase(unsigned long v, long base)
 }
 
 // generate all states corresponding to the constraints
-// tmpDimension = max dimension of Hilbert space (to be reduced by symmetries)
+// 
 // return value = hilbert space dimension
 
-long FermionOnTorusWithMagneticTranslations::GenerateStates(long tmpDimension)
+long FermionOnTorusWithMagneticTranslations::GenerateStates()
 {
-  this->StateDescription = new unsigned long [tmpDimension];
-  this->StateMaxMomentum = new int [tmpDimension];
-  this->LargeHilbertSpaceDimension = this->RawGenerateStates(this->NbrFermions, this->MaxMomentum - 1, this->MaxMomentum - 1, 0l, 0);
   long* TmpNbrStateDescription = new long [this->MaxMomentum + 1];  
   for (int i = 0; i <= this->MaxMomentum; ++i)
     {
@@ -1516,3 +1526,18 @@ bool FermionOnTorusWithMagneticTranslations::HasPauliExclusions(int index, int p
     }
   return true;
 }
+
+// get the normalization factor in front of each basis state (i.e. 1/sqrt(orbit size))
+//
+// return value = pointer to normalization factors
+
+double* FermionOnTorusWithMagneticTranslations::GetBasisNormalization()
+{
+  double* TmpNorm = new double[this->HilbertSpaceDimension];
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      TmpNorm[i] = 1.0 / sqrt((double) this->NbrStateInOrbit[i]);
+    }
+  return TmpNorm;
+}
+  

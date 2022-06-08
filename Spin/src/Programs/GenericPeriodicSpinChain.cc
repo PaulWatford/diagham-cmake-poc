@@ -608,6 +608,27 @@ int main(int argc, char** argv)
 		    }
 		  char* TmpEigenstateString = new char[strlen(OutputFileName) + 64];
 		  sprintf (TmpEigenstateString, "%s_sz_%d_k_%d", OutputFileName, InitalSzValue, Momentum);
+
+		  // ComplexMatrix TmpRawMatrix(Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
+		  // Hamiltonian.GetHamiltonian(TmpRawMatrix);
+		  // double* TmpNormalizationFactors = Chain->GetBasisNormalization();
+		  // for (int i = 0; i < Chain->GetHilbertSpaceDimension(); ++i)
+		  //   {
+		  //     for (int j = 0; j < Chain->GetHilbertSpaceDimension(); ++j)
+		  // 	{
+		  // 	  double Tmp;
+		  // 	  TmpRawMatrix.GetMatrixElement(i, j, Tmp);
+		  // 	  Tmp *= TmpNormalizationFactors[i];
+		  // 	  Tmp /= TmpNormalizationFactors[j];
+		  // 	  TmpRawMatrix.SetMatrixElement(i, j, Tmp);
+		  // 	}
+		  //   }
+		  // cout << "Converting to integer matrix" << endl;
+		  // LongIntegerMatrix TmpMatrix;
+		  // TmpMatrix = LongIntegerMatrix(TmpRawMatrix, 2.0);
+		  // cout << TmpMatrix << endl;
+
+		  
 		  GenericComplexMainTask Task(&Manager, Chain, &Lanczos, &Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName,
 					      FirstRun, TmpEigenstateString);
 		  MainTaskOperation TaskOperation (&Task);
@@ -665,6 +686,7 @@ void SpinChainComputeCharacteristicPolynomial(SpinChainRealHamiltonianWithTransl
 	{
 	  TmpMatrix = LongIntegerMatrix(TmpRawMatrix);
 	}
+      cout << TmpMatrix << endl;
       cout << "Start computing characteristic polynomial (degree " << chain->GetHilbertSpaceDimension() << ")" << endl;
       mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
       char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];

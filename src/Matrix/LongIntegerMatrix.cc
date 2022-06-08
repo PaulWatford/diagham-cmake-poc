@@ -1292,7 +1292,7 @@ LONGLONG* LongIntegerMatrix::CharacteristicPolynomial(AbstractArchitecture* arch
 	      TmpMatrix2.Columns[j][i] = (LONGLONG) 0l;
 	      for (int l = 0; l < this->NbrColumn; ++l)
 		{
-		  TmpMatrix2.Columns[j][i] = this->Columns[l][i] * TmpMatrix.Columns[j][l];
+		  TmpMatrix2.Columns[j][i] += this->Columns[l][i] * TmpMatrix.Columns[j][l];
 		}
 	    }	  
 	}

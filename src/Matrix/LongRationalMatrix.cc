@@ -923,6 +923,25 @@ LongRational* LongRationalMatrix::CharacteristicPolynomial()
   return PolynomialCoefficients;
 }
 
+// test if a rational matrix only contains integer
+//
+// return value = true if the current rational matrix only contains integer
+
+bool LongRationalMatrix::IsIntegerMatrix()
+{
+  for (int i = 0; i < this->NbrRow; ++i)
+    {
+      for (int j = 0; j < this->NbrColumn; ++j)
+	{
+	  if (this->Columns[j][i].IsInteger() == false)
+	    {
+	      return false;
+	    }
+	}
+    }
+  return true;
+}
+  
 // write matrix in a file 
 //
 // fileName = name of the file where the matrix has to be stored

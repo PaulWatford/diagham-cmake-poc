@@ -329,9 +329,13 @@ class LongRational
 
   // test is a rational numbers is zero
   // 
-  // x = rational number
   // return value = true if the number is zero
   bool IsZero ();
+
+  // test is a rational numbers is an integer
+  // 
+  // return value = true if the number is an integer
+  bool IsInteger ();
 
 
 #ifdef __GMP__
@@ -578,12 +582,32 @@ inline bool operator != (long y, const LongRational& x)
 
 // test is a rational numbers is zero
 // 
-// x = rational number
 // return value = true if the number is zero
 
 inline bool LongRational::IsZero ()
 { 
   return (mpq_sgn(this->Value) == 0);
+}
+
+// test is a rational numbers is an integer
+// 
+// return value = true if the number is an integer
+
+inline bool LongRational::IsInteger ()
+{
+  if (mpq_sgn(this->Value) == 0)
+    {
+      return true;
+    }
+  this->Simplify();
+  if (mpz_cmp_ui(mpq_denref(this->Value), 1ul) == 0)
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
 }
 
 // compute the opposit number
@@ -840,6 +864,26 @@ inline LongRational& LongRational::Neg()
   return *this;
 }
 
+// test is a rational numbers is an integer
+// 
+// return value = true if the number is an integer
+
+inline bool LongRational::IsInteger ()
+{
+  if (mthis->Numerator == 0l)
+    {
+      return true;
+    }
+  this->Simplify();
+  if ((this->Denominator == 1l) || (this->Denominator == -1l))
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
 #endif
 
 #endif

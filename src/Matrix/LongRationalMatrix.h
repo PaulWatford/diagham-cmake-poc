@@ -179,6 +179,11 @@ class LongRationalMatrix : public Matrix
   //
   void SetToIdentity();
 
+  // test if a rational matrix only contains integer
+  //
+  // return value = true if the current rational matrix only contains integer
+  virtual bool IsIntegerMatrix();
+  
   // add two matrices
   //
   // M1 = first matrix

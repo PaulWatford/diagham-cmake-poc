@@ -53,15 +53,15 @@ using std::ofstream;
 using std::ios;
 
 
-// compute the characteristic polynomial for the real hamiltonians
+// compute the characteristic polynomial for hamiltonian projected onto the Krylov subspace
 //
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteristic polynomial
 // architecture = pointer to the architecture
-void FQHPairHoppingComputeCharacteristicPolynomial(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture);
-
-int FQHPairHoppingKrylovSubspaceDimension(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int productStateIndex);
+// productStateIndex = index of the product state that defines the Krylov subpspace
+// return value = Krylov subspace dimension
+int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int productStateIndex);
 
 
 int main(int argc, char** argv)
@@ -90,13 +90,12 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('l', "nbr-sites", "number of sites", 0);
   (*SystemGroup) += new SingleIntegerOption  ('x', "x-momentum", "constraint on the total momentum in the x direction", 0);
   (*SystemGroup) += new SingleIntegerOption  ('y', "y-momentum", "constraint on the total momentum in the y direction", 0);
-  (*SystemGroup) += new BooleanOption  ('\n', "all-points", "calculate all points", false);
-  (*SystemGroup) += new BooleanOption  ('\n', "full-reducedbz", "calculate all points within the full reduced Brillouin zone", false);
   (*SystemGroup) += new SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
   (*SystemGroup) += new SingleStringOption  ('\n', "eigenvalue-file", "filename for eigenvalues output");
   (*SystemGroup) += new SingleStringOption  ('\n', "eigenstate-file", "filename for eigenstates output; to be appended by _kx_#_ky_#.#.vec");
   (*SystemGroup) += new  BooleanOption ('\n', "enable-realhamiltonian", "use a real Hamiltonian at the inversion symmetric points");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-sublatticeconservation", "for even number of sites, do not use the sublattice particle number conservation");
+  (*SystemGroup) += new  BooleanOption ('\n', "use-double", "also perform the Krylov projected calculation using double precision");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 
 						      500);
   (*PrecalculationGroup) += new SingleStringOption  ('\n', "load-precalculation", "load precalculation from a file",0);
@@ -106,7 +105,6 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
-  (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
   (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");  (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -300,170 +298,28 @@ int main(int argc, char** argv)
 	    }
 	  delete [] TmpName;
 	  
-	  if (Manager.GetBoolean("export-charpolynomial"))
+	  
+	  int KrylovSpaceDimension = FQHPairHoppingKrylovSubspaceComputeCharacteristic(Hamiltonian, TotalSpace, EigenvectorName, Architecture.GetArchitecture(), ProductStateIndex);
+
+	  if (Manager.GetBoolean("use-double"))
 	    {
-	      FQHPairHoppingComputeCharacteristicPolynomial(Hamiltonian, TotalSpace, EigenvectorName, Architecture.GetArchitecture());
+	      RealVector* TmpVectors = new RealVector[TotalSpace->GetHilbertSpaceDimension()];
+	      TmpVectors[0] = RealVector(TotalSpace->GetHilbertSpaceDimension(), true);
+	      TmpVectors[0][ProductStateIndex] = 1.0;
+	      FullReorthogonalizedLanczosAlgorithm TmpLanczos (Architecture.GetArchitecture(), KrylovSpaceDimension, KrylovSpaceDimension + 1);
+	      TmpLanczos.SetHamiltonian(Hamiltonian);
+	      TmpLanczos.InitializeLanczosAlgorithm(TmpVectors[0]);
+	      TmpLanczos.RunLanczosAlgorithm(KrylovSpaceDimension);
+	      RealVector* KrylovLanczosVectors = (RealVector*) TmpLanczos.GetKrylovSubspace();
+	      RealTriDiagonalSymmetricMatrix TmpTridiagHamiltonian = TmpLanczos.GetTridiagonalMatrix();
+	      RealMatrix TridiagHamiltonian (TmpTridiagHamiltonian);
+	      double* TridiagCharacteristicPolynomial = TridiagHamiltonian.CharacteristicPolynomial();
+	      for (int i = 0; i <= KrylovSpaceDimension; ++i)
+		{
+		  cout << TridiagCharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
+		}
 	    }
 	  
-	  int KrylovSpaceDimension = FQHPairHoppingKrylovSubspaceDimension(Hamiltonian, TotalSpace, EigenvectorName, Architecture.GetArchitecture(), ProductStateIndex);
-  
-	  RealVector* TmpVectors = new RealVector[TotalSpace->GetHilbertSpaceDimension()];
-	  TmpVectors[0] = RealVector(TotalSpace->GetHilbertSpaceDimension(), true);
-	  TmpVectors[0][ProductStateIndex] = 1.0;
-	  //	  for (int i = 1; (i < TotalSpace->GetHilbertSpaceDimension()) && (KrylovSpaceDimension == 0); ++i)
-	  FullReorthogonalizedLanczosAlgorithm TmpLanczos (Architecture.GetArchitecture(), KrylovSpaceDimension, KrylovSpaceDimension + 1);
-	  TmpLanczos.SetHamiltonian(Hamiltonian);
-	  TmpLanczos.InitializeLanczosAlgorithm(TmpVectors[0]);
-	  TmpLanczos.RunLanczosAlgorithm(KrylovSpaceDimension);
-	  RealVector* KrylovLanczosVectors = (RealVector*) TmpLanczos.GetKrylovSubspace();
-	  RealTriDiagonalSymmetricMatrix TmpTridiagHamiltonian = TmpLanczos.GetTridiagonalMatrix();
-	  RealMatrix TridiagHamiltonian (TmpTridiagHamiltonian);
-	  double* TridiagCharacteristicPolynomial = TridiagHamiltonian.CharacteristicPolynomial();
-	  for (int i = 0; i <= KrylovSpaceDimension; ++i)
-	    {
-	      cout << TridiagCharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
-	    }
-
-	  
-	  // for (int i = 1; i < KrylovSpaceDimension; ++i)
-	  //   {
-	  //     TmpVectors[i] = RealVector(TotalSpace->GetHilbertSpaceDimension(), true);
-	  //     Hamiltonian->LowLevelMultiply(TmpVectors[i - 1], TmpVectors[i]);
-// 	      RealSymmetricMatrix HRep(i + 1);
-// 	      for (int j = 0; j <= i; ++j)
-// 		{
-// 		  for (int k = 0; k <= i; ++k)
-// 		    {
-// 		      HRep(j ,k) = TmpVectors[j] * TmpVectors[k];
-// 		    }
-// 		}
-// 	      RealDiagonalMatrix TmpDiag (i + 1);
-// #ifdef __LAPACK__
-// 	      HRep.LapackDiagonalize(TmpDiag);
-// #else
-// 	      HRep.Diagonalize(TmpDiag);
-// #endif		  
-// 	      for (int j = 0; j <= i; ++j)
-// 		{		  
-// 		  if (fabs(TmpDiag[j]) < 1e-12)
-// 		    {
-// 		      KrylovSpaceDimension = i;
-// 		    }
-// 		}
-// 	      if (KrylovSpaceDimension == 0)
-// 		{
-// 		  TmpVectors[i] /= TmpVectors[i].Norm();
-// 		}
-// 	      else
-// 		{
-// 		  cout << "Overlap matrix sanity check: ";
-// 		  for (int j = 0; j <= i; ++j)
-// 		    {
-// 		      cout << TmpDiag[j] << " ";
-// 		    }
-// 		  cout << endl;
-// 		}
-//	    }
-// 	  cout << "Krylov space dimension=" << KrylovSpaceDimension << endl;
-	  
-// 	  RealSymmetricMatrix HRep(KrylovSpaceDimension);
-// 	  for (int j = 0; j < KrylovSpaceDimension; ++j)
-// 	    {
-// 	      for (int k = 0; k < KrylovSpaceDimension; ++k)
-// 		{
-// 		  HRep(j ,k) = TmpVectors[j] * TmpVectors[k];
-// 		}
-// 	    }
-// 	  //	  cout << HRep << endl;
-// 	  RealMatrix TmpEigenvector (KrylovSpaceDimension, KrylovSpaceDimension, true);	      
-// 	  for (int l = 0; l < KrylovSpaceDimension; ++l)
-// 	    TmpEigenvector(l, l) = 1.0;
-// 	  RealDiagonalMatrix TmpDiag (KrylovSpaceDimension);
-// #ifdef __LAPACK__
-// 	  HRep.LapackDiagonalize(TmpDiag, TmpEigenvector);
-// #else
-// 	  HRep.Diagonalize(TmpDiag, TmpEigenvector);
-// #endif
-	  
-	  
-	  
-	  
-// 	  RealMatrix KrylovSubspace (TmpVectors, KrylovSpaceDimension);	      
-// 	  RealMatrix OrthogonalKrylovSubspace = KrylovSubspace * TmpEigenvector;
-// 	  for (int j = 0; j < KrylovSpaceDimension; ++j)
-// 	    {
-// 	      OrthogonalKrylovSubspace[j] /= OrthogonalKrylovSubspace[j].Norm();
-// 	    }
-// 	  for (int j = 0; j < KrylovSpaceDimension; ++j)
-// 	    {
-// 	      for (int k = 0; k < KrylovSpaceDimension; ++k)
-// 		{
-// 		  HRep(j ,k) = OrthogonalKrylovSubspace[j] * OrthogonalKrylovSubspace[k];
-// 		}
-// 	    }
-	  //	  cout << HRep << endl;
-
-	  
-	  // RealMatrix TmpHamiltonian(TotalSpace->GetHilbertSpaceDimension(), TotalSpace->GetHilbertSpaceDimension(), true);
-	  // Hamiltonian->GetHamiltonian(TmpHamiltonian);	  
-	  // double* TmpNormalizationFactors = TotalSpace->GetBasisNormalization();
-	  // for (int i = 0; i < TotalSpace->GetHilbertSpaceDimension(); ++i)
-	  //   {
-	  //     for (int j = 0; j < TotalSpace->GetHilbertSpaceDimension(); ++j)
-	  // 	{
-	  // 	  double Tmp;
-	  // 	  TmpHamiltonian.GetMatrixElement(i, j, Tmp);
-	  // 	  Tmp *= TmpNormalizationFactors[i];
-	  // 	  Tmp /= TmpNormalizationFactors[j];
-	  // 	  //		  TmpHamiltonian.SetMatrixElement(i, j, Tmp);
-	  // 	}
-	  //   }
-// 	  RealMatrix TmpMatrix1 = TmpHamiltonian * OrthogonalKrylovSubspace;
-// 	  OrthogonalKrylovSubspace.Transpose();
-// 	  RealMatrix TmpKrylovHamiltonianUnsym = OrthogonalKrylovSubspace * TmpMatrix1;
-// 	  //	  cout << TmpKrylovHamiltonianUnsym << endl;
-// 	  double* CharacteristicPolynomial = TmpKrylovHamiltonianUnsym.CharacteristicPolynomial();
-// 	  for (int i = 0; i <= KrylovSpaceDimension; ++i)
-// 	    {
-// 	      cout << CharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
-// 	    }
-	  
-// 	  RealSymmetricMatrix TmpSymHamiltonian(TotalSpace->GetHilbertSpaceDimension(), true);
-// 	  Hamiltonian->GetHamiltonian(TmpSymHamiltonian);
-// 	  OrthogonalKrylovSubspace.Transpose();
-// 	  RealSymmetricMatrix*  TmpSymKrylovHamiltonian = (RealSymmetricMatrix*) (TmpSymHamiltonian.Conjugate(OrthogonalKrylovSubspace));
-// 	  //	  cout << (*TmpSymKrylovHamiltonian) << endl;
-// #ifdef __LAPACK__
-//  	  TmpSymKrylovHamiltonian->LapackDiagonalize(TmpDiag);
-// #else
-//  	  TmpSymKrylovHamiltonian->Diagonalize(TmpDiag);
-// #endif		  
-	  // cout << "Spectrum:" << endl;
- 	  // for (int i = 0; i < KrylovSpaceDimension; ++i)
- 	  //   {
- 	  //     cout << TmpDiag[i] << endl;
- 	  //   }
-	  
-	  // char* TmpSzString = new char[64];
-	  // if (MaxNbrFermionsEvenMomentum != 0)
-	  //   {
-	  //     sprintf (TmpSzString, "%d %d %d", XMomentum, YMomentum, NbrFermionsEvenMomentum);
-	  //   }
-	  // else
-	  //   {
-	  //     sprintf (TmpSzString, "%d %d", XMomentum, YMomentum);
-	  //   }
-	  // GenericRealMainTask Task(&Manager, TotalSpace, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  OutputName,
-	  // 			   FirstRun, EigenvectorName);
-	  // MainTaskOperation TaskOperation (&Task);
-	  // TaskOperation.ApplyOperation(Architecture.GetArchitecture());
-	  // delete[] TmpSzString;
-	  // if (EigenvectorName != 0)
-	  //   {
-	  //     delete[] EigenvectorName;
-	  //   }
-	  // if (FirstRun == true)
-	  //   FirstRun = false;
 	  delete Hamiltonian;
 	}
       delete TotalSpace;
@@ -473,56 +329,16 @@ int main(int argc, char** argv)
   return 0;
 }
 
-
-// compute the characteristic polynomial for the real hamiltonians
+// compute the characteristic polynomial for hamiltonian projected onto the Krylov subspace
 //
 // hamiltonian = pointer to the hamiltonian
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteristic polynomial
 // architecture = pointer to the architecture
-// discardFourFactor = discard a global four factor used to ensure integer numbers
+// productStateIndex = index of the product state that defines the Krylov subpspace
+// return value = Krylov subspace dimension
 
-void FQHPairHoppingComputeCharacteristicPolynomial(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture)
-{
-#ifdef __GMP__
-  cout << "Computing the hamiltonian" << endl;
-  RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
-  hamiltonian->GetHamiltonian(TmpRawMatrix);
-  double* TmpNormalizationFactors = chain->GetBasisNormalization();
-  for (int i = 0; i < chain->GetHilbertSpaceDimension(); ++i)
-    {
-      for (int j = 0; j < chain->GetHilbertSpaceDimension(); ++j)
-	{
-	  double Tmp;
-	  TmpRawMatrix.GetMatrixElement(i, j, Tmp);
-	  Tmp *= TmpNormalizationFactors[i];
-	  Tmp /= TmpNormalizationFactors[j];
-	  TmpRawMatrix.SetMatrixElement(i, j, Tmp);
-	}
-    }
-  cout << "Converting to integer matrix" << endl;
-  LongIntegerMatrix TmpMatrix;
-  TmpMatrix = LongIntegerMatrix(TmpRawMatrix);
-
-  cout << "Start computing characteristic polynomial (degree " << chain->GetHilbertSpaceDimension() << ")" << endl;
-  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(architecture);
-  char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
-  sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
-  ofstream OutputFile;
-  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
-  OutputFile << CharacteristicPolynomial[0];
-  for (int i = 1; i <= chain->GetHilbertSpaceDimension(); ++i)
-    {
-      OutputFile << "," << CharacteristicPolynomial[i];
-    }
-  OutputFile << endl;
-  OutputFile.close();
-#else
-  cout << "GMP library is required for characteristic polynomials" << endl;
-#endif	       
-}
-
-int FQHPairHoppingKrylovSubspaceDimension(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int productStateIndex)
+int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int productStateIndex)
 {
   RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
   hamiltonian->GetHamiltonian(TmpRawMatrix);
@@ -543,6 +359,7 @@ int FQHPairHoppingKrylovSubspaceDimension(AbstractQHEHamiltonian* hamiltonian, P
   TmpMatrix = LongIntegerMatrix(TmpRawMatrix);
   LongRationalMatrix RationalHamiltonian(TmpMatrix);
 
+  cout << "Building Krylov subspace" << endl;
   LongIntegerVector* TmpVectors = new LongIntegerVector[chain->GetHilbertSpaceDimension()];
   TmpVectors[0] = LongIntegerVector(chain->GetHilbertSpaceDimension(), true);
 #ifdef __GMP__
@@ -569,44 +386,46 @@ int FQHPairHoppingKrylovSubspaceDimension(AbstractQHEHamiltonian* hamiltonian, P
 	    }
 	}
     }
-  cout << "KrylovDimension=" << KrylovDimension << endl;
+  cout << "Krylov subspace dimension=" << KrylovDimension << endl;
 
-  LongRationalMatrix KrylovMatrix(TmpVectors, KrylovDimension);
+  cout << "Orthogonalizing Krylov subspace" << endl;
   LongRationalMatrix KrylovOrthogonalizeMatrix(chain->GetHilbertSpaceDimension(), KrylovDimension);
-  LongRational TmpScalar;
-  LongRational TmpFactor;
+  LongRational TmpFactor;  
   KrylovOrthogonalizeMatrix[0] = TmpVectors[0];
+  LongRational* NormalizationFactors = new LongRational[KrylovDimension];
+  NormalizationFactors[0] = KrylovOrthogonalizeMatrix[0] * KrylovOrthogonalizeMatrix[0];
   for (int i = 1; i < KrylovDimension; ++i)
     {
         KrylovOrthogonalizeMatrix[i] = TmpVectors[i];
 	for (int k = 0; k < i; ++k)
 	  {
 	    TmpFactor = KrylovOrthogonalizeMatrix[i] * KrylovOrthogonalizeMatrix[k];
-	    TmpScalar = KrylovOrthogonalizeMatrix[k] * KrylovOrthogonalizeMatrix[k];
-	    TmpFactor /= TmpScalar;
+	    TmpFactor /= NormalizationFactors[k];
 	    TmpFactor.Neg();
 	    KrylovOrthogonalizeMatrix[i].AddLinearCombination(TmpFactor, KrylovOrthogonalizeMatrix[k]);
 	  }
-    }
+	NormalizationFactors[i] = KrylovOrthogonalizeMatrix[i] * KrylovOrthogonalizeMatrix[i];
+   }
   LongRationalMatrix KrylovInvertOrthogonalizeMatrix = KrylovOrthogonalizeMatrix.DuplicateAndTranspose();
-  // cout << KrylovMatrix << endl;
-  // cout << KrylovOrthogonalizeMatrix2 << endl;
-  LongRationalMatrix TmpIdMatrix = KrylovInvertOrthogonalizeMatrix * KrylovOrthogonalizeMatrix;
   for (int i = 0; i < KrylovDimension; ++i)
     {
-      KrylovOrthogonalizeMatrix[i] /= TmpIdMatrix[i][i];
+      KrylovOrthogonalizeMatrix[i] /= NormalizationFactors[i];
     }
+  // LongRationalMatrix TmpMatrix3 = KrylovOrthogonalizeMatrix * KrylovInvertOrthogonalizeMatrix;
+  // if (TmpMatrix3.IsIntegerMatrix())
+  //   {
+  //     cout << "TmpMatrix3 is an integer matrix" << endl;
+  //   }
+  cout << "Projecting Hamiltonian" << endl;
   LongRationalMatrix TmpMatrix1 = RationalHamiltonian * KrylovOrthogonalizeMatrix;
   LongRationalMatrix TmpMatrix2 = KrylovInvertOrthogonalizeMatrix * TmpMatrix1;
   
-  //  cout << TmpIdMatrix << endl;
-  //  cout << TmpMatrix2 << endl;
-
+  cout << "Computing characteristic polynomial" << endl;
   LongRational* CharacteristicPolynomial = TmpMatrix2.CharacteristicPolynomial();
-  for (int i = 0; i <= KrylovDimension; ++i)
-    {
-      cout << CharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
-    }
+  // for (int i = 0; i <= KrylovDimension; ++i)
+  //   {
+  //     cout << CharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
+  //   }
     
   char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
   sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);

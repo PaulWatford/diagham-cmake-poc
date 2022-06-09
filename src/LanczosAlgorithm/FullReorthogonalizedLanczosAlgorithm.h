@@ -101,6 +101,16 @@ class FullReorthogonalizedLanczosAlgorithm : public AbstractLanczosAlgorithm
   // return value = array containing the eigenstates
   Vector* GetEigenstates(int nbrEigenstates);
 
+  // get the Krylov subspace built by the Lanczos algorithm
+  //
+  // return value = array containing the Krylov subspace
+  Vector* GetKrylovSubspace();
+
+  // get the tridiagonal matrix generated during the Lanczos algorithm
+  //
+  // return value = tridiagonal matrix (duplicated, no data shared)
+  RealTriDiagonalSymmetricMatrix GetTridiagonalMatrix();
+  
   // run current Lanczos algorithm (continue from previous results if Lanczos algorithm has already been run)
   //
   // nbrIter = number of iteration to do 
@@ -112,5 +122,23 @@ class FullReorthogonalizedLanczosAlgorithm : public AbstractLanczosAlgorithm
   bool TestConvergence ();
 
 };
+
+// get the tridiagonal matrix generated during the Lanczos algorithm
+//
+// return value = tridiagonal matrix (duplicated, no data shared)
+
+inline RealTriDiagonalSymmetricMatrix FullReorthogonalizedLanczosAlgorithm::GetTridiagonalMatrix()
+{
+  return RealTriDiagonalSymmetricMatrix(this->TridiagonalizedMatrix, true);
+}
+
+// get the Krylov subspace built by the Lanczos algorithm
+//
+// return value = array containing the Krylov subspace
+
+inline Vector* FullReorthogonalizedLanczosAlgorithm::GetKrylovSubspace()
+{
+  return this->LanczosVectors;
+}
 
 #endif

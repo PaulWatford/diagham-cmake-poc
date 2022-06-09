@@ -53,6 +53,7 @@ class LongIntegerMatrix : public Matrix
 {
 
   friend class LongIntegerVector;
+  friend class LongRationalMatrix;
   friend class LongIntegerMatrixCharacteristicPolynomialOperation;
   
  protected:
@@ -307,6 +308,7 @@ public:
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith
   //
   // architecture = pointer to the architecture
+  // return value = array of polynomial coefficients (from x^0 to the highest power)
 #ifdef __GMP__
   virtual mpz_t* CharacteristicPolynomial(AbstractArchitecture* architecture = 0);
 #else
@@ -315,6 +317,7 @@ public:
 
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith and assuming a symmetric matrix
   //
+  // return value = array of polynomial coefficients (from x^0 to the highest power)
 #ifdef __GMP__
   virtual mpz_t* CharacteristicPolynomialAssumingSymmetric();
 #else

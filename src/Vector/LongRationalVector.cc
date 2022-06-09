@@ -29,6 +29,7 @@
 
 
 #include "Vector/LongRationalVector.h"
+#include "Vector/LongIntegerVector.h"
 #include "GeneralTools/Endian.h"
 
 #include <fstream>
@@ -202,6 +203,46 @@ LongRationalVector::LongRationalVector(const LongRationalVector& vector, bool du
 	    {
 	      this->Components = 0;
 	    }
+	}
+    }
+}
+
+// copy constructor
+//
+// vector = vector to copy
+
+LongRationalVector::LongRationalVector(LongIntegerVector& vector)
+{
+  this->VectorType = Vector::LongRationalData;
+  this->VectorId = 0;
+  this->Dimension = vector.GetVectorDimension();
+  this->TrueDimension = this->Dimension;
+  this->LargeDimension = vector.GetLargeVectorDimension();
+  this->LargeTrueDimension = this->LargeTrueDimension;
+  if (this->Dimension > 0)
+    {
+      this->Flag.Initialize();
+      this->Components = new LongRational [this->TrueDimension + 1]; 
+      for (int i = 0; i < this->Dimension; i++)
+	{
+	  this->Components[i] = vector[i];
+	}
+    }
+  else
+    {
+      if (this->LargeDimension > 0l)
+	{
+	  this->Flag.Initialize();
+	  this->VectorType |= Vector::LargeData;
+	  this->Components = new  LongRational[this->LargeTrueDimension + 1]; 
+	  for (long i = 0; i < this->LargeDimension; i++)
+	    {
+	      this->Components[i] = vector[i];
+	    }
+	}
+      else
+	{
+	  this->Components = 0;
 	}
     }
 }
@@ -456,6 +497,26 @@ LongRationalVector& LongRationalVector::operator /= (const LongRational& d)
 	this->Components[i] /= d;
     }
   return *this;
+}
+
+// compute the scalar product between two vectors
+//
+// V1 = first vector
+// V2 = second vector
+// return value = scalar product
+
+LongRational operator * (const LongRationalVector& V1, const LongRationalVector& V2)
+{
+  LongRational Tmp(0l);
+  if (V1.LargeDimension != V2.LargeDimension)
+    {
+      return Tmp;
+    }
+  for (long i = 0; i < V1.LargeDimension; ++i)
+    {
+      Tmp += V1.Components[i] * V2.Components[i];
+    }
+  return Tmp;
 }
 
 // add a linear combination to a given vector

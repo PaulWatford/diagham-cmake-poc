@@ -104,17 +104,32 @@ RealTriDiagonalSymmetricMatrix::RealTriDiagonalSymmetricMatrix(double* diagonal,
 // copy constructor (without duplicating datas)
 //
 // M = matrix to copy
+// duplicate = true if data should be duplicated
 
-RealTriDiagonalSymmetricMatrix::RealTriDiagonalSymmetricMatrix(const RealTriDiagonalSymmetricMatrix& M) 
-{  
-  this->DiagonalElements = M.DiagonalElements;
-  this->UpperDiagonalElements = M.UpperDiagonalElements;
-  this->Flag = M.Flag;
+RealTriDiagonalSymmetricMatrix::RealTriDiagonalSymmetricMatrix(const RealTriDiagonalSymmetricMatrix& M, bool duplicate) 
+{
   this->NbrRow = M.NbrRow;
   this->NbrColumn = M.NbrColumn;
   this->TrueNbrRow = M.TrueNbrRow;
   this->TrueNbrColumn = M.TrueNbrColumn;
   this->MatrixType = Matrix::RealElements | Matrix::TriDiagonal | Matrix::Symmetric;
+  if (duplicate == false)
+    {
+      this->DiagonalElements = M.DiagonalElements;
+      this->UpperDiagonalElements = M.UpperDiagonalElements;
+      this->Flag = M.Flag;
+    }
+  else
+    {
+      this->Flag.Initialize();
+      this->DiagonalElements = new double [this->NbrRow];
+      this->UpperDiagonalElements = new double [this->NbrRow];
+     for (int i = 0; i < this->NbrRow; i++)
+	{
+	  this->DiagonalElements[i] = M.DiagonalElements[i];
+	  this->UpperDiagonalElements[i] = M.UpperDiagonalElements[i];
+	}
+    }
   this->Dummy = 0.0;
 }
 
@@ -580,7 +595,7 @@ RealTriDiagonalSymmetricMatrix& RealTriDiagonalSymmetricMatrix::operator /= (dou
 // j = Column number
 // return value = matrix element M_(i,j)
 
-double RealTriDiagonalSymmetricMatrix::GetElement(int i, int j)
+double RealTriDiagonalSymmetricMatrix::GetElement(int i, int j) const
 {
   if (i == j)
     return this->DiagonalElements[i];
@@ -594,6 +609,30 @@ double RealTriDiagonalSymmetricMatrix::GetElement(int i, int j)
     return this->UpperDiagonalElements[i];
   return 0.0;
 }
+
+// get a matrix element (real part if complex)
+//
+// i = line position
+// j = column position
+// x = reference on the variable where to store the requested matrix element
+
+void RealTriDiagonalSymmetricMatrix::GetMatrixElement(int i, int j, double& x) const
+{
+  x = this->GetElement(i, j);
+}
+
+// get a matrix element
+//
+// i = line position
+// j = column position
+// x = reference on the variable where to store the requested matrix element
+
+void RealTriDiagonalSymmetricMatrix::GetMatrixElement(int i, int j, Complex& x) const
+{
+  x = this->GetElement(i, j);
+}
+
+
 
 // evaluate matrix trace
 //

@@ -62,6 +62,15 @@ LongRational::LongRational(long x)
   mpq_set_si (this->Value, x ,1ul);
 }
 
+// constructor from an integer
+//
+// x = value to assign to the rational coefficient
+LongRational::LongRational(mpz_t& x)
+{
+  mpq_init(this->Value);
+  mpq_set_z (this->Value, x);
+}
+
 // constructor from a rational number
 //
 // x = numerator to assign to the rational coefficient
@@ -114,6 +123,17 @@ LongRational& LongRational::operator = (const LongRational& rational)
 LongRational& LongRational::operator = (long x)
 {
   mpq_set_si (this->Value, x ,1ul);
+  return *this;
+}
+
+// assignement from integer number
+//
+// x = interger to assign
+// return value = reference on current rational coefficient
+
+LongRational& LongRational::operator = (mpz_t& x)
+{
+  mpq_set_z (this->Value, x);
   return *this;
 }
 

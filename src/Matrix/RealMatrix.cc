@@ -1775,6 +1775,7 @@ double* RealMatrix::CharacteristicPolynomial()
     }
   return PolynomialCoefficients;
 }
+
 // Output Stream overload
 //
 // Str = reference on output stream

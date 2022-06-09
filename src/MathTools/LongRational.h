@@ -73,6 +73,13 @@ class LongRational
   // x = value to assign to the rational coefficient
   LongRational(long x);  
 
+#ifdef __GMP__
+  // constructor from an integer
+  //
+  // x = value to assign to the rational coefficient
+  LongRational(mpz_t& x);  
+#endif
+  
   // constructor from a rational number
   //
   // x = numerator to assign to the rational coefficient
@@ -99,6 +106,14 @@ class LongRational
   // x = interger to assign
   // return value = reference on current rational coefficient
   LongRational& operator = (long x);
+
+#ifdef __GMP__
+  // assignement from integer number
+  //
+  // x = interger to assign
+  // return value = reference on current rational coefficient
+  LongRational& operator = (mpz_t& x);
+#endif
 
   // assignement from a rational number encoded as a string
   //

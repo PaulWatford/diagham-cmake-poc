@@ -52,6 +52,9 @@ using std::cout;
 using std::endl;
 
 
+class LongIntegerMatrix;
+
+
 class LongIntegerVector : public Vector
 {
 
@@ -241,6 +244,42 @@ class LongIntegerVector : public Vector
   // return value = reference on current vector
   LongIntegerVector& AddLinearCombination (const long& x1, LongIntegerVector& v1, const long& x2, 
 					   LongIntegerVector& v2, int firstComponent, int nbrComponent);
+
+  // left multiply a vector with a real matrix and use to store result in current vector (without creating temporary vector)
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // return value = reference on current vector
+  LongIntegerVector& Multiply (const LongIntegerMatrix&  M, LongIntegerVector& V);
+
+  // do a partial left multication of a vector with a real matrix and store result in current vector (without creating temporary vector)
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // sourceStart = source vector first coordinate to modify
+  // sourceStep = step to add to go to the following source vector coordinate
+  // destStart = destination vector first coordinate to modify
+  // destStep = step to add to go to the following destination vector coordinate
+  // return value = reference on current vector
+  LongIntegerVector& Multiply (const LongIntegerMatrix&  M, LongIntegerVector& V, int sourceStart, int sourceStep, int destStart, int destStep);
+
+   // left multiply a vector with an antisymmetric matrix and add result to the current vector
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // return value = reference on current vector
+  LongIntegerVector& AddMultiply (const LongIntegerMatrix&  M, LongIntegerVector& V);
+
+ // do a partial left multication of a vector with a real matrix and add result to the current vector
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // sourceStart = source vector first coordinate to modify
+  // sourceStep = step to add to go to the following source vector coordinate
+  // destStart = destination vector first coordinate to modify
+  // destStep = step to add to go to the following destination vector coordinate
+  // return value = reference on current vector
+  LongIntegerVector& AddMultiply (const LongIntegerMatrix&  M, LongIntegerVector& V, int sourceStart, int sourceStep, int destStart, int destStep);
 
 #ifdef __GMP__
   // compute the scalar product between two vectors

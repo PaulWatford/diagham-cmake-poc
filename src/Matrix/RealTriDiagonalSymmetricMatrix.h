@@ -113,10 +113,11 @@ class RealTriDiagonalSymmetricMatrix : public Matrix
   // dimension = matrix dimension
   RealTriDiagonalSymmetricMatrix(double* diagonal, double* upperDiagonal, int dimension);
 
-  // copy constructor (without duplicating datas)
+  // copy constructor 
   //
   // M = matrix to copy
-  RealTriDiagonalSymmetricMatrix(const RealTriDiagonalSymmetricMatrix& M);
+  // duplicate = true if data should be duplicated
+  RealTriDiagonalSymmetricMatrix(const RealTriDiagonalSymmetricMatrix& M, bool duplicate = false);
 
   // destructor
   //
@@ -133,19 +134,33 @@ class RealTriDiagonalSymmetricMatrix : public Matrix
   // retrun value = pointer on new matrix 
   Matrix* Clone ();
 
-  // set a matrix element
+  // get a matrix element (real part if complex)
   //
   // i = line position
   // j = column position
-  // x = new value for matrix element
-  void SetMatrixElement(int i, int j, double x);
+  // x = reference on the variable where to store the requested matrix element
+  virtual void GetMatrixElement(int i, int j, double& x) const;
+
+  // get a matrix element
+  //
+  // i = line position
+  // j = column position
+  // x = reference on the variable where to store the requested matrix element
+  virtual void GetMatrixElement(int i, int j, Complex& x) const;
 
   // set a matrix element
   //
   // i = line position
   // j = column position
   // x = new value for matrix element
-  void SetMatrixElement(int i, int j, const Complex& x);
+  virtual void SetMatrixElement(int i, int j, double x);
+
+  // set a matrix element
+  //
+  // i = line position
+  // j = column position
+  // x = new value for matrix element
+  virtual void SetMatrixElement(int i, int j, const Complex& x);
 
   // add a value to a matrix element
   //
@@ -250,7 +265,7 @@ class RealTriDiagonalSymmetricMatrix : public Matrix
   // i = Row number
   // j = Column number
   // return value = matrix element M_(i,j)
-  double GetElement(int i, int j);
+  double GetElement(int i, int j) const;
 
   // access to i-th diagonal element
   // 

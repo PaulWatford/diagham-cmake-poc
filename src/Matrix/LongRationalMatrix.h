@@ -39,12 +39,12 @@
 #endif
 #include "MathTools/LongRational.h"
 #include "Vector/LongRationalVector.h"
+#include "Vector/LongIntegerVector.h"
 
 #include <iostream>
 
 
 using std::ostream;
-
 
 
 
@@ -75,28 +75,39 @@ class LongRationalMatrix : public Matrix
   // zero = tue if matrix elements have to be set to zero
   LongRationalMatrix(int nbrRow, int nbrColumn, bool zero = false);
 
-  // constructor from matrix elements (without duplicating datas)
+  // constructor from matrix elements (without duplicating data)
   //
   // columns = pointer an array of vector
   // nbrColumn = number of columns
   LongRationalMatrix(LongRationalVector* columns, int nbrColumn);
 
-  // copy constructor (without duplicating datas)
+  // constructor from matrix elements
+  //
+  // columns = pointer an array of vector
+  // nbrColumn = number of columns
+  LongRationalMatrix(LongIntegerVector* columns, int nbrColumn);
+  
+  // copy constructor (without duplicating data)
   //
   // M = matrix to copy
   LongRationalMatrix(const LongRationalMatrix& M);
+
+  // copy constructor
+  //
+  // M = matrix to copy
+  LongRationalMatrix(LongIntegerMatrix& M);
 
   // destructor
   //
   ~LongRationalMatrix();
 
-  // assignement (without duplicating datas)
+  // assignement (without duplicating data)
   //
   // M = matrix to copy
   // return value = reference on modified matrix
   LongRationalMatrix& operator = (const LongRationalMatrix& M);
 
-  // return pointer on a clone matrix (without duplicating datas)
+  // return pointer on a clone matrix (without duplicating data)
   //
   // retrun value = pointer on new matrix 
   Matrix* Clone ();
@@ -276,7 +287,18 @@ class LongRationalMatrix : public Matrix
   // return value = permanent associated to the matrix
   LongRational Permanent();
 
-  // evaluate matrix rank
+  // evaluate matrix trace
+  //
+  // trace = reference on the rational where the trace will be stored
+  // return value = matrix trace 
+  virtual LongRational& Trace(LongRational& trace);
+
+  // compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
+  //
+  // return value = array of polynomial coefficients (from x^0 to the highest power)  
+  virtual LongRational* CharacteristicPolynomial();
+
+// evaluate matrix rank
   //
   // accuracy = numerical accuracy used to define linearly dependence 
   // return value = rank

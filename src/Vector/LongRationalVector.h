@@ -47,6 +47,9 @@
 using std::ostream;
 
 
+class LongIntegerVector;
+
+
 class LongRationalVector : public Vector
 {
 
@@ -96,6 +99,11 @@ class LongRationalVector : public Vector
   // vector = vector to copy
   // duplicateFlag = true if datas have to be duplicated
   LongRationalVector(const LongRationalVector& vector, bool duplicateFlag = false);
+
+  // copy constructor
+  //
+  // vector = vector to copy
+  LongRationalVector(LongIntegerVector& vector);
 
   // destructor
   //
@@ -210,6 +218,13 @@ class LongRationalVector : public Vector
   // d = rational to use
   // return value = reference on current vector
   LongRationalVector& operator /= (const LongRational& d);
+
+  // compute the scalar product between two vectors
+  //
+  // V1 = first vector
+  // V2 = second vector
+  // return value = scalar product
+  friend LongRational operator * (const LongRationalVector& V1, const LongRationalVector& V2);
 
   // add a linear combination to a given vector
   //

@@ -29,7 +29,9 @@
 
 
 #include "Matrix/LongRationalMatrix.h"
+#include "Matrix/LongIntegerMatrix.h"
 #include "Vector/LongRationalVector.h"
+#include "Vector/LongIntegerVector.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -75,7 +77,7 @@ LongRationalMatrix::LongRationalMatrix(int nbrRow, int nbrColumn, bool zero)
   this->MatrixType = Matrix::LongRationalElements;
 }
 
-// constructor from matrix elements (without duplicating datas)
+// constructor from matrix elements (without duplicating data)
 //
 // columns = pointer an array of vector
 // nbrColumn = number of columns
@@ -92,7 +94,26 @@ LongRationalMatrix::LongRationalMatrix(LongRationalVector* columns, int nbrColum
   this->MatrixType = Matrix::LongRationalElements;
 }
 
-// copy constructor (without duplicating datas)
+// constructor from matrix elements
+//
+// columns = pointer an array of vector
+// nbrColumn = number of columns
+
+LongRationalMatrix::LongRationalMatrix(LongIntegerVector* columns, int nbrColumn) 
+{
+  this->ColumnGarbageFlag = new int;
+  *(this->ColumnGarbageFlag) = 1;
+  this->NbrRow = columns[0].GetVectorDimension();
+  this->NbrColumn = nbrColumn;
+  this->TrueNbrRow = this->NbrRow;
+  this->TrueNbrColumn = this->NbrColumn;
+  this->Columns = new LongRationalVector [this->NbrColumn];
+  for (int i = 0; i < this->NbrColumn; i++)
+    this->Columns[i] = LongRationalVector (columns[i]);
+  this->MatrixType = Matrix::LongRationalElements;
+}
+
+// copy constructor (without duplicating data)
 //
 // M = matrix to copy
 
@@ -121,6 +142,24 @@ LongRationalMatrix::LongRationalMatrix(const LongRationalMatrix& M)
     }
 }
 
+// copy constructor
+//
+// M = matrix to copy
+
+LongRationalMatrix::LongRationalMatrix(LongIntegerMatrix& M)
+{
+  this->ColumnGarbageFlag = new int;
+  *(this->ColumnGarbageFlag) = 1;
+  this->NbrRow = M.NbrRow;
+  this->NbrColumn = M.NbrColumn;
+  this->TrueNbrRow = M.TrueNbrRow;
+  this->TrueNbrColumn = M.TrueNbrColumn;
+  this->MatrixType = Matrix::LongRationalElements;
+  this->Columns = new LongRationalVector [this->NbrColumn];
+  for (int i = 0; i < this->NbrColumn; i++)
+    this->Columns[i] = LongRationalVector (M[i]);  
+}
+
 // destructor
 //
 
@@ -138,7 +177,7 @@ LongRationalMatrix::~LongRationalMatrix()
     }
 }
 
-// assignement (without duplicating datas)
+// assignement (without duplicating data)
 //
 // M = matrix to copy
 // return value = reference on modified matrix
@@ -179,7 +218,7 @@ LongRationalMatrix& LongRationalMatrix::operator = (const LongRationalMatrix& M)
   return *this;
 }
 
-// return pointer on a clone matrix (without duplicating datas)
+// return pointer on a clone matrix (without duplicating data)
 //
 // retrun value = pointer on new matrix 
 
@@ -693,58 +732,71 @@ LongRational LongRationalMatrix::Determinant ()
 
 int LongRationalMatrix::Rank(double accuracy)
 {
-  cout << "dim = " << this->NbrRow << " " <<  this->NbrColumn << endl;
-  cout << (*this) << endl;
+  if (this->NbrColumn > this->NbrRow)
+    {
+      this->Transpose();
+    }
+  //  cout << "dim = " << this->NbrRow << " " <<  this->NbrColumn << endl;
+  // cout << (*this) << endl;
   int ReducedDim = this->NbrColumn;
-  if (ReducedDim > this->NbrRow)
-    ReducedDim = this->NbrRow;
   --ReducedDim;
   LongRational Pivot;
   LongRational Factor;
   int PivotPos = 0;
   for (int k = 0; k < ReducedDim; ++k)
     {
-      PivotPos = k;
-      while ((PivotPos < this->NbrColumn) && (this->Columns[PivotPos][k].IsZero()))
+      int TmpFirstNonZero = k;
+      bool FindPivotFlag = false;
+      while ((PivotPos < this->NbrRow) && (FindPivotFlag == false))
 	{
-	  ++PivotPos;
-	}
-      if (PivotPos < this->NbrColumn)
-	{
-	  if (PivotPos != k)
+	  TmpFirstNonZero = k;
+	  while ((TmpFirstNonZero < this->NbrColumn) && (this->Columns[TmpFirstNonZero][PivotPos].IsZero()))
 	    {
-	      LongRationalVector TmpColumn3(this->Columns[k]);
-	      this->Columns[k] = this->Columns[PivotPos];
-	      this->Columns[PivotPos] = TmpColumn3;	  
+	      ++TmpFirstNonZero;
 	    }
-	  Pivot = 1l / this->Columns[k][k];       
-	  for (int i = k + 1; i < this->NbrColumn; ++i)
+	  if (TmpFirstNonZero < this->NbrColumn)
 	    {
-	      LongRationalVector& TmpColumn = this->Columns[i];
-	      LongRationalVector& TmpColumn2 = this->Columns[k];
-	      if (TmpColumn[k].IsZero() == false)
+	      FindPivotFlag = true;
+	    }
+	  else
+	    {
+	      ++PivotPos;
+	    }
+	}
+      if (FindPivotFlag == true)
+	{
+	  if (TmpFirstNonZero != k)
+	    {
+	      LongRationalVector TmpVector = this->Columns[k];
+	      this->Columns[k] =  this->Columns[TmpFirstNonZero];
+	      this->Columns[TmpFirstNonZero] = TmpVector;
+	    }
+	  LongRationalVector& TmpColumn2 = this->Columns[k];
+	  Pivot = 1l / TmpColumn2[PivotPos];
+	  for (TmpFirstNonZero = k + 1; TmpFirstNonZero < this->NbrColumn; ++TmpFirstNonZero)
+	    {
+	      LongRationalVector& TmpColumn = this->Columns[TmpFirstNonZero];
+	      if (TmpColumn[PivotPos].IsZero() == false)
 		{
-		  Factor = Pivot * TmpColumn[k];
-		  for (int j = k; j < this->NbrRow; ++j)
-		    {
-		      TmpColumn[j] -= TmpColumn2[j] * Factor;
-		    }
+		  Factor = Pivot * TmpColumn[PivotPos];
+   		  for (int j = PivotPos; j < this->NbrRow; ++j)
+   		    {
+   		      TmpColumn[j] -= TmpColumn2[j] * Factor;
+   		    }
 		}
 	    }
 	}
     }
   int Rank = 0;
-  ++ReducedDim;
-  for (int k = 0; k < ReducedDim; ++k)
+  for (int k = 0; k < this->NbrColumn; ++k)
     {
-      bool Flag = true;
-      for (int i = k; (i < this->NbrRow) && (Flag == true); ++i)
-	Flag = this->Columns[k][i].IsZero();
-      if (Flag == false)
-	++Rank;
+      if (this->Columns[k].IsNullVector() == false)
+	{
+	  ++Rank;
+	}
     }
-//  cout << (*this) << endl;
-//  cout << "rank = " << Rank << endl;
+  //  cout << (*this) << endl;
+  //  cout << "rank = " << Rank << endl;
   return Rank;
 }
 
@@ -804,6 +856,71 @@ LongRational LongRationalMatrix::Permanent()
     }  
   delete[] Tmp;
   return Perm;
+}
+
+// evaluate matrix trace
+//
+// trace = reference on the rational where the trace will be stored
+// return value = matrix trace 
+
+LongRational& LongRationalMatrix::Trace(LongRational& trace)
+{
+  trace = 0l;
+  if (this->NbrColumn != this->NbrRow)
+    return trace;
+  for (int i = 0; i < this->NbrColumn; ++i)
+    {
+      trace += this->Columns[i].Components[i];
+    }
+  return trace;
+}
+
+// compute the characteristic polynomial using the Faddeev–Le Verrier algorithm
+//
+// return value = array of polynomial coefficients (from x^0 to the highest power)
+
+LongRational* LongRationalMatrix::CharacteristicPolynomial()
+{
+  LongRational* PolynomialCoefficients = new LongRational [this->NbrRow + 1];
+
+  PolynomialCoefficients[this->NbrRow] = 1l;
+  
+  LongRationalMatrix TmpMatrix (this->NbrRow, this->NbrColumn);
+  TmpMatrix.Copy(*this);
+  LongRationalMatrix TmpMatrix2 (this->NbrRow, this->NbrColumn, true);
+
+  LongRational TmpTrace;
+  this->Trace(TmpTrace);
+  TmpTrace.Neg();
+  
+  PolynomialCoefficients[this->NbrRow - 1] = TmpTrace;
+
+  for (int k = this->NbrRow - 2; k >= 0; --k)
+    {
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  TmpMatrix.Columns[i][i] += PolynomialCoefficients[k + 1];
+	}      
+      for (int i = 0; i < this->NbrRow; ++i)
+	{
+	  for (int j = 0; j < this->NbrColumn; ++j)
+	    {
+	      TmpMatrix2.Columns[j][i] = 0.0;
+	      for (int l = 0; l < this->NbrColumn; ++l)
+		{
+		  TmpMatrix2.Columns[j][i] += this->Columns[l][i] * TmpMatrix.Columns[j][l];
+		}
+	    }	  
+	}
+      LongRationalMatrix TmpMatrix3 = TmpMatrix2;
+      TmpMatrix2 = TmpMatrix;
+      TmpMatrix = TmpMatrix3;
+      TmpMatrix.Trace(TmpTrace);
+      TmpTrace /= -(this->NbrRow - k);
+      PolynomialCoefficients[k] = TmpTrace;
+      
+    }
+  return PolynomialCoefficients;
 }
 
 // write matrix in a file 

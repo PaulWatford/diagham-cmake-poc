@@ -40,6 +40,7 @@
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
 #include "Architecture/ArchitectureOperation/OperatorMatrixElementOperation.h"
+#include "Architecture/ArchitectureOperation/VectorHamiltonianMultiplyOperation.h" //added by ba340
 #include "Architecture/ArchitectureOperation/VectorOperatorMultiplyOperation.h" //added by ba340
 #include "Architecture/ArchitectureOperation/MainTaskOperation.h" //added by ba340
 
@@ -105,9 +106,10 @@ int main ( int argc, char** argv )
     Manager += PrecalculationGroup;
     Manager += MiscGroup;
 
-    ( *SystemGroup ) += new SingleStringOption ( '\0', "state", "name of the vector file describing the state whose density has to be plotted" );
+    (*SystemGroup ) += new SingleStringOption ( '\0', "state", "name of the vector file describing the state whose density has to be plotted" );
     (*SystemGroup) += new SingleStringOption ('\n', "interaction-file", "file describing the 2-body interaction in terms of the pseudo-potential");
     (*SystemGroup) += new SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "unknown");
+    (*SystemGroup) += new SingleStringOption ( '\n', "reference-state", "name of the vector file describing the reference state which we use to compute the matrix element of Hamiltonian" );
     
     (*SystemGroup) += new SingleIntegerOption ('\n', "sr-save-interval", "number of Lanczos iterations after which the spectral response is printed, -1 for final only (default = -1)",-1);
     (*SystemGroup) += new SingleDoubleOption ('\n', "sr-omega-min", "spectral response omega min (default = 0.0)",0.0);
@@ -121,7 +123,7 @@ int main ( int argc, char** argv )
     (*CoulombGroup) += new BooleanOption ('\n', "use-coulomb", "allocate a Coulomb Hamiltonian instead of a generic Hamiltonian");
     (*CoulombGroup) += new SingleIntegerOption ('\n', "coulomb-LL", "Landau-level parameter for Coulomb Hamiltonian",0);
     (*CoulombGroup) += new SingleDoubleOption ('\n', "coulomb-strength", "relative strength of Coulomb interaction", 1.0);
-    (*SystemGroup) += new SingleDoubleOption ('\n', "yukawa-mass", "mass parameter modifing Coulomb to Yukawa interaction with exponential decay V(r) = exp(-m r) e^2/r", 0.0);
+    (*CoulombGroup) += new SingleDoubleOption ('\n', "yukawa-mass", "mass parameter modifing Coulomb to Yukawa interaction with exponential decay V(r) = exp(-m r) e^2/r", 0.0);
     (*CoulombGroup) += new SingleStringOption ('\n', "perturbation-file", "file describing an additional 2-body perturbation in terms of its pseudo-potentials (should include Name=)");
     (*CoulombGroup) += new SingleDoubleOption ('\n', "perturbation-strength", "relative strength of the additional perturbation", 1.0);
     (*CoulombGroup) += new SingleIntegerOption ('\n', "nbr-perturbation", "maximum number of pseudopotentials to consider (-1=all)", -1);
@@ -181,6 +183,32 @@ int main ( int argc, char** argv )
     cout << setw ( 20 ) << std::left << "Momentum" << setw ( 20 ) << std::left << Momentum << endl;
     cout << setw ( 20 ) << std::left << "Ratio" << setw ( 20 ) << std::left << Ratio << endl;
     cout << setw ( 20 ) << std::left << "Statistics" << setw ( 20 ) << std::left << Statistics << endl;
+
+        int NbrParticles2 = 0;
+    int NbrFluxQuanta2 = 0;
+    int Momentum2 = 0;
+    double Ratio2 = 0;
+    bool Statistics2 = false;
+    
+    if (Manager.GetString("reference-state") != 0)
+    {
+        if (FQHEOnTorusFindSystemInfoFromVectorFileName_SpectralResponse(Manager.GetString("reference-state"), NbrParticles2, NbrFluxQuanta2, Momentum2, Ratio2, Statistics2)==false)
+        {
+            cout << "error while retrieving system parameters from file name " << Manager.GetString("reference-state") << endl;
+            return -1;
+        }
+        if (NbrParticles2 != NbrParticles || NbrFluxQuanta2 != NbrFluxQuanta || Ratio2 != Ratio || Statistics2 != Statistics)
+        {
+           cout << "parameter mismatch error between state " << Manager.GetString("state") << "and reference state " << Manager.GetString("reference-state") << endl;
+           return -1; 
+        }
+        
+        cout << setw ( 20 ) << std::left << "NbrParticles2" << setw ( 20 ) << std::left << NbrParticles2 << endl;
+        cout << setw ( 20 ) << std::left << "NbrFluxQuanta2" << setw ( 20 ) << std::left << NbrFluxQuanta2 << endl;
+        cout << setw ( 20 ) << std::left << "Momentum2" << setw ( 20 ) << std::left << Momentum2 << endl;
+        cout << setw ( 20 ) << std::left << "Ratio2" << setw ( 20 ) << std::left << Ratio2 << endl;
+        cout << setw ( 20 ) << std::left << "Statistics2" << setw ( 20 ) << std::left << Statistics2 << endl;
+    }
 
 
     double* PseudoPotentials;
@@ -309,7 +337,7 @@ int main ( int argc, char** argv )
 		else Hamiltonian = new ParticleOnTorusCoulombHamiltonian (TargetSpace, TargetNbrParticles, NbrFluxQuanta, Ratio, Manager.GetInteger("coulomb-LL"), Architecture.GetArchitecture(), 0);
 	      }
 	    else
-	      Hamiltonian = new ParticleOnTorusGenericHamiltonian (TargetSpace, TargetNbrParticles, NbrFluxQuanta, Ratio, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), /*1024*/ 0);
+	      Hamiltonian = new ParticleOnTorusGenericHamiltonian (TargetSpace, TargetNbrParticles, NbrFluxQuanta, Ratio, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), /*1024*/ 0);    
 
 	    double Shift = -10.0;	
 	    Hamiltonian->ShiftHamiltonian(Shift);
@@ -349,7 +377,6 @@ int main ( int argc, char** argv )
 		    (*TargetVector) += (*TmpTargetVector);
 		  }
 	      }
-	    delete TmpTargetVector; //remember to delete these pointers
 	    sprintf(EigenvectorName,"%s_qy_%d", OutputNamePrefix, qy);
 	
 	    //create Hamiltonian
@@ -363,6 +390,27 @@ int main ( int argc, char** argv )
 	      }
 	    else
 	      Hamiltonian = new ParticleOnTorusGenericHamiltonian (TargetSpace, NbrParticles, NbrFluxQuanta, Ratio, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), /*1024*/ 0);
+
+	    if (Manager.GetString("reference-state")!=0)
+	      {
+		RealVector* RealState2 = new RealVector();
+    
+		if ( RealState2->ReadVector ( Manager.GetString ( "reference-state" ) ) == false )
+		  {
+		    cout << "can't open vector file " << Manager.GetString ( "reference-state" ) << endl;
+		    return -1;
+		  }
+		ComplexVector ComplexState2(*RealState2); 
+        
+		VectorHamiltonianMultiplyOperation Operation(Hamiltonian, TargetVector, TmpTargetVector);
+		Operation.ApplyOperation(Architecture.GetArchitecture());
+		cout << "matrix element for reference state = " << ComplexState2 * *TmpTargetVector << endl;
+		delete RealState2;
+		return 0;
+	      }
+    
+	    delete TmpTargetVector; //remember to delete these pointers
+
 
 	    double Shift = -10.0;	
 	    Hamiltonian->ShiftHamiltonian(Shift);

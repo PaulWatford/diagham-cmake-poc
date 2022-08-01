@@ -195,8 +195,9 @@ void LaguerrePolynomialRecursionAP::EvaluateLaguerrePolynomial(int N, mpf_t &res
   return mpf_set(result, TmpValues[N]); 
 }
 
-// evaluate all Laguerre polynomials up to the order of the length of rst at the given coordinate
-// rst = return value for polynomials
+// evaluate all Laguerre polynomials up to the requested order at the given coordinate
+// N = order up to which to evaluate the polynomials
+// rst = return value for polynomials (must be length >= N+1)
 // x = coordinate where to evaluate
 void LaguerrePolynomialRecursionAP::EvaluateLaguerrePolynomials(int N, mpf_t* rst, mpf_t &x)
 {

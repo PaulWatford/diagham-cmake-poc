@@ -68,20 +68,20 @@ class ParticleOnTorusDensityOperator : public ParticleOnSphereDensityOperator
   
  public:
   
-  // constructor from default datas
+  // constructor from default data
   //
   // particle = hilbert space associated to the particles
   // index = index of the density operator
   // ratio = aspect ratio of the torus
   // qx = index of x-Fourier component of density operator
-  ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int index, int qx, double ratio=1.0);
+  ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int index, int qx, double ratio=1.0, bool verbose=false);
 
   // constructor when dealing with two different Hilbert spaces
   //
   // particle = hilbert space associated to the right hand state (target space has to be fixed to the hilbert space associated to the left hand state)
   // indexDagger = index of the creation operator that is part of the density operator
   // index = index of the annihilation operator that is part of the density operator
-  ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int indexDagger, int index, int qx, double ratio=1.0);
+  ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int indexDagger, int index, int qx, double ratio=1.0, bool verbose=false);
 
   // copy constructor
   //

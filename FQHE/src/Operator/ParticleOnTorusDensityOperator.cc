@@ -45,7 +45,7 @@ using std::endl;
 // particle = hilbert space associated to the particles
 // index = index of the density operator
 
-ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int index, int qx, double ratio)
+ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int index, int qx, double ratio, bool verbose)
 : ParticleOnSphereDensityOperator(particle, index)
 {
   this->Particle= (ParticleOnTorus*) (particle->Clone());
@@ -54,10 +54,13 @@ ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* 
   this->Ratio = ratio;
   this->Qx = qx;
   this->CalculateFormFactor();
-  if (fabs(Imag(FormFactor))> 1e-12)
-    cout << "Form factor in ParticleOnTorusDensityOperator is complex"<<std::endl;
-  else
-    cout << "Form factor in ParticleOnTorusDensityOperator is real"<<std::endl;
+  if (verbose)
+    {
+      if (fabs(Imag(FormFactor))> 1e-12)
+	cout << "Form factor in ParticleOnTorusDensityOperator is complex"<<std::endl;
+      else
+	cout << "Form factor in ParticleOnTorusDensityOperator is real"<<std::endl;
+    }
   }
 
 // constructor when dealing with two different Hilbert spaces
@@ -66,7 +69,7 @@ ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* 
 // indexDagger = index of the creation operator that is part of the density operator
 // index = index of the annihilation operator that is part of the density operator
  
-ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int indexDagger, int index, int qx, double ratio)
+ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* particle, int indexDagger, int index, int qx, double ratio, bool verbose)
 : ParticleOnSphereDensityOperator(particle, indexDagger, index)
 {
   this->Particle= (ParticleOnTorus*) (particle->Clone());
@@ -75,10 +78,13 @@ ParticleOnTorusDensityOperator::ParticleOnTorusDensityOperator(ParticleOnTorus* 
   this->Ratio = ratio;
   this->Qx = qx;
   this->CalculateFormFactor();
-  if (fabs(Imag(FormFactor))> 1e-12)
-    cout << "Form factor in ParticleOnTorusDensityOperator is complex"<<std::endl;
-  else
-    cout << "Form factor in ParticleOnTorusDensityOperator is real"<<std::endl;
+  if (verbose)
+    {
+      if (fabs(Imag(FormFactor))> 1e-12)
+	cout << "Form factor in ParticleOnTorusDensityOperator is complex"<<std::endl;
+      else
+	cout << "Form factor in ParticleOnTorusDensityOperator is real"<<std::endl;
+    }
 }
 
 // copy constructor

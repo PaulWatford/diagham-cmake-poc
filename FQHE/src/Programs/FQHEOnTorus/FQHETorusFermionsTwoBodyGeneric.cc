@@ -78,6 +78,10 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption ('r', "ratio", "ratio between the two torus lengths", 1.0);
   (*SystemGroup) += new SingleStringOption ('\n', "interaction-file", "file describing the 2-body interaction in terms of the pseudo-potential");
   (*SystemGroup) += new SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "unknown");
+  (*SystemGroup) += new SingleDoubleOption ('\n', "interaction-strength", "relative strength of the interaction", 1.0);
+  (*SystemGroup) += new SingleStringOption ('\n', "perturbation-file", "file describing the 2-body perturbation in terms of the pseudo-potential");
+  (*SystemGroup) += new SingleStringOption ('\n', "perturbation-name", "perturbation name (as it should appear in output files)", "unknown");
+  (*SystemGroup) += new SingleDoubleOption ('\n', "perturbation-strength", "relative strength of the perturbation", 1.0);
   (*SystemGroup) += new BooleanOption  ('\n', "redundant-kymomenta", "Calculate all subspaces up to Ky  = MaxMomentum-1", false);
   (*SystemGroup) += new BooleanOption  ('\n', "mass-anisotropy", "use a mass anisotropy for the system");
   (*SystemGroup) += new SingleDoubleOption  ('\n', "anisotropy", "value of the anisotropy parameter alpha (i.e. q_g^2 = alpha q_x^2 + q_y^2 / alpha)", 1.0);
@@ -114,11 +118,17 @@ int main(int argc, char** argv)
   int MaxMomentum = Manager.GetInteger("max-momentum");
   int Momentum = Manager.GetInteger("ky-momentum");
   double XRatio = Manager.GetDouble("ratio");
+  double InteractionStrength = Manager.GetDouble("interaction-strength");
+  double PerturbationStrength = Manager.GetDouble("perturbation-strength");
   long Memory = ((unsigned long) Manager.GetInteger("memory")) << 20;
   bool FirstRun = true;
   
+  double* PseudoPotentialsTotal;
+  int NbrPseudoPotentialsTotal = 0;
   double* PseudoPotentials;
   int NbrPseudoPotentials = 0;
+  double* PseudoPotentials2;
+  int NbrPseudoPotentials2 = 0;
   if (Manager.GetString("interaction-file") == 0)
     {
       cout << "an interaction file has to be provided" << endl;
@@ -129,17 +139,63 @@ int main(int argc, char** argv)
       if (FQHETorusGetPseudopotentials(Manager.GetString("interaction-file"), NbrPseudoPotentials, PseudoPotentials) == false)
 	return -1;
     }
+  if (Manager.GetString("perturbation-file") != 0)
+    {
+      if (FQHETorusGetPseudopotentials(Manager.GetString("perturbation-file"), NbrPseudoPotentials2, PseudoPotentials2) == false)
+	return -1;
+    }
 
   char* OutputNamePrefix = new char [1024];
   if (Manager.GetBoolean("mass-anisotropy") == false)
     {
-      sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio);
+      if (Manager.GetString("perturbation-file") == 0)
+      {
+        if (InteractionStrength == 1.0)
+        {
+          sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio);
+        }
+        else
+        {
+          sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_scale_%f_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), InteractionStrength, NbrParticles, MaxMomentum, XRatio);
+        }
+      }
+      else
+      {
+        sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_scale_%f_%s_scale_%f_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), InteractionStrength, Manager.GetString("perturbation-name"), PerturbationStrength, NbrParticles, MaxMomentum, XRatio);
+      }
     }
   else
     {
-      sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_anisotropy_%f_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), 
-	       Manager.GetDouble("anisotropy"), NbrParticles, MaxMomentum, XRatio);
+      if (Manager.GetString("perturbation-file") == 0)
+      {
+        if (InteractionStrength == 1.0)
+        {
+          sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_anisotropy_%f_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), Manager.GetDouble("anisotropy"), NbrParticles, MaxMomentum, XRatio);
+        }
+        else
+        {
+          sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_scale_%f_anisotropy_%f_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), InteractionStrength, Manager.GetDouble("anisotropy"), NbrParticles, MaxMomentum, XRatio);
+        }
+      }
+      else
+      {
+        sprintf (OutputNamePrefix, "fermions_torus_kysym_%s_scale_%f_%s_scale_%f_anisotropy_%f_n_%d_2s_%d_ratio_%f", Manager.GetString("interaction-name"), InteractionStrength, Manager.GetString("perturbation-name"), PerturbationStrength, Manager.GetDouble("anisotropy"), NbrParticles, MaxMomentum, XRatio);
+      }
     }
+  
+  NbrPseudoPotentialsTotal = std::max(NbrPseudoPotentials, NbrPseudoPotentials2);
+  PseudoPotentialsTotal = new double[NbrPseudoPotentialsTotal];
+  if (Manager.GetString("perturbation-file") == 0)
+  {
+    for (int i = 0; i < NbrPseudoPotentialsTotal; ++i)
+      PseudoPotentialsTotal[i] = InteractionStrength*PseudoPotentials[i];
+  }
+  else
+  {
+    for (int i = 0; i < NbrPseudoPotentialsTotal; ++i)
+      PseudoPotentialsTotal[i] = InteractionStrength*PseudoPotentials[i] + PerturbationStrength*PseudoPotentials2[i];
+  }
+  
   char* OutputNameLz = new char [strlen(OutputNamePrefix) + 8];
   sprintf (OutputNameLz, "%s.dat", OutputNamePrefix);
   ofstream File;
@@ -167,13 +223,13 @@ int main(int argc, char** argv)
       AbstractQHEHamiltonian* Hamiltonian = 0;
       if (Manager.GetBoolean("mass-anisotropy") == false)
 	{
-	  Hamiltonian = new ParticleOnTorusGenericHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, NbrPseudoPotentials, PseudoPotentials,
+	  Hamiltonian = new ParticleOnTorusGenericHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, NbrPseudoPotentialsTotal, PseudoPotentialsTotal,
 							       Architecture.GetArchitecture(), Memory);
 	}
       else
 	{
 	  Hamiltonian = new ParticleOnTorusMassAnisotropyGenericHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Manager.GetDouble("anisotropy"),
-									      NbrPseudoPotentials, PseudoPotentials,
+									      NbrPseudoPotentialsTotal, PseudoPotentialsTotal,
 									      Architecture.GetArchitecture(), Memory);
 	}
 

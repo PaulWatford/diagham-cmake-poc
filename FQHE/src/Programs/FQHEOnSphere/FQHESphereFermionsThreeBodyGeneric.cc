@@ -98,6 +98,7 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*MiscGroup) += new BooleanOption('\n', "energy-variance", "in addition to energy expectation, also evaluate energy variance sqrt[<H^2>-<H>^2]");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -390,7 +391,7 @@ int main(int argc, char** argv)
 								    LoadPrecalculationFileName, Normalize3Body);
 
       double Shift = - 0.5 * ((double) (NbrParticles * NbrParticles)) / (0.5 * ((double) LzMax));
-      if (Manager.GetString("energy-expectation") != 0 )
+    if ( (Manager.GetString("energy-expectation") != 0 ) || (Manager.GetBoolean("energy-variance") != 0 ) )
 	{
 	  char* StateFileName = Manager.GetString("energy-expectation");
 	  if (IsFile(StateFileName) == false)
@@ -435,8 +436,19 @@ int main(int argc, char** argv)
 	    cout << "< Overlap > = "<<Overlap<<endl;
 	  }
 	  cout << "< shifted energy > = "<<EnergyValue + Shift<<endl;
+
+      if (Manager.GetBoolean("energy-variance") != 0 )
+       {
+   	     RealVector TmpState2(Space->GetHilbertSpaceDimension());
+	     VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
+	     Operation2.ApplyOperation(Architecture.GetArchitecture());
+	     double varH = State * TmpState2 - EnergyValue * EnergyValue;
+	     cout << "(varH)^2 = " << varH << endl;
+       }   
 	  return 0;
-	}
+  	 }
+
+
 
       Hamiltonian->ShiftHamiltonian(Shift);
 

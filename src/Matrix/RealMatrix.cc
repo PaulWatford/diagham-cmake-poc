@@ -153,14 +153,14 @@ RealMatrix::RealMatrix(double* array, int nbrRow, int nbrColumn, bool columnOrde
    }
 }
 
-// constructor from matrix elements (without duplicating datas)
+// constructor from matrix elements
 //
 // columns = pointer an array of vector
 // nbrColumn = number of columns
+// duplicate = if true, duplicate the vectors
 
-RealMatrix::RealMatrix(RealVector* columns, int nbrColumn) 
+RealMatrix::RealMatrix(RealVector* columns, int nbrColumn, bool duplicate) 
 {
-  this->Columns = columns;
   this->ColumnGarbageFlag = new int;
   *(this->ColumnGarbageFlag) = 1;
   this->NbrRow = columns[0].GetVectorDimension();
@@ -168,6 +168,18 @@ RealMatrix::RealMatrix(RealVector* columns, int nbrColumn)
   this->TrueNbrRow = this->NbrRow;
   this->TrueNbrColumn = this->NbrColumn;
   this->MatrixType = Matrix::RealElements;
+  if (duplicate == false)
+    {
+      this->Columns = columns;
+    }
+  else
+    {
+      this->Columns = new RealVector[nbrColumn];
+      for (int i = 0; i < nbrColumn; ++i)
+	{
+	  this->Columns[i] = RealVector(columns[i], true);
+	}
+    }
 }
 
 #ifdef __MPI__

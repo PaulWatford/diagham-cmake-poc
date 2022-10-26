@@ -154,6 +154,14 @@ GenericRealMainTask::GenericRealMainTask(OptionManager* options, AbstractHilbert
     {
       this->EvaluateAllEigenvectors = false;
     }
+  if ((*options)["ascii-eigenstates"] != 0)
+    {
+      this->EvaluateAsciiEigenvectors = options->GetBoolean("ascii-eigenstates");
+    }
+  else
+    {
+      this->EvaluateAsciiEigenvectors = false;
+    }
   if ((*options)["first-eigenstate"] != 0)
     {
       this->FirstEigenstateIndex = options->GetInteger("first-eigenstate");
@@ -483,7 +491,7 @@ int GenericRealMainTask::ExecuteMainTask()
 		}
 	      else
 		{
-		  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 16];
+		  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 256];
 		  RealVector TmpEigenvector(this->Hamiltonian->GetHilbertSpaceDimension());
 		  int LastEigenstateIndex = this->FirstEigenstateIndex + this->NbrEigenvalue;
 		  if (LastEigenstateIndex > this->Hamiltonian->GetHilbertSpaceDimension())
@@ -491,8 +499,22 @@ int GenericRealMainTask::ExecuteMainTask()
 		  for (int j = this->FirstEigenstateIndex; j < LastEigenstateIndex; ++j)
 		    {
 		      this->Hamiltonian->LowLevelMultiply(Eigenstates[j], TmpEigenvector);
-		      sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
-		      Eigenstates[j].WriteVector(TmpVectorName);
+		      if (this->EvaluateAsciiEigenvectors == false)
+			{
+			  sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
+			  Eigenstates[j].WriteVector(TmpVectorName);
+			}
+		      else
+			{
+			  ofstream TmpFile;
+			  TmpFile.open(TmpVectorName, ios::binary | ios::out);
+			  TmpFile.precision(14);
+			  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
+			    {
+			      this->Space->PrintState(TmpFile, k) << " : " << Eigenstates[j][k] << endl;
+			    }
+			  TmpFile.close();
+			}
 		      cout << ((TmpEigenvector * Eigenstates[j]) - this->EnergyShift) << " " << endl;		  
 		    }
 		  cout << endl;			  
@@ -561,14 +583,30 @@ int GenericRealMainTask::ExecuteMainTask()
 			  for (int j = this->FirstEigenstateIndex; j < LastEigenstateIndex; ++j)
 			    {
 			      this->Hamiltonian->LowLevelMultiply(Q[j], TmpEigenvector);
-			      sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
-			      if (FakeComplex)
+			      if (this->EvaluateAsciiEigenvectors == false)
 				{
-				  ComplexVector TmpVector(Q[j],true);
-				  TmpVector.WriteVector(TmpVectorName);
+				  sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
+				  if (FakeComplex)
+				    {
+				      ComplexVector TmpVector(Q[j],true);
+				      TmpVector.WriteVector(TmpVectorName);
+				    }
+				  else
+				    Q[j].WriteVector(TmpVectorName);
 				}
 			      else
-				Q[j].WriteVector(TmpVectorName);
+				{
+				  sprintf (TmpVectorName, "%s.%d.vec.txt", this->EigenvectorFileName, j);
+				  ofstream TmpFile;
+				  TmpFile.open(TmpVectorName, ios::binary | ios::out);
+				  TmpFile.precision(14);
+				  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
+				    {
+				      this->Space->PrintState(TmpFile, k) << " : " << Q[j][k] << endl;
+				    }
+				  TmpFile.close();
+				}
+
 			      cout << ((TmpEigenvector * Q[j]) - this->EnergyShift) << " " << endl;		  
 			    }
 			  cout << endl;			  
@@ -627,7 +665,7 @@ int GenericRealMainTask::ExecuteMainTask()
 			}
 		      if (this->EvaluateEigenvectors == true)
 			{
-			  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 16];
+			  char* TmpVectorName = new char [strlen(this->EigenvectorFileName) + 256];
 			  RealVector TmpEigenvector(this->Hamiltonian->GetHilbertSpaceDimension());
 			  int LastEigenstateIndex = this->FirstEigenstateIndex + this->NbrEigenvalue;
 			  if (LastEigenstateIndex > this->Hamiltonian->GetHilbertSpaceDimension())
@@ -635,14 +673,29 @@ int GenericRealMainTask::ExecuteMainTask()
 			  for (int j = this->FirstEigenstateIndex; j < LastEigenstateIndex; ++j)
 			    {
 			      this->Hamiltonian->LowLevelMultiply(Q[j], TmpEigenvector);
-			      sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
-			      if (FakeComplex)
+			      if (this->EvaluateAsciiEigenvectors == false)
 				{
-				  ComplexVector TmpVector(Q[j],true);
-				  TmpVector.WriteVector(TmpVectorName);
+				  sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
+				  if (FakeComplex)
+				    {
+				      ComplexVector TmpVector(Q[j],true);
+				      TmpVector.WriteVector(TmpVectorName);
+				    }
+				  else
+				    Q[j].WriteVector(TmpVectorName);
 				}
 			      else
-				Q[j].WriteVector(TmpVectorName);
+				{
+				  sprintf (TmpVectorName, "%s.%d.vec.txt", this->EigenvectorFileName, j);
+				  ofstream TmpFile;
+				  TmpFile.open(TmpVectorName, ios::binary | ios::out);
+				  TmpFile.precision(14);
+				  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
+				    {
+				      this->Space->PrintState(TmpFile, k) << " : " << Q[j][k] << endl;
+				    }
+				  TmpFile.close();
+				}
 			      cout << ((TmpEigenvector * Q[j]) - this->EnergyShift) << " " << endl;		  
 			    }	      
 			  cout << endl;

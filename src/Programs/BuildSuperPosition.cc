@@ -43,6 +43,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption  ('r', "random-component", "amplitude of a random component to be added",0.0);
   (*SystemGroup) += new SingleIntegerOption  ('R', "random-only", "generate a pure random vector, argument is dimension",0);
   (*SystemGroup) += new SingleStringOption  ('\n', "random-orthogonal", "build a pure random vector orthgonal to the one provided as an argument");
+  (*SystemGroup) += new BooleanOption ('\n', "random-fullorthogonal", "build a pure random vector orthgonal to those provided in --states");
   (*SystemGroup) += new BooleanOption  ('n', "no-normalize", "do NOT normalize the final vector");
   (*SystemGroup) += new SingleStringOption  ('o', "output", "names of output filename","superposition.vec");
   (*SystemGroup) += new SingleStringOption  ('f', "description-file", "build the superposition for a linear combination of a vector set described in a text file");
@@ -50,6 +51,10 @@ int main(int argc, char** argv)
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   Manager.StandardProceedings(argv, argc, cout);
+
+  struct timeval TmpTime;
+  gettimeofday(&TmpTime,NULL);
+  srand((unsigned int) (TmpTime.tv_sec + TmpTime.tv_usec));
 
   if (Manager.GetInteger("random-only") > 0)
     {
@@ -119,6 +124,80 @@ int main(int argc, char** argv)
       exit(0);
     }
 
+  if (Manager.GetBoolean("random-fullorthogonal"))
+    {
+      int NbrVectors;
+      char** VectorFiles = Manager.GetStrings("states", NbrVectors);
+      double* Overlaps = new double[NbrVectors];
+      for (int i = 0; i < NbrVectors; ++i)
+	{
+	  Overlaps[i] = 0.0;
+	}
+      if (Manager.GetBoolean("complex"))
+	{
+	  cout << "--random-fullorthogonal not implemented for complex vectors" << endl;
+	  return -1;
+	}
+      else
+	{
+	  RealVector* InputVectors = new RealVector[NbrVectors];
+	  for (int i = 0; i < NbrVectors; ++i)
+	    {
+	      if (InputVectors[i].ReadVector(VectorFiles[i]) == false)
+		{
+		  cout << "can't open " << VectorFiles[i] << endl;
+		  return -1;
+		}
+	    }
+	  for (int i = 0; i < NbrVectors; ++i)
+	    {
+	      for (int j = i + 1; j < NbrVectors; ++j)
+		{
+		  if (InputVectors[i].GetLargeVectorDimension() != InputVectors[j].GetLargeVectorDimension())
+		    {
+		      cout << VectorFiles[i] << " and " << VectorFiles[j] << " do not have the same dimension ("
+			   << InputVectors[i].GetLargeVectorDimension() << " vs " << InputVectors[j].GetLargeVectorDimension() << ")" << endl;
+		      return -1;
+		    }
+		  if (fabs (InputVectors[i] * InputVectors[j]) > 1.0e-14)
+		    {
+		      cout << VectorFiles[i] << " and " << VectorFiles[j] << " are not orthogonal (" << (InputVectors[i] * InputVectors[j]) << ")" << endl;
+		      return -1;
+		      
+		    }
+		}
+
+	    }
+	  RealVector TmpVector(InputVectors[0].GetLargeVectorDimension());
+	  for (long i = 0l; i < InputVectors[i].GetLargeVectorDimension(); ++i)
+	    {
+	      TmpVector[i] = (rand() - 32767) * 0.5;
+	    }
+	  TmpVector /= TmpVector.Norm();
+	  for (int i = 0; i < NbrVectors; ++i)
+	    {
+	      TmpVector.AddLinearCombination(-(InputVectors[i] * TmpVector) / InputVectors[i].Norm(), InputVectors[i]);
+	    }
+	  cout << "checking output vector before normalization " << TmpVector.Norm() << endl;
+	  if (TmpVector.Norm() < 1.0e-14)
+	    {
+	      cout << "warning, output vector has a zero norm" << endl;
+	    }
+	  TmpVector /= TmpVector.Norm();
+	  for (int i = 0; i < NbrVectors; ++i)
+	    {
+	      Overlaps[i] = fabs(InputVectors[i] * TmpVector);
+	    }
+	  TmpVector.WriteVector(Manager.GetString("output"));
+	}
+      cout << "Generated random vector orthogonal to states" << endl;
+      for (int i = 0; i < NbrVectors; ++i)
+	{
+	  cout << VectorFiles[i] << " (|overlap|=" << Overlaps[i] << ")" << endl;
+	}
+      exit(0);      
+    }
+  
   if (Manager.GetString("description-file") == 0)
     {
       int NbrVectors, ValidVectors=0, VectorDimension=0;

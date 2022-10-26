@@ -104,6 +104,8 @@ class GenericRealMainTask: public AbstractMainTask
   bool EvaluateEigenvectors;
   // evaluate all eigenstates
   bool EvaluateAllEigenvectors;
+  // export the eigenstates in an ascii format rather than a binary format
+  bool EvaluateAsciiEigenvectors;
   // index of the first eigenstate to compute
   int FirstEigenstateIndex;
   // prefix to add to the name of each file that will contain an eigenvector

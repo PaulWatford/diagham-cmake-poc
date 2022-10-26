@@ -81,11 +81,12 @@ class RealMatrix : public Matrix
   // zero = tue if matrix elements have to be set to zero
   RealMatrix(int nbrRow, int nbrColumn, bool zero = false);
 
-  // constructor from matrix elements (without duplicating datas)
+  // constructor from matrix elements
   //
   // columns = pointer an array of vector
   // nbrColumn = number of columns
-  RealMatrix(RealVector* columns, int nbrColumn);
+  // duplicate = if true, duplicate the vectors
+  RealMatrix(RealVector* columns, int nbrColumn, bool duplicate = false);
 
   // constructor for one dimensional array
   //

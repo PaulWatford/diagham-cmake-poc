@@ -467,8 +467,23 @@ int GenericComplexMainTask::ExecuteMainTask()
 		  for (int j = this->FirstEigenstateIndex; j < LastEigenstateIndex; ++j)
 		    {
 		      this->Hamiltonian->LowLevelMultiply(Eigenstates[j], TmpEigenvector);
-		      sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
-		      Eigenstates[j].WriteVector(TmpVectorName);
+		      if (this->EvaluateAsciiEigenvectors == false)
+			{
+			  sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
+			  Eigenstates[j].WriteVector(TmpVectorName);
+			}
+		      else
+			{
+			  sprintf (TmpVectorName, "%s.%d.vec.txt", this->EigenvectorFileName, j);
+			  ofstream TmpFile;
+			  TmpFile.open(TmpVectorName, ios::binary | ios::out);
+			  TmpFile.precision(14);
+			  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
+			    {
+			      this->Space->PrintState(TmpFile, k) << " : " << Eigenstates[j][k] << endl;
+			    }
+			  TmpFile.close();
+			}
 		      cout << ((TmpEigenvector * Eigenstates[j]) - this->EnergyShift) << " " << endl;		  
 		    }
 		  cout << endl;			  
@@ -525,8 +540,23 @@ int GenericComplexMainTask::ExecuteMainTask()
 			  for (int j = this->FirstEigenstateIndex; j < LastEigenstateIndex; ++j)
 			    {
 			      this->Hamiltonian->LowLevelMultiply(Q[j], TmpEigenvector);
-			      sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
-			      Q[j].WriteVector(TmpVectorName);
+			      if (this->EvaluateAsciiEigenvectors == false)
+				{
+				  sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
+				  Q[j].WriteVector(TmpVectorName);
+				}
+			      else
+				{
+				  sprintf (TmpVectorName, "%s.%d.vec.txt", this->EigenvectorFileName, j);
+				  ofstream TmpFile;
+				  TmpFile.open(TmpVectorName, ios::binary | ios::out);
+				  TmpFile.precision(14);
+				  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
+				    {
+				      this->Space->PrintState(TmpFile, k) << " : " << Q[j][k] << endl;
+				    }
+				  TmpFile.close();
+				}
 			      cout << ((TmpEigenvector * Q[j]) - this->EnergyShift) << " " << endl;		  
 			    }
 			  cout << endl;			  
@@ -578,8 +608,23 @@ int GenericComplexMainTask::ExecuteMainTask()
 			  for (int j = this->FirstEigenstateIndex; j < LastEigenstateIndex; ++j)
 			    {
 			      this->Hamiltonian->LowLevelMultiply(Q[j], TmpEigenvector);
-			      sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
-			      Q[j].WriteVector(TmpVectorName);
+			      if (this->EvaluateAsciiEigenvectors == false)
+				{
+				  sprintf (TmpVectorName, "%s.%d.vec", this->EigenvectorFileName, j);
+				  Q[j].WriteVector(TmpVectorName);
+				}
+			      else
+				{
+				  sprintf (TmpVectorName, "%s.%d.vec.txt", this->EigenvectorFileName, j);
+				  ofstream TmpFile;
+				  TmpFile.open(TmpVectorName, ios::binary | ios::out);
+				  TmpFile.precision(14);
+				  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
+				    {
+				      this->Space->PrintState(TmpFile, k) << " : " << Q[j][k] << endl;
+				    }
+				  TmpFile.close();
+				}
 			      cout << ((Q[j]*TmpEigenvector) - this->EnergyShift) << " " << endl;
 			    }
 			  cout << endl;

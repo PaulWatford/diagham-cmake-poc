@@ -47,6 +47,7 @@ int main(int argc, char** argv)
   Manager += MiscGroup;
 
   (*SystemGroup) += new  SingleStringOption ('\n', "hamiltonian", "text file where the hamiltonian matrix elements are stored");
+  (*SystemGroup) += new  SingleIntegerOption ('\n', "shift", "shift the hamiltonian by a constant integer value (i.e., H-lambda 1)", 0);
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "output name for the characteristic polynomial");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
@@ -111,13 +112,29 @@ int main(int argc, char** argv)
     {
       TmpMatrix.SetMatrixElement(RowIndices[i], ColumnIndices[i], MatrixElements[i]);
     }
-   
+
+  long EnergyShift = Manager.GetInteger("shift");
+  if (EnergyShift != 0l)
+    {
+      for (long i = 0l; i < NbrColumns; ++i)
+	{
+	  TmpMatrix.AddToMatrixElement(i, i, -EnergyShift);
+	}
+    }
 
   char* PolynomialOutputFileName = 0;
   if (Manager.GetString("output-file") == 0)
     {
-      PolynomialOutputFileName = new char[strlen(Manager.GetString("hamiltonian")) + 16];
-      sprintf (PolynomialOutputFileName, "%s.charpol", Manager.GetString("hamiltonian"));
+      if (EnergyShift != 0l)
+	{
+	  PolynomialOutputFileName = new char[strlen(Manager.GetString("hamiltonian")) + 64];
+	  sprintf (PolynomialOutputFileName, "%s_shift_%ld.charpol", EnergyShift, Manager.GetString("hamiltonian"));
+	}
+      else
+	{
+	  PolynomialOutputFileName = new char[strlen(Manager.GetString("hamiltonian")) + 16];
+	  sprintf (PolynomialOutputFileName, "%s.charpol", Manager.GetString("hamiltonian"));
+	}
     }
   else
     {

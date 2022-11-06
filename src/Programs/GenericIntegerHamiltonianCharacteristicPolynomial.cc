@@ -128,7 +128,7 @@ int main(int argc, char** argv)
       if (EnergyShift != 0l)
 	{
 	  PolynomialOutputFileName = new char[strlen(Manager.GetString("hamiltonian")) + 64];
-	  sprintf (PolynomialOutputFileName, "%s_shift_%ld.charpol", EnergyShift, Manager.GetString("hamiltonian"));
+	  sprintf (PolynomialOutputFileName, "%s_shift_%ld.charpol", Manager.GetString("hamiltonian"), EnergyShift);
 	}
       else
 	{

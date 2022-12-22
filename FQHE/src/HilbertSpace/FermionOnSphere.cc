@@ -1659,7 +1659,7 @@ ostream& FermionOnSphere::PrintColumnFormattedStateMonomial (ostream& Str, long 
 // pos = position in StateDescription array where to store states
 // return value = position from which new states have to be stored
 
-int FermionOnSphere::GenerateStates(int nbrFermions, int lzMax, int currentLzMax, int totalLz, int pos)
+long FermionOnSphere::GenerateStates(int nbrFermions, int lzMax, int currentLzMax, int totalLz, long pos)
 {
   if ((nbrFermions == 0) || (totalLz < 0) || (currentLzMax < (nbrFermions - 1)))
     return pos;
@@ -1685,7 +1685,7 @@ int FermionOnSphere::GenerateStates(int nbrFermions, int lzMax, int currentLzMax
   int ReducedCurrentLzMax = currentLzMax - 1;
   int TmpPos = this->GenerateStates(nbrFermions - 1, lzMax, ReducedCurrentLzMax, totalLz - currentLzMax, pos);
   unsigned long Mask = 0x1ul << currentLzMax;
-  for (int i = pos; i < TmpPos; i++)
+  for (long i = pos; i < TmpPos; i++)
     this->StateDescription[i] |= Mask;
   if (lzMax == currentLzMax)
     return this->GenerateStates(nbrFermions, ReducedCurrentLzMax, ReducedCurrentLzMax, totalLz, TmpPos);

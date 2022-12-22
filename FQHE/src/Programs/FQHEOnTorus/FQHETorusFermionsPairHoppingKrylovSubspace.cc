@@ -24,8 +24,10 @@
 #include "Architecture/ArchitectureOperation/MainTaskOperation.h"
 
 #include "MathTools/IntegerAlgebraTools.h"
+
 #include "GeneralTools/ConfigurationParser.h"
 #include "GeneralTools/FilenameTools.h"
+#include "GeneralTools/MultiColumnASCIIFile.h"
 
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "HilbertSpace/SubspaceSpaceConverter.h"
@@ -59,9 +61,23 @@ using std::ios;
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteristic polynomial
 // architecture = pointer to the architecture
-// productStateIndex = index of the product state that defines the Krylov subpspace
+// productStateIndices = indices of the product states that defines the Krylov subpspace
+// productStateCoefficients = integer coefficients for each product state of the Krylov subpspace generating vector
+// nbrProductStateConfigurations = number o product states defining the Krylov subpspace generating vector
+// exportKrylov = if true, export the krylov subspace in a tex file
+// exportMathematicaKrylov = if true, export the krylov subspace in a mathematica friendly text file
 // return value = Krylov subspace dimension
-int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int productStateIndex);
+int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int* productStateIndices, long* productStateCoefficients, int nbrProductStateConfigurations, bool exportKrylov, bool exportMathematicaKrylov);
+
+// convert a string describing a product state in the (u,d,+,-) basis to its fermionic occupation version
+//
+// productState = product state in the (u,d,+,-) basis
+// nbrFermions= reference to the number of fermions in the product state
+// nbrFermionsEvenMomentum = reference to the sublattice sector
+// maxMomentum = reference to the max momentumw number or number of sites
+// yMomentum = reference to the y momentumw
+// return value = array containing the fermionic occupation (0 if an error occurred) 
+int* FQHPairHoppingKrylovParseProductState(char* productState, int& nbrFermions, int& nbrFermionsEvenMomentum, int& maxMomentum, int& yMomentum);
 
 
 int main(int argc, char** argv)
@@ -86,6 +102,7 @@ int main(int argc, char** argv)
   Manager += MiscGroup;
 
   (*SystemGroup) += new SingleStringOption  ('\n', "product-state", "string describing the product state defining the Krylov subspace");
+  (*SystemGroup) += new SingleStringOption  ('\n', "multiple-productstates", "file describing the state generating the Krylov subspace");  
   (*SystemGroup) += new SingleIntegerOption  ('p', "nbr-particles", "number of particles", 0);
   (*SystemGroup) += new SingleIntegerOption  ('l', "nbr-sites", "number of sites", 0);
   (*SystemGroup) += new SingleIntegerOption  ('x', "x-momentum", "constraint on the total momentum in the x direction", 0);
@@ -96,6 +113,9 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  BooleanOption ('\n', "enable-realhamiltonian", "use a real Hamiltonian at the inversion symmetric points");
   (*SystemGroup) += new  BooleanOption ('\n', "disable-sublatticeconservation", "for even number of sites, do not use the sublattice particle number conservation");
   (*SystemGroup) += new  BooleanOption ('\n', "use-double", "also perform the Krylov projected calculation using double precision");
+  (*SystemGroup) += new  BooleanOption ('\n', "compute-eigenstates", "when using double precision, compute the eigenstates within the Krylov subspace");
+  (*SystemGroup) += new BooleanOption  ('\n', "export-krylov", "export the krylov subspace in a tex file");
+  (*SystemGroup) += new BooleanOption  ('\n', "export-mathematica", "export the krylov subspace in a mathemtica text file");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 
 						      500);
   (*PrecalculationGroup) += new SingleStringOption  ('\n', "load-precalculation", "load precalculation from a file",0);
@@ -105,7 +125,8 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
-  (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");  (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");
+  (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -128,83 +149,108 @@ int main(int argc, char** argv)
 
   long Memory = ((unsigned long) Manager.GetInteger("memory")) << 20;
 
-  if (Manager.GetString("product-state") == 0)
+  if ((Manager.GetString("product-state") == 0) && (Manager.GetString("multiple-productstates") == 0))
     {
       cout << "error, a product state should be provided" << endl;
       return 0;
     }
-
-  int TmpStringLength = strlen(Manager.GetString("product-state"));
-  MaxMomentum = 2 * TmpStringLength;
-  int* ProductStateConfiguration = new int [MaxMomentum];
-  
-  NbrFermions = 0;
-  MaxMomentum = 0;
-  YMomentum = 0;
-  NbrFermionsEvenMomentum = 0;
-  for (int i = 0; i < TmpStringLength; ++i)
+  if ((Manager.GetString("product-state") != 0) && (Manager.GetString("multiple-productstates") != 0))
     {
-      char TmpChar = Manager.GetString("product-state")[i];
-      if (TmpChar == '+')
+      cout << "error, options --product-state and --multiple-productstates cannot be used simultaneously" << endl;
+      return 0;
+    }
+
+  int** ProductStateConfigurations = 0;
+  int NbrProductStateConfigurations = 0;
+  long* ProductStateCoefficients = 0;
+  char** ProductStateConfigurationNames = 0;
+  if (Manager.GetString("product-state") != 0)
+    {
+      NbrProductStateConfigurations = 1;
+      ProductStateConfigurations = new int* [NbrProductStateConfigurations];
+      ProductStateConfigurations[0] = FQHPairHoppingKrylovParseProductState(Manager.GetString("product-state"), NbrFermions, NbrFermionsEvenMomentum, MaxMomentum, YMomentum); 
+      if (ProductStateConfigurations[0] == 0)
 	{
-	  ProductStateConfiguration[NbrFermions] = MaxMomentum;
-	  ProductStateConfiguration[NbrFermions + 1] = MaxMomentum + 1;
-	  YMomentum += (2 * MaxMomentum + 1);
-	  NbrFermionsEvenMomentum++;
-	  MaxMomentum += 2;
-	  NbrFermions += 2;
+	  return 0;
 	}
-      else
+      ProductStateConfigurationNames = new char*[NbrProductStateConfigurations];
+      ProductStateConfigurationNames[0] = new char[strlen(Manager.GetString("product-state")) + 1];
+      strcpy (ProductStateConfigurationNames[0], Manager.GetString("product-state"));
+      ProductStateCoefficients = new long [NbrProductStateConfigurations];
+      ProductStateCoefficients[0] = 1l;
+    }
+  else
+    {
+      MultiColumnASCIIFile InputFile(':');
+      if (InputFile.Parse(Manager.GetString("multiple-productstates")) == false)
 	{
-	  if (TmpChar == '-')
+	  InputFile.DumpErrors(cout) << endl;
+	  return -1;
+	}
+      NbrProductStateConfigurations = InputFile.GetNbrLines();
+      ProductStateConfigurationNames = new char*[NbrProductStateConfigurations];
+      ProductStateCoefficients = InputFile.GetAsLongArray(0);
+      ProductStateConfigurations = new int* [NbrProductStateConfigurations];
+      
+      for (int i = 0; i < NbrProductStateConfigurations; ++i)
+	{
+	  int TmpNbrFermions = 0;
+	  int TmpNbrFermionsEvenMomentum = 0;
+	  int TmpMaxMomentum = 0;
+	  int TmpYMomentum = 0;
+	  ProductStateConfigurations[i] = FQHPairHoppingKrylovParseProductState(InputFile(1, i), TmpNbrFermions,
+										TmpNbrFermionsEvenMomentum, TmpMaxMomentum, TmpYMomentum); 
+	  if (ProductStateConfigurations[i] == 0)
 	    {
-	      MaxMomentum += 2;
+	      return 0;
+	    }
+	  if (i == 0)
+	    {
+	      NbrFermions = TmpNbrFermions;
+	      NbrFermionsEvenMomentum = TmpNbrFermionsEvenMomentum;
+	      MaxMomentum = TmpMaxMomentum;
+	      YMomentum = TmpYMomentum;
 	    }
 	  else
 	    {
-	      if (TmpChar == 'u')
+	      if (NbrFermions != TmpNbrFermions)
 		{
-		  ProductStateConfiguration[NbrFermions] = MaxMomentum + 1;
-		  YMomentum += (MaxMomentum + 1);
-		  MaxMomentum += 2;
-		  NbrFermions++;
+		  cout << InputFile(1, 0) << " and " << InputFile(1, i) << " have a different number of fermions" << endl;
+		  return 0;
 		}
-	      else
+	      if (MaxMomentum != TmpMaxMomentum)
 		{
-		  if (TmpChar == 'd')
-		    {
-		      ProductStateConfiguration[NbrFermions] = MaxMomentum;
-		      NbrFermionsEvenMomentum++;
-		      YMomentum += MaxMomentum;
-		      MaxMomentum += 2;
-		      NbrFermions++;
-		    }
-		  else
-		    {
-		      cout << "illegal character \"" << TmpChar << "\" in " << Manager.GetString("product-state") << endl;
-		      return 0;
-		    }
+		  cout << InputFile(1, 0) << " and " << InputFile(1, i) << " have a different number of sites" << endl;
+		  return 0;
+		}
+	      if (YMomentum != TmpYMomentum)
+		{
+		  cout << InputFile(1, 0) << " and " << InputFile(1, i) << " have a different momentum" << endl;
+		  return 0;
+		}
+	      if (NbrFermionsEvenMomentum != TmpNbrFermionsEvenMomentum)
+		{
+		  cout << InputFile(1, 0) << " and " << InputFile(1, i) << " are in a different sublattice sector" << endl;
+		  return 0;
 		}
 	    }
+	  ProductStateConfigurationNames[i] = new char[strlen(InputFile(1, i)) + 1];
+	  strcpy (ProductStateConfigurationNames[i], InputFile(1, i));	  
 	}
     }
-  YMomentum %= MaxMomentum;
-  
-  cout << "product state \"" << Manager.GetString("product-state") << "\" converted into ";
-  for (int i = 0; i < NbrFermions; ++i)
-    {
-      cout << "c+_{" << ProductStateConfiguration[i] <<"}";
-    }
-  cout << "|0>" << endl;
-  cout << "nbr sites=" << MaxMomentum << ", nbr fermions=" << NbrFermions << ", ky=" << YMomentum << ", even sublattice=" << NbrFermionsEvenMomentum << endl;
-  
   
   char* SuffixOutputName = new char [256];
   sprintf (SuffixOutputName, "n_%d_2s_%d.dat", NbrFermions, MaxMomentum);
 
   char* OutputName = new char [512 + strlen(SuffixOutputName)];
-  sprintf (OutputName, "fermions_pairhopping_krylov_%s_%s", Manager.GetString("product-state"), SuffixOutputName);
-
+  if (NbrProductStateConfigurations == 1)
+    {
+      sprintf (OutputName, "fermions_pairhopping_krylov_%s_%s", ProductStateConfigurationNames[0], SuffixOutputName);
+    }
+  else
+    {
+      sprintf (OutputName, "fermions_pairhopping_krylov_multiple_%s_%s", ProductStateConfigurationNames[0], SuffixOutputName);
+    }
   int MomentumModulo = FindGCD(NbrFermions, MaxMomentum);
   int XMaxMomentum = (MomentumModulo - 1);
   bool GenerateMomenta = false;
@@ -261,14 +307,18 @@ int main(int argc, char** argv)
       
       if (TotalSpace->GetHilbertSpaceDimension() > 0)
 	{
-	  int ProductStateIndex = TotalSpace->FindStateIndex(ProductStateConfiguration);
-	  if (ProductStateIndex == -1)
+	  int* ProductStateIndices = new int[NbrProductStateConfigurations];
+	  for (int i = 0; i < NbrProductStateConfigurations; ++i)
 	    {
-	      cout << "error, the product state configuration \"" << Manager.GetString("product-state") << "\" is not compatible with the Hilbert space" << endl;
-	      return 0;
+	      ProductStateIndices[i] = TotalSpace->FindStateIndex(ProductStateConfigurations[i]);
+	      if (ProductStateIndices[i] == -1)
+		{
+		  cout << "error, the product state configuration \"" << ProductStateConfigurationNames[i] << "\" is not compatible with the Hilbert space" << endl;
+		  return 0;
+		}
+	      cout << "Product state configuration " << ProductStateConfigurationNames[i] << " converted as ";
+	      TotalSpace->PrintState(cout, ProductStateIndices[i]) << " (index=" << ProductStateIndices[i] << ", coefficient=" << ProductStateCoefficients[i] << ")" << endl;
 	    }
-	  cout << "Product state configuration converted as ";
-	  TotalSpace->PrintState(cout, ProductStateIndex) << " (index=" << ProductStateIndex << ")" << endl;
 	  Architecture.GetArchitecture()->SetDimension(TotalSpace->GetHilbertSpaceDimension());
 	  
 	  AbstractQHEHamiltonian* Hamiltonian;
@@ -299,24 +349,65 @@ int main(int argc, char** argv)
 	  delete [] TmpName;
 	  
 	  
-	  int KrylovSpaceDimension = FQHPairHoppingKrylovSubspaceComputeCharacteristic(Hamiltonian, TotalSpace, EigenvectorName, Architecture.GetArchitecture(), ProductStateIndex);
+	  int KrylovSpaceDimension = FQHPairHoppingKrylovSubspaceComputeCharacteristic(Hamiltonian, TotalSpace, EigenvectorName, Architecture.GetArchitecture(), ProductStateIndices, ProductStateCoefficients, NbrProductStateConfigurations, Manager.GetBoolean("export-krylov"), Manager.GetBoolean("export-mathematica"));
 
 	  if (Manager.GetBoolean("use-double"))
 	    {
 	      RealVector* TmpVectors = new RealVector[TotalSpace->GetHilbertSpaceDimension()];
 	      TmpVectors[0] = RealVector(TotalSpace->GetHilbertSpaceDimension(), true);
-	      TmpVectors[0][ProductStateIndex] = 1.0;
-	      FullReorthogonalizedLanczosAlgorithm TmpLanczos (Architecture.GetArchitecture(), KrylovSpaceDimension, KrylovSpaceDimension + 1);
-	      TmpLanczos.SetHamiltonian(Hamiltonian);
-	      TmpLanczos.InitializeLanczosAlgorithm(TmpVectors[0]);
-	      TmpLanczos.RunLanczosAlgorithm(KrylovSpaceDimension);
-	      RealVector* KrylovLanczosVectors = (RealVector*) TmpLanczos.GetKrylovSubspace();
-	      RealTriDiagonalSymmetricMatrix TmpTridiagHamiltonian = TmpLanczos.GetTridiagonalMatrix();
-	      RealMatrix TridiagHamiltonian (TmpTridiagHamiltonian);
-	      double* TridiagCharacteristicPolynomial = TridiagHamiltonian.CharacteristicPolynomial();
-	      for (int i = 0; i <= KrylovSpaceDimension; ++i)
+	      for (int i = 0; i < NbrProductStateConfigurations; ++i)
 		{
-		  cout << TridiagCharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
+		  TmpVectors[0][ProductStateIndices[i]] = (double) ProductStateCoefficients[i];
+		}
+	      TmpVectors[0] /= TmpVectors[0].Norm();
+	      cout << TmpVectors[0] << endl;
+	      if (KrylovSpaceDimension > 1)
+		{
+		  FullReorthogonalizedLanczosAlgorithm TmpLanczos (Architecture.GetArchitecture(), KrylovSpaceDimension, KrylovSpaceDimension + 1);
+		  TmpLanczos.SetHamiltonian(Hamiltonian);
+		  TmpLanczos.InitializeLanczosAlgorithm(TmpVectors[0]);
+		  TmpLanczos.RunLanczosAlgorithm(KrylovSpaceDimension);
+		  RealVector* KrylovLanczosVectors = (RealVector*) TmpLanczos.GetKrylovSubspace();
+		  RealMatrix KrylovLanczosVectorMatrix(KrylovLanczosVectors, KrylovSpaceDimension, true);
+		  //		  cout << KrylovLanczosVectorMatrix << endl;
+		  RealTriDiagonalSymmetricMatrix TmpTridiagHamiltonian = TmpLanczos.GetTridiagonalMatrix();
+		  RealMatrix TridiagHamiltonian (TmpTridiagHamiltonian);
+		  double* TridiagCharacteristicPolynomial = TridiagHamiltonian.CharacteristicPolynomial();
+		  for (int i = 0; i <= KrylovSpaceDimension; ++i)
+		    {
+		      cout << TridiagCharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
+		    }
+		  if (Manager.GetBoolean("compute-eigenstates"))
+		    {
+		      RealMatrix TmpEigenvectors (KrylovSpaceDimension, KrylovSpaceDimension);
+		      TmpEigenvectors.SetToIdentity();
+		      TmpTridiagHamiltonian.Diagonalize(TmpEigenvectors);
+		      TmpTridiagHamiltonian.SortMatrixUpOrder(TmpEigenvectors);
+		      RealMatrix KrylovLanczosVectorMatrix2;
+		      KrylovLanczosVectorMatrix2 = KrylovLanczosVectorMatrix * TmpEigenvectors;
+		      cout << "eigenvalues:" << endl;
+		      RealVector TmpVector (TotalSpace->GetHilbertSpaceDimension(), true);
+		      char* EigenvectorName2 = new char [strlen(EigenvectorName) + 512];
+		      for (int i = 0; i < KrylovSpaceDimension; ++i)
+			{
+			  Hamiltonian->LowLevelMultiply(KrylovLanczosVectorMatrix2[i], TmpVector);
+			  cout << TmpTridiagHamiltonian.DiagonalElement(i) << " <psi|H|psi>="
+			       <<(KrylovLanczosVectorMatrix2[i] * TmpVector) << endl;
+			  sprintf (EigenvectorName2, "%s.%d.vec", EigenvectorName, i);
+			  KrylovLanczosVectorMatrix2[i].WriteVector(EigenvectorName2);
+			}
+		      delete[] EigenvectorName2;
+		    }
+		}
+	      else
+		{
+		  RealVector TmpVector (TotalSpace->GetHilbertSpaceDimension(), true);
+		  char* EigenvectorName2 = new char [strlen(EigenvectorName) + 512];
+		  Hamiltonian->LowLevelMultiply(TmpVectors[0], TmpVector);
+		  cout << "<psi|H|psi>="<< (TmpVectors[0] * TmpVector) << endl;
+		  sprintf (EigenvectorName2, "%s.%d.vec", EigenvectorName, 0);
+		  TmpVectors[0].WriteVector(EigenvectorName2);
+		  delete[] EigenvectorName2;
 		}
 	    }
 	  
@@ -335,10 +426,14 @@ int main(int argc, char** argv)
 // chain = pointer to the Hilbert space
 // outputFileName = file name prefix for the characteristic polynomial
 // architecture = pointer to the architecture
-// productStateIndex = index of the product state that defines the Krylov subpspace
+// productStateIndices = indices of the product states that defines the Krylov subpspace
+// productStateCoefficients = integer coefficients for each product state of the Krylov subpspace generating vector
+// nbrProductStateConfigurations = number o product states defining the Krylov subpspace generating vector
+// exportKrylov = if true, export the krylov subspace in a tex file
+// exportMathematicaKrylov = if true, export the krylov subspace in a mathematica friendly text file
 // return value = Krylov subspace dimension
 
-int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int productStateIndex)
+int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* hamiltonian, ParticleOnTorusWithMagneticTranslations* chain, char* outputFileName, AbstractArchitecture* architecture, int* productStateIndices, long* productStateCoefficients, int nbrProductStateConfigurations, bool exportKrylov, bool exportMathematicaKrylov)
 {
   RealMatrix TmpRawMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
   hamiltonian->GetHamiltonian(TmpRawMatrix);
@@ -362,11 +457,15 @@ int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* ha
   cout << "Building Krylov subspace" << endl;
   LongIntegerVector* TmpVectors = new LongIntegerVector[chain->GetHilbertSpaceDimension()];
   TmpVectors[0] = LongIntegerVector(chain->GetHilbertSpaceDimension(), true);
+  for (int i = 0; i < nbrProductStateConfigurations; ++i)
+    {
 #ifdef __GMP__
-  mpz_set_ui(TmpVectors[0][productStateIndex], 1ul);
+      mpz_set_si(TmpVectors[0][productStateIndices[i]], productStateCoefficients[i]);
 #else
-  TmpVectors[0][productStateIndex] = 1l;  
+      TmpVectors[0][productStateIndices[i]] = productStateCoefficients[i];  
 #endif
+    }
+  //  cout << TmpVectors[0] << endl;
   int KrylovDimension = 0;
   for (int i = 1; (i < chain->GetHilbertSpaceDimension()) && (KrylovDimension == 0); ++i)
     {
@@ -383,6 +482,189 @@ int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* ha
 	  if (TmpRank <= i)
 	    {
 	      KrylovDimension = TmpRank;
+	      if (exportKrylov == true)
+		{
+		  char* KrylovOutputFileName = new char[strlen(outputFileName) + 256];
+		  sprintf (KrylovOutputFileName, "%s.krylov.tex", outputFileName);	
+		  ofstream OutputFile;
+		  OutputFile.open(KrylovOutputFileName, ios::binary | ios::out);
+		  LongRationalMatrix TmpRankMatrix2(TmpVectors, i + 1);
+		  LongRational Tmp;
+		  unsigned long* TmpStateSpinBasis = new unsigned long[chain->GetNbrOrbitals()];
+		  char* TmpStateSpinBasisString = new char[(chain->GetNbrOrbitals() / 2) + 2];
+		  if (TmpRankMatrix2.GetNbrColumn() < 10)
+		    {
+		      OutputFile << "\\begin{table}[htbp] " << endl << "\\centering" << endl << "\\begin{tabular}{c|c";
+		    }
+		  else
+		    {
+		      OutputFile << "\\begin{sidewaystable}[htbp] " << endl << "\\centering" << endl << "\\begin{tabular}{c|c";
+		    }
+		  for (int k = 0; k < TmpRankMatrix2.GetNbrColumn(); ++k)
+		    {
+		      OutputFile << "|c";
+		    }
+		  OutputFile << "}" << endl;
+		  OutputFile << "\\hline" << endl << "\\hline" << endl; 
+		  for (int j = 0; j < TmpRankMatrix2.GetNbrRow(); ++j)
+		    {
+		      bool TmpFlag = true;
+		      for (int k = 0; k < TmpRankMatrix2.GetNbrColumn(); ++k)
+			{
+			  if (TmpRankMatrix2[k][j].IsZero() == false)
+			    {
+			      TmpFlag = false;
+			    }
+			}
+		      if (TmpFlag == false)
+			{
+			  for (int k = 0; k < TmpRankMatrix2.GetNbrColumn(); ++k)
+			    {
+			      TmpRankMatrix2.GetMatrixElement(j, k, Tmp);
+			      OutputFile << "\\tiny{$" << Tmp << "$} & "; 
+			    }
+			  OutputFile << " \\tiny{$\\ket{";
+			  chain->PrintState(OutputFile, j) << "}$}";
+			  chain->GetOccupationNumber(j, TmpStateSpinBasis);
+			  for (int k = 0; k < chain->GetNbrOrbitals() ; k += 2)
+			    {
+			      unsigned long Tmp = TmpStateSpinBasis[k] | (TmpStateSpinBasis[k + 1] << 1);			      
+			      switch (Tmp)
+				{
+				case 0x0ul:
+				  TmpStateSpinBasisString[k >> 1] = '-';
+				  break;
+				case 0x1ul:
+				  TmpStateSpinBasisString[k >> 1] = 'd';
+				  break;
+				case 0x2ul:
+				  TmpStateSpinBasisString[k >> 1] = 'u';
+				  break;
+				case 0x3ul:
+				  TmpStateSpinBasisString[k >> 1] = '+';
+				  break;
+				}
+			      TmpStateSpinBasisString[chain->GetNbrOrbitals() / 2] = '\0';
+			    }
+			  OutputFile << " & \\tiny{$\\ket{" << TmpStateSpinBasisString << "}$}";			  
+			  OutputFile << "\\\\" << endl;
+			}
+		    }
+		  OutputFile << "\\hline" << endl << "\\hline" << endl; 
+		  OutputFile << "\\end{tabular}" << endl;
+		  OutputFile << "\\caption{Krylov subspace for root=";
+		  if (nbrProductStateConfigurations == 1)
+		    {
+		      OutputFile << "$\\ket{";
+		      chain->PrintState(OutputFile, productStateIndices[0]) << "}$";
+		    }
+		  else
+		    {
+		      OutputFile << "$" << productStateCoefficients[0] << "\\ket{";
+		      chain->PrintState(OutputFile, productStateIndices[0]) << "}";
+		      for (int i = 0; i < nbrProductStateConfigurations; ++i)
+			{
+			  if (productStateCoefficients[i] < 0)
+			    {
+			      OutputFile << productStateCoefficients[i] << "\\ket{";
+			      chain->PrintState(OutputFile, productStateIndices[0]) << "}";
+			    }
+			  else
+			    {
+			      OutputFile << "+" << productStateCoefficients[i] << "\\ket{";
+			      chain->PrintState(OutputFile, productStateIndices[0]) << "}";
+			    }
+			}
+		      OutputFile << "$";
+		    }
+		  OutputFile << "}" << endl;
+		  if (TmpRankMatrix2.GetNbrColumn() < 10)
+		    {
+		      OutputFile << "\\end{table}" << endl;
+		    }
+		  else
+		    {
+		      OutputFile << "\\end{sidewaystable}" << endl;
+		    }
+		  OutputFile.close();
+		}
+	      if (exportMathematicaKrylov == true)
+		{
+		  char* KrylovOutputFileName = new char[strlen(outputFileName) + 256];
+		  sprintf (KrylovOutputFileName, "%s.krylov.mathematica.txt", outputFileName);	
+		  ofstream OutputFile;
+		  OutputFile.open(KrylovOutputFileName, ios::binary | ios::out);
+		  LongRationalMatrix TmpRankMatrix2(TmpVectors, i + 1);
+		  LongRational Tmp;
+		  unsigned long* TmpStateSpinBasis = new unsigned long[chain->GetNbrOrbitals()];
+		  char* TmpStateSpinBasisString = new char[(chain->GetNbrOrbitals() / 2) + 2];
+		  OutputFile << "matA={";
+		  char TmpSeparator = '\0';
+		  for (int j = 0; j < TmpRankMatrix2.GetNbrRow(); ++j)
+		    {
+		      bool TmpFlag = true;
+		      for (int k = 0; k < TmpRankMatrix2.GetNbrColumn(); ++k)
+			{
+			  if (TmpRankMatrix2[k][j].IsZero() == false)
+			    {
+			      TmpFlag = false;
+			    }
+			}
+		      if (TmpFlag == false)
+			{
+			  if (TmpSeparator != '\0')
+			    {
+			      OutputFile << TmpSeparator;
+			    }
+			  OutputFile << "{";
+			  TmpRankMatrix2.GetMatrixElement(j, 0, Tmp);
+			  OutputFile << Tmp; 
+			  for (int k = 1; k < (TmpRankMatrix2.GetNbrColumn() - 1); ++k)
+			    {
+			      TmpRankMatrix2.GetMatrixElement(j, k, Tmp);
+			      OutputFile << "," << Tmp; 
+			    }
+			  OutputFile << "}";
+			  TmpSeparator = ',';
+			}
+		      else
+			{
+			  TmpSeparator = '\0';
+			}
+		    }
+		  OutputFile << "}" << endl;
+
+		  OutputFile << "vecHn={";
+		  TmpSeparator = '\0';
+		  for (int j = 0; j < TmpRankMatrix2.GetNbrRow(); ++j)
+		    {
+		      bool TmpFlag = true;
+		      for (int k = 0; k < TmpRankMatrix2.GetNbrColumn(); ++k)
+			{
+			  if (TmpRankMatrix2[k][j].IsZero() == false)
+			    {
+			      TmpFlag = false;
+			    }
+			}
+		      if (TmpFlag == false)
+			{
+			  if (TmpSeparator != '\0')
+			    {
+			      OutputFile << TmpSeparator;
+			    }
+			  TmpRankMatrix2.GetMatrixElement(j, TmpRankMatrix2.GetNbrColumn() - 1, Tmp);
+			  OutputFile << Tmp; 
+			  TmpSeparator = ',';
+			}
+		      else
+			{
+			  TmpSeparator = '\0';
+			}
+		    }
+		  OutputFile << "}" << endl;
+
+		  OutputFile.close();
+		}
 	    }
 	}
     }
@@ -426,7 +708,7 @@ int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* ha
   //   {
   //     cout << CharacteristicPolynomial[i] << "x^" << i << " + "  << endl;
   //   }
-    
+
   char* PolynomialOutputFileName = new char[strlen(outputFileName) + 256];
   sprintf (PolynomialOutputFileName, "%s.charpol", outputFileName);
   ofstream OutputFile;
@@ -440,4 +722,81 @@ int FQHPairHoppingKrylovSubspaceComputeCharacteristic(AbstractQHEHamiltonian* ha
   OutputFile.close();
 
   return KrylovDimension;
+}
+
+// convert a string describing a product state in the (u,d,+,-) basis to its fermionic occupation version
+//
+// productState = product state in the (u,d,+,-) basis
+// nbrFermions= reference to the number of fermions in the product state
+// nbrFermionsEvenMomentum = reference to the sublattice sector
+// maxMomentum = reference to the max momentumw number or number of sites
+// yMomentum = reference to the y momentumw
+// return value = array containing the fermionic occupation (0 if an error occurred) 
+
+int* FQHPairHoppingKrylovParseProductState(char* productState, int& nbrFermions, int& nbrFermionsEvenMomentum, int& maxMomentum, int& yMomentum)
+{
+  int TmpStringLength = strlen(productState);
+  maxMomentum = 2 * TmpStringLength;
+  int* ProductStateConfiguration = new int [maxMomentum];
+  
+  nbrFermions = 0;
+  maxMomentum = 0;
+  yMomentum = 0;
+  nbrFermionsEvenMomentum = 0;
+  for (int i = 0; i < TmpStringLength; ++i)
+    {
+      char TmpChar = productState[i];
+      if (TmpChar == '+')
+	{
+	  ProductStateConfiguration[nbrFermions] = maxMomentum;
+	  ProductStateConfiguration[nbrFermions + 1] = maxMomentum + 1;
+	  yMomentum += (2 * maxMomentum + 1);
+	  nbrFermionsEvenMomentum++;
+	  maxMomentum += 2;
+	  nbrFermions += 2;
+	}
+      else
+	{
+	  if (TmpChar == '-')
+	    {
+	      maxMomentum += 2;
+	    }
+	  else
+	    {
+	      if (TmpChar == 'u')
+		{
+		  ProductStateConfiguration[nbrFermions] = maxMomentum + 1;
+		  yMomentum += (maxMomentum + 1);
+		  maxMomentum += 2;
+		  nbrFermions++;
+		}
+	      else
+		{
+		  if (TmpChar == 'd')
+		    {
+		      ProductStateConfiguration[nbrFermions] = maxMomentum;
+		      nbrFermionsEvenMomentum++;
+		      yMomentum += maxMomentum;
+		      maxMomentum += 2;
+		      nbrFermions++;
+		    }
+		  else
+		    {
+		      cout << "illegal character \"" << TmpChar << "\" in " << productState << endl;
+		      return 0;
+		    }
+		}
+	    }
+	}
+    }
+  yMomentum %= maxMomentum;
+  
+  cout << "product state \"" << productState << "\" converted into ";
+  for (int i = 0; i < nbrFermions; ++i)
+    {
+      cout << "c+_{" << ProductStateConfiguration[i] <<"}";
+    }
+  cout << "|0>" << endl;
+  cout << "nbr sites=" << maxMomentum << ", nbr fermions=" << nbrFermions << ", ky=" << yMomentum << ", even sublattice=" << nbrFermionsEvenMomentum << endl;
+  return ProductStateConfiguration;
 }

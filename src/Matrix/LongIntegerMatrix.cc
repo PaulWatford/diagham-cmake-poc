@@ -31,6 +31,7 @@
 #include "Matrix/LongIntegerMatrix.h"
 #include "Vector/LongIntegerVector.h"
 #include "Architecture/ArchitectureOperation/LongIntegerMatrixCharacteristicPolynomialOperation.h"
+#include "MathTools/IntegerAlgebraTools.h"
 
 #include <math.h>
 #include <stdlib.h>
@@ -1475,3 +1476,69 @@ int LongIntegerMatrix::NbrNullColumns()
   return TmpNbrZeroColumns;
 }
 
+#ifdef __GMP__
+// find the gcd of all matrix elements
+//
+// matrixGCD = reference on the integer where the GCD will be stored
+// return value = gcd (0 if the matrix is the null matrix)
+
+mpz_t& LongIntegerMatrix::FindMatrixGCD(mpz_t& matrixGCD)
+{
+  mpz_set_ui(matrixGCD, 0ul);
+  for (int i = 0; i < this->NbrColumn; ++i)
+    {
+      for (int j = 0; j < this->NbrRow; ++j)
+	{
+	  if  (mpz_sgn(this->Columns[i][j]) != 0)
+	    {
+	      if (mpz_sgn(matrixGCD) != 0)
+		{
+		  mpz_gcd(matrixGCD, matrixGCD, this->Columns[i][j]);
+		  if (mpz_cmp_ui(matrixGCD, 1l) == 0)
+		    {
+		      return matrixGCD;
+		    }
+		}
+	      else
+		{
+		  mpz_set(matrixGCD, this->Columns[i][j]);
+		}
+	    }
+	}
+    }
+  return matrixGCD;
+}
+
+#else
+// find the gcd of all matrix elements
+//
+// matrixGCD = reference on the integer where the GCD will be stored
+// return value = gcd (0 if the matrix is the null matrix)
+
+LONGLONG& LongIntegerMatrix::FindMatrixGCD(LONGLONG& matrixGCD)
+{
+  matrixGCD = (LONGLONG) 0l;
+  for (int i = 0; i < this->NbrColumn; ++i)
+    {
+      for (int j = 0; j < this->NbrRow; ++j)
+	{
+	  if (this->Columns[i][j] != ((LONGLONG) 0l))
+	    {
+	      if (matrixGCD == ((LONGLONG) 0l))
+		{
+		  matrixGCD = this->Columns[i][j];
+		}
+	      else
+		{
+		  matrixGCD = FindGCD(this->Columns[i][j], matrixGCD);
+		  if (matrixGCD == ((LONGLONG) 1l))
+		    {
+		      return matrixGCD;
+		    }
+		}
+	    }
+	}
+    }
+  return matrixGCD;
+}
+#endif

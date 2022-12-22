@@ -8,6 +8,8 @@
 
 #include "HilbertSpace/FermionOnTorusWithMagneticTranslations.h"
 #include "HilbertSpace/FermionOnTorusWithMagneticTranslationsAndSublatticeConservation.h"
+#include "HilbertSpace/BosonOnTorusWithMagneticTranslations.h"
+//#include "HilbertSpace/BosonOnTorusWithMagneticTranslationsAndSublatticeConservation.h"
 
 #include "Hamiltonian/ParticleOnTorusPairHoppingHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusPairHoppingRealHamiltonian.h"
@@ -85,6 +87,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('l', "nbr-sites", "number of sites", 18);
   (*SystemGroup) += new SingleIntegerOption  ('x', "x-momentum", "constraint on the total momentum in the x direction (negative if none)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('y', "y-momentum", "constraint on the total momentum in the y direction (negative if none)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "sublattice", "for even number of sites, fix the sublattice particle number sector (negative if none)", -1);
   (*SystemGroup) += new SingleStringOption  ('\n', "interaction-file", "file describing the interaction");
   (*SystemGroup) += new BooleanOption  ('\n', "all-points", "calculate all points", false);
   (*SystemGroup) += new BooleanOption  ('\n', "full-reducedbz", "calculate all points within the full reduced Brillouin zone", false);
@@ -103,7 +106,11 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "friendlyshow-hamiltonian", "show matrix representation of the hamiltonian, displaying only non-zero matrix elements");
   (*ToolsGroup) += new BooleanOption  ('\n', "export-charpolynomial", "export the hamiltonian characteristic polynomial");  
-  (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");  (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");
+  (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*ToolsGroup) += new BooleanOption  ('\n', "show-hilbertspace", "show the Hilbert space for each quantum number sector");
+  (*ToolsGroup) += new BooleanOption  ('\n', "ascii-eigenstates", "export the eigenstates in an ascii format rather than a binary format");
+  
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -285,11 +292,17 @@ int main(int argc, char** argv)
       XMomentum = XMomenta[Pos];
       YMomentum = YMomenta[Pos];
       int MaxNbrFermionsEvenMomentum = 0;
+      int NbrFermionsEvenMomentum = 0;
       if (((MaxMomentum & 1) == 0) && (Manager.GetBoolean("disable-sublatticeconservation") == false))
 	{
 	  MaxNbrFermionsEvenMomentum = NbrFermions;
+	  if (Manager.GetInteger("sublattice") >= 0)
+	    {
+	      NbrFermionsEvenMomentum = Manager.GetInteger("sublattice");
+	      MaxNbrFermionsEvenMomentum = NbrFermionsEvenMomentum;
+	    }
 	}
-      for (int NbrFermionsEvenMomentum = 0; NbrFermionsEvenMomentum <= MaxNbrFermionsEvenMomentum; ++NbrFermionsEvenMomentum)
+      for (; NbrFermionsEvenMomentum <= MaxNbrFermionsEvenMomentum; ++NbrFermionsEvenMomentum)
 	{
 	  cout << "----------------------------------------------------------------" << endl;
 	  cout << "kx=" << XMomentum << ", ky=" << YMomentum;
@@ -312,6 +325,14 @@ int main(int argc, char** argv)
 	  
 	  if (TotalSpace->GetHilbertSpaceDimension() > 0)
 	    {
+
+	      if (Manager.GetBoolean("show-hilbertspace") == true)
+		{
+		  for (int i = 0; i < TotalSpace->GetHilbertSpaceDimension(); ++i)
+		    {
+		      TotalSpace->PrintState(cout, i) << endl;
+		    }
+		}
 	      
 	      Architecture.GetArchitecture()->SetDimension(TotalSpace->GetHilbertSpaceDimension());
 	      

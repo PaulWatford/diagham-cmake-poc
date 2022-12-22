@@ -360,6 +360,20 @@ public:
   // return value = number of null columns 
   int NbrNullColumns();
 
+#ifdef __GMP__
+  // find the gcd of all matrix elements
+  //
+  // matrixGCD = reference on the integer where the GCD will be stored
+  // return value = gcd (0 if the matrix is the null matrix)
+  mpz_t& FindMatrixGCD(mpz_t& matrixGCD);
+#else
+  // find the gcd of all matrix elements
+  //
+  // matrixGCD = reference on the integer where the GCD will be stored
+ // return value = gcd (0 if the matrix is the null matrix)
+  LONGLONG& FindMatrixGCD(LONGLONG& matrixGCD);
+#endif
+  
 };
 
 // get a matrix element (long rational part if complex)

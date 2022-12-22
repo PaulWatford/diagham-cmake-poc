@@ -74,39 +74,47 @@ FermionOnSphereSymmetricBasis::FermionOnSphereSymmetricBasis (int nbrFermions, i
     this->InvertUnshift = this->InvertShift - 1;
   else
     this->InvertUnshift = this->InvertShift;
-  this->HilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->LzMax, this->TotalLz);
+  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->LzMax, this->TotalLz);
   this->Flag.Initialize();
-  this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
-  this->StateLzMax = new int [this->HilbertSpaceDimension];
+  cout << "Hilbert space dimension without inversion symmetry = " << this->LargeHilbertSpaceDimension << endl;
+  this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+  this->StateLzMax = new int [this->LargeHilbertSpaceDimension];
   this->GenerateStates(this->NbrFermions, this->LzMax, this->LzMax, (this->NbrFermions * this->LzMax) >> 1, 0);
-  int TmpHilbertSpaceDimension = 0;
-   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-    if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
-      this->StateDescription[i] = 0x0ul;
-    else
-      ++TmpHilbertSpaceDimension;
+  long TmpHilbertSpaceDimension = 0l;
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+     {
+       if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
+	 this->StateDescription[i] = 0x0ul;
+       else
+	 ++TmpHilbertSpaceDimension;
+     }
   unsigned long* TmpStateDescription = new unsigned long [TmpHilbertSpaceDimension];
   int* TmpStateLzMax = new int [TmpHilbertSpaceDimension];
-  TmpHilbertSpaceDimension = 0;
-  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-    if (this->StateDescription[i] != 0x0ul)
-      {
-	TmpStateDescription[TmpHilbertSpaceDimension] = this->StateDescription[i];
-	TmpStateLzMax[TmpHilbertSpaceDimension] = this->StateLzMax[i];
-	++TmpHilbertSpaceDimension;
-      }
+  TmpHilbertSpaceDimension = 0l;
+  for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      if (this->StateDescription[i] != 0x0ul)
+	{
+	  TmpStateDescription[TmpHilbertSpaceDimension] = this->StateDescription[i];
+	  TmpStateLzMax[TmpHilbertSpaceDimension] = this->StateLzMax[i];
+	  ++TmpHilbertSpaceDimension;
+	}
+    }
   delete[] this->StateDescription;
   delete[] this->StateLzMax;
   this->StateDescription = TmpStateDescription;
   this->StateLzMax = TmpStateLzMax;
-  this->HilbertSpaceDimension = TmpHilbertSpaceDimension;
+  this->LargeHilbertSpaceDimension = TmpHilbertSpaceDimension;
+  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+    this->HilbertSpaceDimension = 0;
+  else
+    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
   this->MaximumSignLookUp = 16;
   this->GenerateLookUpTable(memory);
   delete[] this->StateLzMax;
   this->StateLzMax = 0;
   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
     this->GetStateSymmetry(this->StateDescription[i]);
-  this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
 #ifdef __DEBUG__
   unsigned long UsedMemory = 0;
   UsedMemory += ((unsigned long) this->HilbertSpaceDimension) * sizeof(unsigned long);
@@ -225,7 +233,7 @@ FermionOnSphereSymmetricBasis::FermionOnSphereSymmetricBasis(const FermionOnSphe
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
-  this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+  this->LargeHilbertSpaceDimension = this->LargeHilbertSpaceDimension;
 }
 
 // destructor

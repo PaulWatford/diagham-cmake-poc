@@ -15,6 +15,8 @@
 
 #include "HilbertSpace/Spin3_2Chain.h"
 
+#include "HilbertSpace/Spin2Chain.h"
+
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
 #include "Architecture/ArchitectureOperation/MainTaskOperation.h"
@@ -505,6 +507,9 @@ int main(int argc, char** argv)
 	    case 3 :
 	      Chain = new Spin3_2Chain (NbrSpins, InitalSzValue, 1000000);
 	      break;
+	    case 4 :
+	      Chain = new Spin2Chain (NbrSpins, InitalSzValue, 1000000);
+	      break;
 	    default :
 	      {
 		if ((SpinValue & 1) == 0)
@@ -514,6 +519,8 @@ int main(int argc, char** argv)
 		return -1;
 	      }
 	    }
+
+
 	  //	  SpinNonLocalHeisenbergOperator TmpOperator(Chain, NbrSpins, Manager.GetBoolean("use-periodic"));
 	  //	  RealMatrix TmpOperatorMatrix (Chain->GetHilbertSpaceDimension(), Chain->GetHilbertSpaceDimension(), true);
 	  //	  TmpOperator.GetOperator(TmpOperatorMatrix);
@@ -574,6 +581,50 @@ int main(int argc, char** argv)
 	  sprintf (TmpEigenstateString, "%s_%s_sz_%d", OutputFileName, OutputParameterFileName, InitalSzValue);
 
 	  
+	  if (Manager.GetBoolean("export-charpolynomial"))
+	    {
+	      int* SU2Degeneracy = 0;
+	      if (Manager.GetBoolean("export-sresolvedcharpolynomial"))
+		{			   
+		  SU2Degeneracy = new int [(((SpinValue * NbrSpins) - InitalSzValue) >> 1) + 1];
+		  for (int k = InitalSzValue; k <= (SpinValue * NbrSpins); k += 2)
+		    {
+		      switch (SpinValue)
+			{
+			case 1 :
+			  {
+			    Spin1_2Chain TmpHilbert(NbrSpins, k, 1000000);
+			    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+			  }
+			  break;
+			case 2 :
+			  {
+			    Spin1Chain TmpHilbert (NbrSpins, k, 1000000);
+			    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+			  }
+			  break;
+			case 3 :
+			  {
+			    Spin3_2Chain TmpHilbert(NbrSpins, k, 1000000);
+			    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+			  }
+			  break;
+			case 4 :
+			  {
+			    Spin2Chain TmpHilbert (NbrSpins, k, 1000000);
+			    SU2Degeneracy[(k - InitalSzValue) >> 1] = TmpHilbert.GetHilbertSpaceDimension();
+			  }
+			  break;
+			}
+		    }
+		  for (int k = InitalSzValue; k < (SpinValue * NbrSpins); k += 2)
+		    {
+		      SU2Degeneracy[(k - InitalSzValue) >> 1] -= SU2Degeneracy[1 + ((k - InitalSzValue) >> 1)];
+		    }
+		}
+	      SpinChainComputeCharacteristicPolynomial(Hamiltonian, Chain, TmpEigenstateString, Architecture.GetArchitecture(), Manager.GetBoolean("export-sresolvedcharpolynomial"), InitalSzValue, SpinValue * NbrSpins, SU2Degeneracy, Manager.GetBoolean("charpolynomial-nofour"));
+	    }			      
+
 	  GenericRealMainTask Task(&Manager, Chain, &Lanczos, Hamiltonian, TmpSzString, CommentLine, 0.0,  FullOutputFileName, FirstRun, TmpEigenstateString);
 	  MainTaskOperation TaskOperation (&Task);
 	  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
@@ -717,6 +768,7 @@ void SpinChainComputeCharacteristicPolynomial(SpinChainHamiltonian* hamiltonian,
       hamiltonian->GetHamiltonian(TmpRawMatrix);
       RealMatrix TmpRawMatrixS2(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
       S2Operator.GetOperator(TmpRawMatrixS2);
+      //      cout << TmpRawMatrixS2 << endl;
       LongIntegerMatrix TmpMatrix(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
       LongIntegerMatrix TmpMatrix2(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);
       LongIntegerMatrix TmpProjector(chain->GetHilbertSpaceDimension(), chain->GetHilbertSpaceDimension(), true);

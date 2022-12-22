@@ -53,6 +53,20 @@ int RecursiveFindGCD(int m, int n);
 // m = first integer  
 // n = second integer (must be greater than m)
 // return value = GCD
+long FindGCD(long m, long n);
+
+// find greatest common divider (recurisive part of the method)
+//
+// m = first integer  
+// n = second integer (must be greater than m)
+// return value = GCD
+long RecursiveFindGCD(long m, long n);
+
+// find greatest common divider
+//
+// m = first integer  
+// n = second integer (must be greater than m)
+// return value = GCD
 LONGLONG FindGCD(LONGLONG m, LONGLONG n);
 
 // find greatest common divider (recurisive part of the method)

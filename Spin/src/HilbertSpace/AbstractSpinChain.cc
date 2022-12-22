@@ -884,7 +884,11 @@ void AbstractSpinChain::CreateStateFromMPSDescription (ComplexMatrix* bMatrices,
 
 double* AbstractSpinChain::GetBasisNormalization()
 {
-  cout << "warning, using dummy method AbstractSpinChain::GetBasisNormalization" << endl;
-  return 0;
+  double* TmpNormalizations = new double[this->GetHilbertSpaceDimension()];
+  for (int i = 0; i < this->GetHilbertSpaceDimension(); ++i)
+    {
+      TmpNormalizations[i] = 1.0;
+    }
+  return TmpNormalizations;
 }
 

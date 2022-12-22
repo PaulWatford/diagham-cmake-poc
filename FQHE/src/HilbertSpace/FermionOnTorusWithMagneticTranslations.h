@@ -212,6 +212,12 @@ class FermionOnTorusWithMagneticTranslations :  public ParticleOnTorusWithMagnet
   AbstractHilbertSpace* ExtractSubspace (AbstractQuantumNumber& q, 
 					 SubspaceSpaceConverter& converter);
 
+  // convert a state to its occupation number representation
+  //
+  // index = index of the state
+  // finalState = reference on the array where the occupation number representation has to be stored
+  virtual void GetOccupationNumber(long index, unsigned long*& finalState);
+
   // apply a^+_m1 a^+_m2 a_n1 a_n2 operator to a given state (with m1+m2=n1+n2[MaxMomentum])
   //
   // index = index of the state on which the operator has to be applied
@@ -835,6 +841,18 @@ inline unsigned long FermionOnTorusWithMagneticTranslations::ConvertFromMonomial
     TmpState |= 0x1ul << initialState[j];
   return TmpState;
  }
+
+// convert a state to its occupation number representation
+//
+// index = index of the state
+// finalState = reference on the array where the occupation number representation has to be stored
+
+inline void FermionOnTorusWithMagneticTranslations::GetOccupationNumber(long index, unsigned long*& finalState)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  for (int l = 0; l < this->MaxMomentum; ++l)
+    finalState[l] = (TmpState >> l) & 0x1ul;
+}
 
 #endif
 

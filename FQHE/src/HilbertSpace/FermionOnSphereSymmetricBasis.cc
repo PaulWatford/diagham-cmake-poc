@@ -106,7 +106,10 @@ FermionOnSphereSymmetricBasis::FermionOnSphereSymmetricBasis (int nbrFermions, i
   this->StateLzMax = TmpStateLzMax;
   this->LargeHilbertSpaceDimension = TmpHilbertSpaceDimension;
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
-    this->HilbertSpaceDimension = 0;
+    {
+      cout << "Warning the Hilbert space dimension is larger than 2^31 (" << this->LargeHilbertSpaceDimension << ")" << endl; 
+      this->HilbertSpaceDimension = 0;
+    }
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
   this->MaximumSignLookUp = 16;

@@ -1262,7 +1262,7 @@ class FermionOnSphere :  public ParticleOnSphere
   // totalLz = momentum total value
   // pos = position in StateDescription array where to store states
   // return value = position from which new states have to be stored
-  int GenerateStates(int nbrFermions, int lzMax, int currentLzMax, int totalLz, int pos);
+  long GenerateStates(int nbrFermions, int lzMax, int currentLzMax, int totalLz, long pos);
 
   // get Lz<->-Lz symmetric state of a given state 
   //

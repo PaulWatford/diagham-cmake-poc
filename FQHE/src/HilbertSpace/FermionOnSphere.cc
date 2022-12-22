@@ -1670,7 +1670,7 @@ long FermionOnSphere::GenerateStates(int nbrFermions, int lzMax, int currentLzMa
     {
       this->StateDescription[pos] = 0x1ul << totalLz;
       this->StateLzMax[pos] = lzMax;
-      return pos + 1;
+      return pos + 1l;
     }
   if (LzTotalMax == totalLz)
     {
@@ -1679,11 +1679,11 @@ long FermionOnSphere::GenerateStates(int nbrFermions, int lzMax, int currentLzMa
 	Mask |= (0x1ul << i);
       this->StateDescription[pos] = Mask;
       this->StateLzMax[pos] = lzMax;
-      return pos + 1;
+      return pos + 1l;
     }
 
   int ReducedCurrentLzMax = currentLzMax - 1;
-  int TmpPos = this->GenerateStates(nbrFermions - 1, lzMax, ReducedCurrentLzMax, totalLz - currentLzMax, pos);
+  long TmpPos = this->GenerateStates(nbrFermions - 1, lzMax, ReducedCurrentLzMax, totalLz - currentLzMax, pos);
   unsigned long Mask = 0x1ul << currentLzMax;
   for (long i = pos; i < TmpPos; i++)
     this->StateDescription[i] |= Mask;

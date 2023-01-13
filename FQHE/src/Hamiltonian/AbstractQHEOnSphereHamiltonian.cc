@@ -3644,14 +3644,22 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
   gettimeofday (&(TotalStartingTime2), 0);
   cout << "start" << endl;
 
+  // reset load-balancing
+  if (this->LoadBalancingArray != 0)
+    delete [] this->LoadBalancingArray;
+  this->LoadBalancingArray = 0;
+  this->NbrBalancedTasks = 0;
+
   QHEParticlePrecalculationOperation Operation(this);
   Operation.ApplyOperation(this->Architecture);
 
-  // reset load-balancing
-  if (this->LoadBalancingArray!=0)
-    delete [] this->LoadBalancingArray;
-  this->LoadBalancingArray=0;
-  this->NbrBalancedTasks=0;
+  if (this->Architecture->GetOptimizedTypicalRange(this->NbrInteractionPerComponent, MinIndex, MaxIndex) == true)
+    {
+      this->PrecalculationShift = (int) MinIndex;
+      EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
+      cout << "distributed calculations have been reoptimized" << endl;
+    }
+  
 
   long Memory = 0;
   for (int i = 0; i < EffectiveHilbertSpaceDimension; ++i)

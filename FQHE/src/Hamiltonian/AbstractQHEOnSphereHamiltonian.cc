@@ -3551,9 +3551,15 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
   int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
 
-  if ((this->NbrInteractionPerComponent != 0) && (this->FastMultiplicationStep != 0))
+  if ((this->NbrInteractionPerComponent != 0) &&
+      ((this->FastMultiplicationStep != 0) || (this->Architecture->HasAutoLoadBalancing() == true)))
     {
-      int ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
+      int TmpFastMultiplicationStep = this->FastMultiplicationStep;
+      if (TmpFastMultiplicationStep == 0)
+	{
+	  TmpFastMultiplicationStep = 1;
+	}
+      int ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / TmpFastMultiplicationStep;
 
       if ((this->LoadBalancingArray == 0) || (this->NbrBalancedTasks != nbrTasks))
 	{
@@ -3575,7 +3581,7 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	      if (TmpNbrElement > TmpNbrPerSegment)
 		{
 		  SegmentSize[Pos] = TmpNbrElement;
-		  this->LoadBalancingArray[Pos + 1]= MinIndex + (i * this->FastMultiplicationStep);
+		  this->LoadBalancingArray[Pos + 1]= MinIndex + (i * TmpFastMultiplicationStep);
 		  TmpNbrElement = 0;
 		  ++Pos;
 		}
@@ -3652,6 +3658,12 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
     Memory += this->NbrInteractionPerComponent[i];  
 
   cout << "nbr interaction = " << Memory << endl;
+
+  if (allowedMemory == 0l)
+    {
+      return 0l;
+    }
+  
   long TmpMemory = allowedMemory - (sizeof (int*) + sizeof (int) + sizeof(double*)) * EffectiveHilbertSpaceDimension;
   if ((TmpMemory < 0) || ((TmpMemory / ((int) (sizeof (int) + sizeof(double)))) < Memory))
     {

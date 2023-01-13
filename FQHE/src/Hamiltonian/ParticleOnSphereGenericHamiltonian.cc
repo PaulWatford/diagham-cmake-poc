@@ -65,6 +65,7 @@ using std::ostream;
 // onDiskCacheFlag = flag to indicate if on-disk cache has to be used to store matrix elements
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 // hermitianFlag = flag to indicate if hermitian symmetry of Hamiltonian shall be used
+
 ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleOnSphere* particles, int nbrParticles, int lzmax, double* pseudoPotential, double l2Factor,
 								       AbstractArchitecture* architecture, long memory, bool onDiskCacheFlag,
 								       char* precalculationFileName, bool hermitianFlag)
@@ -123,6 +124,16 @@ ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleO
 	      delete[] TmpFileName;
 	    }
 	}
+      else
+	{
+	  if (this->Architecture->HasAutoLoadBalancing() == true)
+	    {
+	      cout << "computing the number of matrix elements for auto load balancing" << endl;
+	      long TmpMemory = this->FastMultiplicationMemory(memory);
+	      //	      delete[] this->NbrInteractionPerComponent;
+	      this->FastMultiplicationFlag = false;
+	    }
+	}
     }
   else
     this->LoadPrecalculation(precalculationFileName);
@@ -153,6 +164,7 @@ ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleO
 // onDiskCacheFlag = flag to indicate if on-disk cache has to be used to store matrix elements
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 // hermitianFlag = flag to indicate if hermitian symmetry of Hamiltonian shall be used
+
 ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleOnSphere* particles, int nbrParticles, int lzmax, 
 								       double* pseudoPotential, double* oneBodyPotentials, double l2Factor,
 								       AbstractArchitecture* architecture, long memory, bool onDiskCacheFlag,
@@ -215,9 +227,21 @@ ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleO
 	      delete[] TmpFileName;
 	    }
 	}
+      else
+	{
+	  if (this->Architecture->HasAutoLoadBalancing() == true)
+	    {
+	      cout << "computing the number of matrix elements for auto load balancing" << endl;
+	      long TmpMemory = this->FastMultiplicationMemory(memory);
+	      //	      delete[] this->NbrInteractionPerComponent;
+	      this->FastMultiplicationFlag = false;
+	    }
+	}	
     }
   else
-    this->LoadPrecalculation(precalculationFileName);
+    {
+      this->LoadPrecalculation(precalculationFileName);
+    }
 
   if (l2Factor != 0.0)
     {
@@ -249,6 +273,7 @@ ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleO
 // onDiskCacheFlag = flag to indicate if on-disk cache has to be used to store matrix elements
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 // hermitianFlag = flag to indicate if hermitian symmetry of Hamiltonian shall be used
+
 ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleOnSphere* particles, int nbrParticles, int lzmax, 
 								       double* pseudoPotential, double* oneBodyPotentials, 
                                                                        int nbrGeneralOneBodyPotentials, int* oneBodyMValues, int* oneBodyNValues, double* oneBodyPotentialValues, 
@@ -364,9 +389,21 @@ ParticleOnSphereGenericHamiltonian::ParticleOnSphereGenericHamiltonian(ParticleO
 	      delete[] TmpFileName;
 	    }
 	}
+      else
+	{
+	  if (this->Architecture->HasAutoLoadBalancing() == true)
+	    {
+	      cout << "computing the number of matrix elements for auto load balancing" << endl;
+	      long TmpMemory = this->FastMultiplicationMemory(memory);
+	      //	      delete[] this->NbrInteractionPerComponent;
+	      this->FastMultiplicationFlag = false;
+	    }
+	}	
     }
   else
-    this->LoadPrecalculation(precalculationFileName);
+    {
+      this->LoadPrecalculation(precalculationFileName);
+    }
 
   if (l2Factor != 0.0)
     {

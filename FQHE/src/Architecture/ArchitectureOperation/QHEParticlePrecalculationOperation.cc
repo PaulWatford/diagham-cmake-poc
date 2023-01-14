@@ -116,14 +116,14 @@ bool QHEParticlePrecalculationOperation::ArchitectureDependentApplyOperation(SMP
 {
   long *SegmentIndices=0;
   int TmpNbrThreads = architecture->GetNbrThreads();
-  if (Hamiltonian->GetLoadBalancing(TmpNbrThreads, SegmentIndices)==false)
+  if (Hamiltonian->GetLoadBalancing(TmpNbrThreads, SegmentIndices) == false)
     {
       SegmentIndices = new long[TmpNbrThreads+1];
       int Step = this->NbrComponent / TmpNbrThreads;
-      SegmentIndices[0]=this->FirstComponent;
-      for (int i=0; i<TmpNbrThreads; ++i)
-	SegmentIndices[i]=this->FirstComponent+i*Step;
-      SegmentIndices[TmpNbrThreads]=this->FirstComponent+this->NbrComponent;
+      SegmentIndices[0] = this->FirstComponent;
+      for (int i = 1; i < TmpNbrThreads; ++i)
+	SegmentIndices[i] = this->FirstComponent+i*Step;
+      SegmentIndices[TmpNbrThreads] = this->FirstComponent + this->NbrComponent;
     }
   QHEParticlePrecalculationOperation** TmpOperations = new QHEParticlePrecalculationOperation* [architecture->GetNbrThreads()];
   for (int i = 0; i < TmpNbrThreads; ++i)

@@ -3550,7 +3550,6 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
   long MaxIndex;
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
   int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
-
   if ((this->NbrInteractionPerComponent != 0) &&
       ((this->FastMultiplicationStep != 0) || (this->Architecture->HasAutoLoadBalancing() == true)))
     {
@@ -3560,51 +3559,72 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	  TmpFastMultiplicationStep = 1;
 	}
       int ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / TmpFastMultiplicationStep;
-
-      if ((this->LoadBalancingArray == 0) || (this->NbrBalancedTasks != nbrTasks))
+      long TmpTotalNbrElement = 0l;
+      for (int i = 0; i < ReducedSpaceDimension; ++i)
 	{
-	  if (LoadBalancingArray!=0)
-	    delete [] LoadBalancingArray;
-	  long *SegmentSize = new long[nbrTasks];
-	  this->LoadBalancingArray = new long[nbrTasks+1];
-	  this->NbrBalancedTasks = nbrTasks;
-	  long TmpNbrElement = 0;
-	  for (int i=0; i < ReducedSpaceDimension; ++i)
-	    TmpNbrElement += this->NbrInteractionPerComponent[i];
-	  long TmpNbrPerSegment = TmpNbrElement / nbrTasks;
-	  TmpNbrElement = 0;
-	  int Pos=0;
-	  this->LoadBalancingArray[0] = MinIndex;
-	  for (int i = 0; i < ReducedSpaceDimension; ++i)
+	  TmpTotalNbrElement += this->NbrInteractionPerComponent[i];
+	}
+      if (TmpTotalNbrElement > 0l)
+	{
+	  if ((this->LoadBalancingArray == 0) || (this->NbrBalancedTasks != nbrTasks))
 	    {
-	      TmpNbrElement += this->NbrInteractionPerComponent[i];
-	      if (TmpNbrElement > TmpNbrPerSegment)
+	      if (LoadBalancingArray!=0)
+		delete [] LoadBalancingArray;
+	      long* SegmentSize = new long[nbrTasks];
+	      this->LoadBalancingArray = new long[nbrTasks+1];
+	      this->NbrBalancedTasks = nbrTasks;
+	      long TmpNbrElement = 0;
+	      for (int i=0; i < ReducedSpaceDimension; ++i)
+		TmpNbrElement += this->NbrInteractionPerComponent[i];
+	      long TmpNbrPerSegment = TmpNbrElement / nbrTasks;
+	      TmpNbrElement = 0;
+	      int Pos=0;
+	      this->LoadBalancingArray[0] = MinIndex;
+	      for (int i = 0; i < ReducedSpaceDimension; ++i)
 		{
-		  SegmentSize[Pos] = TmpNbrElement;
-		  this->LoadBalancingArray[Pos + 1]= MinIndex + (i * TmpFastMultiplicationStep);
-		  TmpNbrElement = 0;
+		  TmpNbrElement += this->NbrInteractionPerComponent[i];
+		  if (TmpNbrElement > TmpNbrPerSegment)
+		    {
+		      SegmentSize[Pos] = TmpNbrElement;
+		      this->LoadBalancingArray[Pos + 1]= MinIndex + (i * TmpFastMultiplicationStep);
+		      TmpNbrElement = 0;
+		      ++Pos;
+		    }
+		}
+	      while (Pos < (nbrTasks - 1))
+		{
+		  LoadBalancingArray[Pos + 1] = MaxIndex + 1;
+		  SegmentSize[Pos] = 0;
 		  ++Pos;
 		}
+	      LoadBalancingArray[nbrTasks] = MaxIndex + 1;
+	      SegmentSize[nbrTasks - 1] = TmpNbrElement;
+	      cout << "LoadBalancingArray=[ ("<< LoadBalancingArray[1] - LoadBalancingArray[0] <<", "<<SegmentSize[0]<<")";
+	      for (int i = 1; i < nbrTasks; ++i)
+		cout <<" ("<< LoadBalancingArray[i+1] - LoadBalancingArray[i] << ", " << SegmentSize[i] << ")";
+	      cout << "]"<< endl;
+	      delete[] SegmentSize;
 	    }
-	  while (Pos < (nbrTasks - 1))
-	    {
-	      LoadBalancingArray[Pos + 1] = MaxIndex + 1;
-	      SegmentSize[Pos] = 0;
-	      ++Pos;
-	    }
-	  LoadBalancingArray[nbrTasks] = MaxIndex + 1;
-	  SegmentSize[nbrTasks - 1] = TmpNbrElement;
-	  
-	  cout << "LoadBalancingArray=[ ("<< LoadBalancingArray[1] - LoadBalancingArray[0] <<", "<<SegmentSize[0]<<")";
+	}
+      else
+	{
+	  this->LoadBalancingArray = new long[nbrTasks + 1];
+	  this->NbrBalancedTasks = nbrTasks;
+	  int Step = EffectiveHilbertSpaceDimension / nbrTasks;
+	  this->LoadBalancingArray[0] = MinIndex;
 	  for (int i = 1; i < nbrTasks; ++i)
-	    cout <<" ("<< LoadBalancingArray[i+1] - LoadBalancingArray[i] << ", " << SegmentSize[i] << ")";
+	    LoadBalancingArray[i]= MinIndex + (i * Step);
+	  LoadBalancingArray[nbrTasks] = MaxIndex + 1;
+	  NbrBalancedTasks = nbrTasks;
+	  cout << "LoadBalancingArray=[ ("<< LoadBalancingArray[1] - LoadBalancingArray[0] <<")";
+	  for (int i = 1; i < nbrTasks; ++i)
+	    cout <<" ("<< LoadBalancingArray[i+1] - LoadBalancingArray[i] << ")";
 	  cout << "]"<< endl;
-	  delete [] SegmentSize;
 	}
     }
   else
     {
-      if ((LoadBalancingArray == 0) || (NbrBalancedTasks != nbrTasks))
+     if ((LoadBalancingArray == 0) || (NbrBalancedTasks != nbrTasks))
 	{
 	  if (LoadBalancingArray!=0)
 	    delete[] LoadBalancingArray;
@@ -3612,8 +3632,11 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	  
 	  int Step = EffectiveHilbertSpaceDimension / nbrTasks;
 	  this->LoadBalancingArray[0] = MinIndex;
-	  for (int i = 0; i < nbrTasks; ++i)
-	    LoadBalancingArray[i]= MinIndex + (i * Step);
+	  for (int i = 1; i < nbrTasks; ++i)
+	    {
+	      LoadBalancingArray[i]= MinIndex + (i * Step);
+	    }
+	  
 	  LoadBalancingArray[nbrTasks] = MaxIndex + 1;
 	  NbrBalancedTasks = nbrTasks;
 	}

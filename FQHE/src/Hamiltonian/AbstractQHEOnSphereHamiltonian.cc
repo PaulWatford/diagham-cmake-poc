@@ -3645,10 +3645,6 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
   cout << "start" << endl;
 
   // reset load-balancing
-  if (this->LoadBalancingArray != 0)
-    delete [] this->LoadBalancingArray;
-  this->LoadBalancingArray = 0;
-  this->NbrBalancedTasks = 0;
 
   QHEParticlePrecalculationOperation Operation(this);
   Operation.ApplyOperation(this->Architecture);
@@ -3659,6 +3655,10 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
       EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
       cout << "distributed calculations have been reoptimized" << endl;
     }
+  if (this->LoadBalancingArray != 0)
+    delete [] this->LoadBalancingArray;
+  this->LoadBalancingArray = 0;
+  this->NbrBalancedTasks = 0;
   
 
   long Memory = 0;

@@ -67,6 +67,14 @@ class LongIntegerMatrixCharacteristicPolynomialOperation: public AbstractArchite
   LongIntegerMatrix TemporaryMatrix1;
   LongIntegerMatrix TemporaryMatrix2;
 
+  // flag to indicate if the local temporary result is a null matrix
+  bool LocalZeroFlag;
+  // partial trace 
+#ifdef __GMP__
+  mpz_t PartialTrace;
+#else
+  LONGLONG PartialTrace;
+#endif
   
  public:
   

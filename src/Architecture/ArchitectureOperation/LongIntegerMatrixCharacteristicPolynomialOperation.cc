@@ -35,6 +35,9 @@
 #include "Architecture/MonoProcessorArchitecture.h"
 #include "Architecture/SMPArchitecture.h"
 
+#include <sys/resource.h>
+#include <sys/time.h>
+
 
 // constructor 
 //
@@ -55,6 +58,7 @@ LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteris
   this->TemporaryMatrix1 = LongIntegerMatrix(sourceMatrix->NbrRow, sourceMatrix->NbrColumn);
   this->TemporaryMatrix1.Copy(*(this->SourceMatrix));
   this->TemporaryMatrix2 = LongIntegerMatrix(sourceMatrix->NbrRow, sourceMatrix->NbrColumn, true);
+  this->LocalZeroFlag = false;
   this->OperationType = AbstractArchitectureOperation::LongIntegerMatrixMultiply;
 }
 
@@ -79,6 +83,7 @@ LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteris
   this->TemporaryMatrix1 = LongIntegerMatrix(sourceMatrix->NbrRow, sourceMatrix->NbrColumn);
   this->TemporaryMatrix1.Copy(*(this->SourceMatrix));
   this->TemporaryMatrix2 = LongIntegerMatrix(sourceMatrix->NbrRow, sourceMatrix->NbrColumn, true);
+  this->LocalZeroFlag = false;
   this->OperationType = AbstractArchitectureOperation::SparseMatrixMatrixMultiply;
 }
 
@@ -96,6 +101,7 @@ LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteris
   this->CharacteristicPolynomial = operation.CharacteristicPolynomial;
   this->TemporaryMatrix1 = operation.TemporaryMatrix1;
   this->TemporaryMatrix2 = operation.TemporaryMatrix2;
+  this->LocalZeroFlag = operation.LocalZeroFlag;
   this->OperationType = AbstractArchitectureOperation::SparseMatrixMatrixMultiply;
 }
   
@@ -132,7 +138,13 @@ AbstractArchitectureOperation* LongIntegerMatrixCharacteristicPolynomialOperatio
 
 bool LongIntegerMatrixCharacteristicPolynomialOperation::RawApplyOperation()
 {
+  this->LocalZeroFlag = true;
   int LastComponent = this->FirstComponent + this->NbrComponent;
+#ifdef __GMP__
+  mpz_set_ui(this->PartialTrace, 0l);
+#else
+  this->PartialTrace = (LONGLONG) 0l;
+#endif
   for (int j = this->FirstComponent; j < LastComponent; ++j)
     {
       LongIntegerVector& TmpInputVector = this->TemporaryMatrix1.Columns[j];
@@ -148,6 +160,7 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::RawApplyOperation()
 	      mpz_addmul(TmpOutputVector[i], this->SourceMatrix->Columns[TmpNonZeroMatrixElementPositions[l]][i], TmpInputVector[TmpNonZeroMatrixElementPositions[l]]);
 	    }
 	}	  
+     mpz_add (this->PartialTrace, this->PartialTrace, TmpOutputVector[j]);
 #else
      for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
 	{
@@ -157,8 +170,13 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::RawApplyOperation()
 	    {
 	      TmpOutputVector[i] += this->SourceMatrix->Columns[TmpNonZeroMatrixElementPositions[l]][i] * TmpInputVector[TmpNonZeroMatrixElementPositions[l]];
 	    }
-	}	       
-#endif     
+	}
+     this->PartialTrace += TmpOutputVector[j];
+#endif
+     if (this->LocalZeroFlag == true)
+       {
+	 this->LocalZeroFlag = this->TemporaryMatrix1.Columns[j].IsNullVector();
+       }
     }
   LongIntegerMatrix TmpMatrix = this->TemporaryMatrix2;
   this->TemporaryMatrix2 = this->TemporaryMatrix1;
@@ -181,10 +199,14 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
 #else
   LONGLONG TmpTrace;
 #endif
+  timeval TotalStartingTime;
+  timeval TotalEndingTime;
   this->AlgorithmInitialization(&TmpTrace);
 
   for (int k = this->SourceMatrix->NbrRow - 2; k >= 0; --k)
     {
+      cout << "computing polynomial coefficient " << k << endl; 
+      gettimeofday (&(TotalStartingTime), 0);
       for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
 	{
 #ifdef __GMP__
@@ -204,6 +226,21 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
       TmpTrace *= (LONGLONG) -1l;
       this->CharacteristicPolynomial[k] = TmpTrace;
 #endif
+      gettimeofday (&(TotalEndingTime), 0);
+      cout << "memory usage=";
+      struct rusage MemoryUsage;
+      getrusage(RUSAGE_SELF, &MemoryUsage);
+      if (MemoryUsage.ru_maxrss < (1l << 20))
+	{
+	  cout << (MemoryUsage.ru_maxrss >> 10) << "Mb";
+	}
+      else
+	{
+	  cout << (MemoryUsage.ru_maxrss >> 20) << "Gb";
+	}
+      double Dt = (double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1.0e6);                  	    
+      cout << ", coefficient computed in " << Dt << "s" << endl;
     }
 #ifdef __GMP__
   mpz_clear(TmpTrace);
@@ -238,10 +275,14 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
 #else
   LONGLONG TmpTrace;
 #endif
+  timeval TotalStartingTime;
+  timeval TotalEndingTime;
   this->AlgorithmInitialization(&TmpTrace);
 
   for (int k = this->SourceMatrix->NbrRow - 2; k >= 0; --k)
     {
+      cout << "computing polynomial coefficient " << k << endl;
+      gettimeofday (&(TotalStartingTime), 0);
       for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
 	{
 #ifdef __GMP__
@@ -258,10 +299,17 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
 
       
       bool ZeroFlag = true;
-      for (int i = 0; (i < this->TemporaryMatrix1.NbrColumn) && (ZeroFlag == true); ++i)
+      for (int i = 0; i < architecture->GetNbrThreads(); ++i)
 	{
-	  ZeroFlag = this->TemporaryMatrix1.Columns[i].IsNullVector();
+	  if (ZeroFlag == true)
+	    {
+	      ZeroFlag = TmpOperations[i]->LocalZeroFlag;
+	    }
 	}
+      // for (int i = 0; (i < this->TemporaryMatrix1.NbrColumn) && (ZeroFlag == true); ++i)
+      // 	{
+      // 	  ZeroFlag = this->TemporaryMatrix1.Columns[i].IsNullVector();
+      // 	}
       if (ZeroFlag == true)
 	{
 	  while (k >= 0)
@@ -277,15 +325,40 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
       else
 	{
 #ifdef __GMP__
-	  this->TemporaryMatrix1.Trace(TmpTrace);
+	  mpz_set_ui(TmpTrace, 0l);
+	  for (int i = 0; i < architecture->GetNbrThreads(); ++i)
+	    {
+	      mpz_add(TmpTrace, TmpTrace, TmpOperations[i]->PartialTrace);
+	    }
+	  //	  this->TemporaryMatrix1.Trace(TmpTrace);
 	  mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->SourceMatrix->NbrRow - k));
 	  mpz_neg(TmpTrace, TmpTrace);
 	  mpz_set(this->CharacteristicPolynomial[k], TmpTrace);      
 #else
+	  TmpTrace = (LONGLONG) 0l;
+	  for (int i = 0; i < architecture->GetNbrThreads(); ++i)
+	    {
+	      TmpTrace += TmpOperations[i]->PartialTrace;
+	    }
 	  TmpTrace /= (LONGLONG) (this->SourceMatrix->NbrRow - k);
 	  TmpTrace *= (LONGLONG) -1l;
 	  this->CharacteristicPolynomial[k] = TmpTrace;
 #endif
+	  gettimeofday (&(TotalEndingTime), 0);
+	  cout << "memory usage=";
+	  struct rusage MemoryUsage;
+	  getrusage(RUSAGE_SELF, &MemoryUsage);
+	  if (MemoryUsage.ru_maxrss < (1l << 20))
+	    {
+	      cout << (MemoryUsage.ru_maxrss >> 10) << "Mb";
+	    }
+	  else
+	    {
+	      cout << (MemoryUsage.ru_maxrss >> 20) << "Gb";
+	    }
+	    double Dt = (double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	      ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1.0e6);                  	    
+	    cout << ", coefficient computed in " << Dt << "s" << endl;
 	}
     }
 #ifdef __GMP__

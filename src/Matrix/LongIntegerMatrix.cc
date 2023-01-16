@@ -460,6 +460,86 @@ void LongIntegerMatrix::SetToIdentity()
     }
 }
 
+// test if a matrix is diagonal
+//
+// accuracy = numerical accuracy used to define a zero 
+// return value = true if the matrix is diagonal
+
+bool LongIntegerMatrix::IsDiagonal(double accuracy)
+{
+  if (this->NbrRow != this->NbrColumn)
+    {
+      return false;
+    }
+  for (int i = 0; i < this->NbrColumn; i++)
+    {
+      for (int j = 0; j < this->NbrRow; j++)
+	{
+#ifdef __GMP__
+	  if ((i != j) && (mpz_sgn(this->Columns[j][i]) != 0))
+#else
+	    if (this->Columns[j][i] != ((LONGLONG) 0l))
+#endif	    
+	    {
+	      return false;
+	    }
+	}
+    }
+  return true;
+}
+
+// test if a matrix is the identity matrix
+//
+// accuracy = numerical accuracy used to define a zero 
+// return value = true if the matrix is diagonal
+
+bool LongIntegerMatrix::IsIdentity(double accuracy)
+{
+  if (this->IsDiagonal(accuracy) == false)
+    {
+      return false;
+    }
+  for (int i = 0; i < this->NbrColumn; i++)
+    {
+#ifdef __GMP__
+      if (mpz_cmp_si(this->Columns[i][i], 1l) != 0)
+#else
+	if (this->Columns[i][i] != ((LONGLONG) 1l))
+#endif	    
+	    {
+	      return false;
+	    }
+	}
+  return true;
+}
+
+// test if a matrix is symmetric
+//
+// accuracy = numerical accuracy used to define a zero 
+// return value = true if the matrix is symmetric
+
+bool LongIntegerMatrix::IsSymmetric(double accuracy)
+{
+  if (this->NbrRow != this->NbrColumn)
+    {
+      return false;
+    }
+  for (int i = 0; i < this->NbrColumn; i++)
+    {
+      for (int j = 0; j < this->NbrRow; j++)
+	{
+#ifdef __GMP__
+	  if ((i != j) && (mpz_cmp(this->Columns[j][i], this->Columns[i][j]) != 0))
+#else
+	    if (this->Columns[j][i] != this->Columns[i][j])
+#endif	    
+	    {
+	      return false;
+	    }
+	}
+    }
+  return true;
+}
 
 // add two matrices
 //
@@ -1196,7 +1276,12 @@ mpz_t* LongIntegerMatrix::CharacteristicPolynomial(AbstractArchitecture* archite
   mpz_t* PolynomialCoefficients = 0;
   if (architecture != 0)
     {
-      LongIntegerMatrixCharacteristicPolynomialOperation TmpOperation(this, TmpNbrMatrixElements, TmpMatrixElementPositions);
+      bool TmpSymmetricFlag = this->IsSymmetric();
+      if (TmpSymmetricFlag == true)
+	{
+	  cout << "current matrix is symmetric, switching to more efficient characteristic polynomial computation" << endl;
+	}
+      LongIntegerMatrixCharacteristicPolynomialOperation TmpOperation(this, TmpNbrMatrixElements, TmpMatrixElementPositions, TmpSymmetricFlag);
       TmpOperation.ApplyOperation(architecture);
       PolynomialCoefficients = TmpOperation.GetCharacteristicPolynomial();
     }

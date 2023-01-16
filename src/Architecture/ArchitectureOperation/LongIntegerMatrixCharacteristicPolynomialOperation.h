@@ -56,13 +56,16 @@ class LongIntegerMatrixCharacteristicPolynomialOperation: public AbstractArchite
   // positions of the non-zero matrix element per row
   int** NonZeroMatrixElementPositions;
 
+  // true if the source matrix is symmetric
+  bool SymmetricFlag;
+  
   // pointer to characteristic polynomial
 #ifdef __GMP__
   mpz_t* CharacteristicPolynomial;
 #else
   LONGLONG* CharacteristicPolynomial;
 #endif
-
+  
   // two temporary matrices used during the evaluation
   LongIntegerMatrix TemporaryMatrix1;
   LongIntegerMatrix TemporaryMatrix2;
@@ -88,7 +91,8 @@ class LongIntegerMatrixCharacteristicPolynomialOperation: public AbstractArchite
   // sourceMatrix = pointer to the matrix for which the characteric polynomial should be evaluated
   // nbrNonZeroMatrixElements = number of non-zero matrix element per row
   // nonZeroMatrixElementPositions = positions of the non-zero matrix element per row
-  LongIntegerMatrixCharacteristicPolynomialOperation (LongIntegerMatrix* sourceMatrix, int* nbrNonZeroMatrixElements, int** nonZeroMatrixElementPositions);
+  // symmetricFlag = true if the source matrix is symmetric
+  LongIntegerMatrixCharacteristicPolynomialOperation (LongIntegerMatrix* sourceMatrix, int* nbrNonZeroMatrixElements, int** nonZeroMatrixElementPositions, bool symmetricFlag = false);
 
   // copy constructor 
   //

@@ -58,6 +58,7 @@ LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteris
   this->TemporaryMatrix1 = LongIntegerMatrix(sourceMatrix->NbrRow, sourceMatrix->NbrColumn);
   this->TemporaryMatrix1.Copy(*(this->SourceMatrix));
   this->TemporaryMatrix2 = LongIntegerMatrix(sourceMatrix->NbrRow, sourceMatrix->NbrColumn, true);
+  this->SymmetricFlag = false;
   this->LocalZeroFlag = false;
   this->OperationType = AbstractArchitectureOperation::LongIntegerMatrixMultiply;
 }
@@ -67,14 +68,16 @@ LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteris
 // sourceMatrix = pointer to the matrix for which the characteric polynomial should be evaluated
 // nbrNonZeroMatrixElements = number of non-zero matrix element per row
 // nonZeroMatrixElementPositions = positions of the non-zero matrix element per row
+// symmetricFlag = true if the source matrix is symmetric
 
-LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteristicPolynomialOperation (LongIntegerMatrix* sourceMatrix, int* nbrNonZeroMatrixElements, int** nonZeroMatrixElementPositions)
+LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteristicPolynomialOperation (LongIntegerMatrix* sourceMatrix, int* nbrNonZeroMatrixElements, int** nonZeroMatrixElementPositions, bool symmetricFlag)
 {
   this->FirstComponent = 0;
   this->NbrComponent = sourceMatrix->GetNbrRow();
   this->SourceMatrix = sourceMatrix;
   this->NbrNonZeroMatrixElements = nbrNonZeroMatrixElements;
   this->NonZeroMatrixElementPositions = nonZeroMatrixElementPositions;
+  this->SymmetricFlag = symmetricFlag;
 #ifdef __GMP__
   this->CharacteristicPolynomial = new mpz_t[sourceMatrix->GetNbrRow() + 1];
 #else
@@ -101,6 +104,7 @@ LongIntegerMatrixCharacteristicPolynomialOperation::LongIntegerMatrixCharacteris
   this->CharacteristicPolynomial = operation.CharacteristicPolynomial;
   this->TemporaryMatrix1 = operation.TemporaryMatrix1;
   this->TemporaryMatrix2 = operation.TemporaryMatrix2;
+  this->SymmetricFlag = operation.SymmetricFlag;
   this->LocalZeroFlag = operation.LocalZeroFlag;
   this->OperationType = AbstractArchitectureOperation::SparseMatrixMatrixMultiply;
 }
@@ -151,15 +155,37 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::RawApplyOperation()
       LongIntegerVector& TmpOutputVector = this->TemporaryMatrix2.Columns[j];
       
  #ifdef __GMP__
-     for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
+      if (this->SymmetricFlag == true)
 	{
-	  mpz_set_ui(TmpOutputVector[i], 0ul);
-	  int* TmpNonZeroMatrixElementPositions = this->NonZeroMatrixElementPositions[i];
-	  for (int l = 0; l < this->NbrNonZeroMatrixElements[i]; ++l)
+	  for (int i = j; i < this->SourceMatrix->NbrRow; ++i)
 	    {
-	      mpz_addmul(TmpOutputVector[i], this->SourceMatrix->Columns[TmpNonZeroMatrixElementPositions[l]][i], TmpInputVector[TmpNonZeroMatrixElementPositions[l]]);
+	      mpz_set_ui(TmpOutputVector[i], 0ul);
+	      int* TmpNonZeroMatrixElementPositions = this->NonZeroMatrixElementPositions[i];
+	      for (int l = 0; l < this->NbrNonZeroMatrixElements[i]; ++l)
+		{
+		  if (TmpNonZeroMatrixElementPositions[l] >= j)
+		    {
+		      mpz_addmul(TmpOutputVector[i], this->SourceMatrix->Columns[TmpNonZeroMatrixElementPositions[l]][i], TmpInputVector[TmpNonZeroMatrixElementPositions[l]]);
+		    }
+		  else
+		    {
+		      mpz_addmul(TmpOutputVector[i], this->SourceMatrix->Columns[TmpNonZeroMatrixElementPositions[l]][i], this->TemporaryMatrix1.Columns[TmpNonZeroMatrixElementPositions[l]][j]);
+		    }
+		}
 	    }
-	}	  
+	}
+      else
+	{
+	  for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
+	    {
+	      mpz_set_ui(TmpOutputVector[i], 0ul);
+	      int* TmpNonZeroMatrixElementPositions = this->NonZeroMatrixElementPositions[i];
+	      for (int l = 0; l < this->NbrNonZeroMatrixElements[i]; ++l)
+		{
+		  mpz_addmul(TmpOutputVector[i], this->SourceMatrix->Columns[TmpNonZeroMatrixElementPositions[l]][i], TmpInputVector[TmpNonZeroMatrixElementPositions[l]]);
+		}
+	    }
+	}
      mpz_add (this->PartialTrace, this->PartialTrace, TmpOutputVector[j]);
 #else
      for (int i = 0; i < this->SourceMatrix->NbrRow; ++i)
@@ -306,10 +332,6 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
 	      ZeroFlag = TmpOperations[i]->LocalZeroFlag;
 	    }
 	}
-      // for (int i = 0; (i < this->TemporaryMatrix1.NbrColumn) && (ZeroFlag == true); ++i)
-      // 	{
-      // 	  ZeroFlag = this->TemporaryMatrix1.Columns[i].IsNullVector();
-      // 	}
       if (ZeroFlag == true)
 	{
 	  while (k >= 0)
@@ -330,7 +352,6 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::ArchitectureDependentAp
 	    {
 	      mpz_add(TmpTrace, TmpTrace, TmpOperations[i]->PartialTrace);
 	    }
-	  //	  this->TemporaryMatrix1.Trace(TmpTrace);
 	  mpz_divexact_ui(TmpTrace, TmpTrace, (unsigned long) (this->SourceMatrix->NbrRow - k));
 	  mpz_neg(TmpTrace, TmpTrace);
 	  mpz_set(this->CharacteristicPolynomial[k], TmpTrace);      

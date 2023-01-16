@@ -177,6 +177,36 @@ public:
   //
   void SetToIdentity();
 
+  // test if a matrix is diagonal
+  //
+  // accuracy = numerical accuracy used to define a zero 
+  // return value = true if the matrix is diagonal
+  virtual bool IsDiagonal(double accuracy = MACHINE_PRECISION);
+
+  // test if a matrix is the identity matrix
+  //
+  // accuracy = numerical accuracy used to define a zero 
+  // return value = true if the matrix is diagonal
+  virtual bool IsIdentity(double accuracy = MACHINE_PRECISION);
+
+  // test if a matrix is symmetric
+  //
+  // accuracy = numerical accuracy used to define a zero 
+  // return value = true if the matrix is symmetric
+  virtual bool IsSymmetric(double accuracy = MACHINE_PRECISION);
+
+  // test if a matrix is hermitian
+  //
+  // accuracy = numerical accuracy used to define a zero 
+  // return value = true if the matrix is diagonal
+  virtual bool IsHermitian(double accuracy = MACHINE_PRECISION);
+
+  // test if a matrix is real
+  //
+  // accuracy = numerical accuracy used to define a zero 
+  // return value = true if the matrix is real
+  virtual bool IsReal(double accuracy = MACHINE_PRECISION);
+
   // add two matrices
   //
   // M1 = first matrix
@@ -463,5 +493,26 @@ inline LONGLONG& LongIntegerMatrix::Trace(LONGLONG& trace)
   return trace;
 }
 #endif
+
+// test if a matrix is hermitian
+//
+// accuracy = numerical accuracy used to define a zero 
+// return value = true if the matrix is diagonal
+
+inline bool LongIntegerMatrix::IsHermitian(double accuracy)
+{
+  return this->IsSymmetric(accuracy);
+}
+
+// test if a matrix is real
+//
+// accuracy = numerical accuracy used to define a zero 
+// return value = true if the matrix is real
+
+inline bool LongIntegerMatrix::IsReal(double accuracy)
+{
+  return true;
+}
+
 
 #endif

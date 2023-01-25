@@ -48,6 +48,7 @@ int main(int argc, char** argv)
 
   (*SystemGroup) += new  SingleStringOption ('\n', "hamiltonian", "text file where the hamiltonian matrix elements are stored");
   (*SystemGroup) += new  SingleIntegerOption ('\n', "shift", "shift the hamiltonian by a constant integer value (i.e., H-lambda 1)", 0);
+  (*SystemGroup) += new  BooleanOption ('\n', "base-one", "hamiltonian indices start at one rather than zero");
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "output name for the characteristic polynomial");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
@@ -90,19 +91,47 @@ int main(int argc, char** argv)
   int* ColumnIndices = HamiltonianFile.GetAsIntegerArray(1);
   
   int NbrColumns = 0;
-  for (long i = 0l; i < NbrMatrixElements; ++i)
+  if (Manager.GetBoolean("base-one"))
     {
-      if (RowIndices[i] > NbrColumns)
+      for (long i = 0l; i < NbrMatrixElements; ++i)
 	{
-	  NbrColumns = RowIndices[i];
-	}
-      if (ColumnIndices[i] > NbrColumns)
-	{
-	  NbrColumns = ColumnIndices[i];
+	  if (RowIndices[i] > NbrColumns)
+	    {
+	      NbrColumns = RowIndices[i];
+	    }
+	  if (RowIndices[i] == 0)
+	    {
+	      cout << "error on entry " << i << " (" << RowIndices[i] << " " << ColumnIndices[i] << "), zero index found while using --base-one option" << endl;
+	      return 0;
+	    }
+	  RowIndices[i]--;
+	  if (ColumnIndices[i] > NbrColumns)
+	    {
+	      NbrColumns = ColumnIndices[i];
+	    }
+	  if (ColumnIndices[i] == 0)
+	    {
+	      cout << "error on entry " << i << " (" << RowIndices[i] << " " << ColumnIndices[i] << "), zero index found while using --base-one option" << endl;
+	      return 0;
+	    }
+	  ColumnIndices[i]--;
 	}
     }
-  NbrColumns++;
-
+  else
+    {
+      for (long i = 0l; i < NbrMatrixElements; ++i)
+	{
+	  if (RowIndices[i] > NbrColumns)
+	    {
+	      NbrColumns = RowIndices[i];
+	    }
+	  if (ColumnIndices[i] > NbrColumns)
+	    {
+	      NbrColumns = ColumnIndices[i];
+	    }
+	}
+      NbrColumns++;
+    }
   cout << "Matrix size = " << NbrColumns << "x" << NbrColumns << " (" << NbrMatrixElements << " nbr matrix elements)" << endl;
   
   LongIntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
@@ -141,21 +170,27 @@ int main(int argc, char** argv)
       PolynomialOutputFileName = new char[strlen(Manager.GetString("output-file")) + 16];
       strcpy (PolynomialOutputFileName, Manager.GetString("output-file"));
     }
-  ofstream OutputFile;
-  OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
 
   Architecture.GetArchitecture()->SetDimension(NbrColumns);
-  mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(Architecture.GetArchitecture());
 
-
-  
-  OutputFile << CharacteristicPolynomial[0];
-  for (int i = 1; i <= NbrColumns; ++i)
+  if (Architecture.GetArchitecture()->CanWriteOnDisk())
     {
-      OutputFile << "," << CharacteristicPolynomial[i];
+#ifdef __GMP__      
+      mpz_t* CharacteristicPolynomial = TmpMatrix.CharacteristicPolynomial(Architecture.GetArchitecture());
+      ofstream OutputFile;
+      OutputFile.open(PolynomialOutputFileName, ios::binary | ios::out);
+      
+      OutputFile << CharacteristicPolynomial[0];
+      for (int i = 1; i <= NbrColumns; ++i)
+	{
+	  OutputFile << "," << CharacteristicPolynomial[i];
+	}
+      OutputFile << endl;
+      OutputFile.close();
+#else
+      cout << "GMP library is required" << endl;
+#endif      
     }
-  OutputFile << endl;
-  OutputFile.close();
   delete[] PolynomialOutputFileName;
   
   return 0;

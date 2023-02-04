@@ -62,10 +62,11 @@ class ParticleOnCylinderLaplacianDeltaHamiltonian : public AbstractQHEOnCylinder
   // confinement = amplitude of the quadratic confinement potential
   // electricFieldParameter = amplitude of the electric field along the cylinder
   // bFieldfParameter = amplitude of the magnetic field (to set the energy scale)
+  // truncation = truncates the interaction terms according to |m1 - m2|, |m3 - m4| <= truncation 
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
-  ParticleOnCylinderLaplacianDeltaHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum, double ratio, double massAnisotropy, double confinement, double electricFieldParameter, double bFieldParameter,
+  ParticleOnCylinderLaplacianDeltaHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum, double ratio, double massAnisotropy, double confinement, double electricFieldParameter, double bFieldParameter, int truncation,
 					   AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
 
   // destructor

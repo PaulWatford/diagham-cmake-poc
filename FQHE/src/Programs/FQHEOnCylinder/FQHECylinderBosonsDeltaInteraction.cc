@@ -79,6 +79,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption ('\n', "confinement-potential", "amplitude of the quadratic confinement potential", 0.0);
   (*SystemGroup) += new SingleDoubleOption ('\n', "electric-field", "parameter for the value of the electric field applied along the cylinder (a=eEl_B^2/hbar omega_c", 0.0);
   (*SystemGroup) += new SingleDoubleOption ('\n', "b-field", "parameter for the value of the magnetic field [in T] when also the electric field is present (needed to set the scale for the kinetic term)", 0.0);
+  (*SystemGroup) += new SingleIntegerOption ('t', "truncation", "truncate the interaction terms such that any terms with |m1-m2|>truncation or |m3-m4|>truncation are discarded (negative if no truncation)", -1);
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "delta");
   (*SystemGroup) += new  SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
   (*SystemGroup) += new BooleanOption  ('\n', "get-hvalue", "compute mean value of the Hamiltonian against each eigenstate");
@@ -133,6 +134,8 @@ int main(int argc, char** argv)
       cout << "and neglects the term sqrt(1+a)N_e (overall constant)." << endl;
    }
 
+  int Truncation = ((SingleIntegerOption*) Manager["truncation"])->GetInteger();
+
   long Memory = ((unsigned long) Manager.GetInteger("memory")) << 20;
   bool FirstRun = true;
   
@@ -180,7 +183,7 @@ int main(int argc, char** argv)
       if (Architecture.GetArchitecture()->GetLocalMemory() > 0)
 	Memory = Architecture.GetArchitecture()->GetLocalMemory();
 
-      AbstractQHEHamiltonian* Hamiltonian = new ParticleOnCylinderLaplacianDeltaHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, MassAnisotropy, Confinement, ElectricFieldParameter, BFieldParameter, Architecture.GetArchitecture(), Memory);
+      AbstractQHEHamiltonian* Hamiltonian = new ParticleOnCylinderLaplacianDeltaHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, MassAnisotropy, Confinement, ElectricFieldParameter, BFieldParameter, Truncation, Architecture.GetArchitecture(), Memory);
 
       double Shift = -10.0;
       Hamiltonian->ShiftHamiltonian(Shift);

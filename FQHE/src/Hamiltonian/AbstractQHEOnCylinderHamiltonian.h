@@ -84,6 +84,9 @@ class AbstractQHEOnCylinderHamiltonian : public AbstractQHEHamiltonian
   //parameter for the magnetic field (needed when electric field is nonzero)
   double MagneticField;
 
+  // truncates the interaction terms according to |m1 - m2|, |m3 - m4| <= truncation 
+  int Truncation; 
+
   // array containing all interaction factors 
   Complex* InteractionFactors;
   // number of interaction factors

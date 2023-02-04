@@ -65,12 +65,13 @@ using std::ostream;
 // confinement = amplitude of the quadratic confinement potential
 // electricFieldParameter = amplitude of the electric field along the cylinder
 // bFieldfParameter = amplitude of the magnetic field (to set the energy scale)
+// truncation = truncates the interaction terms according to |m1 - m2|, |m3 - m4| <= truncation 
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
 ParticleOnCylinderLaplacianDeltaHamiltonian::ParticleOnCylinderLaplacianDeltaHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum,
-										   double ratio, double massAnisotropy, double confinement, double electricFieldParameter, double bFieldParameter, AbstractArchitecture* architecture, long memory, char* precalculationFileName)
+										   double ratio, double massAnisotropy, double confinement, double electricFieldParameter, double bFieldParameter, int truncation, AbstractArchitecture* architecture, long memory, char* precalculationFileName)
 {
   this->Particles = particles;
   this->MaxMomentum = maxMomentum;
@@ -84,6 +85,10 @@ ParticleOnCylinderLaplacianDeltaHamiltonian::ParticleOnCylinderLaplacianDeltaHam
   this->Confinement = confinement;
   this->ElectricField = electricFieldParameter;
   this->MagneticField = bFieldParameter;
+  this->Truncation = truncation;
+  if (this->Truncation >= 0)
+   cout << "Truncating interaction terms such that any terms with |m1-m2|> " << this->Truncation << " or |m3-m4|> " << this->Truncation << " are discarded." << endl;
+
   this->EvaluateInteractionFactors();
   this->EnergyShift = 0.0;
   this->HermitianSymmetryFlag=true;
@@ -349,6 +354,13 @@ Complex ParticleOnCylinderLaplacianDeltaHamiltonian::EvaluateInteractionCoeffici
 
   Complex Coefficient(0,0);
 
+ 
+  //Truncating the Hamiltonian 
+  if ((this->Truncation >= 0) && ((abs(m1-m2) > this->Truncation) || (abs(m3-m4) > this->Truncation)))
+   {
+     return 0;
+   }
+
   if (this->ElectricField == 0)
    {
 
@@ -383,6 +395,12 @@ Complex ParticleOnCylinderLaplacianDeltaHamiltonian::EvaluateInteractionCoeffici
   double Xm4 = kappa * m4;	
 
   Complex Coefficient(0,0);
+
+  //Truncating the Hamiltonian 
+  if ((this->Truncation >= 0) && ((abs(m1-m2) > this->Truncation) || (abs(m3-m4) > this->Truncation)))
+   {
+     return 0;
+   }
 
   if (this->ElectricField == 0)
    {

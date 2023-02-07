@@ -99,8 +99,8 @@ FermionOnSphere::FermionOnSphere (int nbrFermions, int totalLz, int lzMax, unsig
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
   this->Flag.Initialize();
-  this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
-  this->StateLzMax = new int [this->HilbertSpaceDimension];
+  this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+  this->StateLzMax = new int [this->LargeHilbertSpaceDimension];
   if (this->NbrFermions > 0)
     {
       this->GenerateStates(this->NbrFermions, this->LzMax, this->LzMax, (this->TotalLz + this->NbrFermions * this->LzMax) >> 1, 0);
@@ -6993,7 +6993,7 @@ int FermionOnSphere::GetLzValue(int j)
 // pauliK = number of particles allowed in consecutive orbitals
 // pauliR = number of consecutive orbitals
 
-bool FermionOnSphere::HasPauliExclusions(int index, int pauliK, int pauliR)
+bool FermionOnSphere::HasPauliExclusions(long index, int pauliK, int pauliR)
 {
   unsigned long TmpState = this->StateDescription[index];
   int TmpLzMax = this->StateLzMax[index];

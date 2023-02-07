@@ -394,7 +394,7 @@ long BosonOnCP2::EvaluateHilbertSpaceDimension(int nbrBosons, int currentTz, int
   // index = state index
   // pauliK = number of particles allowed in consecutive orbitals
   // pauliR = number of consecutive orbitals
-bool BosonOnCP2::HasPauliExclusions(int index, int pauliK, int pauliR)
+bool BosonOnCP2::HasPauliExclusions(long index, int pauliK, int pauliR)
 {
   int* rootPartition = new int[2*this->NbrBosons];
   this->FermionToBoson(this->FermionBasis->StateDescription[index], this->FermionBasis->StateLzMax[index], this->TemporaryState, this->TemporaryStateLzMax);

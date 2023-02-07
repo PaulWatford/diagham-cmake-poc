@@ -1662,7 +1662,18 @@ RealVector ParticleOnSphere::TruncateStateWithPatternConstraint(RealVector& inpu
 // index = state index
 // pauliK = number of particles allowed in consecutive orbitals
 // pauliR = number of consecutive orbitals
+
 bool ParticleOnSphere::HasPauliExclusions(int index, int pauliK, int pauliR)
+{
+  return this->HasPauliExclusions((long) index, pauliK, pauliR);
+}
+
+// request whether state with given index satisfies a general Pauli exclusion principle
+// index = state index
+// pauliK = number of particles allowed in consecutive orbitals
+// pauliR = number of consecutive orbitals
+
+bool ParticleOnSphere::HasPauliExclusions(long index, int pauliK, int pauliR)
 {
   return false;
 }

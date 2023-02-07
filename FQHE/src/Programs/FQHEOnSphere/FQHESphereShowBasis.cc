@@ -606,7 +606,7 @@ int main(int argc, char** argv)
   if (Manager.GetString("get-index") != 0)
     {
       long TmpIndex = Space->FindStateIndex(Manager.GetString("get-index"));
-      if (TmpIndex == Space->GetHilbertSpaceDimension())
+      if (TmpIndex == Space->GetLargeHilbertSpaceDimension())
 	{
 	  cout << "state " << Manager.GetString("get-index") << " not found" << endl;
 	}
@@ -706,7 +706,7 @@ int main(int argc, char** argv)
     {
       if (Manager.GetBoolean("save-disk") == true)
 	{
-	  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+	  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 	    {
 	      if ((PauliK == 0) || (Space->HasPauliExclusions(i, PauliK, PauliR)))
 		{
@@ -720,7 +720,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+	  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 	    {
 	      if ((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR)) || (Manager.GetBoolean("quasiholes")))
 		{
@@ -748,9 +748,9 @@ int main(int argc, char** argv)
 	      cout << "error while reading " << Manager.GetString("state") << endl;
 	      return -1;
 	    }
-	  if (Space->GetHilbertSpaceDimension() != State.GetVectorDimension())
+	  if (Space->GetLargeHilbertSpaceDimension() != State.GetVectorDimension())
 	    {
-	      cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetHilbertSpaceDimension() << ")" << endl;
+	      cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetLargeHilbertSpaceDimension() << ")" << endl;
 	      return -1;
 	    }
 	  if (Manager.GetDouble("hide-component") > 0.0)
@@ -758,7 +758,7 @@ int main(int argc, char** argv)
 	      double Error = Manager.GetDouble("hide-component");
 	      if (Manager.GetBoolean("save-disk") == true)
 		{
-		  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		    {
 		      if ((fabs(State[i]) > Error)&&((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR))))
 			{
@@ -785,7 +785,7 @@ int main(int argc, char** argv)
 		    }
 		}
 	      else
-		for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		  {
 		    if ((fabs(State[i]) > Error)&&((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR))))
 		      {
@@ -819,20 +819,20 @@ int main(int argc, char** argv)
 		  if (Manager.GetBoolean("save-disk") == true)
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  Space->PrintState(File, i) << " : " << Space->StateVariance(i) << " " << State[i] << " " << i <<endl;
 		      else
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			    Space->PrintState(File, i) << " : " << Space->StateVariance(i) << " " << State[i] << " " << i <<endl;
 		    }
 		  else
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  Space->PrintState(cout, i) << " : " << Space->StateVariance(i) << " " << State[i] << " " << i <<endl;
 		      else
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			    Space->PrintState(cout, i) << " : " << Space->StateVariance(i) << " " << State[i] << " " << i <<endl;
 		    }
@@ -843,7 +843,7 @@ int main(int argc, char** argv)
 		    {
 		      if (PauliK==0)
 		      {
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			{
 			if (SymFlagTzZ3 == false)
 			    Space->PrintState(File, i) << " : " << State[i] << endl;
@@ -855,14 +855,14 @@ int main(int argc, char** argv)
 			}
 		      }
 		      else
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			    Space->PrintState(File, i) << " : " << State[i] << endl;
 		    }
 		  else
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			{
 			if (SymFlagTzZ3 == false)
 			    Space->PrintState(cout, i) << " : " << State[i] << endl;
@@ -874,7 +874,7 @@ int main(int argc, char** argv)
 			}
 		      else
 			{
-			  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			    if ((Space->HasPauliExclusions(i,PauliK,PauliR)) || Manager.GetBoolean("quasiholes"))
 			      Space->PrintState(cout, i) << " : " << State[i] << endl;	   
 			}
@@ -893,16 +893,16 @@ int main(int argc, char** argv)
 	      cout << "error while reading " << Manager.GetString("state") << endl;
 	      return -1;
 	    }
-	  if (Space->GetHilbertSpaceDimension() != State.GetVectorDimension())
+	  if (Space->GetLargeHilbertSpaceDimension() != State.GetVectorDimension())
 	    {
-	      cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetHilbertSpaceDimension() << ")" << endl;
+	      cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetLargeHilbertSpaceDimension() << ")" << endl;
 	      return -1;
 	    }
 	  if (Manager.GetDouble("hide-component") > 0.0)
 	    {
 	      if (Manager.GetBoolean("save-disk") == true)
 		{
-		  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		    {
 		      if ((State[i] != 0l) && ((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR))))
 			{
@@ -930,7 +930,7 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		    {
 		      if ((State[i] != 0l) && ((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR))))
 			{
@@ -963,7 +963,7 @@ int main(int argc, char** argv)
 	      if (Manager.GetBoolean("save-disk") == true)
 		{
 		  if (PauliK == 0)
-		    for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		    for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		      if (SymFlagTzZ3 == false)
 			Space->PrintState(File, i) << " : " << State[i] << endl;
 		      else
@@ -972,14 +972,14 @@ int main(int argc, char** argv)
 			    File << endl;
 			  }
 		  else
-		    for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		    for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		      if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			Space->PrintState(File, i) << " : " << State[i] << endl;
 		}
 	      else
 		{
 		  if (PauliK == 0)
-		    for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		    for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		      if (SymFlagTzZ3 == false)
 			Space->PrintState(cout, i) << " : " << State[i] << endl;
 		      else
@@ -989,7 +989,7 @@ int main(int argc, char** argv)
 			  }
 		  else
 		    {
-		      for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		      for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			  Space->PrintState(cout, i) << " : " << State[i] << endl;	   
 		    }
@@ -1009,9 +1009,9 @@ int main(int argc, char** argv)
 	      cout << "error while reading " << Manager.GetString("state") << endl;
 	      return -1;
 	    }
-	  if (Space->GetHilbertSpaceDimension() != State.GetVectorDimension())
+	  if (Space->GetLargeHilbertSpaceDimension() != State.GetVectorDimension())
 	    {
-	      cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetHilbertSpaceDimension() << ")" << endl;
+	      cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetLargeHilbertSpaceDimension() << ")" << endl;
 	      return -1;
 	    }
 	  if (Manager.GetDouble("hide-component") > 0.0)
@@ -1019,7 +1019,7 @@ int main(int argc, char** argv)
 	      double Error = Manager.GetDouble("hide-component");
 	      if (Manager.GetBoolean("save-disk") == true)
 		{
-		  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		    {
 		      if ((Norm(State[i]) > Error)&&((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR))))
 			{
@@ -1038,7 +1038,7 @@ int main(int argc, char** argv)
 		    }
 		}
 	      else
-		for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+		for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		  {
 		    if ((Norm(State[i]) > Error)&&((PauliK==0)||(Space->HasPauliExclusions(i,PauliK,PauliR))))
 		      {
@@ -1064,20 +1064,20 @@ int main(int argc, char** argv)
 		  if (Manager.GetBoolean("save-disk") == true)
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  Space->PrintState(File, i) << " : " << Space->StateVariance(i) << " " << State.Re(i) << " " << State.Im(i) << " " << i <<endl;
 		      else
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			    Space->PrintState(File, i) << " : " << Space->StateVariance(i) << " " << State.Re(i) << " " << State.Im(i) << " " << i <<endl;
 		    }
 		  else
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  Space->PrintState(cout, i) << " : " << Space->StateVariance(i) << " " << State.Re(i) << " " << State.Im(i) << " " << i <<endl;
 		      else
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			    Space->PrintState(cout, i) << " : " << Space->StateVariance(i) << " " << State.Re(i) << " " << State.Im(i) << " " << i <<endl;
 		    }
@@ -1087,21 +1087,21 @@ int main(int argc, char** argv)
 		  if (Manager.GetBoolean("save-disk") == true)
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  Space->PrintState(File, i) << " : " << State.Re(i) << " " << State.Im(i) << endl;
 		      else
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			    Space->PrintState(File, i) << " : " << State.Re(i) << " " << State.Im(i) << endl;
 		    }
 		  else
 		    {
 		      if (PauliK==0)
-			for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			  Space->PrintState(cout, i) << " : " << State.Re(i) << " " << State.Im(i) << endl;
 		      else
 			{
-			  for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+			  for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 			    if (Space->HasPauliExclusions(i,PauliK,PauliR))
 			      Space->PrintState(cout, i) << " : " << State.Re(i) << " " << State.Im(i) << endl;	   
 			}

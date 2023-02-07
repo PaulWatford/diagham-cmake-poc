@@ -223,7 +223,7 @@ class FermionOnCP2 : public FermionOnSphere
   // index = state index
   // pauliK = number of particles allowed in consecutive orbitals
   // pauliR = number of consecutive orbitals
-  virtual bool HasPauliExclusions(int index, int pauliK, int pauliR);
+  virtual bool HasPauliExclusions(long index, int pauliK, int pauliR);
   
   // convert a state such that its components are now expressed in the unnormalized basis
   //

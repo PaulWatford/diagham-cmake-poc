@@ -503,7 +503,7 @@ int FermionOnCP2::FindStateIndexFromArray(int* stateDescription)
 // index = state index
 // pauliK = number of particles allowed in consecutive orbitals
 // pauliR = number of consecutive orbitals
-bool FermionOnCP2::HasPauliExclusions(int index, int pauliK, int pauliR)
+bool FermionOnCP2::HasPauliExclusions(long index, int pauliK, int pauliR)
 {
   int* rootPartition1 = new int[2*this->NbrFermions];
 //   int* rootPartition2 = new int[2*this->NbrFermions];

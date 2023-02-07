@@ -5231,7 +5231,7 @@ void BosonOnSphereShort::SymmetrizeU1U1StateCore (LongRationalVector& symmetrize
 // pauliK = number of particles allowed in consecutive orbitals
 // pauliR = number of consecutive orbitals
 
-bool BosonOnSphereShort::HasPauliExclusions(int index, int pauliK, int pauliR)
+bool BosonOnSphereShort::HasPauliExclusions(long index, int pauliK, int pauliR)
 {
   this->FermionToBoson(this->FermionBasis->StateDescription[index], this->FermionBasis->StateLzMax[index], this->TemporaryState, this->TemporaryStateLzMax);
   int Max = this->TemporaryStateLzMax + 2 - pauliR;

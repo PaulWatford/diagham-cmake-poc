@@ -1095,6 +1095,12 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // pauliR = number of consecutive orbitals
   virtual bool HasPauliExclusions(int index, int pauliK, int pauliR);
   
+  // request whether state with given index satisfies a general Pauli exclusion principle
+  // index = state index
+  // pauliK = number of particles allowed in consecutive orbitals
+  // pauliR = number of consecutive orbitals
+  virtual bool HasPauliExclusions(long index, int pauliK, int pauliR);
+  
   // get Lz component of a component
   //
   // j = index of the component in Hilbert space

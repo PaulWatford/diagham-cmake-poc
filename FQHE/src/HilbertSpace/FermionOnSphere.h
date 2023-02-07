@@ -1118,7 +1118,7 @@ class FermionOnSphere :  public ParticleOnSphere
   // index = state index
   // pauliK = number of particles allowed in consecutive orbitals
   // pauliR = number of consecutive orbitals
-  virtual bool HasPauliExclusions(int index, int pauliK, int pauliR);
+  virtual bool HasPauliExclusions(long index, int pauliK, int pauliR);
 
   // transform a vector belonging to this vector space in the lz->-lz
   //

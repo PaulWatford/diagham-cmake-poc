@@ -357,6 +357,21 @@ Complex ParticleOnCylinderThreeBodyLaplacianDeltaHamiltonian::EvaluateInteractio
 
   Complex Coefficient(0,0);
 
+  //int ThreeR = 2 * m1 - m2 - m3;
+  //int ThreeS = 2 * m2 - m1 - m3;
+  //int ThreeRp = 2 * m4 - m5 - m6;
+  //int ThreeSp = 2 * m5 - m4 - m6;
+
+  //int Keep = 0;
+
+  //int Sigma = ThreeR * ThreeR + ThreeS * ThreeS + ThreeR * ThreeS + ThreeRp * ThreeRp + ThreeSp * ThreeSp + ThreeRp * ThreeSp;
+  //if ((Sigma == 18) || (Sigma == 42) || (Sigma == 60) || ((Sigma == 78) && (ThreeR == ThreeRp) && (ThreeS == ThreeSp))  )
+  //  Keep = 1;  
+
+  //if (Keep == 0)
+  //  return 0;
+
+
   if ((this->HypermetricTheta1 != 0.0) || (this->HypermetricTheta2 != 0.0))
    {
      cout << "Hypermetric for fermions not implemented. " << endl;

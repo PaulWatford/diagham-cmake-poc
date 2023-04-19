@@ -388,7 +388,7 @@ inline void AbstractQHEOnTorusWithSpinAndMagneticTranslationsHamiltonian::Hermit
 		  if (Index <= index)
 		    {
 		      if (Index < index)
-			TmpSum += vSource[Index] * (Coefficient * Coefficient3) * Conj(*TmpInteractionFactor);
+			TmpSum += vSource[Index] * (Coefficient * Coefficient3) * Conj(this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor));
 		      vDestination[Index] += (Coefficient * (this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor))) * Coefficient4;
 		    }
 		  ++TmpInteractionFactor;
@@ -406,7 +406,7 @@ inline void AbstractQHEOnTorusWithSpinAndMagneticTranslationsHamiltonian::Hermit
 		  if (Index <= index)
 		    {
 		      if (Index < index)
-			TmpSum += vSource[Index] * (Coefficient * Coefficient3) * Conj(*TmpInteractionFactor);
+			TmpSum += vSource[Index] * (Coefficient * Coefficient3) * Conj(this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor));
 		      vDestination[Index] += (Coefficient * (this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor))) * Coefficient4;
 		    }
 		  ++TmpInteractionFactor;
@@ -432,7 +432,7 @@ inline void AbstractQHEOnTorusWithSpinAndMagneticTranslationsHamiltonian::Hermit
 		  if (Index <= index)
 		    {
 		      if (Index < index)
-			TmpSum += vSource[Index] * (Coefficient * Coefficient3) * Conj(*TmpInteractionFactor);
+			TmpSum += vSource[Index] * (Coefficient * Coefficient3) * Conj(this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor));
 		      vDestination[Index] += (Coefficient * (this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor))) * Coefficient4;
 		    }
 		  ++TmpInteractionFactor;

@@ -216,6 +216,7 @@ void ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ShiftHami
 // evaluate all interaction factors
 //   
 
+/*
 void ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateInteractionFactors()
 {
   long TotalNbrInteractionFactors = 0;
@@ -223,14 +224,341 @@ void ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateI
   double MaxCoefficient = 0.0;
   this->GetIndices();
 
-//   unsigned L16Mask = (1u<<16)-1;
-//   int Pos = 0;
-//   int M12Index = 0;
-//   int m4;
-//   double* TmpCoefficient = new double [this->NbrLzValue * this->NbrLzValue * this->NbrLzValue];
-//   double MaxCoefficient = 0.0;  
+  // unsigned L16Mask = (1u<<16)-1;
+  // int Pos = 0;
+  // int M12Index = 0;
+  // int m4;
+  // double* TmpCoefficient = new double [this->NbrLzValue * this->NbrLzValue * this->NbrLzValue];
+  // double MaxCoefficient = 0.0;  
+
 
   if (this->Particles->GetParticleStatistic() == ParticleOnTorusWithSpinAndMagneticTranslations::FermionicStatistic)
+    {	
+      // upup-upup 
+      this->InteractionFactorsupup = new Complex* [this->NbrIntraSectorSums];
+      for (int i = 0; i < this->NbrIntraSectorSums; ++i)
+	{
+	  this->InteractionFactorsupup[i] = new Complex[this->NbrIntraSectorIndicesPerSum[i] * this->NbrIntraSectorIndicesPerSum[i]];
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrIntraSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->IntraSectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->IntraSectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrIntraSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->IntraSectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->IntraSectorIndicesPerSum[i][(j2 << 1) + 1];
+
+		  double TmpCoefficient   = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, 0.0)
+					     + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, 0.0));
+		  if (fabs(TmpCoefficient) > MaxCoefficient)
+		    MaxCoefficient = fabs(TmpCoefficient);
+		}
+	    }
+	}
+      MaxCoefficient *= MACHINE_PRECISION;
+      for (int i = 0; i < this->NbrIntraSectorSums; ++i)
+	{
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrIntraSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->IntraSectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->IntraSectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrIntraSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->IntraSectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->IntraSectorIndicesPerSum[i][(j2 << 1) + 1];
+
+		  double TmpCoefficient   = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, 0.0)
+					     + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, 0.0));
+		  if (fabs(TmpCoefficient) > MaxCoefficient)
+		    {
+		      this->InteractionFactorsupup[i][Index] = TmpCoefficient;
+		      ++TotalNbrNonZeroInteractionFactors;
+		      //cout << "UUUU " << m1 << " " << m2 << " " << m3 << " " << m4 << " " << TmpCoefficient << endl;
+		    }
+		  else
+		    {
+		      this->InteractionFactorsupup[i][Index] = 0.0;
+		    }
+		  ++TotalNbrInteractionFactors;
+		  ++Index;
+		}
+	    }
+	}
+      // downdown-downdown
+      this->InteractionFactorsdowndown = new Complex* [this->NbrIntraSectorSums];
+      MaxCoefficient = 0.0;
+      for (int i = 0; i < this->NbrIntraSectorSums; ++i)
+	{
+	  this->InteractionFactorsdowndown[i] = new Complex[this->NbrIntraSectorIndicesPerSum[i] * this->NbrIntraSectorIndicesPerSum[i]];
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrIntraSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->IntraSectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->IntraSectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrIntraSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->IntraSectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->IntraSectorIndicesPerSum[i][(j2 << 1) + 1];
+
+		  double TmpCoefficient   = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, 0.0)
+					     + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, 0.0));
+		  if (fabs(TmpCoefficient) > MaxCoefficient)
+		    MaxCoefficient = fabs(TmpCoefficient);
+		}
+	    }
+	}
+      MaxCoefficient *= MACHINE_PRECISION;
+      for (int i = 0; i < this->NbrIntraSectorSums; ++i)
+	{
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrIntraSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->IntraSectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->IntraSectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrIntraSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->IntraSectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->IntraSectorIndicesPerSum[i][(j2 << 1) + 1];
+
+		  double TmpCoefficient   = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, 0.0)
+					     + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, 0.0)
+					     - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, 0.0));
+		  if (fabs(TmpCoefficient) > MaxCoefficient)
+		    {
+		      this->InteractionFactorsdowndown[i][Index] = TmpCoefficient;
+		      ++TotalNbrNonZeroInteractionFactors;
+		      //cout << "DDDD " << m1 << " " << m2 << " " << m3 << " " << m4 << " " << TmpCoefficient << endl;
+		    }
+		  else
+		    {
+		      this->InteractionFactorsdowndown[i][Index] = 0.0;
+		    }
+		  ++TotalNbrInteractionFactors;
+		  ++Index;
+		}
+	    }
+	}
+      // updown-updown
+      this->InteractionFactorsupdown = new Complex* [this->NbrInterSectorSums];
+      MaxCoefficient = 0.0;
+      for (int i = 0; i < this->NbrInterSectorSums; ++i)
+	{
+	  this->InteractionFactorsupdown[i] = new Complex[this->NbrInterSectorIndicesPerSum[i] * this->NbrInterSectorIndicesPerSum[i]];
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrInterSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->InterSectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->InterSectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrInterSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->InterSectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->InterSectorIndicesPerSum[i][(j2 << 1) + 1];
+
+		  double TmpCoefficient   = (-this->EvaluateInteractionCoefficient(m1, m2, m4, m3, this->LayerSeparation)
+					     - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, this->LayerSeparation));
+		  if (fabs(TmpCoefficient) > MaxCoefficient)
+		    MaxCoefficient = fabs(TmpCoefficient);
+		}
+	    }
+	}
+      MaxCoefficient *= MACHINE_PRECISION;
+      for (int i = 0; i < this->NbrInterSectorSums; ++i)
+	{
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrInterSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->InterSectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->InterSectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrInterSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->InterSectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->InterSectorIndicesPerSum[i][(j2 << 1) + 1];
+
+		  double TmpCoefficient   = (-this->EvaluateInteractionCoefficient(m1, m2, m4, m3, this->LayerSeparation)
+					     - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, this->LayerSeparation));
+		  if (fabs(TmpCoefficient) > MaxCoefficient)
+		    {
+		      this->InteractionFactorsupdown[i][Index] = TmpCoefficient;
+		      ++TotalNbrNonZeroInteractionFactors;
+		      //cout << "UDUD " << m1 << " " << m2 << " " << m3 << " " << m4 << " " << TmpCoefficient << endl;
+		    }
+		  else
+		    {
+		      this->InteractionFactorsupdown[i][Index] = 0.0;
+		    }
+		  ++TotalNbrInteractionFactors;
+		  ++Index;
+		}
+	    }
+	}
+
+
+  //cout << "TotalNbrInteractionFactors= " << TotalNbrInteractionFactors << endl;
+
+ //       this->NbrM12IntraIndices = ((this->NbrLzValue-1) * (this->NbrLzValue - 2)) / 2;
+ //       this->M12IntraValue = new unsigned [this->NbrM12IntraIndices];
+ //       this->NbrM34IntraValues = new int [this->NbrM12IntraIndices];
+ //       this->M34IntraValues = new unsigned* [this->NbrM12IntraIndices];
+ //       for (int i=0; i<this->NbrM12IntraIndices; ++i) this->M34IntraValues[i] = new unsigned[this->NbrLzValue];
+ //      for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
+	// for (int m2 = 0; m2 < m1; ++m2)
+	//   {
+	//     for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
+	//       {
+	// 	m4 = m1 + m2 - m3;
+	// 	if (m4 < 0)
+	// 	  m4 += this->MaxMomentum;
+	// 	else
+	// 	  if (m4 >= this->MaxMomentum)
+	// 	    m4 -= this->MaxMomentum;
+	// 	if (m3 > m4)
+	// 	  {
+	// 	    TmpCoefficient[Pos] = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, 0.0)
+	// 				   + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, 0.0)
+	// 				   - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, 0.0)
+	// 				   - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, 0.0));
+	// 	    if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+	// 	      MaxCoefficient = fabs(TmpCoefficient[Pos]);
+	// 	    ++Pos;
+	// 	  }
+	//       }
+	//   }
+ //      cout << "Max Nbr InteractionUpUp = " << Pos << endl;            
+ //      MaxCoefficient *= MACHINE_PRECISION;
+ //      InteractionFactorsUpUp = new double[Pos];
+ //      InteractionFactorsDownDown = new double[Pos];
+ //      M12Index = 0;
+ //      Pos = 0;
+ //      int TmpNbrInteractionFactors = 0;
+ //      for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
+	// for (int m2 = 0; m2 < m1; ++m2)
+	//   {
+	//     this->M12IntraValue[M12Index] = (m1&L16Mask)|((m2&L16Mask)<<16);
+	//     this->NbrM34IntraValues[M12Index]=0;
+	//     for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
+	//       {		
+	// 	m4 = m1 + m2 - m3;
+	// 	if (m4 < 0)
+	// 	  m4 += this->MaxMomentum;
+	// 	else
+	// 	  if (m4 >= this->MaxMomentum)
+	// 	    m4 -= this->MaxMomentum;
+	// 	if (m3 > m4)
+	// 	{
+	// 	  if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
+	// 	    {
+	// 	      this->InteractionFactorsUpUp[TmpNbrInteractionFactors] = TmpCoefficient[Pos];
+	// 	      this->InteractionFactorsDownDown[TmpNbrInteractionFactors] = TmpCoefficient[Pos];
+	// 	      this->M34IntraValues[M12Index][this->NbrM34IntraValues[M12Index]]
+	// 		= (m3&L16Mask)|((m4&L16Mask)<<16);
+	// 	      ++TmpNbrInteractionFactors;
+	// 	      ++this->NbrM34IntraValues[M12Index];
+	// 	    }
+	// 	  ++Pos;
+	// 	}
+	//     }
+	//     ++M12Index;
+	//   }
+ //      cout << "Actual Nbr InteractionUpUp = " << TmpNbrInteractionFactors << endl;
+ //      // matrix elements for different spin
+ //      this->NbrM12InterIndices = (this->NbrLzValue-1) * (this->NbrLzValue-1);
+ //      this->M12InterValue = new unsigned [this->NbrM12InterIndices];
+ //      this->NbrM34InterValues = new int [this->NbrM12InterIndices];
+ //      this->M34InterValues = new unsigned*[this->NbrM12InterIndices];      
+ //      for (int i=0; i<this->NbrM12InterIndices; ++i) this->M34InterValues[i] = new unsigned[this->NbrLzValue];
+ //      Pos = 0;
+ //      M12Index = 0;
+ //      for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
+	// for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
+	//   {
+	//     for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
+	//       {
+	// 	m4 = m1 + m2 - m3;
+	// 	if (m4 < 0)
+	// 	  m4 += this->MaxMomentum;
+	// 	else
+	// 	  if (m4 >= this->MaxMomentum)
+	// 	    m4 -= this->MaxMomentum;
+	// 	if ((m1!=m2)||(m3!=m4))
+	// 	  {
+	// 	    TmpCoefficient[Pos] = this->EvaluateInteractionCoefficient(m1, m2, m3, m4, this->LayerSeparation)
+	// 	      + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, this->LayerSeparation);
+	// 	  }
+	// 	else
+	// 	  {
+	// 	    TmpCoefficient[Pos] = this->EvaluateInteractionCoefficient(m1, m2, m3, m4, this->LayerSeparation);
+	// 	  }
+	// 	if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+	// 	  MaxCoefficient = fabs(TmpCoefficient[Pos]);
+	// 	++Pos;
+	//       }
+	//   }
+ //      cout << "Max Nbr InteractionUpDown = " << Pos << endl;            
+ //      MaxCoefficient *= MACHINE_PRECISION;
+ //      InteractionFactorsUpDown = new double[Pos];
+ //      M12Index = 0;
+ //      Pos = 0;
+ //      TmpNbrInteractionFactors = 0;
+ //      for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
+	// for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
+	//   {
+	//     this->M12InterValue[M12Index] = (m1&L16Mask)|((m2&L16Mask)<<16);
+	//     this->NbrM34InterValues[M12Index]=0;
+	//     for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
+	//       {		
+	// 	m4 = m1 + m2 - m3;
+	// 	if (m4 < 0)
+	// 	  m4 += this->MaxMomentum;
+	// 	else
+	// 	  if (m4 >= this->MaxMomentum)
+	// 	    m4 -= this->MaxMomentum;
+	// 	if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
+	// 	  {
+	// 	    // swap 3,4, introduce additional minus sign
+	// 	    this->InteractionFactorsUpDown[TmpNbrInteractionFactors] = -1.0*TmpCoefficient[Pos];
+	// 	    this->M34InterValues[M12Index][this->NbrM34InterValues[M12Index]]
+	// 	      = (m4&L16Mask)|((m3&L16Mask)<<16); // rather than (m3&L16Mask)|((m4&L16Mask)<<16);
+	// 	    ++TmpNbrInteractionFactors;
+	// 	    ++this->NbrM34InterValues[M12Index];
+	// 	  }
+	// 	++Pos;
+	//       }
+	//     ++M12Index;
+	//   }
+ //      cout << "Actual Nbr InteractionUpDown = " << TmpNbrInteractionFactors << endl;
+       // no one-body interactions:
+       //this->OneBodyInteractionFactorsUpUp = 0;
+       //this->OneBodyInteractionFactorsDownDown = 0;
+    }
+  else
+    {
+      cout << "Bosonic statistics not defined yet for ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian"<<endl;
+      exit(1);
+    }
+  cout << "====================================" << endl;
+//  delete[] TmpCoefficient;
+}
+*/
+
+void ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateInteractionFactors()
+{
+  long TotalNbrInteractionFactors = 0;
+  long TotalNbrNonZeroInteractionFactors = 0;
+  double MaxCoefficient = 0.0;
+  this->GetIndices();
+
+
+
+  if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
     {
       // upup-upup 
       this->InteractionFactorsupup = new Complex* [this->NbrIntraSectorSums];
@@ -395,153 +723,17 @@ void ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateI
 		}
 	    }
 	}
-
-
-
-
-//       this->NbrM12IntraIndices = ((this->NbrLzValue-1) * (this->NbrLzValue - 2)) / 2;
-//       this->M12IntraValue = new unsigned [this->NbrM12IntraIndices];
-//       this->NbrM34IntraValues = new int [this->NbrM12IntraIndices];
-//       this->M34IntraValues = new unsigned* [this->NbrM12IntraIndices];
-//       for (int i=0; i<this->NbrM12IntraIndices; ++i) this->M34IntraValues[i] = new unsigned[this->NbrLzValue];
-//       for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
-// 	for (int m2 = 0; m2 < m1; ++m2)
-// 	  {
-// 	    for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
-// 	      {
-// 		m4 = m1 + m2 - m3;
-// 		if (m4 < 0)
-// 		  m4 += this->MaxMomentum;
-// 		else
-// 		  if (m4 >= this->MaxMomentum)
-// 		    m4 -= this->MaxMomentum;
-// 		if (m3 > m4)
-// 		  {
-// 		    TmpCoefficient[Pos] = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, 0.0)
-// 					   + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, 0.0)
-// 					   - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, 0.0)
-// 					   - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, 0.0));
-// 		    if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
-// 		      MaxCoefficient = fabs(TmpCoefficient[Pos]);
-// 		    ++Pos;
-// 		  }
-// 	      }
-// 	  }
-//       cout << "Max Nbr InteractionUpUp = " << Pos << endl;            
-//       MaxCoefficient *= MACHINE_PRECISION;
-//       InteractionFactorsUpUp = new double[Pos];
-//       InteractionFactorsDownDown = new double[Pos];
-//       M12Index = 0;
-//       Pos = 0;
-//       int TmpNbrInteractionFactors = 0;
-//       for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
-// 	for (int m2 = 0; m2 < m1; ++m2)
-// 	  {
-// 	    this->M12IntraValue[M12Index] = (m1&L16Mask)|((m2&L16Mask)<<16);
-// 	    this->NbrM34IntraValues[M12Index]=0;
-// 	    for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
-// 	      {		
-// 		m4 = m1 + m2 - m3;
-// 		if (m4 < 0)
-// 		  m4 += this->MaxMomentum;
-// 		else
-// 		  if (m4 >= this->MaxMomentum)
-// 		    m4 -= this->MaxMomentum;
-// 		if (m3 > m4)
-// 		{
-// 		  if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
-// 		    {
-// 		      this->InteractionFactorsUpUp[TmpNbrInteractionFactors] = TmpCoefficient[Pos];
-// 		      this->InteractionFactorsDownDown[TmpNbrInteractionFactors] = TmpCoefficient[Pos];
-// 		      this->M34IntraValues[M12Index][this->NbrM34IntraValues[M12Index]]
-// 			= (m3&L16Mask)|((m4&L16Mask)<<16);
-// 		      ++TmpNbrInteractionFactors;
-// 		      ++this->NbrM34IntraValues[M12Index];
-// 		    }
-// 		  ++Pos;
-// 		}
-// 	    }
-// 	    ++M12Index;
-// 	  }
-//       cout << "Actual Nbr InteractionUpUp = " << TmpNbrInteractionFactors << endl;
-//       // matrix elements for different spin
-//       this->NbrM12InterIndices = (this->NbrLzValue-1) * (this->NbrLzValue-1);
-//       this->M12InterValue = new unsigned [this->NbrM12InterIndices];
-//       this->NbrM34InterValues = new int [this->NbrM12InterIndices];
-//       this->M34InterValues = new unsigned*[this->NbrM12InterIndices];      
-//       for (int i=0; i<this->NbrM12InterIndices; ++i) this->M34InterValues[i] = new unsigned[this->NbrLzValue];
-//       Pos = 0;
-//       M12Index = 0;
-//       for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
-// 	for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
-// 	  {
-// 	    for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
-// 	      {
-// 		m4 = m1 + m2 - m3;
-// 		if (m4 < 0)
-// 		  m4 += this->MaxMomentum;
-// 		else
-// 		  if (m4 >= this->MaxMomentum)
-// 		    m4 -= this->MaxMomentum;
-// 		if ((m1!=m2)||(m3!=m4))
-// 		  {
-// 		    TmpCoefficient[Pos] = this->EvaluateInteractionCoefficient(m1, m2, m3, m4, this->LayerSeparation)
-// 		      + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, this->LayerSeparation);
-// 		  }
-// 		else
-// 		  {
-// 		    TmpCoefficient[Pos] = this->EvaluateInteractionCoefficient(m1, m2, m3, m4, this->LayerSeparation);
-// 		  }
-// 		if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
-// 		  MaxCoefficient = fabs(TmpCoefficient[Pos]);
-// 		++Pos;
-// 	      }
-// 	  }
-//       cout << "Max Nbr InteractionUpDown = " << Pos << endl;            
-//       MaxCoefficient *= MACHINE_PRECISION;
-//       InteractionFactorsUpDown = new double[Pos];
-//       M12Index = 0;
-//       Pos = 0;
-//       TmpNbrInteractionFactors = 0;
-//       for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
-// 	for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
-// 	  {
-// 	    this->M12InterValue[M12Index] = (m1&L16Mask)|((m2&L16Mask)<<16);
-// 	    this->NbrM34InterValues[M12Index]=0;
-// 	    for (int m3 = 0; m3 < this->MaxMomentum; ++m3)
-// 	      {		
-// 		m4 = m1 + m2 - m3;
-// 		if (m4 < 0)
-// 		  m4 += this->MaxMomentum;
-// 		else
-// 		  if (m4 >= this->MaxMomentum)
-// 		    m4 -= this->MaxMomentum;
-// 		if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
-// 		  {
-// 		    // swap 3,4, introduce additional minus sign
-// 		    this->InteractionFactorsUpDown[TmpNbrInteractionFactors] = -1.0*TmpCoefficient[Pos];
-// 		    this->M34InterValues[M12Index][this->NbrM34InterValues[M12Index]]
-// 		      = (m4&L16Mask)|((m3&L16Mask)<<16); // rather than (m3&L16Mask)|((m4&L16Mask)<<16);
-// 		    ++TmpNbrInteractionFactors;
-// 		    ++this->NbrM34InterValues[M12Index];
-// 		  }
-// 		++Pos;
-// 	      }
-// 	    ++M12Index;
-// 	  }
-//       cout << "Actual Nbr InteractionUpDown = " << TmpNbrInteractionFactors << endl;
-//       // no one-body interactions:
-//       this->OneBodyInteractionFactorsUpUp = 0;
-//       this->OneBodyInteractionFactorsDownDown = 0;
     }
   else
     {
       cout << "Bosonic statistics not defined yet for ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian"<<endl;
       exit(1);
     }
+  cout << "nbr interaction = " << TotalNbrInteractionFactors << endl;
+  cout << "nbr non-zero interaction = " << TotalNbrNonZeroInteractionFactors << endl;
   cout << "====================================" << endl;
-//  delete[] TmpCoefficient;
 }
+
 
 // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
 //
@@ -552,6 +744,7 @@ void ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateI
 // layerSeparation = separation of layers
 // return value = numerical coefficient
 
+/*
 double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4, double layerSeparation)
 {
 //   if ((m1==m2)&&(m1==m3)&&(m1==m4)) return 0.5;
@@ -616,6 +809,78 @@ double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::Evaluat
   return (Sum / (2.0 * this->MaxMomentum));
 }
 
+*/
+
+double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4, double layerSeparation)
+{
+  double Coefficient = 1.0;
+  double PIOnM = M_PI / ((double) this->MaxMomentum);
+  double Factor =  - ((double) (m1-m3)) * PIOnM * 2.0;
+  double Sum = 0.0;
+  double N2 = (double) (m1 - m4);
+  double N1;
+  double Q2;
+  double Precision;
+  while ((fabs(Sum) + fabs(Coefficient)) != fabs(Sum))
+    {
+      N1 = 1.0;
+      Q2 = this->Ratio * N2 * N2;
+      if (N2 != 0.0)
+	{
+	  Coefficient = exp(- PIOnM * Q2) * this->GetVofQ(PIOnM * Q2, layerSeparation);
+          if (fabs(Coefficient) != 0.0)
+ 	    Precision = Coefficient;
+          else
+            Precision = 1.0;
+	}
+       else
+ 	{
+	  Precision = 1.0;
+	  Coefficient = 0.0;
+	}
+      while ((fabs(Coefficient) + Precision) != fabs(Coefficient))
+	{
+	  Q2 = this->InvRatio * N1 * N1 + this->Ratio * N2 * N2;
+	  Precision = 2.0 * exp(- PIOnM * Q2) * this->GetVofQ(PIOnM * Q2, layerSeparation);
+	  Coefficient += Precision * cos (N1 * Factor);
+	  N1 += 1.0;
+	}
+      Sum += Coefficient;
+      N2 += this->MaxMomentum;
+    }
+  N2 = (double) (m1 - m4 - this->MaxMomentum);
+  Coefficient = Sum;	    
+  while ((fabs(Sum) + fabs(Coefficient)) != fabs(Sum))
+    {
+      N1 = 1.0;
+      Q2 = this->Ratio * N2 * N2;
+      if (N2 != 0.0)
+	{
+	  Coefficient = exp(- PIOnM * Q2) * this->GetVofQ(PIOnM * Q2, layerSeparation);
+          if (fabs(Coefficient) != 0.0)
+	    Precision = Coefficient;
+          else
+            Precision = 1.0;
+	}
+       else
+ 	{
+	  Precision = 1.0;
+	  Coefficient = 0.0;
+	}
+      while ((fabs(Coefficient) + Precision) != fabs(Coefficient))
+	{
+	  Q2 = this->InvRatio * N1 * N1 + this->Ratio * N2 * N2;
+	  Precision = 2.0 *  exp(- PIOnM * Q2) * this->GetVofQ(PIOnM * Q2, layerSeparation);
+	  Coefficient += Precision * cos (N1 * Factor);
+	  N1 += 1.0;
+	}
+      Sum += Coefficient;
+      N2 -= this->MaxMomentum;
+    }
+  //Normalize per flux (gives correct energy scale for 2-particle problem)
+  return (Sum / (2.0 * this->MaxMomentum));
+}
+
 
 // get fourier transform of interaction
 // Q2_half = one half of q² value
@@ -624,7 +889,7 @@ double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::Evaluat
 double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::GetVofQ(double Q2_half, double layerSeparation)
 {
   double Q=sqrt(2.0*Q2_half);
-  return exp(-Q2_half-Q*layerSeparation)/Q;
+  return exp(-Q*layerSeparation)/Q;
 }
 
 

@@ -553,7 +553,7 @@ inline void AbstractQHEOnTorusWithSpinAndMagneticTranslationsHamiltonian::Hermit
 			{
 			  for (int p = 0; p < nbrVectors; ++p)
 			    {
-			      vDestinations[p][Index] += Coefficient * (*TmpInteractionFactor) * tmpCoefficients[p];
+			      vDestinations[p][Index] += Coefficient * this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor) * tmpCoefficients[p];
 			      TmpSum[p] += (Coefficient * Coefficient3) * Conj(this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor)) * vSources[p][Index];
 			    }
 			}

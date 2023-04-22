@@ -114,7 +114,7 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
 
 ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian
 (ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum, double ratio,
- double layerSeparation, AbstractArchitecture* architecture, int memory, char* precalculationFileName)
+ double layerSeparation, AbstractArchitecture* architecture, long memory, char* precalculationFileName)
 {
   this->Particles = particles;
   this->MaxMomentum = maxMomentum;
@@ -154,21 +154,21 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
 
   if (precalculationFileName == 0)
     {
-      if (memory > 0)
+      if (memory > 0l)
 	{
-	  int TmpMemory = this->FastMultiplicationMemory(memory);
-	  if (TmpMemory < 1024)
+	  long TmpMemory = this->FastMultiplicationMemory(memory);
+	  if (TmpMemory < 1024l)
 	    cout  << "fast = " <<  TmpMemory << "b ";
 	  else
-	    if (TmpMemory < (1 << 20))
+	    if (TmpMemory < (1l << 20))
 	      cout  << "fast = " << (TmpMemory >> 10) << "kb ";
 	    else
-	      if (TmpMemory < (1 << 30))
+	      if (TmpMemory < (1l << 30))
 		cout  << "fast = " << (TmpMemory >> 20) << "Mb ";
 	      else
 		cout  << "fast = " << (TmpMemory >> 30) << "Gb ";
 	  cout << endl;
-	  if (memory > 0)
+	  if (memory > 0l)
 	    {
 	      this->EnableFastMultiplication();
 	    }

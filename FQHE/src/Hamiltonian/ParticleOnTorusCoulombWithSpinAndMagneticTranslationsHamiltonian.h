@@ -98,7 +98,7 @@ class ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian : public 
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
   ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
-							    double ratio, double layerSeparation, AbstractArchitecture* architecture, int memory = -1, char* precalculationFileName = 0);
+							    double ratio, double layerSeparation, AbstractArchitecture* architecture, long memory = -1l, char* precalculationFileName = 0);
 
   // constructor from pseudopotentials
   //

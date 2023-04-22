@@ -562,9 +562,11 @@ int FermionOnSphereHaldaneBasis::GetTargetHilbertSpaceDimension()
 
 RealVector FermionOnSphereHaldaneBasis::ConvertToNbodyBasis(RealVector& state, FermionOnSphere& nbodyBasis)
 {
-  RealVector TmpVector (nbodyBasis.GetHilbertSpaceDimension(), true);
-  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-    TmpVector[nbodyBasis.FindStateIndex(this->StateDescription[i], this->StateLzMax[i])] = state[i];
+  RealVector TmpVector (nbodyBasis.GetLargeHilbertSpaceDimension(), true);
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      TmpVector[nbodyBasis.FindStateIndex(this->StateDescription[i], this->StateLzMax[i])] = state[i];
+    }
   return TmpVector;
 }
 
@@ -576,9 +578,11 @@ RealVector FermionOnSphereHaldaneBasis::ConvertToNbodyBasis(RealVector& state, F
 
 RealVector FermionOnSphereHaldaneBasis::ConvertFromNbodyBasis(RealVector& state, FermionOnSphere& nbodyBasis)
 {
-  RealVector TmpVector (this->HilbertSpaceDimension, true);
-  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-    TmpVector[i] = state[nbodyBasis.FindStateIndex(this->StateDescription[i], this->StateLzMax[i])];
+  RealVector TmpVector (this->LargeHilbertSpaceDimension, true);
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      TmpVector[i] = state[nbodyBasis.FindStateIndex(this->StateDescription[i], this->StateLzMax[i])];
+    }
   TmpVector /= TmpVector.Norm();
   return TmpVector;
 }

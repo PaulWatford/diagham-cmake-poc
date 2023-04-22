@@ -372,8 +372,10 @@ int main(int argc, char** argv)
 	      int* TargetReferenceState = 0;
 	      if (FQHEGetRootPartition(Manager.GetString("target-referencefile"), NbrParticles, NbrFluxQuanta, TargetReferenceState) == false)
 		return -1;
-	      if (Manager.GetString("load-hilbert") != 0)
-		TargetSpace = new FermionOnSphereHaldaneBasis(Manager.GetString("target-loadhilbert"));
+	      if (Manager.GetString("target-loadhilbert") != 0)
+		{
+		  TargetSpace = new FermionOnSphereHaldaneBasis(Manager.GetString("target-loadhilbert"));
+		}
 	      else
 		{
 		  TargetSpace = new FermionOnSphereHaldaneBasis(NbrParticles, TotalLz, NbrFluxQuanta, TargetReferenceState);

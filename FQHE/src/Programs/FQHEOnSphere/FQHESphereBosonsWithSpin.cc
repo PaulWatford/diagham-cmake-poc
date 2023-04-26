@@ -1,6 +1,7 @@
 #include "HilbertSpace/AbstractQHEParticle.h"
 #include "HilbertSpace/ParticleOnSphereManager.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
+#include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
 
 #include "Hamiltonian/ParticleOnSphereWithSpinGenericHamiltonian.h"
 #include "Hamiltonian/ParticleOnSphereWithSpinS2Hamiltonian.h"
@@ -142,8 +143,10 @@ int main(int argc, char** argv)
       for (int j = 0; j <= LzMax; ++j)
 	PseudoPotentials[i][j] = 0.0;
     };
+  double** OneBodyPseudoPotentials  = new double*[3];
   double* OneBodyPotentialUpUp = 0;
   double* OneBodyPotentialDownDown = 0;
+  double * OneBodyPotentialUpDown = 0;
 
   int NbrUp = (NbrBosons + SzTotal) >> 1;
   int NbrDown = (NbrBosons - SzTotal) >> 1;
@@ -223,7 +226,7 @@ int main(int argc, char** argv)
   else
     {
       if (FQHESphereSU2GetPseudopotentials(Manager.GetString("interaction-file"), LzMax, PseudoPotentials,
-					   OneBodyPotentialUpUp, OneBodyPotentialDownDown) == false)
+					   OneBodyPseudoPotentials) == false)
 	return -1;
     }
 
@@ -259,8 +262,16 @@ int main(int argc, char** argv)
 	  sprintf(ExtraTerms,"_s2_%g",Manager.GetDouble("s2-factor"));
     }
   char* OutputName = new char [512 + strlen(DiscreteSymmetryName) + strlen(InteractionName)];
-  sprintf (OutputName, "bosons_sphere_su2%s_%s%s_n_%d_2s_%d_sz_%d_lz.dat", DiscreteSymmetryName, InteractionName, ExtraTerms,
-	   NbrBosons, LzMax, SzTotal);
+  if (OneBodyPseudoPotentials[2] == 0)
+    {
+      sprintf (OutputName, "bosons_sphere_su2%s_%s%s_n_%d_2s_%d_sz_%d_lz.dat", DiscreteSymmetryName, InteractionName, ExtraTerms,
+	       NbrBosons, LzMax, SzTotal);
+    }
+  else
+    {
+      sprintf (OutputName, "bosons_sphere_su2%s_%s%s_n_%d_2s_%d_lz.dat", DiscreteSymmetryName, InteractionName, ExtraTerms,
+	       NbrBosons, LzMax);
+    }
 
   int Max = (LzMax * (NbrUp+NbrDown));
   cout << "maximum Lz value = " << Max << endl;
@@ -319,7 +330,8 @@ int main(int argc, char** argv)
 	}
       else // full Hamiltonian
 	{
-	  Hamiltonian = new ParticleOnSphereWithSpinGenericHamiltonian(Space, NbrBosons, LzMax, PseudoPotentials, OneBodyPotentialUpUp, OneBodyPotentialDownDown, NULL, 
+	  Hamiltonian = new ParticleOnSphereWithSpinGenericHamiltonian(Space, NbrBosons, LzMax, PseudoPotentials,
+								       OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2], 
 								       Architecture.GetArchitecture(), Memory, onDiskCacheFlag, LoadPrecalculationFileName);
 	  
 	  if (Manager.GetDouble("s2-factor") != 0.0)

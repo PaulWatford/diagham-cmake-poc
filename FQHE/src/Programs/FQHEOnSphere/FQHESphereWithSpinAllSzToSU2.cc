@@ -256,26 +256,26 @@ int main(int argc, char** argv)
   else
     {
       if (LzSymmetrizedBasis == false)
-	{
-	  BosonOnSphereWithSpin* SU2Space = new BosonOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz);
+	     {
+	        BosonOnSphereWithSpin* SU2Space = new BosonOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz);
 
-	  BosonOnSphereWithSpinAllSz* Space;
+	        BosonOnSphereWithSpinAllSz* Space; 
 	  
-	  if ( PairParity >=0 ) 
-	    Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
-	  else
-	    Space = new BosonOnSphereWithSpinAllSz(NbrParticles, TotalLz, LzMax, MemorySpace);
+	        if ( PairParity >=0 ) 
+	          Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
+	        else
+	          Space = new BosonOnSphereWithSpinAllSz(NbrParticles, TotalLz, LzMax, MemorySpace);
     
-	  RealVector OutputState = Space->ForgeSU2FromTunneling(State, *SU2Space, TotalSz);
-	  OutputState.WriteVector(OutputName);	
-	  delete Space;
-	  delete SU2Space;
-	}
-      else
-	{
-	  cout << "Lz-symmetrized states not available for Bosons with Spin."<<endl;
-	  return -1;
-	}
+	        RealVector OutputState = Space->ForgeSU2FromTunneling(State, *SU2Space, TotalSz);
+	        OutputState.WriteVector(OutputName);	
+	        delete Space;
+	        delete SU2Space;
+	     }
+     else
+	    {
+	      cout << "Lz-symmetrized states not available for Bosons with Spin."<<endl;
+	      return -1;
+	    }
     }
 
 

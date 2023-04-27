@@ -25,6 +25,9 @@
 #include "HilbertSpace/FermionOnSphere.h"
 #include "HilbertSpace/FermionOnSphereWithSpin.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/BosonOnSphere.h"
+#include "HilbertSpace/BosonOnSphereWithSpin.h"
+#include "HilbertSpace/BosonOnSphereWithSpinAllSz.h"
 
 
 #include <iostream>
@@ -96,7 +99,10 @@ int main(int argc, char** argv)
       return -1;
     }
 
-  cout << "N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << endl;
+  if (FermionFlag)
+     cout << "fermions N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << endl;
+  else
+     cout << "bosons N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << endl; 
 
   int Parity = TotalLz & 1;
   if (Parity != ((NbrParticles * LzMax) & 1))
@@ -125,6 +131,7 @@ int main(int argc, char** argv)
   char* NewExtension = new char [512];
   sprintf (OldExtension, "sz_%d_lz_%d.0.vec", Sz, LzMax);  
   char* OutputName = ReplaceExtensionToFileName(Manager.GetString("interaction-name"), OldExtension, NewExtension);
+  cout << OutputName << endl;
 
   if (FermionFlag == true)
     {
@@ -164,6 +171,45 @@ int main(int argc, char** argv)
       delete Space;
       delete SzSpace;
     }
+  else //bosons...
+   {
+
+      BosonOnSphereWithSpin* SzSpace = 0;
+#ifdef __64_BITS__
+      if (LzMax <= 63)
+#else
+  if (LzMax <= 31)
+#endif
+    {
+      SzSpace = new BosonOnSphereWithSpin(NbrParticles, TotalLz, LzMax, Sz, MemorySpace);
+    }
+  else
+    {
+      cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+      return -1;
+    } 
+      
+      BosonOnSphereWithSpinAllSz* Space = 0;
+#ifdef __64_BITS__
+      if (LzMax <= 31)
+#else
+  if (LzMax <= 15)
+#endif
+    {
+      Space = new BosonOnSphereWithSpinAllSz(NbrParticles, TotalLz, LzMax, -1, MemorySpace);
+    }
+  else
+    {
+      cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+      return -1;
+    } 
+      
+      RealVector OutputState = Space->ForgeSU2FromTunneling(State, *SzSpace, Sz);
+      OutputState.WriteVector(OutputName);
+      
+      delete Space;
+      delete SzSpace;
+   }  
   return 0;
 }
 

@@ -25,6 +25,9 @@
 #include "HilbertSpace/FermionOnSphere.h"
 #include "HilbertSpace/FermionOnSphereWithSpin.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/BosonOnSphere.h"
+#include "HilbertSpace/BosonOnSphereWithSpin.h"
+#include "HilbertSpace/BosonOnSphereWithSpinAllSz.h"
 
 
 #include <iostream>
@@ -84,47 +87,53 @@ int main(int argc, char** argv)
       return -1;
     }
 
-  int NbrParticles = ((SingleIntegerOption*) Manager["nbr-particles"])->GetInteger();
-  int LzMax = ((SingleIntegerOption*) Manager["lzmax"])->GetInteger();
-  int TotalLz = ((SingleIntegerOption*) Manager["total-lz"])->GetInteger();
+  int NbrParticles = Manager.GetInteger("nbr-particles");
+  int LzMax = Manager.GetInteger("lzmax");
+  int TotalLz = Manager.GetInteger("total-lz");
+  //int PairParity = Manager.GetInteger("pair-parity");
+
   double tunneling = Manager.GetDouble("tunneling-amp");
 
   bool LzSymmetrizedBasis = false;
   bool LzMinusParity = false;
   bool FermionFlag = false;
 
-  char* StateFileName = ((SingleStringOption*) Manager["state"])->GetString();
- 
-  if (((SingleStringOption*) Manager["statistics"])->GetString() == 0)
-    FermionFlag = true;
-
 //  if (NbrParticles == 0)
-//	if (FQHEOnSphereFindSystemInfoFromVectorFileName(((SingleStringOption*) Manager["state"])->GetString(), NbrParticles, LzMax, TotalLz, 
-//								    TotalSz, FermionFlag) == false)
-//	  {
-//	    cout << "error while retrieving system informations from file name " << ((SingleStringOption*) Manager["state"])->GetString() << endl;
-//	    return -1;
-//	  }
+//  if (FQHEOnSphereFindSystemInfoFromVectorFileName(((SingleStringOption*) Manager["state"])->GetString(), NbrParticles, LzMax, TotalLz, 
+//                    TotalSz, FermionFlag) == false)
+//    {
+//      cout << "error while retrieving system informations from file name " << ((SingleStringOption*) Manager["state"])->GetString() << endl;
+//      return -1;
+//    }
 
-  cout << "N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << endl;
-  if (((SingleStringOption*) Manager["statistics"])->GetString() != 0)
+  char* StateFileName = ((SingleStringOption*) Manager["state"])->GetString();
+
+  if (Manager.GetString("statistics") != 0)
     {
-      if ((strcmp ("fermions", ((SingleStringOption*) Manager["statistics"])->GetString()) == 0))
-	{
-	  FermionFlag = true;
-	}
+      if ((strcmp ("fermions", Manager.GetString("statistics")) == 0))
+        {
+           FermionFlag = true;
+        }
       else
-	{
-	  if ((strcmp ("fermions", ((SingleStringOption*) Manager["statistics"])->GetString()) == 0))
-	    {
-	      FermionFlag = false;
-	    }
-	  else
-	    {
-	      cout << ((SingleStringOption*) Manager["statistics"])->GetString() << " is an undefined statistics" << endl;
-	    }  
-	}
+       {
+          if ((strcmp ("bosons", Manager.GetString("statistics")) == 0))
+           {
+             FermionFlag = false;
+           }
+          else
+          {
+            cout << "Error " << Manager.GetString("statistics") << " is an undefined statistics" << endl;
+          }
+       }
     }
+  else
+   FermionFlag = true;  
+
+  if (FermionFlag)
+    cout << Manager.GetString("statistics") << " N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << endl;
+  else
+    cout << Manager.GetString("statistics") << " N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << endl;
+
   int Parity = TotalLz & 1;
   if (Parity != ((NbrParticles * LzMax) & 1))
     {
@@ -146,9 +155,12 @@ int main(int argc, char** argv)
     }
 
 
-  long MemorySpace = 9l << 20;
+  unsigned long MemorySpace = 9l << 20;
   char* OutputName = new char [512 + strlen(((SingleStringOption*) Manager["interaction-name"])->GetString())];
-  sprintf (OutputName, "fermions_%s_n_%d_2s_%d_t_%f_lz_%d.0.vec", ((SingleStringOption*) Manager["interaction-name"])->GetString(), NbrParticles, LzMax, tunneling, TotalLz);
+  if (FermionFlag)
+     sprintf (OutputName, "fermions_%s_n_%d_2s_%d_t_%f_lz_%d.0.vec", ((SingleStringOption*) Manager["interaction-name"])->GetString(), NbrParticles, LzMax, tunneling, TotalLz);
+  else
+    sprintf (OutputName, "bosons_%s_n_%d_2s_%d_t_%f_lz_%d.0.vec", ((SingleStringOption*) Manager["interaction-name"])->GetString(), NbrParticles, LzMax, tunneling, TotalLz); 
 
   if (FermionFlag == true)
     {
@@ -188,6 +200,33 @@ int main(int argc, char** argv)
 	delete Space;
       delete U1Space;
     }
+ else //.....bosons.....
+   {
+    
+      if (LzSymmetrizedBasis == false)
+       {
+         BosonOnSphere* U1Space = new BosonOnSphere(NbrParticles, TotalLz, LzMax);
+
+         BosonOnSphereWithSpinAllSz* Space = new BosonOnSphereWithSpinAllSz(NbrParticles, TotalLz, LzMax, MemorySpace);
+
+         //int PairParity = -1;
+         //if ( PairParity >=0 ) 
+         //   Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
+         // else
+         //   Space = new BosonOnSphereWithSpinAllSz(NbrParticles, TotalLz, LzMax, MemorySpace);
+    
+         RealVector OutputState = Space->ForgeU1FromTunneling(State, *U1Space);
+         OutputState.WriteVector(OutputName);  
+         delete Space;
+         delete U1Space;
+       }
+     else
+      {
+        cout << "Lz-symmetrized states not available for Bosons with Spin."<<endl;
+        return -1;
+      }
+     
+   }   
   return 0;
 }
 

@@ -2293,9 +2293,11 @@ RealVector BosonOnSphereWithSpinAllSz::ForgeU1FromTunneling(RealVector& state, B
 
   if (Rejected>0)
     cout<<"Attention: ForgeU1 rejected "<<Rejected<<" components"<<endl; 
+
+  FinalState /= pow(sqrt(2.0), this->NbrBosons);
+  //FinalState /= FinalState.Norm();
   
   cout << "Norm= " << FinalState.Norm() << endl;
-  FinalState /= FinalState.Norm();
 
   delete[] TmpState;
   return FinalState;

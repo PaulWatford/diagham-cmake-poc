@@ -121,7 +121,7 @@ ParticleOnSphereWithSpinGenericHamiltonian::ParticleOnSphereWithSpinGenericHamil
     {
       this->OneBodyInteractionFactorsupdown = new double [this->NbrLzValue];
       for (int i = 0; i <= this->LzMax; ++i)
-	this->OneBodyInteractionFactorsupdown[i] = onebodyPotentialUpDown[i];
+	      this->OneBodyInteractionFactorsupdown[i] = onebodyPotentialUpDown[i];
     }
   this->ChargingEnergy = 0;
   if (precalculationFileName == 0)

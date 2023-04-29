@@ -801,24 +801,25 @@ int BosonOnSphereWithSpinAllSz::AddAd (int index, int m, int n, double& coeffici
 int BosonOnSphereWithSpinAllSz::AduAd (int index, int m, int n, double& coefficient)
 {
   int CurrentLzMaxUp, CurrentLzMaxDown;
-  unsigned TemporaryStateNbrUp;
   this->FermionToBoson(this->StateDescriptionUp[index], this->StateDescriptionDown[index], this->StateInfo[index],
-		       TemporaryState, CurrentLzMaxUp, CurrentLzMaxDown, TemporaryStateNbrUp);
+		       ProdATemporaryState, CurrentLzMaxUp, CurrentLzMaxDown, ProdATemporaryStateNbrUp);
 
-  if ((n > CurrentLzMaxDown) || ((TemporaryState[n] & 0xffff) == 0)) // || ((State[n] & 0xffff) == 0)) // shift for up, mask for down
+  if ((n > CurrentLzMaxDown) || ((ProdATemporaryState[n] & 0xffff) == 0)) 
     {
       coefficient=0.0;
       return this->TargetSpace->HilbertSpaceDimension;
     }
-  //double TmpCoefficient = (this->TemporaryState[n] & 0xffff);
-  int CoherenceIndex = (this->TemporaryState[n] & 0xffff);
-  --this->TemporaryState[n];
+  int CoherenceIndex = (ProdATemporaryState[n] & 0xffff);
+  --ProdATemporaryState[n];
   
-  this->TemporaryState[m] += 0x10000;
+  ProdATemporaryState[m] += 0x10000;
   //TmpCoefficient *= (this->TemporaryState[m] >> 16);
-  CoherenceIndex *= (this->TemporaryState[m] >> 16);
+  CoherenceIndex *= (ProdATemporaryState[m] >> 16);
   coefficient = this->CoherenceFactors[CoherenceIndex];
-  return this->TargetSpace->FindStateIndex(this->TemporaryState, TemporaryStateNbrUp + 1);
+
+ //cout<<"ADUAD "; this->PrintState(cout, index); cout << " ----> " << m << " " << n << " ----> "; this->PrintState(cout, this->TargetSpace->FindStateIndex(ProdATemporaryState, ProdATemporaryStateNbrUp + 1)); cout << endl;
+
+  return this->TargetSpace->FindStateIndex(ProdATemporaryState, ProdATemporaryStateNbrUp + 1);
 }
 
 // apply a^+_m_d a_n_u operator to a given state 
@@ -831,24 +832,24 @@ int BosonOnSphereWithSpinAllSz::AduAd (int index, int m, int n, double& coeffici
 int BosonOnSphereWithSpinAllSz::AddAu (int index, int m, int n, double& coefficient)
 {
   int CurrentLzMaxUp, CurrentLzMaxDown;
-  unsigned TemporaryStateNbrUp;
+
   this->FermionToBoson(this->StateDescriptionUp[index], this->StateDescriptionDown[index], this->StateInfo[index],
-		       TemporaryState, CurrentLzMaxUp, CurrentLzMaxDown, TemporaryStateNbrUp);
-  if ((n > CurrentLzMaxUp) || ((TemporaryState[n] >> 16) == 0)) // || ((State[n] & 0xffff) == 0)) // shift for up, mask for down
+		       ProdATemporaryState, CurrentLzMaxUp, CurrentLzMaxDown, ProdATemporaryStateNbrUp);
+  if ((n > CurrentLzMaxUp) || ((ProdATemporaryState[n] >> 16) == 0)) 
     {
       coefficient=0.0;
       return this->TargetSpace->HilbertSpaceDimension;
     }
-  //double TmpCoefficient = (this->TemporaryState[n] >> 16);
-  int CoherenceIndex = (this->TemporaryState[n] >> 16);
-  this->TemporaryState[n] -= 0x10000;
+  int CoherenceIndex = (this->ProdATemporaryState[n] >> 16);
+  ProdATemporaryState[n] -= 0x10000;
   
-  ++this->TemporaryState[m];
-  //TmpCoefficient *= (this->TemporaryState[m]) & 0xffff;
-  CoherenceIndex *= (this->TemporaryState[m]) & 0xffff;
-  // coefficient *= this->CoherenceFactors[(this->TemporaryState[n] >> 16)*(this->TemporaryState[m]& 0xffff)];
+  ++ProdATemporaryState[m];
+  CoherenceIndex *= (ProdATemporaryState[m]) & 0xffff;
   coefficient = this->CoherenceFactors[CoherenceIndex];
-  return this->TargetSpace->FindStateIndex(this->TemporaryState, TemporaryStateNbrUp - 1);
+
+  //cout<<"ADDAU "; this->PrintState(cout, index); cout << " ----> " << m << " " << n << " ----> "; this->PrintState(cout, this->TargetSpace->FindStateIndex(ProdATemporaryState, ProdATemporaryStateNbrUp - 1)); cout << endl;
+
+  return this->TargetSpace->FindStateIndex(ProdATemporaryState, ProdATemporaryStateNbrUp - 1);
 }
 
 
@@ -2240,33 +2241,73 @@ RealVector BosonOnSphereWithSpinAllSz::ForgeSU2FromTunneling(RealVector& state, 
 // u1Space = the subspace onto which the projection is carried out
 RealVector BosonOnSphereWithSpinAllSz::ForgeU1FromTunneling(RealVector& state, BosonOnSphere& u1Space)
 {
-  int Dim2=u1Space.GetHilbertSpaceDimension();
+  int Dim2 = u1Space.GetHilbertSpaceDimension();
   RealVector FinalState(u1Space.GetHilbertSpaceDimension(), true);
   int Rejected=0, Index, LzMax, CurrentLzMaxUp, CurrentLzMaxDown;
   unsigned TemporaryStateNbrUp;
   int *TmpState = new int[NbrLzValue];
+
   for (int j = 0; j < this->HilbertSpaceDimension; ++j)    
     {
       this->FermionToBoson(this->StateDescriptionUp[j], this->StateDescriptionDown[j], this->StateInfo[j],
-			   TemporaryState, CurrentLzMaxUp, CurrentLzMaxDown, TemporaryStateNbrUp);
+         TemporaryState, CurrentLzMaxUp, CurrentLzMaxDown, TemporaryStateNbrUp);
 
+      double TmpNormSU2 = 1.0;
+      double TmpNormU1 = 1.0;
       for (int i=0; i<NbrLzValue; ++i)
-	TmpState[i] = (this->TemporaryState[i]&0x03ff)+(this->TemporaryState[i]>>16);
+          {
+           TmpState[i] = (this->TemporaryState[i]&0xffff) + (this->TemporaryState[i]>>16);
+
+            if ((this->TemporaryState[i]&0xffff) > 1)
+              {
+                 FactorialCoefficient Occ;
+                 Occ.FactorialMultiply(this->TemporaryState[i]&0xffff);
+                 TmpNormSU2 *= Occ.GetNumericalValue();
+              }
+
+            if ((this->TemporaryState[i]>>16) > 1)
+              {
+                 FactorialCoefficient Occ;
+                 Occ.FactorialMultiply(this->TemporaryState[i]>>16);
+                 TmpNormSU2 *= Occ.GetNumericalValue();
+              }
+
+            if (TmpState[i] > 1)
+              {
+                 FactorialCoefficient Occ;
+                 Occ.FactorialMultiply(TmpState[i]);
+                 TmpNormU1 *= Occ.GetNumericalValue();
+              }
+
+          }
+
       LzMax = std::max(CurrentLzMaxUp,CurrentLzMaxDown);
-      if ((Index=u1Space.FindStateIndex(TmpState, LzMax))<Dim2)
-	{	
-	  FinalState[Index] += state[j];
-	}
+      if ((Index = u1Space.FindStateIndex(TmpState, LzMax)) < Dim2)
+        { 
+            //this->PrintState(cout,j); cout << " TmpNorm= " << TmpNormSU2 << " " << TmpNormU1 << " ---> "; u1Space.PrintState(cout, Index); cout << " " << state[j] << endl;
+            FinalState[Index] += state[j] / sqrt(TmpNormSU2/TmpNormU1);
+        }
       else
-	++Rejected;
-    } //End loop over HilbertSpace
+        ++Rejected;
+     } //End loop over HilbertSpace
 
   if (Rejected>0)
     cout<<"Attention: ForgeU1 rejected "<<Rejected<<" components"<<endl; 
+  
+  cout << "Norm= " << FinalState.Norm() << endl;
+  FinalState /= FinalState.Norm();
+
+  delete[] TmpState;
+  return FinalState;
+
+  if (Rejected>0)
+    cout<<"Attention: ForgeU1 rejected "<<Rejected<<" components"<<endl; 
+  cout << "Norm= " << FinalState.Norm() << endl;
   FinalState /= FinalState.Norm();
   delete[] TmpState;
   return FinalState;
 }
+
 
 // Calculate mean value <Sx> in a given state
 //

@@ -257,7 +257,7 @@ Complex ParticleOnSphereSpinOperator::PartialMatrixElement (RealVector& V1, Real
 	{
 	  StateIndex = this->Particle->AduAd(i, m, m, coeff);
 	  StateIndexBis = this->Particle->AddAu(i, m, m, coeffBis);
-	  Sum += V2[StateIndex]+V2[StateIndexBis]; 
+	  Sum += V2[StateIndex] * coeff + V2[StateIndexBis] * coeffBis; 
 	}
 	Element += V1[i] * Sum;
       }
@@ -271,7 +271,7 @@ Complex ParticleOnSphereSpinOperator::PartialMatrixElement (RealVector& V1, Real
 	{
 	  StateIndex = this->Particle->AduAd(i, m, m, coeff);
 	  StateIndexBis = this->Particle->AddAu(i, m, m, coeffBis);
-	  Sum += -V2[StateIndex]+V2[StateIndexBis]; 
+	  Sum += -V2[StateIndex] * coeff + V2[StateIndexBis] * coeffBis; 
 	}
 	Element += V1[i] * Sum;
       }

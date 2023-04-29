@@ -410,6 +410,11 @@ int main(int argc, char** argv)
       Operation2.ApplyOperation(Architecture.GetArchitecture());
       L2Value = TmpState * State;
       RawTmpAngularMomentum = 0.5 * (sqrt (((double)4.0 * L2Value) + (double) 1.0) - 1.0);
+      if (Manager.GetBoolean("all-sz"))
+      	{ 
+      	  cout << "Use option --show-all to get the correct value of S2" << endl;
+      	  exit(1);
+      	 }  
       cout << "<S^2> = " << L2Value << endl
 	   << "<S> = " << RawTmpAngularMomentum << endl;
       }

@@ -354,6 +354,35 @@ bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& n
   return true;
 }
 
+// try to guess system information from file name for system suth an SU(2) degree of freedom
+//
+// filename = vector file name
+// nbrParticles = reference to the number of particles (grab it only if initial value is 0)
+// lzMax = reference to twice the maximum momentum for a single particle (grab it only if initial value is 0)
+// lz = reference to twice the z projection of the angular momentum (grab it only if initial value is 0)
+// sz = reference to twice the z projection of the total spin (grab it only if initial value is 0)
+// statistics = reference to flag for fermionic statistics (true for fermion, false fro bosons, grab it only if initial value is true)
+// allSzFlag = reference to flag indicating if all Sz sectors are included
+// return value = true if no error occured
+
+bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& nbrParticles, int& lzMax, int& lz, int& sz, bool& statistics, bool& allSzFlag)
+{
+  char* StrNbrParticles = strstr(filename, "_sz_");
+  if (StrNbrParticles != 0)
+    {
+      allSzFlag = false;
+      return FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(filename, nbrParticles, lzMax, lz, sz, statistics);
+    }
+  allSzFlag = true;
+  sz = -1;
+  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(filename, nbrParticles, lzMax, lz, sz, statistics) == false)
+    {
+      return false;
+    }
+  sz = 0;
+  return true;
+}
+
 
 // try to guess system information from file name for system with an SU(2) degree of freedom and discrete symmetries
 //
@@ -521,6 +550,45 @@ bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& n
   
 }
 
+// try to guess system information from file name for system with an SU(2) degree of freedom and discrete symmetries
+//
+// filename = vector file name
+// nbrParticles = reference to the number of particles (grab it only if initial value is 0)
+// lzMax = reference to twice the maximum momentum for a single particle (grab it only if initial value is 0)
+// lz = reference to twice the z projection of the angular momentum (grab it only if initial value is 0)
+// sz = reference to twice the z projection of the total spin (grab it only if initial value is 0)
+// szSymmetry = reference on the flag for the Sz<->-Sz symmetry
+// szSymmetryMinusParity = reference on the flag for the minus parity sector of the Sz<->-Sz symmetry
+// lzSymmetry = reference on the flag for the Lz<->-Lz symmetry
+// lzSymmetryMinusParity = reference on the flag for the minus parity sector of the Lz<->-Lz symmetry
+// statistics = reference to flag for fermionic statistics (true for fermion, false for bosons, grab it only if initial value is true)
+// allSzFlag = reference to flag indicating if all Sz sectors are included
+// return value = true if no error occured
+
+bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& nbrParticles, int& lzMax, int& lz, int& sz, 
+							  bool& szSymmetry, bool& szSymmetryMinusParity, bool& lzSymmetry,
+							  bool& lzSymmetryMinusParity, bool& statistics, bool& allSzFlag)
+{
+  char* StrNbrParticles = strstr(filename, "_sz_");
+  if (StrNbrParticles != 0)
+    {
+      allSzFlag = false;
+      return FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(filename, nbrParticles, lzMax, lz, sz,
+								  szSymmetry, szSymmetryMinusParity,
+								  lzSymmetry, lzSymmetryMinusParity, statistics);
+    }
+  allSzFlag = true;
+  sz = -1;
+  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(filename, nbrParticles, lzMax, lz, sz,
+							   szSymmetry, szSymmetryMinusParity,
+							   lzSymmetry, lzSymmetryMinusParity, statistics) == false)
+    {
+      return false;
+    }
+  sz = 0;
+  return true;
+}
+
 // try to guess system information from file name for system with an SU(2) degree of freedom and discrete symmetries (alternate version)
 //
 // filename = vector file name
@@ -535,6 +603,27 @@ bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& n
 
 bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& nbrParticles, int& lzMax, int& lz, int& sz, 
 							  int& szSymmetry, int& lzSymmetry, bool& statistics)
+{
+  return FQHEOnSphereWithSpinFindSystemInfoFromVectorFileNameWithoutCheckingSz(filename, nbrParticles, lzMax, lz, sz, 
+									       szSymmetry, lzSymmetry, statistics, false);
+}
+
+// try to guess system information from file name for system with an SU(2) degree of freedom and discrete symmetries (alternate version)
+// potentially allowing for Sz symmetry breaking
+//
+// filename = vector file name
+// nbrParticles = reference to the number of particles
+// lzMax = reference to twice the maximum momentum for a single particle
+// lz = reference to twice the z projection of the angular momentum
+// sz = reference to twice the z projection of the total spin
+// szSymmetry = reference on the parity the Sz<->-Sz symmetry
+// lzSymmetry = reference on the parity for the Lz<->-Lz symmetry
+// statistics = reference to flag for fermionic statistics (true for fermion, false for bosons, grab it only if initial value is true)
+// allowSzBreaking = true if Sz symmetry is allowed, not failing if Sz cannot be guessed from file name
+// return value = true if no error occured
+
+bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileNameWithoutCheckingSz(char* filename, int& nbrParticles, int& lzMax, int& lz, int& sz, 
+									   int& szSymmetry, int& lzSymmetry, bool& statistics, bool allowSzBreaking)
 {
   char* StrNbrParticles = strstr(filename, "_n_");
   if (StrNbrParticles == 0)
@@ -649,8 +738,15 @@ bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& n
     }
   if (StrNbrParticles == 0)
     {
-      cout << "can't guess z projection of the total spin from file name " << filename << endl;
-      return false;            
+      if (allowSzBreaking == false)
+	{
+	  cout << "can't guess z projection of the total spin from file name " << filename << endl;
+	  return false;
+	}
+      else
+	{
+	  sz = 0;
+	}
     }
   StrNbrParticles = strstr(filename, "_szsym_");
   szSymmetry = 0;
@@ -707,6 +803,39 @@ bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& n
   return true;
 }
 
+// try to guess system information from file name for system with an SU(2) degree of freedom and discrete symmetries (alternate version)
+//
+// filename = vector file name
+// nbrParticles = reference to the number of particles
+// lzMax = reference to twice the maximum momentum for a single particle
+// lz = reference to twice the z projection of the angular momentum
+// sz = reference to twice the z projection of the total spin
+// szSymmetry = reference on the parity the Sz<->-Sz symmetry
+// lzSymmetry = reference on the parity for the Lz<->-Lz symmetry
+// statistics = reference to flag for fermionic statistics (true for fermion, false for bosons, grab it only if initial value is true)
+// allSzFlag = reference to flag indicating if all Sz sectors are included
+// return value = true if no error occured
+
+bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& nbrParticles, int& lzMax, int& lz, int& sz, 
+							  int& szSymmetry, int& lzSymmetry, bool& statistics, bool& allSzFlag)
+{
+  char* StrNbrParticles = strstr(filename, "_sz_");
+  if (StrNbrParticles != 0)
+    {
+      allSzFlag = false;
+      return FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(filename, nbrParticles, lzMax, lz, sz,
+								  szSymmetry, lzSymmetry, statistics);
+    }
+  allSzFlag = true;
+  sz = -1;
+  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileNameWithoutCheckingSz(filename, nbrParticles, lzMax, lz, sz,
+									    szSymmetry, lzSymmetry, statistics, true) == false)
+    {
+      return false;
+    }
+  sz = 0;
+  return true;
+}
 
 // try to guess system spin polarization from file name for system suth an SU(2) degree of freedom
 //

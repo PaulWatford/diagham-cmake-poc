@@ -20,6 +20,8 @@
 
 #include "MainTask/QHEOnSphereMainTask.h"
 
+#include "Tools/FQHEFiles/FQHESpherePseudopotentialTools.h"
+
 #include "Options/Options.h"
 
 #include "GeneralTools/ConfigurationParser.h"
@@ -154,8 +156,10 @@ int main(int argc, char** argv)
       for (int j = 0; j <= LzMax; ++j)
 	PseudoPotentials[i][j] = 0.0;
     };
+  double** OneBodyPseudoPotentials  = new double*[3];
   double* OneBodyPotentialUpUp = 0;
   double* OneBodyPotentialDownDown = 0;
+  double * OneBodyPotentialUpDown = 0;
 
   int NbrUp = (NbrFermions + SzTotal) >> 1;
   int NbrDown = (NbrFermions - SzTotal) >> 1;
@@ -172,122 +176,9 @@ int main(int argc, char** argv)
     }
   else
     {
-      ConfigurationParser InteractionDefinition;
-      if (InteractionDefinition.Parse(Manager.GetString("interaction-file")) == false)
-	{
-	  InteractionDefinition.DumpErrors(cout) << endl;
-	  return -1;
-	}
-      int TmpNbrPseudoPotentials;
-      double* TmpPseudoPotentials;
-      bool Flag = false;
-      if (InteractionDefinition.GetAsDoubleArray("Pseudopotentials", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
-	{
-	  Flag = true;
-	  if (TmpNbrPseudoPotentials != (LzMax +1))
-	    {
-	      cout << "Invalid number of pseudo-potentials in Pseudopotentials" << endl;
-	      return -1;	  
-	    }
-	  for (int i = 0; i < 3; ++i)
-	    for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
-	      PseudoPotentials[i][j] = TmpPseudoPotentials[j];
-	  delete []TmpPseudoPotentials;
-	}
-      else
-	if (InteractionDefinition["Pseudopotentials"] != 0)
-	  {
-	    cout << "Pseudopotentials has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	    return -1;
-	  }
-      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpUp", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
-	{
-	  Flag = true;
-	  if (TmpNbrPseudoPotentials != (LzMax +1))
-	    {
-	      cout << "Invalid number of pseudo-potentials in PseudopotentialsUpUp" << endl;
-	      return -1;	  
-	    }
-	  for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
-	    PseudoPotentials[0][j] = TmpPseudoPotentials[j];
-	  delete [] TmpPseudoPotentials;
-	}
-      else
-	if (InteractionDefinition["PseudopotentialsUpUp"] != 0)
-	  {
-	    cout << "PseudopotentialsUpUp has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	    return -1;
-	  }
-      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsDownDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
-	{
-	  Flag = true;
-	  if (TmpNbrPseudoPotentials != (LzMax +1))
-	    {
-	      cout << "Invalid number of pseudo-potentials in PseudopotentialsDownDown" << endl;
-	      return -1;	  
-	    }
-	  for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
-	    PseudoPotentials[1][j] = TmpPseudoPotentials[j];
-	  delete [] TmpPseudoPotentials;
-	}
-      else
-	if (InteractionDefinition["PseudopotentialsDownDown"] != 0)
-	  {
-	    cout << "PseudopotentialsDownDown has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	    return -1;
-	  }
-      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
-	{
-	  Flag = true;
-	  if (TmpNbrPseudoPotentials != (LzMax +1))
-	    {
-	      cout << "Invalid number of pseudo-potentials in PseudopotentialsUpDown" << endl;
-	      return -1;	  
-	    }
-	  for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
-	    PseudoPotentials[2][j] = TmpPseudoPotentials[j];
-	  delete [] TmpPseudoPotentials;
-	}
-      else
-	if (InteractionDefinition["PseudopotentialsUpDown"] != 0)
-	  {
-	    cout << "PseudopotentialsUpDown has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	    return -1;
-	  }
-      if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialUpUp", ' ', OneBodyPotentialUpUp, TmpNbrPseudoPotentials) == true)
-	{
-	  if (TmpNbrPseudoPotentials != (LzMax + 1))
-	    {
-	      cout << "OneBodyPotentialUpUp has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	      return -1;
-	    }
-	}
-      if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialDownDown", ' ', OneBodyPotentialDownDown, TmpNbrPseudoPotentials) == true)
-	{
-	  if (TmpNbrPseudoPotentials != (LzMax + 1))
-	    {
-	      cout << "OneBodyPotentialDownDown has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	      return -1;
-	    }
-	}
-      double *OneBodyPotentials;
-      if (InteractionDefinition.GetAsDoubleArray("Onebodypotentials", ' ', OneBodyPotentials, TmpNbrPseudoPotentials) == true)
-	{
-	  if (TmpNbrPseudoPotentials != (LzMax + 1))
-	    {
-	      cout << "Onebodypotentials has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
-	      return -1;
-	    }
-	  if (OneBodyPotentialUpUp==NULL)
-	    {
-	      OneBodyPotentialUpUp = new double [LzMax+1];
-	      for (int i=0; i<=LzMax; ++i)
-		OneBodyPotentialUpUp[i]=OneBodyPotentials[i];
-	    }
-	  if (OneBodyPotentialDownDown==NULL)
-	    OneBodyPotentialDownDown = OneBodyPotentials;
-	  else delete [] OneBodyPotentials;
-	}
+      if (FQHESphereSU2GetPseudopotentials(Manager.GetString("interaction-file"), LzMax, PseudoPotentials,
+					   OneBodyPseudoPotentials) == false)
+	return -1;
     }
 
   char* OutputNameLz = new char [512 + strlen(Manager.GetString("interaction-name"))];
@@ -338,10 +229,28 @@ int main(int argc, char** argv)
 	Max = L + (2 * (NbrLz - 1));
     }
 
-  if (NbrLz==1) 
-    sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_sz_%d_lz_%d.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, SzTotal, L);
+  if ((Manager.GetBoolean("all-sz") == false) && (OneBodyPseudoPotentials[2] == 0))
+    {
+      if (NbrLz==1)
+	{
+	  sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_sz_%d_lz_%d.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, SzTotal, L);
+	}
+      else
+	{
+	  sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_sz_%d_lz.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, SzTotal);
+	}
+    }
   else
-    sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_sz_%d_lz.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, SzTotal);
+    {
+      if (NbrLz==1)
+	{
+	  sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz_%d.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, L);
+	}
+      else
+	{
+	  sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax);
+	}
+    }
   
   for (; L <= Max; L += 2)
     {
@@ -356,7 +265,8 @@ int main(int argc, char** argv)
         Memory = Architecture.GetArchitecture()->GetLocalMemory();
 
       AbstractQHEOnSphereWithSpinHamiltonian* Hamiltonian;      
-      Hamiltonian = new ParticleOnSphereWithSpinGenericHamiltonian(Space, NbrFermions, LzMax, PseudoPotentials, OneBodyPotentialUpUp, OneBodyPotentialDownDown, NULL, 
+      Hamiltonian = new ParticleOnSphereWithSpinGenericHamiltonian(Space, NbrFermions, LzMax, PseudoPotentials,
+								   OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2], 
 								   Architecture.GetArchitecture(), Memory, onDiskCacheFlag, LoadPrecalculationFileName);
 
       if (Manager.GetDouble("s2-factor") != 0.0)
@@ -405,7 +315,7 @@ int main(int argc, char** argv)
 	    new ParticleOnSphereWithSpinS2Hamiltonian(Space, NbrFermions, LzMax, L, SzTotal,
 						      Architecture.GetArchitecture(), 1.0,
 						      ((unsigned long)Manager.GetInteger("s2-memory")) << 20,
-						      onDiskCacheFlag);
+						      onDiskCacheFlag, NULL, !Manager.GetBoolean("all-sz"));
 	  S2Projector->ShiftHamiltonian(-0.25*(double)SzTotal*(SzTotal+2.0));
 	  Projectors[NbrProjectors++]=S2Projector;
 	}
@@ -427,7 +337,7 @@ int main(int argc, char** argv)
 						      ((unsigned long)Manager.GetInteger("l2-memory")) << 20,
 						      onDiskCacheFlag);
 	  if (Manager.GetDouble("s2-factor") != 0.0)
-	    L2S2Projector->AddS2(L, SzTotal, Manager.GetDouble("s2-factor")/Manager.GetDouble("l2-factor"), ((unsigned long)Manager.GetInteger("l2-memory")) << 20);
+	    L2S2Projector->AddS2(L, SzTotal, Manager.GetDouble("s2-factor")/Manager.GetDouble("l2-factor"), ((unsigned long)Manager.GetInteger("l2-memory")) << 20, !Manager.GetBoolean("all-sz"));
 
 	  L2S2Projector->ShiftHamiltonian(-0.25*(double)L*(L+2.0)-0.25*(double)SzTotal*(SzTotal+2.0));
 	  Projectors[NbrProjectors++]=L2S2Projector;
@@ -441,9 +351,18 @@ int main(int argc, char** argv)
       if (Manager.GetBoolean("eigenstate") == true)	
 	{
 	  EigenvectorName = new char [512];
-	  sprintf (EigenvectorName, "fermions_sphere_su2_%s%s_n_%d_2s_%d_sz_%d_lz_%d",
-		   Manager.GetString("interaction-name"), ExtraTerms,
-		   NbrFermions, LzMax, SzTotal, L);
+	  if ((Manager.GetBoolean("all-sz") == false) && (OneBodyPseudoPotentials[2] == 0))
+	    {
+	      sprintf (EigenvectorName, "fermions_sphere_su2_%s%s_n_%d_2s_%d_sz_%d_lz_%d",
+		       Manager.GetString("interaction-name"), ExtraTerms,
+		       NbrFermions, LzMax, SzTotal, L);
+	    }
+	  else
+	    {
+	      sprintf (EigenvectorName, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz_%d",
+		       Manager.GetString("interaction-name"), ExtraTerms,
+		       NbrFermions, LzMax, L);
+	    }
 	}
       QHEOnSphereMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName, LzMax, Projectors, NbrProjectors);
       MainTaskOperation TaskOperation (&Task);

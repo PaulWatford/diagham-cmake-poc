@@ -1170,6 +1170,37 @@ RealSymmetricMatrix ParticleOnSphereWithSpin::EvaluatePartialDensityMatrix (int 
 
 RealMatrix ParticleOnSphereWithSpin::EvaluatePartialEntanglementMatrix (int subsytemSize, int nbrFermionSector, int lzSector, int szSector, RealVector& groundState)
 {
+  cout << "using dummy ParticleOnSphereWithSpin::EvaluatePartialEntanglementMatrix" << endl;
+  RealMatrix TmpMatrix;
+  return TmpMatrix;
+}
+
+// evaluate a density matrix of a subsystem of the whole system described by a given ground state. The density matrix is only evaluated in a given Lz sector and fixed number of particles
+// 
+// subsytemSize = number of states that belong to the subsytem (ranging from -Lzmax to -Lzmax+subsytemSize-1)
+// nbrFermionSector = number of particles that belong to the subsytem 
+// lzSector = Lz sector in which the density matrix has to be evaluated 
+// groundState = reference on the total system ground state
+// return value = density matrix of the subsytem  (return a wero dimension matrix if the density matrix is equal to zero)
+
+RealMatrix ParticleOnSphereWithSpin::EvaluatePartialEntanglementMatrix (int subsytemSize, int nbrFermionSector, int lzSector, RealVector& groundState)
+{
+  cout << "using dummy ParticleOnSphereWithSpin::EvaluatePartialEntanglementMatrix" << endl;
+  RealMatrix TmpMatrix;
+  return TmpMatrix;
+}
+
+// evaluate a density matrix of a subsystem of the whole system described by a given ground state. The density matrix is only evaluated in a given Lz sector and fixed number of particles
+// 
+// subsytemSize = number of states that belong to the subsytem (ranging from -Lzmax to -Lzmax+subsytemSize-1)
+// nbrFermionSector = number of particles that belong to the subsytem 
+// lzSector = Lz sector in which the density matrix has to be evaluated 
+// groundState = reference on the total system ground state
+// return value = density matrix of the subsytem  (return a wero dimension matrix if the density matrix is equal to zero)
+
+RealSymmetricMatrix ParticleOnSphereWithSpin::EvaluatePartialDensityMatrix (int subsytemSize, int nbrFermionSector, int lzSector, RealVector& groundState)
+{
+  cout << "using dummy ParticleOnSphereWithSpin::EvaluatePartialDensityMatrix" << endl;
   RealMatrix TmpMatrix;
   return TmpMatrix;
 }

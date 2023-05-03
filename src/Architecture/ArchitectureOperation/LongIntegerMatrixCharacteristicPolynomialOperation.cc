@@ -145,6 +145,7 @@ bool LongIntegerMatrixCharacteristicPolynomialOperation::RawApplyOperation()
   this->LocalZeroFlag = true;
   int LastComponent = this->FirstComponent + this->NbrComponent;
 #ifdef __GMP__
+  mpz_init(this->PartialTrace);
   mpz_set_ui(this->PartialTrace, 0l);
 #else
   this->PartialTrace = (LONGLONG) 0l;

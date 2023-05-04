@@ -150,6 +150,8 @@ int main(int argc, char** argv)
 
   int NbrUp = (NbrBosons + SzTotal) >> 1;
   int NbrDown = (NbrBosons - SzTotal) >> 1;
+  if ((NbrUp + NbrDown) != NbrBosons)
+    NbrDown = NbrBosons - NbrUp;
   if ((NbrUp < 0 ) || (NbrDown < 0 ))
     {
       cout << "This value of the spin z projection cannot be achieved with this particle number!" << endl;

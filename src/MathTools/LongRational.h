@@ -870,7 +870,7 @@ inline LongRational& LongRational::Neg()
 
 inline bool LongRational::IsInteger ()
 {
-  if (mthis->Numerator == 0l)
+  if (this->Numerator == 0l)
     {
       return true;
     }

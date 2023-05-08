@@ -212,9 +212,41 @@ void ParticleOnLatticeFromFileInteractionTwoBandRealHamiltonian::EvaluateInterac
     {
       TmpLinearizedSumK[i] = this->TightBindingModel->GetLinearizedMomentumIndex((TmpKx1[i] + TmpKx2[i]) % this->NbrSiteX,
 										 (TmpKy1[i] + TmpKy2[i]) % this->NbrSiteY);
+      if (TmpKx1[i] >= this->NbrSiteX)
+	{
+	  cout << "error in kx1=" << TmpKx1[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteX << endl;
+	}
+      if (TmpKy1[i] >= this->NbrSiteY)
+	{
+	  cout << "error in ky1=" << TmpKy1[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteY << endl;
+	}
       TmpLinearizedK1[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx1[i], TmpKy1[i]);
+      if (TmpKx2[i] >= this->NbrSiteX)
+	{
+	  cout << "error in kx2=" << TmpKx2[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteX << endl;
+	}
+      if (TmpKy2[i] >= this->NbrSiteY)
+	{
+	  cout << "error in ky2=" << TmpKy2[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteY << endl;
+	}
       TmpLinearizedK2[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx2[i], TmpKy2[i]);
+      if (TmpKx3[i] >= this->NbrSiteX)
+	{
+	  cout << "error in kx3=" << TmpKx3[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteX << endl;
+	}
+      if (TmpKy3[i] >= this->NbrSiteY)
+	{
+	  cout << "error in ky3=" << TmpKy3[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteY << endl;
+	}
       TmpLinearizedK3[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx3[i], TmpKy3[i]);
+      if (TmpKx4[i] >= this->NbrSiteX)
+	{
+	  cout << "error in kx4=" << TmpKx4[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteX << endl;
+	}
+      if (TmpKy4[i] >= this->NbrSiteY)
+	{
+	  cout << "error in ky4=" << TmpKy4[i] << " momentum for interaction matrix element " << i << ", should be strictly lower than " << this->NbrSiteY << endl;
+	}
       TmpLinearizedK4[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx4[i], TmpKy4[i]);
       TmpMatrixElements[i] *= this->InteractionRescalingFactor;
     }

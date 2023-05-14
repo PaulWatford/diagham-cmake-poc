@@ -930,16 +930,26 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
+		  int TmpN1 = 0;
 		  for (int i = 0; i < NbrSymmetrySectors; i += NbrMomentumSectors)
 		    {
-		      NbrParticlesBand1UpPlus[i] = i;
-		      NbrParticlesBand2UpPlus[i] = NbrParticles - i;
+		      NbrParticlesBand1UpPlus[i] = TmpN1;
+		      NbrParticlesBand2UpPlus[i] = NbrParticles - TmpN1;
 		      NbrParticlesBand1UpMinus[i] = 0;
 		      NbrParticlesBand2UpMinus[i] = 0;
 		      NbrParticlesBand1DownPlus[i] = 0;
 		      NbrParticlesBand2DownPlus[i] = 0;
 		      NbrParticlesBand1DownMinus[i] = 0;
 		      NbrParticlesBand2DownMinus[i] = 0;
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
+		      TmpN1++;
 		    }
 		}
 	      else
@@ -1186,6 +1196,7 @@ int main(int argc, char** argv)
       PzValues = new int[NbrSymmetrySectors];
       EzValues = new int[NbrSymmetrySectors];
       int TmpIndex = 0;
+      cout << MinKx << " " << MaxKx  << " " << MinKy << " " << MaxKy << " " << NbrSymmetrySectors << " " << NbrMomentumSectors << endl;
       for (int i = MinKx; i <= MaxKx; ++i)
 	{
 	  for (int j = MinKy; j <= MaxKy; ++j)
@@ -1200,6 +1211,7 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus[k + TmpIndex] = NbrParticlesBand2DownPlus[k];
 		  NbrParticlesBand1DownMinus[k + TmpIndex] = NbrParticlesBand1DownMinus[k];
 		  NbrParticlesBand2DownMinus[k + TmpIndex] = NbrParticlesBand2DownMinus[k];
+		  cout << k << " " << TmpIndex << " : " << NbrParticlesBand1UpPlus[k + TmpIndex] << endl;
 		  KxMomenta[k + TmpIndex] = i;
 		  KyMomenta[k + TmpIndex] = j;
 		  SzValues[k + TmpIndex] = MinSz;
@@ -1377,39 +1389,87 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  if (SymmetrySectorsFile.GetNbrColumns() < 10)
+	  if (Manager.GetBoolean("add-spin") == false)
 	    {
-	      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least ten when using --conserve-bandoccuption)" << endl;
-	      return 0;
+	      if (Manager.GetBoolean("add-valley") == false)
+		{
+		  if (SymmetrySectorsFile.GetNbrColumns() < 4)
+		    {
+		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least four when using --conserve-bandoccuption without spin and valley)" << endl;
+		      return 0;
+		    }
+		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
+		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
+		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
+		  NbrParticlesBand1UpMinus = new int [NbrSymmetrySectors];
+		  NbrParticlesBand1DownPlus = new int [NbrSymmetrySectors];
+		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
+		  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(3);
+		  NbrParticlesBand2UpMinus = new int [NbrSymmetrySectors];
+		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
+		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  for (int i = 0; i < NbrSymmetrySectors; ++i)
+		    {
+		      NbrParticlesBand1UpMinus[i] = 0;
+		      NbrParticlesBand2UpMinus[i] = 0;
+		      NbrParticlesBand1DownPlus[i] = 0;
+		      NbrParticlesBand2DownPlus[i] = 0;
+		      NbrParticlesBand1DownMinus[i] = 0;
+		      NbrParticlesBand2DownMinus[i] = 0;
+		    }
+		  
+		}
+	      else
+		{
+		  cout << "--selected-sector is not available when using --conserve-bandoccuption with valley and without spin)" << endl;
+		  return 0;
+		}
 	    }
-	  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
-	  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-	  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
-	  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
-	  NbrParticlesBand1UpMinus = SymmetrySectorsFile.GetAsIntegerArray(3);
-	  NbrParticlesBand1DownPlus = SymmetrySectorsFile.GetAsIntegerArray(4);
-	  NbrParticlesBand1DownMinus = SymmetrySectorsFile.GetAsIntegerArray(5);
-	  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(6);
-	  NbrParticlesBand2UpMinus = SymmetrySectorsFile.GetAsIntegerArray(7);
-	  NbrParticlesBand2DownPlus = SymmetrySectorsFile.GetAsIntegerArray(8);
-	  NbrParticlesBand2DownMinus = SymmetrySectorsFile.GetAsIntegerArray(9);
-	  SzValues = new int [NbrSymmetrySectors];
-	  PzValues = new int [NbrSymmetrySectors];
-	  EzValues = new int [NbrSymmetrySectors];
-	  for (int i = 0; i < NbrSymmetrySectors; ++i)
+	  else
 	    {
-	      SzValues[i] = (NbrParticlesBand1UpPlus[i] + NbrParticlesBand1UpMinus[i]
-			     - NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
-			     + NbrParticlesBand2UpPlus[i] + NbrParticlesBand2UpMinus[i]
-			     - NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
-	      PzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
-			     + NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
-			     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
-			     + NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
-	      EzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
-			     - NbrParticlesBand1DownPlus[i] + NbrParticlesBand1DownMinus[i]
-			     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
-			     - NbrParticlesBand2DownPlus[i] + NbrParticlesBand2DownMinus[i]);
+	      if (Manager.GetBoolean("add-valley") == false)
+		{
+		  cout << "--selected-sector is not available when using --conserve-bandoccuption without valley and with spin)" << endl;
+		  return 0;
+		}
+	      else
+		{
+		  if (SymmetrySectorsFile.GetNbrColumns() < 10)
+		    {
+		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least ten when using --conserve-bandoccuption)" << endl;
+		      return 0;
+		    }
+		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
+		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
+		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
+		  NbrParticlesBand1UpMinus = SymmetrySectorsFile.GetAsIntegerArray(3);
+		  NbrParticlesBand1DownPlus = SymmetrySectorsFile.GetAsIntegerArray(4);
+		  NbrParticlesBand1DownMinus = SymmetrySectorsFile.GetAsIntegerArray(5);
+		  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(6);
+		  NbrParticlesBand2UpMinus = SymmetrySectorsFile.GetAsIntegerArray(7);
+		  NbrParticlesBand2DownPlus = SymmetrySectorsFile.GetAsIntegerArray(8);
+		  NbrParticlesBand2DownMinus = SymmetrySectorsFile.GetAsIntegerArray(9);
+		  SzValues = new int [NbrSymmetrySectors];
+		  PzValues = new int [NbrSymmetrySectors];
+		  EzValues = new int [NbrSymmetrySectors];
+		  for (int i = 0; i < NbrSymmetrySectors; ++i)
+		    {
+		      SzValues[i] = (NbrParticlesBand1UpPlus[i] + NbrParticlesBand1UpMinus[i]
+				     - NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
+				     + NbrParticlesBand2UpPlus[i] + NbrParticlesBand2UpMinus[i]
+				     - NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
+		      PzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
+				     + NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
+				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
+				     + NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
+		      EzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
+				     - NbrParticlesBand1DownPlus[i] + NbrParticlesBand1DownMinus[i]
+				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
+				     - NbrParticlesBand2DownPlus[i] + NbrParticlesBand2DownMinus[i]);
+		    }
+		}
 	    }
 	}
     }

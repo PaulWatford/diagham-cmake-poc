@@ -1196,7 +1196,6 @@ int main(int argc, char** argv)
       PzValues = new int[NbrSymmetrySectors];
       EzValues = new int[NbrSymmetrySectors];
       int TmpIndex = 0;
-      cout << MinKx << " " << MaxKx  << " " << MinKy << " " << MaxKy << " " << NbrSymmetrySectors << " " << NbrMomentumSectors << endl;
       for (int i = MinKx; i <= MaxKx; ++i)
 	{
 	  for (int j = MinKy; j <= MaxKy; ++j)
@@ -1211,7 +1210,6 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus[k + TmpIndex] = NbrParticlesBand2DownPlus[k];
 		  NbrParticlesBand1DownMinus[k + TmpIndex] = NbrParticlesBand1DownMinus[k];
 		  NbrParticlesBand2DownMinus[k + TmpIndex] = NbrParticlesBand2DownMinus[k];
-		  cout << k << " " << TmpIndex << " : " << NbrParticlesBand1UpPlus[k + TmpIndex] << endl;
 		  KxMomenta[k + TmpIndex] = i;
 		  KyMomenta[k + TmpIndex] = j;
 		  SzValues[k + TmpIndex] = MinSz;

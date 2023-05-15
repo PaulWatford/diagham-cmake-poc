@@ -172,7 +172,18 @@ class FermionOnSquareLatticeWithSpinMomentumSpace : public FermionOnSphereWithSp
   // return value = Hilbert space dimension
   virtual long EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp);
 
-  // generate all states corresponding to the constraints
+  // evaluate Hilbert space dimension with a fixed number of holes with spin up
+  //
+  // nbrHoles = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // nbrSpinUp = number of holes with spin up
+  // return value = Hilbert space dimension
+  virtual long EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp);
+
+// generate all states corresponding to the constraints
   // 
   // nbrFermions = number of fermions
   // currentKx = current momentum along x for a single particle
@@ -194,6 +205,18 @@ class FermionOnSquareLatticeWithSpinMomentumSpace : public FermionOnSphereWithSp
   // pos = position in StateDescription array where to store states
   // return value = position from which new states have to be stored
   virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp, long pos);
+
+  // generate all states corresponding to the constraints based on holes rather than fermions
+  // 
+  // nbrHoles = number of holes
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // nbrSpinUp = number of holes with spin up
+  // pos = position in StateDescription array where to store states
+  // return value = position from which new states have to be stored
+  virtual long GenerateStatesHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp, long pos);
 
 };
 

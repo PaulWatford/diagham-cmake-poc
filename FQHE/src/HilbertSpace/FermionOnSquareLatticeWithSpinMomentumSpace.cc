@@ -41,6 +41,7 @@
 #include "GeneralTools/UnsignedIntegerTools.h"
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
+#include "GeneralTools/ArrayTools.h"
 #include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
 
 #include <math.h>
@@ -146,7 +147,14 @@ FermionOnSquareLatticeWithSpinMomentumSpace::FermionOnSquareLatticeWithSpinMomen
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
-  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp);
+  if (this->NbrFermions <= (this->NbrSiteX * this->NbrSiteY))
+    {
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp);
+    }
+  else
+    {
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) >> 1, (this->NbrSiteY * (this->NbrSiteY - 1)) >> 1, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp);      
+    }
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
@@ -155,9 +163,18 @@ FermionOnSquareLatticeWithSpinMomentumSpace::FermionOnSquareLatticeWithSpinMomen
     {
       this->Flag.Initialize();
       this->TargetSpace = this;
-      this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
-      this->StateHighestBit = new int [this->HilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp, 0l);
+      this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];
+      long TmpLargeHilbertSpaceDimension = 0l;
+      if (this->NbrFermions <= (this->NbrSiteX * this->NbrSiteY))
+	{
+	   TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp, 0l);
+	}
+      else
+	{
+	  TmpLargeHilbertSpaceDimension = this->GenerateStatesHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) >> 1, (this->NbrSiteY * (this->NbrSiteY - 1)) >> 1, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp, 0l);
+	  SortArrayDownOrdering<unsigned long>(this->StateDescription, TmpLargeHilbertSpaceDimension);
+	}
       if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
@@ -484,6 +501,103 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStates(int nbrFermions
   return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp, pos);  
 }
 
+// generate all states corresponding to the constraints based on holes rather than fermions
+// 
+// nbrHoles = number of holes
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// nbrSpinUp = number of holes with spin up
+// pos = position in StateDescription array where to store states
+// return value = position from which new states have to be stored
+
+long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStatesHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp, long pos)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+
+  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrHoles))
+    return 0l;
+
+  if (nbrHoles == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	{
+	  this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul);	  
+	  return (pos + 1l);
+	}
+      else	
+	return pos;
+    }
+  if (currentKx < 0)
+    return pos;
+  if (nbrHoles == 1)
+    {
+      if (nbrSpinUp == 1)
+	{
+	  for (int j = currentKy; j >= 0; --j)
+	    {
+	      if ((((currentKx - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		{
+		  this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x2ul << (((currentKx * this->NbrSiteY) + j) << 1));
+		  ++pos;
+		}
+	    }
+	  for (int i = currentKx - 1; i >= 0; --i)
+	    {
+	      for (int j = this->NbrSiteY - 1; j >= 0; --j)
+		{
+		  if ((((i - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		    {
+		      this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x2ul << (((i * this->NbrSiteY) + j) << 1));
+		      ++pos;
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  for (int j = currentKy; j >= 0; --j)
+	    {
+	      if ((((currentKx - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		{
+		  this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x1ul << (((currentKx * this->NbrSiteY) + j) << 1));
+		  ++pos;
+		}
+	    }
+	  for (int i = currentKx - 1; i >= 0; --i)
+	    {
+	      for (int j = this->NbrSiteY - 1; j >= 0; --j)
+		{
+		  if ((((i - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		    {
+		      this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x1ul << (((i * this->NbrSiteY) + j) << 1));
+		      ++pos;
+		    }
+		}
+	    }
+	}
+      return pos;
+    }
+  long TmpPos = this->GenerateStatesHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx - (2 * currentKx), currentTotalKy - (2 * currentKy), nbrSpinUp - 1, pos);
+  unsigned long Mask = ~(0x3ul << (((currentKx * this->NbrSiteY) + currentKy) << 1));
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] &= Mask;
+  TmpPos = this->GenerateStatesHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx - currentKx, currentTotalKy - currentKy, nbrSpinUp - 1, pos);
+  Mask = ~(0x2ul << (((currentKx * this->NbrSiteY) + currentKy) << 1));
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] &= Mask;
+  TmpPos = this->GenerateStatesHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx - currentKx, currentTotalKy - currentKy, nbrSpinUp, pos);
+  Mask = ~(0x1ul << (((currentKx * this->NbrSiteY) + currentKy) << 1));
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] &= Mask;
+  return this->GenerateStatesHoles(nbrHoles, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp, pos);  
+}
+
 // evaluate Hilbert space dimension
 //
 // nbrFermions = number of fermions
@@ -585,6 +699,60 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::EvaluateHilbertSpaceDimension(
   Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp);
   Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp - 1);
   Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp);
+  return Count;
+}
+
+// evaluate Hilbert space dimension with a fixed number of holes with spin up
+//
+// nbrHoles = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// nbrSpinUp = number of holes with spin up
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSpinMomentumSpace::EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrHoles))
+    return 0l;
+
+  if (nbrHoles == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrHoles == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentTotalKx - currentKx) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
+	    Count++;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((currentTotalKx - i) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
+		Count++;
+	    }
+	}
+      return Count;
+    }
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx - (2 * currentKx), currentTotalKy - (2 * currentKy), nbrSpinUp - 1);
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx - currentKx, currentTotalKy - currentKy, nbrSpinUp);
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx - currentKx, currentTotalKy - currentKy, nbrSpinUp - 1);
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp);
   return Count;
 }
 

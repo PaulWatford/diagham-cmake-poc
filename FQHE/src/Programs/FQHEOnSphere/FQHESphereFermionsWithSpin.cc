@@ -168,6 +168,11 @@ int main(int argc, char** argv)
       cout << "This value of the spin z projection cannot be achieved with this particle number!" << endl;
       return -1;
     }
+  if (Manager.GetBoolean("all-sz") == true)
+   {
+     NbrUp = NbrFermions;
+     NbrDown = 0;
+   } 
 
   if (Manager.GetString("interaction-file") == 0)
     {

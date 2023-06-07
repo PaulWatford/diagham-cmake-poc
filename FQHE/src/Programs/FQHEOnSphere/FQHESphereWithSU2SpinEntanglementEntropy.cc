@@ -143,6 +143,8 @@ int main(int argc, char** argv)
     }
   int NbrParticlesUp = (NbrParticles + TotalSz) >> 1;
   int NbrParticlesDown = (NbrParticles - TotalSz) >> 1;
+  if ((NbrParticlesUp + NbrParticlesDown) != NbrParticles)
+    NbrParticlesDown = NbrParticles - NbrParticlesUp;
   ParticleOnSphereWithSpin* Space = 0;
   char* StatisticPrefix = new char[16];
   if (Statistics == true)
@@ -297,7 +299,7 @@ int main(int argc, char** argv)
   
   if (Space->GetHilbertSpaceDimension() != GroundState.GetVectorDimension())
     {
-      cout << "Number of rows of the vector is not equal to the Hilbert space dimension!";
+      cout << "Number of rows of the vector is not equal to the Hilbert space dimension! " << Space->GetHilbertSpaceDimension() << " " << GroundState.GetVectorDimension() << endl;
       return -1;
     }
 

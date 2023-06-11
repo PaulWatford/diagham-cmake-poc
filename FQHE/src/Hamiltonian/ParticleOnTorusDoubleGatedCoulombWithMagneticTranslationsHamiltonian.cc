@@ -77,15 +77,17 @@ ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::ParticleOn
 // nbrPseudopotentials = number of pseudopotentials indicated
 // pseudopotentials = pseudopotential coefficients
 // noWignerEnergy = do not consider the energy contribution from the Wigner crystal 
+// dielectricScreening = dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
 ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian(ParticleOnTorusWithMagneticTranslations* particles, 
-														     int nbrParticles, int maxMomentum, 
-														     int xMomentum, double ratio, double gateDistance, bool haveCoulomb, int landauLevel, int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
-														     AbstractArchitecture* architecture, long memory, 
-														     char* precalculationFileName)
+																	   int nbrParticles, int maxMomentum, 
+																	   int xMomentum, double ratio, double gateDistance, bool haveCoulomb, int landauLevel,
+																	   int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
+																	   double dielectricScreening, AbstractArchitecture* architecture, long memory, 
+																	   char* precalculationFileName)
 {
   this->Particles = particles;
   this->LzMax = maxMomentum - 1;
@@ -100,6 +102,7 @@ ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::ParticleOn
   this->Ratio = ratio;
   this->InvRatio = 1.0 / ratio;
   this->LandauLevel = landauLevel;
+  this->DielectricScreening = dielectricScreening;
   this->NbrPseudopotentials = nbrPseudopotentials;  
   if (this->NbrPseudopotentials>0)
     {
@@ -183,7 +186,7 @@ double ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::Get
   if ((this->HaveCoulomb) && (Q2_half != 0.0))
     {
       double TmpSqrtQ2 = sqrt(Q2);
-      Result = GETSQR(this->FormFactor(Q2_half)) / (TmpSqrtQ2 * tanh(TmpSqrtQ2 * this->GateDistance));
+      Result = GETSQR(this->FormFactor(Q2_half)) * tanh(TmpSqrtQ2 * this->GateDistance) / (TmpSqrtQ2  * (1.0 + (TmpSqrtQ2 * this->DielectricScreening)));
     }
   else
     Result = 0.0;

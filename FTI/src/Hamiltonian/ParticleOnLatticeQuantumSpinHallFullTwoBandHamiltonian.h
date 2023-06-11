@@ -1214,7 +1214,6 @@ inline void ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian::EvaluateMNTw
   Complex* TmpInteractionFactor;
   int Index;
   int AbsoluteIndex = index + this->PrecalculationShift;
-
   if (this->HermitianSymmetryFlag == false)
     {
       for (int j = 0; j < this->NbrIntraSectorSums; ++j)

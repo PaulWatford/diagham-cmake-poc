@@ -387,7 +387,7 @@ int main(int argc, char** argv)
 	{
 	  Hamiltonian = new ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian (TotalSpace, NbrBosons, MaxMomentum, XMomentum, XRatio, 
 										       HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, 
-										       !Manager.GetBoolean("add-wigner"),
+										       !Manager.GetBoolean("add-wigner"), 0.0,
 										       Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 	}
       else

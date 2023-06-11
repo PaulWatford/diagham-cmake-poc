@@ -79,16 +79,19 @@ ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::ParticleOnTorusCo
 // landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
 // nbrPseudopotentials = number of pseudopotentials indicated
 // pseudopotentials = pseudopotential coefficients
-// noWignerEnergy = do not consider the energy contribution from the Wigner crystal 
+// noWignerEnergy = do not consider the energy contribution from the Wigner crystal
+// dielectricScreening = dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
 ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian(ParticleOnTorusWithMagneticTranslations* particles, 
-														     int nbrParticles, int maxMomentum, 
-														     int xMomentum, double ratio, bool haveCoulomb, int landauLevel, int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
-														     AbstractArchitecture* architecture, long memory, 
-														     char* precalculationFileName)
+															     int nbrParticles, int maxMomentum, 
+															     int xMomentum, double ratio, bool haveCoulomb, int landauLevel,
+															     int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
+															     double dielectricScreening,
+															     AbstractArchitecture* architecture, long memory, 
+															     char* precalculationFileName)
 {
   this->Particles = particles;
   this->LzMax = maxMomentum - 1;
@@ -104,6 +107,7 @@ ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::ParticleOnTorusCo
   this->Ratio = ratio;
   this->InvRatio = 1.0 / ratio;
   this->LandauLevel = landauLevel;
+  this->DielectricScreening = dielectricScreening;
   this->NbrPseudopotentials = nbrPseudopotentials;  
   if (this->NbrPseudopotentials>0)
     {
@@ -420,11 +424,11 @@ double ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::GetVofQ(do
 {
   double Result;
   double Q2=2.0*Q2_half;
-  if ((this->HaveCoulomb)&&(Q2_half!=0.0))
+  if ((this->HaveCoulomb) && (Q2_half!=0.0))
     {
       //cout << "branch 1 : Ln="<<this->FormFactor.GetValue(Q2_half)<<" Ln2="<<GETSQR(this->FormFactor(Q2_half))<<", exp="<<exp(-Q2_half)<<" 1/Q="<<1.0/sqrt(Q2)<<" ";
       //this->FormFactor.PrintValue(cout, Q2_half)<<" ";
-      Result=GETSQR(this->FormFactor(Q2_half)) / sqrt(Q2);
+      Result=GETSQR(this->FormFactor(Q2_half)) / (sqrt(Q2) * (1.0 + (sqrt(Q2) * this->DielectricScreening)));
     }
   else
     Result=0.0;

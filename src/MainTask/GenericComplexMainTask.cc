@@ -141,6 +141,14 @@ GenericComplexMainTask::GenericComplexMainTask(OptionManager* options, AbstractH
     {
       this->EvaluateAllEigenvectors = false;
     }
+  if ((*options)["ascii-eigenstates"] != 0)
+    {
+      this->EvaluateAsciiEigenvectors = options->GetBoolean("ascii-eigenstates");
+    }
+  else
+    {
+      this->EvaluateAsciiEigenvectors = false;
+    }
   if ((*options)["first-eigenstate"] != 0)
     {
       this->FirstEigenstateIndex = options->GetInteger("first-eigenstate");

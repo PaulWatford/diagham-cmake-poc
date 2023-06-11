@@ -658,6 +658,10 @@ int main(int argc, char** argv)
 					    }
 					  else
 					    {
+						  for (int kk = 0; kk < NbrGroundStatePerMomentumSector[TmpIndex]; kk++)
+						    {
+						      cout << "test " << kk << " " << CoefficientPerMomentumSector[TmpIndex][kk] << endl;
+						    }
 					      HermitianMatrix TmpMatrix = ((FermionOnSquareLatticeMomentumSpace*) Spaces[TmpIndex])->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalKx, SubsystemTotalKy, NbrGroundStatePerMomentumSector[TmpIndex], GroundStatePerMomentumSector[TmpIndex], CoefficientPerMomentumSector[TmpIndex], Architecture.GetArchitecture());
 					      PartialDensityMatrix += TmpMatrix;
 					    }
@@ -730,6 +734,10 @@ int main(int argc, char** argv)
 						}
 					      else
 						{
+						  for (int kk = 0; kk < NbrGroundStatePerMomentumSector[TmpIndex]; kk++)
+						    {
+						      cout << "test " << kk << " " << CoefficientPerMomentumSector[TmpIndex][kk] << endl;
+						    }
 						  HermitianMatrix TmpMatrix = ((FermionOnSquareLatticeWithSpinMomentumSpace*) Spaces[TmpIndex])->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalKx, SubsystemTotalKy, SubsystemTotalSz, NbrGroundStatePerMomentumSector[TmpIndex], GroundStatePerMomentumSector[TmpIndex], CoefficientPerMomentumSector[TmpIndex], Architecture.GetArchitecture());
 						  PartialDensityMatrix += TmpMatrix;
 						}

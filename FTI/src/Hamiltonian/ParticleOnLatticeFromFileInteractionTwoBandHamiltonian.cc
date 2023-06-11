@@ -107,7 +107,7 @@ ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFil
   this->OneBodyInteractionFactorsdowndown = 0;
   this->OneBodyInteractionFactorsupdown = 0;
   this->FastMultiplicationFlag = false;
-  this->HermitianSymmetryFlag = false;
+  this->HermitianSymmetryFlag = true;//false;
   long MinIndex;
   long MaxIndex;
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);

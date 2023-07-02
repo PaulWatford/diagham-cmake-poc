@@ -313,7 +313,7 @@ int main(int argc, char** argv)
   
   if (Space->GetHilbertSpaceDimension() != GroundState.GetVectorDimension())
     {
-      cout << "Number of rows of the vector is not equal to the Hilbert space dimension! " << Space->GetHilbertSpaceDimension() << " " << GroundState.GetVectorDimension() << endl;
+      cout << "Number of rows of the vector (" << GroundState.GetVectorDimension() << ") is not equal to the Hilbert space dimension ("  << Space->GetHilbertSpaceDimension() << ") ! "<< endl;
       return -1;
     }
 

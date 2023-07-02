@@ -7,6 +7,7 @@
 #include "Matrix/HermitianMatrix.h"
 
 #include "HilbertSpace/FermionOnSphereWithSpin.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -204,6 +205,7 @@ int main(int argc, char** argv)
 	 }
     }
 
+  bool AllSzFlag = false;
   for (int i = 0; i < NbrSpaces; ++i)
     {
       TotalLz[i] = 0;
@@ -212,8 +214,8 @@ int main(int argc, char** argv)
       SzSymmetry[i] = 0;
       if (NoSzFlag == false)
 	{
-	  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(GroundStateFiles[i],
-								   NbrParticles, LzMax, TotalLz[i], TotalSz[i], SzSymmetry[i], LzSymmetry[i], Statistics) == false)
+	  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(GroundStateFiles[i], NbrParticles, LzMax, TotalLz[i], TotalSz[i], LzSymmetry[i], SzSymmetry[i],
+								   Statistics, AllSzFlag) == false)
 	    {
 	      cout << "error while retrieving system parameters from file name " << GroundStateFiles[i] << endl;
 	      return -1;
@@ -229,7 +231,10 @@ int main(int argc, char** argv)
 	    }
 	}
     }
-
+  if (AllSzFlag == true)
+    {
+      NoSzFlag = true;
+    }
   int MaxSubsystemNbrParticles = (NbrParticles >> 1) + (NbrParticles & 1);
   if (Manager.GetInteger("max-na") > 0)
     {

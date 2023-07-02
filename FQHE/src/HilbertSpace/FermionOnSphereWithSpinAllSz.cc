@@ -167,10 +167,10 @@ FermionOnSphereWithSpinAllSz::FermionOnSphereWithSpinAllSz (int nbrFermions, int
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
 
 #ifdef __DEBUG__
-  int UsedMemory = 0;
-  UsedMemory += this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
+  long UsedMemory = 0;
+  UsedMemory += this->LargeHilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
   cout << "memory requested for Hilbert space = ";
-  PrintMemorySize(cout,UsedMemory)<<endl;
+  PrintMemorySize(cout, UsedMemory)<<endl;
   UsedMemory = this->NbrLzValue * sizeof(int);
   UsedMemory += this->NbrLzValue * this->LookUpTableMemorySize * sizeof(int);
   PrintMemorySize(cout,UsedMemory)<<endl;

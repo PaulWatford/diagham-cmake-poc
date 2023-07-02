@@ -127,10 +127,10 @@ int main(int argc, char** argv)
     }
   bool SVDFlag = Manager.GetBoolean("use-svd");
 
-  int NbrParticles=0;
-  int LzMax=0;
-  int TotalLz=0;
-  int TotalSz=0;
+  int NbrParticles = 0;
+  int LzMax = 0;
+  int TotalLz = 0;
+  int TotalSz = 0;
   int LzSymmetry = 0;
   int SzSymmetry = 0;
   bool Statistics = true;
@@ -141,6 +141,20 @@ int main(int argc, char** argv)
       cout << "error while retrieving system parameters from file name " << FileName << endl;
       return -1;
     }
+  cout << "N=" << NbrParticles << ", 2S=" << LzMax << ", 2Lz=" << TotalLz;
+  if (AllSzFlag == false)
+    {
+      cout << ", 2Sz=" << TotalSz;
+    }
+  if (LzSymmetry != 0)
+    {
+       cout << ", Lz<->-Lz=" << LzSymmetry;
+   }
+  if (SzSymmetry != 0)
+    {
+       cout << ", Sz<->-Sz=" << SzSymmetry;
+   }
+  cout << endl;
   int NbrParticlesUp = (NbrParticles + TotalSz) >> 1;
   int NbrParticlesDown = (NbrParticles - TotalSz) >> 1;
   if ((NbrParticlesUp + NbrParticlesDown) != NbrParticles)

@@ -973,15 +973,12 @@ long ParticleOnLatticeWithSpinChernInsulatorHamiltonian::FastMultiplicationMemor
   QHEParticlePrecalculationOperation Operation(this);
   Operation.ApplyOperation(this->Architecture);
 
-  cout << "test0 " << MinIndex << " " << MaxIndex << endl;
   if (this->Architecture->GetOptimizedTypicalRange(this->NbrInteractionPerComponent, MinIndex, MaxIndex) == true)
     {
       this->PrecalculationShift = (int) MinIndex;
       EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
       cout << "distributed calculations have been reoptimized" << endl;
-      cout << "new range is " <<  this->PrecalculationShift << " " << ( this->PrecalculationShift + EffectiveHilbertSpaceDimension - 1) << " " << this->Particles->GetHilbertSpaceDimension() << endl;
     }
-  cout << "test1 " << MinIndex << " " << MaxIndex << endl;
   if (allowedMemory == 0l)
     {
       delete[] this->NbrInteractionPerComponent;

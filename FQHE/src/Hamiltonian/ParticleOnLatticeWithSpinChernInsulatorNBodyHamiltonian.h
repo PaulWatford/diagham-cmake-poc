@@ -518,7 +518,7 @@ inline void ParticleOnLatticeWithSpinChernInsulatorNBodyHamiltonian::EvaluateMNN
 	  TmpIndices = this->NBodySpinMomentumSectorIndicesPerSum[nbodyIndex][spinSector][j];
 	  for (int i1 = 0; i1 < Lim; i1 += nbodyIndex)
 	    {
-	      Coefficient3 = particles->ProdA(index, TmpIndices + i1, TmpSpinIndicesA, nbodyIndex);
+	      Coefficient3 = particles->ProdA(index + this->PrecalculationShift, TmpIndices + i1, TmpSpinIndicesA, nbodyIndex);
 	      if (Coefficient3 != 0.0)
 		{
 		  TmpInteractionFactor = &(this->NBodyInteractionFactors[nbodyIndex][spinSector][j][(i1 * Lim) / SqrNBodyValue]);

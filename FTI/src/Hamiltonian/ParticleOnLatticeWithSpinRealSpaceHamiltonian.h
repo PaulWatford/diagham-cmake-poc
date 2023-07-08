@@ -469,6 +469,7 @@ inline void ParticleOnLatticeWithSpinRealSpaceHamiltonian::EvaluateMNOneBodyFast
   int Dim = particles->GetHilbertSpaceDimension();
   double Coefficient;
   int Index;
+  index += this->PrecalculationShift;
 
   if (this->HermitianSymmetryFlag == false)
     {

@@ -442,7 +442,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout << "error : bosons without Sz are not yet supported" << endl;
+	      cout << "error : fermions without Sz are not yet supported" << endl;
 	      return 0;
 //	      Spaces[i] = new FermionOnSphereWithSpin (NbrParticles, TotalLz[i], LzMax);
 	    }

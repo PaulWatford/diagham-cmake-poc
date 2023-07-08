@@ -1622,9 +1622,7 @@ int main(int argc, char** argv)
 			}
 		      else
 			{
-			  cout << "SU(4) not supported with more than 16 momenta" << endl;
-			  Space = 0;
-			  //		      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex]);
 			}
 		    }
 		  else
@@ -1641,8 +1639,7 @@ int main(int argc, char** argv)
 		      else
 			{
 			  cout << "SU(4) not supported with more than 16 momenta" << endl;
-			  Space = 0;
-			  //		      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], FakePz, FakeEz);
 			}
 		    }
 		}
@@ -1670,9 +1667,7 @@ int main(int argc, char** argv)
 			}
 		      else
 			{
-			  cout << "SU(4) not supported with more than 16 momenta" << endl;
-			  Space = 0;
-			  //		      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
 			}
 		    }
 		  else
@@ -1688,9 +1683,7 @@ int main(int argc, char** argv)
 			}
 		      else
 			{
-			  cout << "SU(4) not supported with more than 16 momenta" << endl;
-			  Space = 0;
-			  //		      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], FakePz, FakeEz);
 			}
 		    }
 		}

@@ -444,9 +444,9 @@ inline void AbstractQHEOnTorusWithMagneticTranslationsHamiltonian::EvaluateMNTwo
 				}
 			      else
 				{
-			      indexArray[position] = Index;
-			      coefficientArray[position] = Coefficient * Coefficient2 * (this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor));
-			      ++position;
+				  indexArray[position] = Index;
+				  coefficientArray[position] = Coefficient * Coefficient2 * (this->ExponentialFactors[NbrTranslations] * (*TmpInteractionFactor));
+				  ++position;
 				}
 			    }
 			}

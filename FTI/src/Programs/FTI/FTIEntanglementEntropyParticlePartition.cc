@@ -396,8 +396,8 @@ int main(int argc, char** argv)
 	}
       if (Spaces[TmpIndex]->GetLargeHilbertSpaceDimension() != GroundStates[i].GetLargeVectorDimension())
 	{
-	      cout << "dimension mismatch between Hilbert space and ground state" << endl;
-	      return 0;
+	  cout << "dimension mismatch between Hilbert space (" << Spaces[TmpIndex]->GetLargeHilbertSpaceDimension() << ") and ground state (" << GroundStates[i].GetLargeVectorDimension() << ")" << endl;
+	  return 0;
 	}
     }
   

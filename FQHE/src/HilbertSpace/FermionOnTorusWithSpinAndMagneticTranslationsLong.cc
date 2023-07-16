@@ -2137,6 +2137,7 @@ ULONGLONG FermionOnTorusWithSpinAndMagneticTranslationsLong::FindCanonicalFormAn
 
 int FermionOnTorusWithSpinAndMagneticTranslationsLong::FindStateIndex(ULONGLONG stateDescription, int maxMomentum)
 {
+  cout << hex << ((unsigned long) (stateDescription >> 64)) << "|"  << ((unsigned long) stateDescription) << ": " << dec << maxMomentum;
   long PosMax = stateDescription >> this->LookUpTableShift[maxMomentum];
   long PosMin = this->LookUpTable[maxMomentum][PosMax];
   PosMax = this->LookUpTable[maxMomentum][PosMax + 1];

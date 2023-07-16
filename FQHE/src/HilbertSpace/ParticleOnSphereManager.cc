@@ -59,6 +59,7 @@
 #include "HilbertSpace/FermionOnSphereWithSpinLzSymmetryLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinHaldaneLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 
 #include "HilbertSpace/FermionOnSphereWithSU3Spin.h"
 #include "HilbertSpace/FermionOnSphereWithSU3SpinTzSymmetry.h"

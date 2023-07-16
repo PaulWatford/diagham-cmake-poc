@@ -1,6 +1,7 @@
 #include "HilbertSpace/AbstractQHEParticle.h"
 #include "HilbertSpace/ParticleOnSphereManager.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinSqueezedBasis.h"
 #include "HilbertSpace/FermionOnSphereWithSpinLzSzSymmetry.h"

@@ -46,6 +46,10 @@ class FermionOnSphereWithSpinSzSymmetry :  public FermionOnSphereWithSpinLzSzSym
 {
 
 
+protected:
+
+  friend class FermionOnSphereWithSpinAllSzSzSymmetry;
+  
  public:
 
   // default constructor 

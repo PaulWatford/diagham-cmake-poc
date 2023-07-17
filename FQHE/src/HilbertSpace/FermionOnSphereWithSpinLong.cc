@@ -1035,7 +1035,8 @@ void FermionOnSphereWithSpinLong::GenerateLookUpTable(unsigned long memory)
 	--CurrentHighestBit;  
       this->StateHighestBit[i] = CurrentHighestBit;
    }
-
+  CurrentHighestBit = this->StateHighestBit[0];
+  
   // evaluate look-up table size
   memory /= (sizeof(int*) * 2*this->NbrLzValue);
   this->MaximumLookUpShift = 1;
@@ -1054,7 +1055,6 @@ void FermionOnSphereWithSpinLong::GenerateLookUpTable(unsigned long memory)
   for (int i = 0; i < 2*this->NbrLzValue; ++i)
     this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
   int CurrentLargestBit = this->StateHighestBit[0];
-  cout << this->NbrLzValue << " " << CurrentLargestBit << endl;
   int* TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
   if (CurrentLargestBit < this->MaximumLookUpShift)
     this->LookUpTableShift[CurrentLargestBit] = 0;

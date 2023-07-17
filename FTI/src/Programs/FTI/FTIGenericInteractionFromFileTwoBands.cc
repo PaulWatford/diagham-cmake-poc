@@ -112,6 +112,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");
   (*ToolsGroup) += new SingleDoubleOption  ('\n',"testhermitian-error", "precision of the hermeticity test",0);
+  (*ToolsGroup) += new BooleanOption  ('\n', "show-hilbert", "show the Hilbert space basis");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -358,7 +359,7 @@ int main(int argc, char** argv)
 		{
 		  cout << Manager.GetString("singleparticle-file") << " has a wrong number of lines (has "
 		       << NbrEnergies << ", should be " << (2 * NbrSitesX * NbrSitesY)
-		       << " without valley, " << (4 * NbrSitesX * NbrSitesY) << " with vallley)" << endl;
+		       << " without valley, " << (4 * NbrSitesX * NbrSitesY) << " with valley)" << endl;
 		  return 0;
 		}
 	      if (((Manager.GetBoolean("add-valley") == false) && (OneBodyEnergyFile.GetNbrColumns() < 4))
@@ -376,7 +377,7 @@ int main(int argc, char** argv)
 		{
 		  cout << Manager.GetString("singleparticle-file") << " has a wrong number of lines (has "
 		       << NbrEnergies << ", should be " << (4 * NbrSitesX * NbrSitesY)
-		       << " without valley and --full-singleparticle, " << (8 * NbrSitesX * NbrSitesY) << " with vallley and --full-singleparticle)" << endl;
+		       << " without valley and --full-singleparticle, " << (8 * NbrSitesX * NbrSitesY) << " with valley and --full-singleparticle)" << endl;
 		  return 0;
 		}
 	      if (((Manager.GetBoolean("add-valley") == false) && (OneBodyEnergyFile.GetNbrColumns() < 5))
@@ -1646,6 +1647,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
+	      // spinful case
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
 		  if (Manager.GetBoolean("conserve-bandoccuption") == false)

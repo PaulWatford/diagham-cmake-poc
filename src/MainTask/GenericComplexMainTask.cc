@@ -239,6 +239,13 @@ GenericComplexMainTask::GenericComplexMainTask(OptionManager* options, AbstractH
 	  cout << HRep << endl;
 	}
     }  
+  if (((*options)["show-hilbert"] != 0) && (options->GetBoolean("show-hilbert") == true))
+    {
+      for (int i = 0; i < this->Space->GetHilbertSpaceDimension(); ++i)
+	{
+	  this->Space->PrintState(cout, i) << endl;
+	}
+    }
   this->FriendlyShowHamiltonian = false;
   if (((*options)["friendlyshow-hamiltonian"] != 0) && (options->GetBoolean("friendlyshow-hamiltonian") == true))
     {

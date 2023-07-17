@@ -284,15 +284,23 @@ ostream& FermionOnSquareLatticeWithSpinMomentumSpaceLong::PrintState (ostream& S
 {
   ULONGLONG TmpState = this->StateDescription[state];
   ULONGLONG Tmp;
+// #ifdef __128_BIT_LONGLONG__
+//   int CurrentHighestBit = 127;
+// #else
+//   int CurrentHighestBit = 63;
+// #endif
+//   while (((TmpState & (((ULONGLONG) 0x1ul) << CurrentHighestBit)) == ((ULONGLONG) 0x0ul)) && (CurrentHighestBit > 0))
+//     --CurrentHighestBit;  
+//   Str << this->FindStateIndex(TmpState, CurrentHighestBit) << ": " << CurrentHighestBit;
   Str << "[";
   for (int i = 0; i < this->NbrLzValue; ++i)
     {
       Tmp = (TmpState >> (i << 1));
       int TmpKx = i / this->NbrSiteY;
       int TmpKy = i % this->NbrSiteY;
-      if ((Tmp & 0x1l) != 0ul)
+      if ((Tmp & ((ULONGLONG) 0x2l)) != ((ULONGLONG) 0x0ul))
 	Str << "(" << TmpKx << "," << TmpKy << ",+)";
-      if ((Tmp & 0x2l) != 0ul)
+      if ((Tmp & ((ULONGLONG) 0x1l)) != ((ULONGLONG) 0x0ul))
 	Str << "(" << TmpKx << "," << TmpKy << ",-)";
     }
   Str << "]";
@@ -465,18 +473,18 @@ long FermionOnSquareLatticeWithSpinMomentumSpaceLong::GenerateStates(int nbrFerm
     {
       this->StateDescription[pos] |= Mask;
     }
-  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp, pos);
-  Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) << 1);
-  for (; pos < TmpPos; ++pos)
-    {
-      this->StateDescription[pos] |= Mask;
-   }
   TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp - 1, pos);
   Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + currentKy) << 1);
   for (; pos < TmpPos; ++pos)
     {
       this->StateDescription[pos] |= Mask;
     }
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp, pos);
+  Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) << 1);
+  for (; pos < TmpPos; ++pos)
+    {
+      this->StateDescription[pos] |= Mask;
+   }
   return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp, pos);  
 }
 

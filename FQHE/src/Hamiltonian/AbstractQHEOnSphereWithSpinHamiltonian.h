@@ -804,9 +804,11 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNTwoBodyFastMultipl
 inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiplyComponent(ParticleOnSphereWithSpin* particles, int firstComponent, int lastComponent,
 											  int step, RealVector& vSource, RealVector& vDestination)
 {
+  //cout << " EvaluateMNOneBodyAddMultiplyComponent " << endl;
   if (this->OneBodyInteractionFactorsupup != 0)
     if (this->OneBodyInteractionFactorsdowndown != 0)
       {
+    cout << " EvaluateMNOneBodyAddMultiplyComponent UD" << endl;    
 	double TmpDiagonal = 0.0;
 	for (int i = firstComponent; i < lastComponent; i += step)
 	  { 
@@ -821,6 +823,7 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
       }
     else
       {
+    cout << " EvaluateMNOneBodyAddMultiplyComponent U" << endl;       
 	double TmpDiagonal = 0.0;
 	for (int i = firstComponent; i < lastComponent; i += step)
 	  { 
@@ -834,6 +837,7 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
     {
       if (this->OneBodyInteractionFactorsdowndown != 0)
 	{
+      cout << " EvaluateMNOneBodyAddMultiplyComponent D" << endl;         
 	  double TmpDiagonal = 0.0;
 	  for (int i = firstComponent; i < lastComponent; i += step)
 	    { 
@@ -845,6 +849,7 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
 	}	
       else
 	{
+      cout << " EvaluateMNOneBodyAddMultiplyComponent .." << endl;     
 	  for (int i = firstComponent; i < lastComponent; i += step)
 	    vDestination[i] += this->HamiltonianShift * vSource[i];
 	}

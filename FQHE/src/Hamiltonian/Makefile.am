@@ -178,5 +178,6 @@ ParticleOnLatticeWithSpinChernInsulatorRealHamiltonian.cc \
 ParticleOnLatticeQuantumSpinHallTwoBandRealHamiltonian.cc \
 ParticleOnThinAnnulusGenericHamiltonian.cc \
 ParticleOnTorusPairHoppingHamiltonian.cc \
-ParticleOnTorusPairHoppingRealHamiltonian.cc
-
+ParticleOnTorusPairHoppingRealHamiltonian.cc \
+AbstractQHEOnSphereWithSpinNBodyInteractionTwoBodyFullHamiltonian.cc \
+ParticleOnSphereWithSpinGenericThreeBodyTwoBodyFullHamiltonian.cc

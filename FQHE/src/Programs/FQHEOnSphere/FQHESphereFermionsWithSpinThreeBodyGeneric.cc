@@ -10,6 +10,7 @@
 #include "HilbertSpace/FermionOnSphereWithSpinLzSymmetryLong.h"
 
 #include "Hamiltonian/ParticleOnSphereWithSpinGenericThreeBodyHamiltonian.h"
+#include "Hamiltonian/ParticleOnSphereWithSpinGenericThreeBodyTwoBodyFullHamiltonian.h"
 
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
@@ -65,6 +66,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "nbr-lz", "number of lz value to evaluate", -1);
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-file", "file describing the 2-body interaction in terms of the pseudo-potential");
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "unknown");
+  (*SystemGroup) += new BooleanOption  ('\n', "twobody-full", "use full two-body interaction (UUUU, DDDD, UUDD, DDUU, UDUD)");
   (*SystemGroup) += new SingleDoubleOption ('\n', "l2-factor", "multiplicative factor in front of an optional L^2 operator than can be added to the Hamiltonian", 0.0);
   (*SystemGroup) += new SingleDoubleOption ('\n', "s2-factor", "multiplicative factor in front of an optional S^2 operator than can be added to the Hamiltonian", 0.0);
   // (*SystemGroup) += new BooleanOption  ('g', "ground", "restrict to the largest subspace");
@@ -97,6 +99,7 @@ int main(int argc, char** argv)
 
 
   // bool GroundFlag = Manager.GetBoolean("ground");
+  bool TwoBodyFullFlag = Manager.GetBoolean("twobody-full");
   int NbrParticles = Manager.GetInteger("nbr-particles");
   int LzMax = Manager.GetInteger("lzmax");
   int SzTotal = Manager.GetInteger("total-sz");
@@ -129,14 +132,14 @@ int main(int argc, char** argv)
       cout << "an interaction file has to be provided" << endl;
       return -1;
     }
-  else
+  else if (TwoBodyFullFlag == false)
     {
       ConfigurationParser InteractionDefinition;
       if (InteractionDefinition.Parse(Manager.GetString("interaction-file")) == false)
-	{
-	  InteractionDefinition.DumpErrors(cout) << endl;
-	  return -1;
-	}
+	   {  
+	     InteractionDefinition.DumpErrors(cout) << endl;
+	     return -1;
+	   }
 
       double* TmpThreeBodyPotentials = 0;
       int TmpNbrThreeBodyPseudoPotentials = 0;
@@ -295,9 +298,299 @@ int main(int argc, char** argv)
 	    }
 	}
     }
+  else //TwoBodyFullFlag == true
+    {
+      const int NbrPseudopotentialsCoeffs = 10;
 
-  char* OutputNameLz = new char [256 + strlen(Manager.GetString("interaction-name"))];
-  sprintf (OutputNameLz, "fermions_sphere_su2_%s_n_%d_2s_%d_sz_%d_lz.dat", Manager.GetString("interaction-name"), NbrParticles, LzMax, SzTotal);
+      ConfigurationParser InteractionDefinition;
+      if (InteractionDefinition.Parse(Manager.GetString("interaction-file")) == false)
+	   {  
+	     InteractionDefinition.DumpErrors(cout) << endl;
+	     return -1;
+	   }
+
+      double* TmpThreeBodyPotentials = 0;
+      int TmpNbrThreeBodyPseudoPotentials = 0;
+      NbrThreeBodyPseudoPotentials32 = 0;
+      if (InteractionDefinition.GetAsDoubleArray("ThreebodyPseudopotentials32", ' ', TmpThreeBodyPotentials, TmpNbrThreeBodyPseudoPotentials) == true)
+	{
+	  ThreeBodyPotentials32 = new double[TmpNbrThreeBodyPseudoPotentials];
+	  NbrThreeBodyPseudoPotentials32 = TmpNbrThreeBodyPseudoPotentials;	      
+	  for (int j = 0; j < TmpNbrThreeBodyPseudoPotentials; ++j)
+	    ThreeBodyPotentials32[j] = TmpThreeBodyPotentials[j];
+	}
+      else
+	{
+	  if (InteractionDefinition["ThreebodyPseudopotentials32"] != 0)
+	    {
+	      cout << "ThreebodyPseudopotentials32 has a wrong value in " << Manager.GetString("interaction-file") << endl;
+	      return -1;
+	    }
+	}
+      if (InteractionDefinition.GetAsDoubleArray("ThreebodyPseudopotentials12", ' ', TmpThreeBodyPotentials, TmpNbrThreeBodyPseudoPotentials) == true)
+	{
+	  ThreeBodyPotentials12 = new double[TmpNbrThreeBodyPseudoPotentials];
+	  NbrThreeBodyPseudoPotentials12 = TmpNbrThreeBodyPseudoPotentials;	      
+	  for (int j = 0; j < TmpNbrThreeBodyPseudoPotentials; ++j)
+	    ThreeBodyPotentials12[j] = TmpThreeBodyPotentials[j];
+	}
+      else
+	{
+	  if (InteractionDefinition["ThreebodyPseudopotentials12"] != 0)
+	    {
+	      cout << "ThreebodyPseudopotentials12 has a wrong value in " << Manager.GetString("interaction-file") << endl;
+	      return -1;
+	    }
+	}
+      if ((NbrThreeBodyPseudoPotentials32 == 0) && (NbrThreeBodyPseudoPotentials12 == 0))
+	{
+	  cout << "ThreebodyPseudopotentials32 or ThreebodyPseudopotentials12 is not defined in in " << Manager.GetString("interaction-file") << endl;
+	  return -1;	  
+	}
+      --NbrThreeBodyPseudoPotentials32;
+      --NbrThreeBodyPseudoPotentials12;
+
+
+
+      int TmpNbrPseudoPotentials;
+      double* TmpPseudoPotentials;
+      bool Flag = false;
+	  PseudoPotentials = new double*[10];
+	  for (int i = 0; i < 10; ++i)
+	    {  
+	      PseudoPotentials[i] = new double[LzMax + 1];
+	      for (int j = 0; j <= LzMax; ++j)
+		PseudoPotentials[i][j] = 0;
+	    }
+	
+// UpUpUpUp Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpUpUpUp", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsUpUpUpUp" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[0][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsUpUpUpUp"] != 0)
+          {
+            cout << "PseudopotentialsUpUpUpUp has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// UpDownUpUp Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpDownUpUp", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsUpDownUpUp" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[1][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsUpDownUpUp"] != 0)
+          {
+            cout << "PseudopotentialsUpDownUpUp has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// DownDownUpUp Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsDownDownUpUp", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsDownDownUpUp" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[2][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsDownDownUpUp"] != 0)
+          {
+            cout << "PseudopotentialsDownDownUpUp has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// UpUpUpDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpUpUpDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsUpUpUpDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[3][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsUpUpUpDown"] != 0)
+          {
+            cout << "PseudopotentialsUpUpUpDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// UpDownUpDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpDownUpDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsUpDownUpDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[4][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsUpDownUpDown"] != 0)
+          {
+            cout << "PseudopotentialsUpDownUpDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// DownUpUpDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsDownUpUpDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsDownUpUpDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[5][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsDownUpUpDown"] != 0)
+          {
+            cout << "PseudopotentialsDownUpUpDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// DownDownUpDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsDownDownUpDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsDownDownUpDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[6][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsDownDownUpDown"] != 0)
+          {
+            cout << "PseudopotentialsDownDownUpDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// UpUpDownDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpUpDownDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsUpUpDownDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[7][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsUpUpDownDown"] != 0)
+          {
+            cout << "PseudopotentialsUpUpDownDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// UpDownDownDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpDownDownDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsUpDownDownDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[8][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsUpDownDownDown"] != 0)
+          {
+            cout << "PseudopotentialsUpDownDownDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+// DownDownDownDown Sector
+      if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsDownDownDownDown", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
+        {
+          Flag = true;
+          if (TmpNbrPseudoPotentials != (LzMax +1))
+            {
+              cout << "Invalid number of pseudo-potentials in PseudopotentialsDownDownDownDown" << endl;
+              return -1;          
+            }
+          for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+            PseudoPotentials[9][j] = TmpPseudoPotentials[j];
+          delete [] TmpPseudoPotentials;
+        }
+      else
+        if (InteractionDefinition["PseudopotentialsDownDownDownDown"] != 0)
+          {
+            cout << "PseudopotentialsDownDownDownDown has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+            return -1;
+          }
+
+
+//      if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialUpUp", ' ', OneBodyPotentialUpUp, TmpNbrPseudoPotentials) == true)
+//	{
+//	  if (TmpNbrPseudoPotentials != (LzMax + 1))
+//	    {
+//	      cout << "OneBodyPotentialUpUp has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
+//	      return -1;
+//	    }
+//	}
+//      if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialDownDown", ' ', OneBodyPotentialDownDown, TmpNbrPseudoPotentials) == true)
+//	{
+//	  if (TmpNbrPseudoPotentials != (LzMax + 1))
+//	    {
+//	      cout << "OneBodyPotentialUpUp has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
+//	      return -1;
+//	    }
+//	}
+
+      if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialUpUp", ' ', OneBodyPotentialUpUp, TmpNbrPseudoPotentials) == true)
+	{
+	  if (TmpNbrPseudoPotentials != (LzMax + 1))
+	    {
+	      cout << "OneBodyPotentialUpUp has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
+	      return -1;
+	    }
+	}
+      if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialDownDown", ' ', OneBodyPotentialDownDown, TmpNbrPseudoPotentials) == true)
+	{
+	  if (TmpNbrPseudoPotentials != (LzMax + 1))
+	    {
+	      cout << "OneBodyPotentialUpUp has a wrong number of components or has a wrong value in " << Manager.GetString("interaction-file") << endl;
+	      return -1;
+	    }
+	}
+
+    } //TwoBodyFullFlag == true
+
 
   int Max = (((LzMax - NbrUp + 1) * NbrUp) + ((LzMax - NbrDown + 1) * NbrDown));
 
@@ -318,7 +611,34 @@ int main(int argc, char** argv)
 	Max = L + (2 * (NbrLz - 1));
     }
 
-  cout << "WARNING : FQHESphereFermionsThreeBodyGeneric has not been tested, use at your own risk" << endl;
+  char* OutputNameLz = new char [256 + strlen(Manager.GetString("interaction-name"))];
+  //sprintf (OutputNameLz, "fermions_sphere_su2_%s_n_%d_2s_%d_sz_%d_lz.dat", Manager.GetString("interaction-name"), NbrParticles, LzMax, SzTotal);
+
+  if (Manager.GetBoolean("all-sz") == false) 
+    {
+      if (NbrLz==1)
+	    {
+	       sprintf (OutputNameLz, "fermions_sphere_su2_%s_n_%d_2s_%d_sz_%d_lz_%d.dat", Manager.GetString("interaction-name"), NbrParticles, LzMax, SzTotal, L);
+	    }
+      else
+	    {
+	      sprintf (OutputNameLz, "fermions_sphere_su2_%s_n_%d_2s_%d_sz_%d_lz.dat", Manager.GetString("interaction-name"), NbrParticles, LzMax, SzTotal);
+	    }
+    }
+  else
+    {
+      if (NbrLz==1)
+	     {
+	       sprintf (OutputNameLz, "fermions_sphere_su2_%s_n_%d_2s_%d_lz_%d.dat", Manager.GetString("interaction-name"), NbrParticles, LzMax, L);
+	     }
+      else
+	    {
+	       sprintf (OutputNameLz, "fermions_sphere_su2_%s_n_%d_2s_%d_lz.dat", Manager.GetString("interaction-name"), NbrParticles, LzMax);
+	    }
+    }
+
+
+  //cout << "WARNING : FQHESphereFermionsThreeBodyGeneric has not been tested, use at your own risk" << endl;
   for (; L <= Max; L += 2)
     {
       ParticleOnSphereWithSpin* Space = (ParticleOnSphereWithSpin*) ParticleManager.GetHilbertSpace(L);
@@ -326,14 +646,23 @@ int main(int argc, char** argv)
       AbstractQHEOnSphereWithSpinHamiltonian* Hamiltonian = 0;
       if (Architecture.GetArchitecture()->GetLocalMemory() > 0)
 	Memory = Architecture.GetArchitecture()->GetLocalMemory();
-      if (PseudoPotentials == 0)
+     if (TwoBodyFullFlag == false)
+      {
+       if (PseudoPotentials == 0)
 	Hamiltonian = new ParticleOnSphereWithSpinGenericThreeBodyHamiltonian(Space, NbrParticles, LzMax, ThreeBodyPotentials32, NbrThreeBodyPseudoPotentials32, ThreeBodyPotentials12, NbrThreeBodyPseudoPotentials12,
 									      Architecture.GetArchitecture(), 
 									      Memory, DiskCacheFlag,
 									      LoadPrecalculationFileName);
-      else
+      else 
 	Hamiltonian = new ParticleOnSphereWithSpinGenericThreeBodyHamiltonian(Space, NbrParticles, LzMax, ThreeBodyPotentials32, NbrThreeBodyPseudoPotentials32, ThreeBodyPotentials12, NbrThreeBodyPseudoPotentials12,
-									      PseudoPotentials, 0, 0,
+									      PseudoPotentials, OneBodyPotentialUpUp, OneBodyPotentialDownDown,
+									      Architecture.GetArchitecture(), 
+									      Memory, DiskCacheFlag,
+									      LoadPrecalculationFileName);
+      }
+      else //TwoBodyFullFlag == true
+ 	Hamiltonian = new ParticleOnSphereWithSpinGenericThreeBodyTwoBodyFullHamiltonian(Space, NbrParticles, LzMax, ThreeBodyPotentials32, NbrThreeBodyPseudoPotentials32, ThreeBodyPotentials12, NbrThreeBodyPseudoPotentials12,
+									      PseudoPotentials, OneBodyPotentialUpUp, OneBodyPotentialDownDown,
 									      Architecture.GetArchitecture(), 
 									      Memory, DiskCacheFlag,
 									      LoadPrecalculationFileName);
@@ -343,13 +672,23 @@ int main(int argc, char** argv)
 	Hamiltonian->AddS2(L, SzTotal, Manager.GetDouble("s2-factor"), ((unsigned long)Manager.GetInteger("s2-memory")) << 20);
       double Shift = - 10.0;
       Hamiltonian->ShiftHamiltonian(Shift);
+
       char* EigenvectorName = 0;
       if (Manager.GetBoolean("eigenstate") == true)	
-	{
-	  EigenvectorName = new char [64];
-	  sprintf (EigenvectorName, "fermions_sphere_su2_%s_n_%d_2s_%d_sz_%d_lz_%d", Manager.GetString("interaction-name"), NbrParticles, LzMax, SzTotal, L);
-	}
-      
+	      {
+	        EigenvectorName = new char [512];
+	        if (Manager.GetBoolean("all-sz") == false)
+	          {
+	             sprintf (EigenvectorName, "fermions_sphere_su2_%s_n_%d_2s_%d_sz_%d_lz_%d",
+		       Manager.GetString("interaction-name"), NbrParticles, LzMax, SzTotal, L);
+	          }
+	       else
+	         {
+	             sprintf (EigenvectorName, "fermions_sphere_su2_%s_n_%d_2s_%d_lz_%d",
+		       Manager.GetString("interaction-name"), NbrParticles, LzMax, L);
+	         }
+	      }
+
       QHEOnSphereMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName, LzMax);
       MainTaskOperation TaskOperation (&Task);
       TaskOperation.ApplyOperation(Architecture.GetArchitecture());
@@ -363,5 +702,6 @@ int main(int argc, char** argv)
       delete Space;
     }
 
+  delete[] OutputNameLz;
   return 0;
 }

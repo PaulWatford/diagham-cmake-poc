@@ -593,6 +593,8 @@ int main(int argc, char** argv)
 
 
   int Max = (((LzMax - NbrUp + 1) * NbrUp) + ((LzMax - NbrDown + 1) * NbrDown));
+  if (Manager.GetBoolean("all-sz") == true) 
+  	Max = (LzMax - NbrParticles + 1) * NbrParticles;
 
   int  L = 0;
   if ((abs(Max) & 1) != 0)

@@ -79,7 +79,7 @@ ParticleOnSphereWithSpinFullGenericHamiltonian::ParticleOnSphereWithSpinFullGene
 										       AbstractArchitecture* architecture, long memory, bool onDiskCacheFlag, 
 										       char* precalculationFileName)
 {
-  // For AbstractQHEOnSphereWithSpinHamiltonian destructor
+  //cout << "Enter ParticleOnSphereWithSpinFullGenericHamiltonian " << endl;
   this->NbrIntraSectorSums = 0;
   this->NbrInterSectorSums = 0;
   this->M1IntraValue = 0;

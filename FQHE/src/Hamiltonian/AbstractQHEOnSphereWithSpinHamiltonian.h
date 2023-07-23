@@ -808,7 +808,6 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
   if (this->OneBodyInteractionFactorsupup != 0)
     if (this->OneBodyInteractionFactorsdowndown != 0)
       {
-    cout << " EvaluateMNOneBodyAddMultiplyComponent UD" << endl;    
 	double TmpDiagonal = 0.0;
 	for (int i = firstComponent; i < lastComponent; i += step)
 	  { 
@@ -823,7 +822,6 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
       }
     else
       {
-    cout << " EvaluateMNOneBodyAddMultiplyComponent U" << endl;       
 	double TmpDiagonal = 0.0;
 	for (int i = firstComponent; i < lastComponent; i += step)
 	  { 
@@ -837,7 +835,6 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
     {
       if (this->OneBodyInteractionFactorsdowndown != 0)
 	{
-      cout << " EvaluateMNOneBodyAddMultiplyComponent D" << endl;         
 	  double TmpDiagonal = 0.0;
 	  for (int i = firstComponent; i < lastComponent; i += step)
 	    { 
@@ -849,7 +846,6 @@ inline void AbstractQHEOnSphereWithSpinHamiltonian::EvaluateMNOneBodyAddMultiply
 	}	
       else
 	{
-      cout << " EvaluateMNOneBodyAddMultiplyComponent .." << endl;     
 	  for (int i = firstComponent; i < lastComponent; i += step)
 	    vDestination[i] += this->HamiltonianShift * vSource[i];
 	}

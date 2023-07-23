@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
   ArchitectureManager Architecture;
 
-  ParticleOnSphereManager ParticleManager(true, false, -2);
+  ParticleOnSphereManager ParticleManager(true, false, 2);
   ParticleManager.AddOptionGroup(&Manager);
   OptionGroup* SystemGroup = Manager.GetOptionGroup("system options");
   OptionGroup* PrecalculationGroup = Manager.GetOptionGroup("precalculation options");
@@ -500,7 +500,7 @@ int main(int argc, char** argv)
 
       ParticleOnSphereWithSpin* Space = (ParticleOnSphereWithSpin*)ParticleManager.GetHilbertSpace(L);
       
-      cout << "l=" <<  L << endl;
+      cout << "l=" <<  L << " " << Space->GetHilbertSpaceDimension() << endl;
       
       Architecture.GetArchitecture()->SetDimension(Space->GetHilbertSpaceDimension());
       if (Architecture.GetArchitecture()->GetLocalMemory() > 0)

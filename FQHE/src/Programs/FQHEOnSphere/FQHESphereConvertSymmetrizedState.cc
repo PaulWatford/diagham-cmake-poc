@@ -50,6 +50,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('f', "fermion", "use fermionic statistic (override autodetection from input file name)");
   (*SystemGroup) += new BooleanOption  ('b', "boson", "use bosonic statistics (override autodetection from input file name)");
   (*SystemGroup) += new BooleanOption  ('r', "symmetrize", "symmetrize state (instead of unsymmetrizing it)");
+  (*SystemGroup) += new BooleanOption  ('\n', "apply-inversion", "apply the inversion symmetric to a state rather than symmetrize/unsymmetrize it");
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name instead of the one that can be deduced from the input file name (removing any occurence of lzsym_)");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -97,6 +98,7 @@ int main(int argc, char** argv)
   int NbrParticles = Manager.GetInteger("nbr-particles"); 
   int NbrFluxQuanta = Manager.GetInteger("nbr-flux"); 
   bool SymmetrizeFlag = Manager.GetBoolean("symmetrize");
+  bool ComputeInversionSymmetricFlag = Manager.GetBoolean("apply-inversion");
   bool Statistics = true;
   int TotalLz = 0;
   if (FQHEOnSphereFindSystemInfoFromVectorFileName(Manager.GetString("input-file"),
@@ -152,12 +154,24 @@ int main(int argc, char** argv)
 		  }
 		else
 		  {
-		    if (InitialSpace.GetHilbertSpaceDimension() != State.GetVectorDimension())
+		    if (ComputeInversionSymmetricFlag)
 		      {
-			cout << "dimension mismatch between Hilbert space and input state" << endl;
-			return -1;
+			if (TargetSpace.GetHilbertSpaceDimension() != State.GetVectorDimension())
+			  {
+			    cout << "dimension mismatch between Hilbert space and input state" << endl;
+			    return -1;
+			  }
+			OutputState = TargetSpace.ApplyInversionSymmetry(State, TargetSpace);			
 		      }
-		    OutputState = InitialSpace.ConvertToNbodyBasis(State, TargetSpace);
+		    else
+		      {
+			if (InitialSpace.GetHilbertSpaceDimension() != State.GetVectorDimension())
+			  {
+			    cout << "dimension mismatch between Hilbert space and input state" << endl;
+			    return -1;
+			  }
+			OutputState = InitialSpace.ConvertToNbodyBasis(State, TargetSpace);
+		      }
 		  }
 		if (OutputState.WriteVector(OutputFileName) == false)
 		  {

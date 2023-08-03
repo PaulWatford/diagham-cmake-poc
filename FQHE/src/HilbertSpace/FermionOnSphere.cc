@@ -1873,20 +1873,33 @@ RealVector FermionOnSphere::ConvertToNbodyBasis(RealVector& state, FermionOnSphe
   return TmpVector;
 }
 
-// convert a given state from one smaller n-body basis to the current (and bigger) n-body basis
+// apply the inversion symmetry (Lz <-> -Lz symmetry) to a state
 //
 // state = reference on the vector to convert
-// nbodyBasis = reference on the nbody-basis to use
+// nbodyBasis = reference on the nbody-basis used for initial state
 // return value = converted vector
 
-RealVector FermionOnSphere::ConvertFromNbodyBasis(RealVector& state, FermionOnSphere& nbodyBasis)
+RealVector FermionOnSphere::ApplyInversionSymmetry(RealVector& state, FermionOnSphere& nbodyBasis)
 {
   RealVector TmpVector (this->HilbertSpaceDimension, true);
-  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-    TmpVector[i] = state[nbodyBasis.FindStateIndex(this->StateDescription[i], this->StateLzMax[i])];
-  TmpVector /= TmpVector.Norm();
+  for (int i = 0; i < nbodyBasis.HilbertSpaceDimension; ++i)
+    {
+      unsigned long TmpState = nbodyBasis.GetSymmetricState(nbodyBasis.StateDescription[i]);
+      int TmpLzMax = this->LzMax;
+      while ((TmpLzMax > 0) && ((TmpState >> TmpLzMax) == 0x0ul))
+	{
+	  --TmpLzMax;
+	}
+      int TmpIndex = this->FindStateIndex(TmpState, TmpLzMax);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  TmpVector[TmpIndex] = state[i];
+	}
+    }
   return TmpVector;
 }
+
+
 
 // evaluate wave function in real space using a given basis and only for agiven range of components
 //

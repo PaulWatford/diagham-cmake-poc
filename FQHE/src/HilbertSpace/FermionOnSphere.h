@@ -1027,6 +1027,13 @@ class FermionOnSphere :  public ParticleOnSphere
   // return value = converted vector
   RealVector ConvertFromNbodyBasis(RealVector& state, FermionOnSphere& nbodyBasis);
 
+  // apply the inversion symmetry (Lz <-> -Lz symmetry) to a state
+  //
+  // state = reference on the vector to convert
+  // nbodyBasis = reference on the nbody-basis used for initial state
+  // return value = converted vector
+  RealVector ApplyInversionSymmetry(RealVector& state, FermionOnSphere& nbodyBasis);
+
   // convert a state such that its components are now expressed in the unnormalized basis
   //
   // state = reference to the state to convert

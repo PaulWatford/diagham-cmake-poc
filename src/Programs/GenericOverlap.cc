@@ -138,7 +138,7 @@ int main(int argc, char** argv)
 	    OverlapMatrix = ComplexMatrix(MaxVectors, NbrVectors - 1, true);
 	  else
 	    OverlapMatrix = ComplexMatrix(MaxVectors, NbrVectors, true);
-	  for (int i=0; i < MaxVectors; ++i)
+	  for (int i = 0; i < MaxVectors; ++i)
 	    {
 	      if (State1.ReadVector (VectorFiles[i]) == false)
 		{
@@ -151,6 +151,8 @@ int main(int argc, char** argv)
 		}
 	      if (Manager.GetBoolean("normalize"))
 		State1 /= State1.Norm();
+	      sp = State1 * State1;
+	      OverlapMatrix.SetMatrixElement(i, i, sp);
 	      for (int j= i + 1; j < NbrVectors; ++j)
 		{	      
 		  if (State2.ReadVector (VectorFiles[j]) == false)
@@ -190,7 +192,6 @@ int main(int argc, char** argv)
 		    {
 		      OverlapMatrix.SetMatrixElement(j, i, sp);
 		      OverlapMatrix.SetMatrixElement(i, j, sp);
-		      OverlapMatrix.SetMatrixElement(i, i, 1.0);
 		    }
 		  if (Scalar == false)
 		    {
@@ -264,6 +265,8 @@ int main(int argc, char** argv)
 		}
 	      if (Manager.GetBoolean("normalize"))
 		State1 /= State1.Norm();
+	      sp = State1 * State1;
+	      OverlapMatrix.SetMatrixElement(i, i, sp);
 	      for (int j = i + 1; j < NbrVectors; ++j)
 		{	      
 		  if (State2.ReadVector (VectorFiles[j]) == false)
@@ -296,7 +299,6 @@ int main(int argc, char** argv)
 		    {
 		      OverlapMatrix.SetMatrixElement(j, i, sp);
 		      OverlapMatrix.SetMatrixElement(i, j, sp);
-		      OverlapMatrix.SetMatrixElement(i, i, 1.0);
 		    }
 		  if (Scalar == false)
 		    {

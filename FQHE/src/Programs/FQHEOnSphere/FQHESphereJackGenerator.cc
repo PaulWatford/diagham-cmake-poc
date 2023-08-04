@@ -387,7 +387,8 @@ int main(int argc, char** argv)
 		  RationalVector OutputState;
 		  if (Manager.GetBoolean("check-singularity") == true)
 		    {
-		      OutputState = RationalVector(InitialSpace->GetLargeHilbertSpaceDimension(), true);		  
+		      OutputState = RationalVector(InitialSpace->GetLargeHilbertSpaceDimension(), true);
+		      cout << "looking for potential singular coefficients" << endl;
 		      InitialSpace->CheckPossibleSingularCoefficientsInJackPolynomial(OutputState, AlphaNumerator, AlphaDenominator, true);
 		      cout << "partitions that may lead to singular coefficients : " << endl;
 		      Rational Zero = 0l;
@@ -590,6 +591,7 @@ int main(int argc, char** argv)
 			cout << "can't open " << Manager.GetString("initial-state") << endl;
 			return -1;
 		      }
+		  cout << "using floating point mode" << endl;
 		  if (SymmetrizedBasis == false)    
 		    InitialSpace->GenerateJackPolynomial(OutputState, Alpha, MinIndex, MaxIndex, OutputFileName);
 		  else
@@ -616,7 +618,24 @@ int main(int argc, char** argv)
 			cout << "only use-gmp/use-longlong rational mode are available for fermions" << endl;
 			return 0;
 		      }
+		  cout << "using rational mode" << endl;
 		  LongRationalVector OutputState;
+		  if (Manager.GetBoolean("check-singularity") == true)
+		    {
+		      OutputState = LongRationalVector(InitialSpace->GetLargeHilbertSpaceDimension(), true);
+		      cout << "looking for potential singular coefficients" << endl;
+		      InitialSpace->CheckPossibleSingularCoefficientsInJackPolynomial(OutputState, AlphaNumerator, AlphaDenominator, false);
+		      cout << "partitions that may lead to singular coefficients : " << endl;
+		      for (long i = 1l; i < InitialSpace->GetLargeHilbertSpaceDimension(); ++i)
+			{
+			  if (OutputState[i].IsZero() == false)
+			    {
+			      InitialSpace->PrintStateMonomial(cout, i) << " = ";
+			      InitialSpace->PrintState(cout, i) << " (pos = " << i << ", connectivity = " << OutputState[i] << ") " << endl;
+			    }
+			}
+		      return 0;
+		    }
 		  if (Manager.GetString("initial-state") == 0)
 		    OutputState = LongRationalVector(InitialSpace->GetLargeHilbertSpaceDimension(), true);
 		  else

@@ -494,6 +494,15 @@ class FermionOnSphereHaldaneHugeBasis :  public ParticleOnSphere
   // return value = decomposition of the corresponding Jack polynomial on the unnormalized basis
   virtual RealVector& OptimizedGenerateSymmetrizedJackPolynomial(RealVector& jack, double alpha, long minIndex = 0l, long maxIndex = 0l, char* partialSave = 0);
 
+  // check partitions that may lead to singular coefficient in a given Jack polynomial decomposition, assuming only rational numbers occur
+  //
+  // jack = vector where the ecomposition of the corresponding Jack polynomial on the unnormalized basis will be stored
+  // alphaNumerator = numerator of the Jack polynomial alpha coefficient
+  // alphaDenominator = numerator of the Jack polynomial alpha coefficient
+  // checkConnectivity = if true, compute how many componets are involved in the calculation of a given singular coefficients
+  // return value = vector with non-zero component being rho factor of possible singular coefficients
+  virtual LongRationalVector& CheckPossibleSingularCoefficientsInJackPolynomial(LongRationalVector& jack, long alphaNumerator, long alphaDenominator, bool checkConnectivity);
+
   // compute part of the Jack polynomial square normalization in a given range of indices
   //
   // state = reference on the unnormalized Jack polynomial

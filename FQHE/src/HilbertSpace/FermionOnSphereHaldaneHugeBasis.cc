@@ -463,9 +463,10 @@ FermionOnSphereHaldaneHugeBasis::FermionOnSphereHaldaneHugeBasis(char* fileName,
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   this->IncNbrFermions = this->NbrFermions + 1;
-  this->Flag.Initialize();  
+  this->Flag.Initialize();
   if ((this->LargeHilbertSpaceDimension << 3) < (memoryHilbert << 20))
     {
+      this->NoDiskFlag = true;
       this->NbrPrefixSector = 0;
       this->NbrRootSuffix = 0;
       this->RootSuffixShift = 0;
@@ -3387,6 +3388,59 @@ RealVector& FermionOnSphereHaldaneHugeBasis::OptimizedGenerateSymmetrizedJackPol
   return jack;
 }
 
+// check partitions that may lead to singular coefficient in a given Jack polynomial decomposition, assuming only rational numbers occur
+//
+// jack = vector where the ecomposition of the corresponding Jack polynomial on the unnormalized basis will be stored
+// alphaNumerator = numerator of the Jack polynomial alpha coefficient
+// alphaDenominator = numerator of the Jack polynomial alpha coefficient
+// checkConnectivity = if true, compute how many componets are involved in the calculation of a given singular coefficients
+// return value = vector with non-zero component being rho factor of possible singular coefficients
+
+LongRationalVector& FermionOnSphereHaldaneHugeBasis::CheckPossibleSingularCoefficientsInJackPolynomial(LongRationalVector& jack, long alphaNumerator, long alphaDenominator, bool checkConnectivity)
+{
+  if (checkConnectivity == true)
+    {
+      cout << "check connectivity is not available in FermionOnSphereHaldaneHugeBasis" << endl;
+      return jack;
+    }
+  LongRational InvAlpha (2l * (alphaDenominator - alphaNumerator), alphaNumerator);
+   
+  unsigned long* TmpMonomial = new unsigned long [this->NbrFermions];
+  unsigned long* TmpMonomial2 = new unsigned long [this->NbrFermions];
+  int* EvaluatedCoeffcients = 0;
+  
+  
+  LongRational RhoRoot = 0l;
+  LongRational Rho = 0l;
+  unsigned long MaxRoot = this->StateDescription[0];
+  this->ConvertToMonomial(MaxRoot, TmpMonomial);
+  for (int j = 0; j < this->NbrFermions; ++j)
+    RhoRoot += TmpMonomial[j] * ((TmpMonomial[j] - 1l) - InvAlpha * ((long) j));
+
+  jack[0] = RhoRoot;
+  for (long i = 1; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      Rho = 0l;
+      unsigned long CurrentPartition = this->StateDescription[i];
+      this->ConvertToMonomial(CurrentPartition, TmpMonomial);
+      for (int j = 0; j < this->NbrFermions; ++j)
+	Rho += TmpMonomial[j] * ((TmpMonomial[j] - 1l) - InvAlpha * ((long) j));
+      if (RhoRoot == Rho)
+	{
+	  jack[i] = Rho;
+	}
+      else
+	jack[i] = 0l;
+      }
+  delete[] TmpMonomial;
+  delete[] TmpMonomial2;
+  if (EvaluatedCoeffcients != 0)
+    {
+      delete[] EvaluatedCoeffcients;
+    }
+  return jack;
+}
+  
 // find squeezed partitions that are connected throught the Jack calculation algorithm
 //
 // nbrPartitions = number of partitions whose connection has to be computed

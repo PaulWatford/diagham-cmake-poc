@@ -85,6 +85,7 @@ ParticleOnCylinderOrbitalProjection::ParticleOnCylinderOrbitalProjection(Particl
   this->Y0 = y0;
   this->Architecture = architecture;
   this->EnergyShift = 0.0;
+  this->HermitianSymmetryFlag = false;
 
   this->LaguerreM = new Polynomial[this->OrbitalIndex + 1];
   for (int i = 0; i < (this->OrbitalIndex + 1); ++i)

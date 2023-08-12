@@ -173,10 +173,11 @@ int main(int argc, char** argv)
 
   //FullState.WriteVector(OutputNameLz);
 
-  double Length = sqrt(2.0 * M_PI * XRatio * (KyMax + 1));
-  double Height = sqrt(2.0 * M_PI * (KyMax + 1) / XRatio);
-  cout<<"Length = "<<Length<<" Circumference= "<<Height<<endl;
-  if ((fabs(X0End - X0Start) >= Length) || (fabs(Y0End - Y0Start) >= Height))
+  //Note: cylinder kappa is defined as 2pi/Ly
+  double LengthY = sqrt(2.0 * M_PI * XRatio * (KyMax + 1));
+  double LengthX = sqrt(2.0 * M_PI * (KyMax + 1) / XRatio);
+  cout<<"LengthX = "<<LengthX<<" LengthY= "<<LengthY<<endl;
+  if ((fabs(X0End - X0Start) >= LengthX) || (fabs(Y0End - Y0Start) >= LengthY))
    {
      cout<<"Point is at the boundary or beyond! " <<endl;
      exit(-1);

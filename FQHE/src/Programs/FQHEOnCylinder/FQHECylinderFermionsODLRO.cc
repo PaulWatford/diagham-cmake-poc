@@ -72,6 +72,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "nbrpoints-x", "calculate ODLRO at nbrpoints between x0start and x0end", 1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "nbrpoints-y", "calculate ODLRO at nbrpoints between y0start and y0end", 1);
   (*SystemGroup) += new BooleanOption  ('\n', "project-only", "project state with operator [1-n_2][1-n_1]n_0 and exit", false);
+  (*SystemGroup) += new BooleanOption  ('\n', "moore-read", "consider Moore-Read ODLRO instead of Laughlin (default)", false);
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name for output");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 500);
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
@@ -185,6 +186,8 @@ int main(int argc, char** argv)
   double StepX = (X0End-X0Start)/NbrPointsX;
   double StepY = (Y0End-Y0Start)/NbrPointsY;
 
+  if (((BooleanOption*) Manager["moore-read"])->GetBoolean() == false) 
+  { 
   //*************************************************************************
   //********* Act with n_0(0)(1-n_1(0))(1-n_2(0)) ***************************
   //*************************************************************************
@@ -214,7 +217,10 @@ int main(int argc, char** argv)
   delete Hamiltonian012;
 
   StateAt012 = StateAt01 - StateAt012;
-  StateAt012 /= StateAt012.Norm();
+  Complex StateAt012Norm = StateAt012.Norm();
+
+  Complex Conn1 = FullState * StateAt012;
+  cout<<"-----> Overlap <psi|O(0)|psi>= "<< Conn1 << endl;
   
   //*************************************************************************
   if (((BooleanOption*) Manager["project-only"])->GetBoolean() == true)
@@ -264,16 +270,144 @@ int main(int argc, char** argv)
     delete Hamiltonian012R;
 
     RStateAt012 = RStateAt01 - RStateAt012;
-    RStateAt012 /= RStateAt012.Norm();
+    Complex RStateAt012Norm = RStateAt012.Norm();
+
+    //*************************************************************************
+    Complex Conn2 = FullState * RStateAt012;
+    cout<<"-----> Overlap <psi|O(r)|psi>= "<< Conn2 << endl;
+
+    Complex Overlap = (StateAt012 * RStateAt012)/(StateAt012Norm * RStateAt012Norm);
+    cout<<"<psi|O(r)O(0)|psi>="<<endl;
+    cout<<Overlap.Re<<" "<<Overlap.Im<<endl;
+
+    Complex NormCorr = (StateAt012 * RStateAt012) / (Conn1 * Conn2);
+    cout<<"Normalized <O(r)O(0)> / <O(0)><O(r)>="<<endl;
+    cout<<NormCorr.Re<<" "<<NormCorr.Im<<endl;
+
+    File << X << " " << Y << " " << Overlap.Re << " "<<Overlap.Im << endl; //" " << NormCorr.Re << " " << NormCorr.Im << " " << Conn1.Re << " " << Conn2.Re << " " << StateAt012Norm.Re << " " << RStateAt012Norm.Re << endl;  
+    counter++;
+  }
+
+  }
+  else //doing the Moore-Read case
+  {
+ //*************************************************************************
+  //********* Act with n_0(0) n_1(0) (1-n_2(0)) (1-n_3(0)) ***************************
+  //*************************************************************************
+  cout << "Doing the Moore-Read ODLRO " << endl;  
+
+  ComplexVector StateAt0(FullSpace->GetHilbertSpaceDimension(), true);
+  ComplexVector StateAt01(FullSpace->GetHilbertSpaceDimension(), true);
+  ComplexVector StateAt012(FullSpace->GetHilbertSpaceDimension(), true);
+  ComplexVector StateAt0123(FullSpace->GetHilbertSpaceDimension(), true);  
+
+  AbstractHamiltonian* Hamiltonian0 = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 0, Anisotropy, X0Start, Y0Start, Architecture.GetArchitecture(), Memory);
+  VectorHamiltonianMultiplyOperation Operation0 (Hamiltonian0, &FullState, &StateAt0);
+  Operation0.ApplyOperation(Architecture.GetArchitecture());
+  cout<<"Completed projecting 0 orbital at (0,0); norm= "<<StateAt0.Norm()<<endl;
+  delete Hamiltonian0;
+
+  AbstractHamiltonian* Hamiltonian01 = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 1, Anisotropy, X0Start, Y0Start, Architecture.GetArchitecture(), Memory);
+  VectorHamiltonianMultiplyOperation Operation01 (Hamiltonian01, &StateAt0, &StateAt01);
+  Operation01.ApplyOperation(Architecture.GetArchitecture());
+  cout<<"Completed projecting 1 orbital at (0,0); norm= "<<StateAt01.Norm()<<endl;
+  delete Hamiltonian01;  
+
+  AbstractHamiltonian* Hamiltonian012 = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 2, Anisotropy, X0Start, Y0Start, Architecture.GetArchitecture(), Memory);
+  VectorHamiltonianMultiplyOperation Operation012 (Hamiltonian012, &StateAt01, &StateAt012);
+  Operation012.ApplyOperation(Architecture.GetArchitecture());
+  cout<<"Completed projecting 2 orbital at (0,0); norm= "<< StateAt012.Norm() << endl;
+  delete Hamiltonian012;
+
+  StateAt012 = StateAt01 - StateAt012;
+  
+  AbstractHamiltonian* Hamiltonian0123 = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 3, Anisotropy, X0Start, Y0Start, Architecture.GetArchitecture(), Memory);
+  VectorHamiltonianMultiplyOperation Operation0123 (Hamiltonian0123, &StateAt012, &StateAt0123);
+  Operation0123.ApplyOperation(Architecture.GetArchitecture());
+  cout<<"Completed projecting 3 orbital at (0,0); norm= "<< StateAt0123.Norm() << endl;
+  delete Hamiltonian0123;
+
+  StateAt0123 = StateAt012 - StateAt0123;
+  Complex StateAt0123Norm = StateAt0123.Norm();
+
+  Complex Conn1 = FullState * StateAt0123;
+  cout<<"-----> Overlap <psi|O(0)|psi>= "<< Conn1 << endl;  
+  
+  //*************************************************************************
+  if (((BooleanOption*) Manager["project-only"])->GetBoolean() == true)
+    {
+      StateAt0123.WriteVector(OutputNameLz); 
+      cout<<"Overlap with initial state: "<<(FullState * StateAt0123) << endl;
+      StateAt01 /= StateAt01.Norm();
+      cout<<"Overlap between n0 n1 Psi and (1-n3)(1-n2)n1n0 Psi: "<<(StateAt01 * StateAt0123) << endl;
+      return 0;
+    }
+  //*************************************************************************
+
+  int counter=0;
+  for (int i = 0; i < NbrPointsX; i++)
+    for (int j = 0; j < NbrPointsY; j++)
+    {
+     double X = X0Start + i * StepX;
+     double Y = Y0Start + j * StepY;
+     cout<<"---------------Step "<<counter<<" out of "<<(NbrPointsX * NbrPointsY)<<" X= " << X<<" Y= "<<Y<<"---------"<<endl;    
+  
+    //*************************************************************************
+    //********* Act with n_0(x0,y0)n_1(x0,y0)(1-n2(x0,y0))(1-n_3(x0,y0)) ***************************
+    //*************************************************************************
+
+    ComplexVector RStateAt0(FullSpace->GetHilbertSpaceDimension(), true);
+    ComplexVector RStateAt01(FullSpace->GetHilbertSpaceDimension(), true);
+    ComplexVector RStateAt012(FullSpace->GetHilbertSpaceDimension(), true);
+    ComplexVector RStateAt0123(FullSpace->GetHilbertSpaceDimension(), true);    
+
+    AbstractHamiltonian* Hamiltonian0R = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 0, Anisotropy, X, Y, Architecture.GetArchitecture(), Memory);
+    VectorHamiltonianMultiplyOperation Operation0R (Hamiltonian0R, &FullState, &RStateAt0);
+    Operation0R.ApplyOperation(Architecture.GetArchitecture());
+    cout<<"Completed projecting 0 orbital at (x0,y0); norm= "<< RStateAt0.Norm() <<endl;
+    delete Hamiltonian0R;
+
+    AbstractHamiltonian* Hamiltonian01R = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 1, Anisotropy, X, Y, Architecture.GetArchitecture(), Memory);
+    VectorHamiltonianMultiplyOperation Operation01R (Hamiltonian01R, &RStateAt0, &RStateAt01);
+    Operation01R.ApplyOperation(Architecture.GetArchitecture());
+    cout<<"Completed projecting 1 orbital at (x0,y0); norm= "<< RStateAt01.Norm() <<endl;
+    delete Hamiltonian01R;
+
+    AbstractHamiltonian* Hamiltonian012R = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 2, Anisotropy, X, Y, Architecture.GetArchitecture(), Memory);
+    VectorHamiltonianMultiplyOperation Operation012R (Hamiltonian012R, &RStateAt01, &RStateAt012);
+    Operation012R.ApplyOperation(Architecture.GetArchitecture());
+    cout<<"Completed projecting 2 orbital at (x0,y0); norm= "<< RStateAt012.Norm() <<endl;
+    delete Hamiltonian012R;
+
+    RStateAt012 = RStateAt01 - RStateAt012;
+
+    AbstractHamiltonian* Hamiltonian0123R = new ParticleOnCylinderOrbitalProjection (FullSpace, NbrParticles, KyMax, XRatio, 3, Anisotropy, X, Y, Architecture.GetArchitecture(), Memory);
+    VectorHamiltonianMultiplyOperation Operation0123R (Hamiltonian0123R, &RStateAt012, &RStateAt0123);
+    Operation0123R.ApplyOperation(Architecture.GetArchitecture());
+    cout<<"Completed projecting 3 orbital at (x0,y0); norm= "<< RStateAt0123.Norm() <<endl;
+    delete Hamiltonian0123R;
+
+    RStateAt0123 = RStateAt012 - RStateAt0123;
+    Complex RStateAt0123Norm = RStateAt0123.Norm();
+
+    Complex Conn2 = FullState * RStateAt0123;
+    cout<<"-----> Overlap <psi|O(r)|psi>= "<< Conn2 << endl;   
 
     //*************************************************************************
 
-    Complex Overlap = StateAt012 * RStateAt012;
-    cout<<"<Psi_0|Psi_R>="<<endl;
+    Complex Overlap = (StateAt0123 * RStateAt0123)/(StateAt0123Norm * RStateAt0123Norm);
+    cout<<"<psi|O(r)O(0)|psi>="<<endl;
     cout<<Overlap.Re<<" "<<Overlap.Im<<endl;
-    File << X << " " << Y << " " << Overlap.Re << " "<<Overlap.Im << endl;  
+
+    Complex NormCorr = (StateAt0123 * RStateAt0123) / (Conn1 * Conn2);
+    cout<<"Normalized <O(r)O(0)> / <O(0)><O(r)>="<<endl;
+    cout<<NormCorr.Re<<" "<<NormCorr.Im<<endl;
+
+    File << X << " " << Y << " " << Overlap.Re << " "<<Overlap.Im << endl; //" " << NormCorr.Re << " " << NormCorr.Im << " " << Conn1.Re << " " << Conn2.Re << " " << StateAt0123Norm.Re << " " << RStateAt0123Norm.Re << endl;  
     counter++;
   }
+    
+  }  
 
 
   File.close();

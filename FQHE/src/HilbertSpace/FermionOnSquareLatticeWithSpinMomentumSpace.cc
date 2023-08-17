@@ -541,7 +541,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStatesHoles(int nbrHol
 	{
 	  for (int j = currentKy; j >= 0; --j)
 	    {
-	      if ((((currentKx - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+	      if ((((currentTotalKx - currentKx) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
 		{
 		  this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x2ul << (((currentKx * this->NbrSiteY) + j) << 1));
 		  ++pos;
@@ -551,7 +551,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStatesHoles(int nbrHol
 	    {
 	      for (int j = this->NbrSiteY - 1; j >= 0; --j)
 		{
-		  if ((((i - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		  if ((((currentTotalKx - i) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
 		    {
 		      this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x2ul << (((i * this->NbrSiteY) + j) << 1));
 		      ++pos;
@@ -563,7 +563,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStatesHoles(int nbrHol
 	{
 	  for (int j = currentKy; j >= 0; --j)
 	    {
-	      if ((((currentKx - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+	      if ((((currentTotalKx - currentKx) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
 		{
 		  this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x1ul << (((currentKx * this->NbrSiteY) + j) << 1));
 		  ++pos;
@@ -573,7 +573,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStatesHoles(int nbrHol
 	    {
 	      for (int j = this->NbrSiteY - 1; j >= 0; --j)
 		{
-		  if ((((i - currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j - currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		  if ((((currentTotalKx - i) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
 		    {
 		      this->StateDescription[pos] = ((0x1ul << (2 * this->NbrSiteX * this->NbrSiteY)) - 0x1ul) & ~(0x1ul << (((i * this->NbrSiteY) + j) << 1));
 		      ++pos;

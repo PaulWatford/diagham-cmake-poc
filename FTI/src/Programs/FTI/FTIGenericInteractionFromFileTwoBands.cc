@@ -1264,6 +1264,10 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
 		    {
 		      SzValues[i] = NbrParticles;
@@ -1277,6 +1281,10 @@ int main(int argc, char** argv)
 		      NbrParticlesBand2DownPlus[i] = 0;
 		      NbrParticlesBand1DownMinus[i] = 0;
 		      NbrParticlesBand2DownMinus[i] = 0;
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
 		    }
 		}
 	      else
@@ -1300,6 +1308,10 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
 		    {
 		      SzValues[i] = NbrParticles;
@@ -1312,6 +1324,10 @@ int main(int argc, char** argv)
 		      NbrParticlesBand2DownPlus[i] = 0;
 		      NbrParticlesBand1DownMinus[i] = 0;
 		      NbrParticlesBand2DownMinus[i] = 0;
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
 		    }
 		}
 	    }
@@ -1338,6 +1354,10 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
 		    {
 		      PzValues[i] = NbrParticles;
@@ -1350,6 +1370,10 @@ int main(int argc, char** argv)
 		      NbrParticlesBand2DownPlus[i] = 0;
 		      NbrParticlesBand1DownMinus[i] = 0;
 		      NbrParticlesBand2DownMinus[i] = 0;
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
 		    }
 		}
 	      else
@@ -1373,6 +1397,10 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
 		    {
 		      NbrParticlesBand1UpPlus[i] = (NbrParticles + SzValues[i] + PzValues[i] + EzValues[i]) / 4;
@@ -1383,6 +1411,10 @@ int main(int argc, char** argv)
 		      NbrParticlesBand2DownPlus[i] = 0;
 		      NbrParticlesBand1DownMinus[i] = (NbrParticles - SzValues[i] - PzValues[i] + EzValues[i]) / 4;
 		      NbrParticlesBand2DownMinus[i] = 0;
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
 		    }
 		}
 	    }
@@ -1409,6 +1441,10 @@ int main(int argc, char** argv)
 		  NbrParticlesBand2UpMinus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
 		    {
 		      NbrParticlesBand1UpMinus[i] = 0;
@@ -1417,6 +1453,10 @@ int main(int argc, char** argv)
 		      NbrParticlesBand2DownPlus[i] = 0;
 		      NbrParticlesBand1DownMinus[i] = 0;
 		      NbrParticlesBand2DownMinus[i] = 0;
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
 		    }
 		  
 		}
@@ -1454,6 +1494,10 @@ int main(int argc, char** argv)
 		  SzValues = new int [NbrSymmetrySectors];
 		  PzValues = new int [NbrSymmetrySectors];
 		  EzValues = new int [NbrSymmetrySectors];
+		  PzParityValues1 = new int[NbrSymmetrySectors];
+		  SzParityValues1 = new int[NbrSymmetrySectors];
+		  PzParityValues2 = new int[NbrSymmetrySectors];
+		  SzParityValues2 = new int[NbrSymmetrySectors];
 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
 		    {
 		      SzValues[i] = (NbrParticlesBand1UpPlus[i] + NbrParticlesBand1UpMinus[i]
@@ -1468,6 +1512,10 @@ int main(int argc, char** argv)
 				     - NbrParticlesBand1DownPlus[i] + NbrParticlesBand1DownMinus[i]
 				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
 				     - NbrParticlesBand2DownPlus[i] + NbrParticlesBand2DownMinus[i]);
+		      PzParityValues1[i] = 0;
+		      SzParityValues1[i] = 0;
+		      PzParityValues2[i] = 0;
+		      SzParityValues2[i] = 0;
 		    }
 		}
 	    }
@@ -1576,6 +1624,7 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
+		  // no valley, no spin
 		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if ((NbrSitesX * NbrSitesY) <= 32)
@@ -1601,6 +1650,7 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
+		  // valley but no spin
 		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {			  
 		      if ((NbrSitesX * NbrSitesY) <= 16)
@@ -1624,7 +1674,7 @@ int main(int argc, char** argv)
 			}
 		      else
 			{
-			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex]);
+			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
 			}
 		    }
 		  else

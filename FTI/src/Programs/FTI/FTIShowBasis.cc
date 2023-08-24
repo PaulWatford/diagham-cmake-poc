@@ -2,6 +2,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeNonPeriodicMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnCubicLatticeMomentumSpace.h"
 #include "HilbertSpace/FermionOnCubicLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnCubicLatticeWithSU4SpinMomentumSpace.h"
@@ -46,7 +47,7 @@ using std::ofstream;
 int main(int argc, char** argv)
 {
   cout.precision(14);
-  OptionManager Manager ("FQHETopInsulatorShowBasis" , "0.01");
+  OptionManager Manager ("FTIShowBasis" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
   OptionGroup* OutputGroup = new OptionGroup ("output options");
@@ -86,7 +87,7 @@ int main(int argc, char** argv)
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
     {
-      cout << "see man page for option syntax or type FQHETopInsulatorShowBasis -h" << endl;
+      cout << "see man page for option syntax or type FTIShowBasis -h" << endl;
       return -1;
     }
   if (Manager.GetBoolean("help") == true)
@@ -196,7 +197,28 @@ int main(int argc, char** argv)
 			}
 		      else 
 			{
-			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+			  if (Manager.GetBoolean("spin-conserved") == false)
+			    {
+			      if ((NbrSiteX * NbrSiteY) <= 16)
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+				}
+			    }
+			  else
+			    {
+			      if ((NbrSiteX * NbrSiteY) <= 16)
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy, Sz);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy, Sz);
+				}
+			    }
 			}
 		    }
 		  else

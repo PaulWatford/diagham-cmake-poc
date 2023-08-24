@@ -183,7 +183,7 @@ class FermionOnSquareLatticeWithSpinMomentumSpace : public FermionOnSphereWithSp
   // return value = Hilbert space dimension
   virtual long EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrSpinUp);
 
-// generate all states corresponding to the constraints
+  // generate all states corresponding to the constraints
   // 
   // nbrFermions = number of fermions
   // currentKx = current momentum along x for a single particle

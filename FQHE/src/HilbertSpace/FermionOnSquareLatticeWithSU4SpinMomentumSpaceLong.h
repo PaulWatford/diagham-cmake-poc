@@ -191,6 +191,54 @@ class FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong : public FermionOnSpher
   virtual long EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy,
 					     int nbrParticlesDownMinus, int nbrParticlesDownPlus, int nbrParticlesUpMinus, int nbrParticlesUpPlus);
   
+  // evaluate Hilbert space dimension with a fixed number of holes
+  //
+  // nbrHoles = number of holes
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // return value = Hilbert space dimension
+  virtual long EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy);
+  
+  // evaluate Hilbert space dimension with a fixed number of holes
+  //
+  // nbrHoles = number of holes
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // nbrHolesUp = current number of holes with a spin up
+  // return value = Hilbert space dimension
+  virtual long EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrHolesUp);
+
+  // evaluate Hilbert space dimension with a fixed number of holes
+  //
+  // nbrHoles = number of holes
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // nbrHolesUp = current number of holes with a spin up
+  // nbrHolesPlus = current number of holes with a plus
+  // return value = Hilbert space dimension
+  virtual long EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrHolesUp, int nbrHolesPlus);
+
+  // evaluate Hilbert space dimension with a fixed number of holes
+  //
+  // nbrHoles = number of holes
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // nbrParticlesDownMinus = number of holes with down minus
+  // nbrParticlesDownPlus = number of holes with down plus
+  // nbrParticlesUpMinus = number of holes with up minus
+  // nbrParticlesUpPlus = number of holes with up plus
+  // return value = Hilbert space dimension
+  virtual long EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy,
+						  int nbrParticlesDownMinus, int nbrParticlesDownPlus, int nbrParticlesUpMinus, int nbrParticlesUpPlus);
+  
   // generate all states corresponding to the constraints
   // 
   // nbrFermions = number of fermions

@@ -972,6 +972,7 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
       this->StateHighestBit[i] = CurrentHighestBit;
    }
 
+  
   // evaluate look-up table size
   memory /= (sizeof(int*) * MaxHighestBit);
   this->MaximumLookUpShift = 1;

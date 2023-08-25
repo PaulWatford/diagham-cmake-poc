@@ -497,6 +497,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
+	      // case for full single particle hamiltonian
 	      HermitianMatrix* BlochHamiltonian = new HermitianMatrix[NbrSitesX * NbrSitesY];
 	      TmpIndex = 0;
 	      for (int i = 0; i < NbrSitesX; ++i)

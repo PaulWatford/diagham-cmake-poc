@@ -747,7 +747,7 @@ inline int FermionOnSphereWithSU4Spin::GetParticleStatistic()
 
 inline double FermionOnSphereWithSU4Spin::AdsigmaAsigma (int index, int m, int sigma)
 {
-  return ((double) ((this->StateDescription[index] >> ((m << 2) + sigma)) & 0x1ul));
+  return ((double) ((this->StateDescription[index] >> ((m << 2) + (3 - sigma))) & 0x1ul));
 }
 
 // apply a^+_m_s a_m_s operator to a given state)
@@ -759,7 +759,7 @@ inline double FermionOnSphereWithSU4Spin::AdsigmaAsigma (int index, int m, int s
 
 inline double FermionOnSphereWithSU4Spin::AdsigmaAsigma (long index, int m, int sigma)
 {
-  return ((double) ((this->StateDescription[index] >> ((m << 2) + sigma)) & 0x1ul));
+  return ((double) ((this->StateDescription[index] >> ((m << 2) + (3 - sigma))) & 0x1ul));
 }
 
 // apply a^+_m1_s1 a_m2_s2 operator to a given state
@@ -774,7 +774,7 @@ inline double FermionOnSphereWithSU4Spin::AdsigmaAsigma (long index, int m, int 
 
 inline int FermionOnSphereWithSU4Spin::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
 {
-  return this->GenericAdA(index, (m1 << 2) + sigma1, (m2 << 2) + sigma2, coefficient);
+  return this->GenericAdA(index, (m1 << 2) + (3 - sigma1), (m2 << 2) + (3 - sigma2), coefficient);
 }
 
 // factorized code for any a^+_m_x a_n_y operator 

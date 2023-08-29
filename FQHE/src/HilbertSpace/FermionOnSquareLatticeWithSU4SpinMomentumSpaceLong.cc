@@ -105,7 +105,8 @@ FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::FermionOnSquareLatticeWithSU
     }
   else
     {
-      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) >> 1, (this->NbrSiteY * (this->NbrSiteY - 1)) >> 1);
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,
+										  ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1) * this->NbrSiteY, ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1) * this->NbrSiteX);
     }
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
@@ -189,10 +190,11 @@ FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::FermionOnSquareLatticeWithSU
   else
     {
       cout << "using holes to generate the Hilbert space" << endl;
-      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,  this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) >> 1),  this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) >> 1),
-      										  (2 * this->NbrSiteX * this->NbrSiteY) - ((this->NbrFermions + this->TotalSpin) / 2));
-      //      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1), this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1),
-      //										  (2 * this->NbrSiteX * this->NbrSiteY) - ((this->NbrFermions + this->TotalSpin) / 2));
+      //      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,  this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) >> 1),  this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) >> 1),
+      //      										  (2 * this->NbrSiteX * this->NbrSiteY) - ((this->NbrFermions + this->TotalSpin) / 2));
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,
+										  this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1), this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1),
+										  (2 * this->NbrSiteX * this->NbrSiteY) - ((this->NbrFermions + this->TotalSpin) / 2));
     }
   if (this->LargeHilbertSpaceDimension >= (1l << 31))
     this->HilbertSpaceDimension = 0;

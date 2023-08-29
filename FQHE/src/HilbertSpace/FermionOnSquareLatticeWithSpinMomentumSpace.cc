@@ -153,7 +153,7 @@ FermionOnSquareLatticeWithSpinMomentumSpace::FermionOnSquareLatticeWithSpinMomen
     }
   else
     {
-      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) >> 1, (this->NbrSiteY * (this->NbrSiteY - 1)) >> 1, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp);      
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) * this->NbrSiteY, (this->NbrSiteY * (this->NbrSiteY - 1)) * this->NbrSiteX, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp);      
     }
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
@@ -172,7 +172,7 @@ FermionOnSquareLatticeWithSpinMomentumSpace::FermionOnSquareLatticeWithSpinMomen
 	}
       else
 	{
-	  TmpLargeHilbertSpaceDimension = this->GenerateStatesHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) >> 1, (this->NbrSiteY * (this->NbrSiteY - 1)) >> 1, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp, 0l);
+	  TmpLargeHilbertSpaceDimension = this->GenerateStatesHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) * this->NbrSiteY, (this->NbrSiteY * (this->NbrSiteY - 1)) * this->NbrSiteX, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp, 0l);
 	  SortArrayDownOrdering<unsigned long>(this->StateDescription, TmpLargeHilbertSpaceDimension);
 	}
       if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)

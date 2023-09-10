@@ -111,7 +111,7 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
   for (long i = 0; i < ReducedHilbertSpaceDimension; ++i)
     this->KeepStateFlag[i] = 0x0l;
   this->RawGenerateStates(this->NbrFermions, this->LzMax, this->LzMax, (this->TotalLz + this->NbrFermions * this->LzMax) >> 1, 0l);
-  cout << "check 1" << endl;
+  cout << "check 1 " << this->LargeHilbertSpaceDimension << endl;
   this->GenerateLookUpTable(memory);
 
   int MaxSweeps = (this->NbrFermions * (this->NbrFermions - 1)) >> 1;  
@@ -128,7 +128,7 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
 #else
       this->KeepStateFlag[TmpIndex >> 5] = 0x1l << (TmpIndex & 0x1f);
 #endif
-      this->GenerateStates(ReferenceStateLzMax, this->ReferenceState, 1, Memory);
+      this->LargeGenerateStates(ReferenceStateLzMax, this->ReferenceState, 1, Memory);
       cout << "check 3" << endl;
     }
   else
@@ -141,7 +141,7 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
 #endif
       this->GenerateStates(ReferenceStateLzMax, this->ReferenceState, 1, Memory);
     }
-  cout << "check 4" << endl;
+  cout << "check 4 " << this->LargeHilbertSpaceDimension << endl;
   long NewHilbertSpaceDimension = 0l;
   unsigned long TmpKeepStateFlag;
   int TmpNbrOne[] = {  

@@ -125,12 +125,9 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
       cout << "checking find state" << endl;
       for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
 	{
-	  int TmpLzMax = this->LzMax;
-	  while ((this->StateDescription[i] >> TmpLzMax) == 0x0ul)
-	    --TmpLzMax;
- 	  if (this->FindStateLargeIndex(this->StateDescription[i], TmpLzMax) != i)
+	  if (this->FindStateLargeIndex(this->StateDescription[i], this->StateLzMax[i]) != i)
 	    {
-	      cout << "error " << i << " " << this->FindStateLargeIndex(this->StateDescription[i], TmpLzMax) << endl;
+	      cout << "error " << i << " " << this->FindStateLargeIndex(this->StateDescription[i], this->StateLzMax[i]) << endl;
 	    }
 	}
       cout << "check done" << endl;

@@ -1325,11 +1325,11 @@ void FermionOnSphereHaldaneBasis::GenerateLookUpTable(unsigned long memory)
       unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
       while (CurrentLookUpTableValue > TmpLookUpTableValue)
 	{
-	  TmpLookUpTable[CurrentLookUpTableValue] = 0;
+	  TmpLookUpTable[CurrentLookUpTableValue] = 0l;
 	  --CurrentLookUpTableValue;
 	}
-      TmpLookUpTable[CurrentLookUpTableValue] = 0;
-      for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+      TmpLookUpTable[CurrentLookUpTableValue] = 0l;
+      for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
 	{
 	  if (CurrentLzMax != this->StateLzMax[i])
 	    {

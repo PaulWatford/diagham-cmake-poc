@@ -954,6 +954,45 @@ int FermionOnSphereHaldaneBasis::FindStateIndex(unsigned long stateDescription, 
       return PosMin;
 }
 
+// find state index for Hilbert spaces large than 2^31
+//
+// stateDescription = unsigned integer describing the state
+// lzmax = maximum Lz value reached by a fermion in the state
+// return value = corresponding index
+
+long FermionOnSphereHaldaneBasis::FindStateLargeIndex(unsigned long stateDescription, int lzmax)
+{
+  if (stateDescription > this->ReferenceState)
+    {
+      return this->LargeHilbertSpaceDimension;
+    }
+  long PosMax = stateDescription >> this->LookUpTableShift[lzmax];
+  long PosMin = this->LargeLookUpTable[lzmax][PosMax];
+  PosMax = this->LargeLookUpTable[lzmax][PosMax + 1];
+  long PosMid = (PosMin + PosMax) >> 1;
+  unsigned long CurrentState = this->StateDescription[PosMid];
+  while ((PosMax != PosMid) && (CurrentState != stateDescription))
+    {
+      if (CurrentState > stateDescription)
+	{
+	  PosMax = PosMid;
+	}
+      else
+	{
+	  PosMin = PosMid;
+	} 
+      PosMid = (PosMin + PosMax) >> 1;
+      CurrentState = this->StateDescription[PosMid];
+    }
+  if (CurrentState == stateDescription)
+    return PosMid;
+  else
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->LargeHilbertSpaceDimension;
+    else
+      return PosMin;
+}
+
 // print a given State
 //
 // Str = reference on current output stream 
@@ -1089,6 +1128,123 @@ long FermionOnSphereHaldaneBasis::GenerateStates(int lzMax, unsigned long refere
 }
 
 
+// generate all states corresponding to the constraints for Hilbert spaces larger than 2^31
+// 
+// lzMax = momentum maximum value for a fermion in the state
+// totalLz = momentum total value
+// pos = position in StateDescription array where to store states
+// return value = position from which new states have to be stored
+
+long FermionOnSphereHaldaneBasis::LargeGenerateStates(int lzMax, unsigned long referenceState, long pos, long& memory)
+{
+  int MaxSweeps = (this->NbrFermions * (this->NbrFermions - 1)) >> 1;  
+  unsigned long* TmpGeneratedStates2 = this->TmpGeneratedStates + (MaxSweeps * memory);
+  int* TmpLzMax = this->TmpGeneratedStatesLzMax  + (MaxSweeps  * memory);  
+  memory += 1;
+  int TmpCurrentLzMax = 2;
+  int TmpCurrentLzMax2;
+  int TmpMax = lzMax - 1;
+  int NbrEntries = 0;
+  unsigned long TmpReferenceState;
+  
+  while (TmpCurrentLzMax < TmpMax)
+    {
+      while ((TmpCurrentLzMax < TmpMax) && (((referenceState >> TmpCurrentLzMax) & 0x3l) != 0x2l))
+	++TmpCurrentLzMax;
+      if (TmpCurrentLzMax < TmpMax)
+	{
+	  TmpReferenceState = (referenceState & ~(0x3l << TmpCurrentLzMax)) | (0x1l << TmpCurrentLzMax);
+	  TmpCurrentLzMax2 = TmpCurrentLzMax - 2;
+	  while (TmpCurrentLzMax2 >= 0)
+	    {
+	      while ((TmpCurrentLzMax2 >= 0) && (((referenceState >> TmpCurrentLzMax2) & 0x3l) != 0x1l))
+		--TmpCurrentLzMax2;
+	      if (TmpCurrentLzMax2 >= 0)
+		{
+		  TmpGeneratedStates2[NbrEntries] = (TmpReferenceState & ~(0x3l << TmpCurrentLzMax2)) | (0x2l << TmpCurrentLzMax2);
+		  TmpLzMax[NbrEntries] = lzMax;
+		  ++NbrEntries;
+		  --TmpCurrentLzMax2;
+		}	      
+	    }
+	  ++TmpCurrentLzMax;
+	}
+    }
+  if (((referenceState >> TmpCurrentLzMax) & 0x3l) == 0x2l)
+    {
+      TmpReferenceState = (referenceState & ~(0x3l << TmpCurrentLzMax)) | (0x1l << TmpCurrentLzMax);
+      TmpCurrentLzMax2 = TmpCurrentLzMax - 2;
+      while (TmpCurrentLzMax2 >= 0)
+	{
+	  while ((TmpCurrentLzMax2 >= 0) && (((referenceState >> TmpCurrentLzMax2) & 0x3l) != 0x1l))
+	    --TmpCurrentLzMax2;
+	  if (TmpCurrentLzMax2 >= 0)
+	    {
+	      TmpGeneratedStates2[NbrEntries] = (TmpReferenceState & ~(0x3l << TmpCurrentLzMax2)) | (0x2l << TmpCurrentLzMax2);
+	      TmpLzMax[NbrEntries] = lzMax - 1;
+	      ++NbrEntries;
+	      --TmpCurrentLzMax2;
+	    }
+	}      
+    }
+
+  long TmpIndex;
+  int NbrNewEntries = 0;
+  for (int i = 0; i < NbrEntries; ++i)
+    {
+      unsigned long& TmpState = TmpGeneratedStates2[i];
+      TmpIndex = this->FindStateLargeIndex(TmpState, TmpLzMax[i]);
+#ifdef __64_BITS__
+      if ((this->KeepStateFlag[TmpIndex >> 6] >> (TmpIndex & 0x3f)) & 0x1l)
+	{
+	  TmpState = 0x0l;
+	}
+      else
+	{
+	  this->KeepStateFlag[TmpIndex >> 6] |= 0x1l << (TmpIndex & 0x3f);
+	  ++NbrNewEntries;
+	  if (this->SymmetricReferenceState == true)
+	    {
+	      unsigned long TmpSymmetricState = this->GetSymmetricState (TmpState);
+	      int TmpSymLzMax = this->LzMax;
+	      while (((TmpSymmetricState >> TmpSymLzMax) & 0x1ul) == 0x0ul)
+		--TmpSymLzMax;
+	      TmpIndex = this->FindStateLargeIndex(TmpSymmetricState, TmpSymLzMax);
+	      this->KeepStateFlag[TmpIndex >> 6] |= 0x1l << (TmpIndex & 0x3f);	      
+	    }
+	}
+#else
+      if ((this->KeepStateFlag[TmpIndex >> 5] >> (TmpIndex & 0x1f)) & 0x1l)
+	{
+	  TmpState = 0x0l;
+	}
+      else
+	{
+	  this->KeepStateFlag[TmpIndex >> 5] |= 0x1l << (TmpIndex & 0x1f);
+	  ++NbrNewEntries;
+	  if (this->SymmetricReferenceState == true)
+	    {
+	      unsigned long TmpSymmetricState = this->GetSymmetricState (TmpState);
+	      int TmpSymLzMax = this->LzMax;
+	      while (((TmpSymmetricState >> TmpSymLzMax) & 0x1ul) == 0x0ul)
+		--TmpSymLzMax;
+	      TmpIndex = this->FindStateLargeIndex(TmpSymmetricState, TmpSymLzMax);
+	      this->KeepStateFlag[TmpIndex >> 5] |= 0x1l << (TmpIndex & 0x1f);	      
+	    }
+	}      
+#endif
+    }
+
+  if (NbrNewEntries > 0)
+    for (int i = 0; i < NbrEntries; ++i)
+      if (TmpGeneratedStates2[i] != 0x0l)
+	pos = this->LargeGenerateStates(TmpLzMax[i], TmpGeneratedStates2[i], pos, memory);
+
+  memory -= 1;
+  return pos;
+}
+
+
 // generate all states (i.e. all possible skew symmetric polynomials with fixed Lz)
 // 
 // nbrFermions = number of fermions
@@ -1151,75 +1307,149 @@ void FermionOnSphereHaldaneBasis::GenerateLookUpTable(unsigned long memory)
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
-  this->LookUpTable = new int* [this->NbrLzValue];
-  this->LookUpTableShift = new int [this->NbrLzValue];
-  for (int i = 0; i < this->NbrLzValue; ++i)
-    this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
-  int CurrentLzMax = this->StateLzMax[0];
-  int* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
-  if (CurrentLzMax < this->MaximumLookUpShift)
-    this->LookUpTableShift[CurrentLzMax] = 0;
-  else
-    this->LookUpTableShift[CurrentLzMax] = CurrentLzMax + 1 - this->MaximumLookUpShift;
-  int CurrentShift = this->LookUpTableShift[CurrentLzMax];
-  unsigned long CurrentLookUpTableValue = this->LookUpTableMemorySize;
-  unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
-  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+  if (this->LargeHilbertSpaceDimension >= (1l << 30))
     {
-      TmpLookUpTable[CurrentLookUpTableValue] = 0;
-      --CurrentLookUpTableValue;
-    }
-  TmpLookUpTable[CurrentLookUpTableValue] = 0;
-  for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
-    {
-      if (CurrentLzMax != this->StateLzMax[i])
-	{
-	  while (CurrentLookUpTableValue > 0)
-	    {
-	      TmpLookUpTable[CurrentLookUpTableValue] = i;
-	      --CurrentLookUpTableValue;
-	    }
-	  TmpLookUpTable[0] = i;
-	  /*	  for (unsigned long j = 0; j <= this->LookUpTableMemorySize; ++j)
-	    cout << TmpLookUpTable[j] << " ";
-	    cout << endl << "-------------------------------------------" << endl;*/
- 	  CurrentLzMax = this->StateLzMax[i];
-	  TmpLookUpTable = this->LookUpTable[CurrentLzMax];
-	  if (CurrentLzMax < this->MaximumLookUpShift)
-	    this->LookUpTableShift[CurrentLzMax] = 0;
-	  else
-	    this->LookUpTableShift[CurrentLzMax] = CurrentLzMax + 1 - this->MaximumLookUpShift;
-	  CurrentShift = this->LookUpTableShift[CurrentLzMax];
-	  TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
-	  CurrentLookUpTableValue = this->LookUpTableMemorySize;
-	  while (CurrentLookUpTableValue > TmpLookUpTableValue)
-	    {
-	      TmpLookUpTable[CurrentLookUpTableValue] = i;
-	      --CurrentLookUpTableValue;
-	    }
-	  TmpLookUpTable[CurrentLookUpTableValue] = i;
-	}
+      this->LookUpTable = 0;
+      this->LargeLookUpTable = new long* [this->NbrLzValue];
+      this->LookUpTableShift = new int [this->NbrLzValue];
+      for (int i = 0; i < this->NbrLzValue; ++i)
+	this->LargeLookUpTable[i] = new long [this->LookUpTableMemorySize + 1];
+      int CurrentLzMax = this->StateLzMax[0];
+      long* TmpLookUpTable = this->LargeLookUpTable[CurrentLzMax];
+      if (CurrentLzMax < this->MaximumLookUpShift)
+	this->LookUpTableShift[CurrentLzMax] = 0;
       else
+	this->LookUpTableShift[CurrentLzMax] = CurrentLzMax + 1 - this->MaximumLookUpShift;
+      int CurrentShift = this->LookUpTableShift[CurrentLzMax];
+      unsigned long CurrentLookUpTableValue = this->LookUpTableMemorySize;
+      unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
+      while (CurrentLookUpTableValue > TmpLookUpTableValue)
 	{
-	  TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
-	  if (TmpLookUpTableValue != CurrentLookUpTableValue)
+	  TmpLookUpTable[CurrentLookUpTableValue] = 0;
+	  --CurrentLookUpTableValue;
+	}
+      TmpLookUpTable[CurrentLookUpTableValue] = 0;
+      for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+	{
+	  if (CurrentLzMax != this->StateLzMax[i])
 	    {
+	      while (CurrentLookUpTableValue > 0)
+		{
+		  TmpLookUpTable[CurrentLookUpTableValue] = i;
+		  --CurrentLookUpTableValue;
+		}
+	      TmpLookUpTable[0] = i;
+	      CurrentLzMax = this->StateLzMax[i];
+	      TmpLookUpTable = this->LargeLookUpTable[CurrentLzMax];
+	      if (CurrentLzMax < this->MaximumLookUpShift)
+		this->LookUpTableShift[CurrentLzMax] = 0;
+	      else
+		this->LookUpTableShift[CurrentLzMax] = CurrentLzMax + 1 - this->MaximumLookUpShift;
+	      CurrentShift = this->LookUpTableShift[CurrentLzMax];
+	      TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
+	      CurrentLookUpTableValue = this->LookUpTableMemorySize;
 	      while (CurrentLookUpTableValue > TmpLookUpTableValue)
 		{
 		  TmpLookUpTable[CurrentLookUpTableValue] = i;
 		  --CurrentLookUpTableValue;
 		}
-//	      CurrentLookUpTableValue = TmpLookUpTableValue;
 	      TmpLookUpTable[CurrentLookUpTableValue] = i;
 	    }
+	  else
+	    {
+	      TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
+	      if (TmpLookUpTableValue != CurrentLookUpTableValue)
+		{
+		  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+		    {
+		      TmpLookUpTable[CurrentLookUpTableValue] = i;
+		      --CurrentLookUpTableValue;
+		    }
+		  //	      CurrentLookUpTableValue = TmpLookUpTableValue;
+		  TmpLookUpTable[CurrentLookUpTableValue] = i;
+		}
+	    }
 	}
+      while (CurrentLookUpTableValue > 0)
+	{
+	  TmpLookUpTable[CurrentLookUpTableValue] = this->LargeHilbertSpaceDimension - 1l;
+	  --CurrentLookUpTableValue;
+	}
+      TmpLookUpTable[0] = this->LargeHilbertSpaceDimension - 1l;
     }
-  while (CurrentLookUpTableValue > 0)
+  else
     {
-      TmpLookUpTable[CurrentLookUpTableValue] = this->HilbertSpaceDimension - 1;
-      --CurrentLookUpTableValue;
+      this->LargeLookUpTable = 0;
+      this->LookUpTable = new int* [this->NbrLzValue];
+      this->LookUpTableShift = new int [this->NbrLzValue];
+      for (int i = 0; i < this->NbrLzValue; ++i)
+	this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+      int CurrentLzMax = this->StateLzMax[0];
+      int* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
+      if (CurrentLzMax < this->MaximumLookUpShift)
+	this->LookUpTableShift[CurrentLzMax] = 0;
+      else
+	this->LookUpTableShift[CurrentLzMax] = CurrentLzMax + 1 - this->MaximumLookUpShift;
+      int CurrentShift = this->LookUpTableShift[CurrentLzMax];
+      unsigned long CurrentLookUpTableValue = this->LookUpTableMemorySize;
+      unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
+      while (CurrentLookUpTableValue > TmpLookUpTableValue)
+	{
+	  TmpLookUpTable[CurrentLookUpTableValue] = 0;
+	  --CurrentLookUpTableValue;
+	}
+      TmpLookUpTable[CurrentLookUpTableValue] = 0;
+      for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+	{
+	  if (CurrentLzMax != this->StateLzMax[i])
+	    {
+	      while (CurrentLookUpTableValue > 0)
+		{
+		  TmpLookUpTable[CurrentLookUpTableValue] = i;
+		  --CurrentLookUpTableValue;
+		}
+	      TmpLookUpTable[0] = i;
+	      /*	  for (unsigned long j = 0; j <= this->LookUpTableMemorySize; ++j)
+			  cout << TmpLookUpTable[j] << " ";
+			  cout << endl << "-------------------------------------------" << endl;*/
+	      CurrentLzMax = this->StateLzMax[i];
+	      TmpLookUpTable = this->LookUpTable[CurrentLzMax];
+	      if (CurrentLzMax < this->MaximumLookUpShift)
+		this->LookUpTableShift[CurrentLzMax] = 0;
+	      else
+		this->LookUpTableShift[CurrentLzMax] = CurrentLzMax + 1 - this->MaximumLookUpShift;
+	      CurrentShift = this->LookUpTableShift[CurrentLzMax];
+	      TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
+	      CurrentLookUpTableValue = this->LookUpTableMemorySize;
+	      while (CurrentLookUpTableValue > TmpLookUpTableValue)
+		{
+		  TmpLookUpTable[CurrentLookUpTableValue] = i;
+		  --CurrentLookUpTableValue;
+		}
+	      TmpLookUpTable[CurrentLookUpTableValue] = i;
+	    }
+	  else
+	    {
+	      TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
+	      if (TmpLookUpTableValue != CurrentLookUpTableValue)
+		{
+		  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+		    {
+		      TmpLookUpTable[CurrentLookUpTableValue] = i;
+		      --CurrentLookUpTableValue;
+		    }
+		  //	      CurrentLookUpTableValue = TmpLookUpTableValue;
+		  TmpLookUpTable[CurrentLookUpTableValue] = i;
+		}
+	    }
+	}
+      while (CurrentLookUpTableValue > 0)
+	{
+	  TmpLookUpTable[CurrentLookUpTableValue] = this->HilbertSpaceDimension - 1;
+	  --CurrentLookUpTableValue;
+	}
+      TmpLookUpTable[0] = this->HilbertSpaceDimension - 1;
     }
-  TmpLookUpTable[0] = this->HilbertSpaceDimension - 1;
   /*  for (unsigned long j = 0; j <= this->LookUpTableMemorySize; ++j)
     cout << TmpLookUpTable[j] << " ";
     cout << endl << "-------------------------------------------" << endl;*/

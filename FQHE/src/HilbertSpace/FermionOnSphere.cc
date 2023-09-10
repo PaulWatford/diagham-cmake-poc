@@ -64,6 +64,8 @@ using std::ios;
 FermionOnSphere::FermionOnSphere()
 {
   this->LookUpTableShift = 0;
+  this->LargeLookUpTable = 0;
+  this->LookUpTable = 0;
 }
 
 // basic constructor
@@ -306,9 +308,18 @@ FermionOnSphere::~FermionOnSphere ()
       if (this->LookUpTableShift != 0)
 	{
 	  delete[] this->LookUpTableShift;
-	  for (int i = 0; i < this->NbrLzValue; ++i)
-	    delete[] this->LookUpTable[i];
-	  delete[] this->LookUpTable;
+	  if (this->LookUpTable != 0)
+	    {
+	      for (int i = 0; i < this->NbrLzValue; ++i)
+		delete[] this->LookUpTable[i];
+	      delete[] this->LookUpTable;
+	    }
+	  if (this->LargeLookUpTable != 0)
+	    {
+	      for (int i = 0; i < this->NbrLzValue; ++i)
+		delete[] this->LargeLookUpTable[i];
+	      delete[] this->LargeLookUpTable;
+	    }
 	}
     }
 }

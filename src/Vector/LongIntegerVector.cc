@@ -31,6 +31,7 @@
 #include "Vector/LongIntegerVector.h"
 #include "Matrix/LongIntegerMatrix.h"
 #include "GeneralTools/Endian.h"
+#include "MathTools/IntegerAlgebraTools.h"
 
 #include <fstream>
 #include <iostream>
@@ -889,7 +890,11 @@ LongIntegerVector& LongIntegerVector::Multiply (const LongIntegerMatrix&  M, Lon
   int DestPos = destStart;
   for (int i = 0; i < M.NbrRow; i ++)
     {
+#ifdef __GMP__
       mpz_set_ui(this->Components[DestPos], 0ul);
+#else
+      this->Components[DestPos] = (LONGLONG) 0l;
+#endif
       int SourcePos = sourceStart;
       for (int j = 0; j < M.NbrColumn; j++)
 	{

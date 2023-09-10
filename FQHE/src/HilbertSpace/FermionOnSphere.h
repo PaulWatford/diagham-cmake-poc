@@ -175,6 +175,8 @@ class FermionOnSphere :  public ParticleOnSphere
   int* LookUpTableShift;
   // look-up table with two entries : the first one used lzmax value of the state an the second 
   int** LookUpTable;
+  // look-up table for hilbert space larger than 2^31 with two entries : the first one used lzmax value of the state an the second 
+  long** LargeLookUpTable;
 
   // a table containing ranging from 0 to 2^MaximumSignLookUp - 1
   double* SignLookUpTable;

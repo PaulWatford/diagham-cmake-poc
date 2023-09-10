@@ -325,7 +325,14 @@ class FermionOnSphereHaldaneBasis :  public FermionOnSphere
   // return value = corresponding index
   virtual int FindStateIndex(unsigned long stateDescription, int lzmax);
 
-  // evaluate upper bound for the Haldane basis
+  // find state index for Hilbert spaces large than 2^31
+  //
+  // stateDescription = unsigned integer describing the state
+  // lzmax = maximum Lz value reached by a fermion in the state
+  // return value = corresponding index
+  virtual long FindStateLargeIndex(unsigned long stateDescription, int lzmax);
+
+// evaluate upper bound for the Haldane basis
   //
   // nbrFermions = number of fermions
   // lzMax = momentum maximum value for a fermion
@@ -353,6 +360,14 @@ class FermionOnSphereHaldaneBasis :  public FermionOnSphere
   // pos = position in StateDescription array where to store states
   // return value = position from which new states have to be stored
   virtual long GenerateStates(int lzMax, unsigned long referenceState, long pos, long& memory);
+
+  // generate all states corresponding to the constraints for Hilbert spaces larger than 2^31
+  // 
+  // lzMax = momentum maximum value for a fermion in the state
+  // totalLz = momentum total value
+  // pos = position in StateDescription array where to store states
+  // return value = position from which new states have to be stored
+  long LargeGenerateStates(int lzMax, unsigned long referenceState, long pos, long& memory);
 
   // generate all states (i.e. all possible skew symmetric polynomials with fixed Lz)
   // 

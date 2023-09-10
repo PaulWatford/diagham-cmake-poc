@@ -111,21 +111,37 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
   for (long i = 0; i < ReducedHilbertSpaceDimension; ++i)
     this->KeepStateFlag[i] = 0x0l;
   this->RawGenerateStates(this->NbrFermions, this->LzMax, this->LzMax, (this->TotalLz + this->NbrFermions * this->LzMax) >> 1, 0l);
+  cout << "check 1" << endl;
   this->GenerateLookUpTable(memory);
 
   int MaxSweeps = (this->NbrFermions * (this->NbrFermions - 1)) >> 1;  
   this->TmpGeneratedStates =  new unsigned long [MaxSweeps * 1000];
   this->TmpGeneratedStatesLzMax = new int [MaxSweeps * 1000];
   long Memory = 0l;
+  cout << "check 2" << endl;
 
-  int TmpIndex = this->FindStateIndex(this->ReferenceState, ReferenceStateLzMax);
+  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+    {
+      long TmpIndex = this->FindStateLargeIndex(this->ReferenceState, ReferenceStateLzMax);
 #ifdef  __64_BITS__
-  this->KeepStateFlag[TmpIndex >> 6] = 0x1l << (TmpIndex & 0x3f);
+      this->KeepStateFlag[TmpIndex >> 6] = 0x1l << (TmpIndex & 0x3f);
 #else
-  this->KeepStateFlag[TmpIndex >> 5] = 0x1l << (TmpIndex & 0x1f);
+      this->KeepStateFlag[TmpIndex >> 5] = 0x1l << (TmpIndex & 0x1f);
 #endif
-  this->GenerateStates(ReferenceStateLzMax, this->ReferenceState, 1, Memory);  
-
+      this->GenerateStates(ReferenceStateLzMax, this->ReferenceState, 1, Memory);
+      cout << "check 3" << endl;
+    }
+  else
+    {
+      int TmpIndex = this->FindStateIndex(this->ReferenceState, ReferenceStateLzMax);
+#ifdef  __64_BITS__
+      this->KeepStateFlag[TmpIndex >> 6] = 0x1l << (TmpIndex & 0x3f);
+#else
+      this->KeepStateFlag[TmpIndex >> 5] = 0x1l << (TmpIndex & 0x1f);
+#endif
+      this->GenerateStates(ReferenceStateLzMax, this->ReferenceState, 1, Memory);
+    }
+  cout << "check 4" << endl;
   long NewHilbertSpaceDimension = 0l;
   unsigned long TmpKeepStateFlag;
   int TmpNbrOne[] = {  
@@ -193,6 +209,8 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
 	  ++TotalIndex;
 	}
     }
+  cout << "check 5" << endl;
+
   unsigned long* TmpStateDescription = new unsigned long [NewHilbertSpaceDimension];
   int* TmpStateLzMax = new int [NewHilbertSpaceDimension];
   NewHilbertSpaceDimension = 0l;
@@ -216,7 +234,8 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
 	}
     }
 
-  
+  cout << "check 6" << endl;
+
   delete[] this->StateDescription;
   delete[] this->StateLzMax;
   delete[] this->KeepStateFlag;
@@ -230,10 +249,12 @@ FermionOnSphereHaldaneSymmetricBasis::FermionOnSphereHaldaneSymmetricBasis (int 
 
   delete[] this->TmpGeneratedStates;
   delete[] this->TmpGeneratedStatesLzMax;
+  cout << "check 7" << endl;
 
   this->GenerateLookUpTable(memory);
   for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
     this->GetStateSymmetry(this->StateDescription[i]);
+  cout << "check 8" << endl;
 #ifdef __DEBUG__
   unsigned long UsedMemory = 0l;
   UsedMemory += ((unsigned long) this->LargeHilbertSpaceDimension) * (sizeof(unsigned long) + sizeof(int));

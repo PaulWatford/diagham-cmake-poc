@@ -119,9 +119,12 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry (
  	}
     }
 
-  this->LargeHilbertSpaceDimension = (int) this->ShiftedEvaluateHilbertSpaceDimension(this->NbrFermions, this->LzMax, (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1);
-  this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
-  this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->LzMax, (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1, 0l);
+  this->LargeHilbertSpaceDimension = this->ShiftedEvaluateHilbertSpaceDimension(this->NbrFermions, (this->LzMax << 1) + 1 , (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1);
+  this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+  this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];
+  cout << "dim1 " << this->LargeHilbertSpaceDimension << endl;
+  this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, (this->LzMax << 1) + 1, (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1, 0l);
+  cout << "dim2 " << this->LargeHilbertSpaceDimension << endl;
 
 
   this->SzParitySign = 1.0;
@@ -303,9 +306,9 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry(c
   this->NbrLzValue = fermions.NbrLzValue;
   this->InvertShift = fermions.InvertShift;
   this->InvertUnshift = fermions.InvertUnshift;
-  //this->TotalSpin = fermions.TotalSpin;
-  //this->NbrFermionsUp = fermions.NbrFermionsUp;
- // this->NbrFermionsDown = fermions.NbrFermionsDown;
+  this->TotalSpin = fermions.TotalSpin;
+  this->NbrFermionsUp = fermions.NbrFermionsUp;
+  this->NbrFermionsDown = fermions.NbrFermionsDown;
   this->StateDescription = fermions.StateDescription;
   this->StateHighestBit = fermions.StateHighestBit;
   this->MaximumLookUpShift = fermions.MaximumLookUpShift;
@@ -347,9 +350,9 @@ FermionOnSphereWithSpinAllSzSzSymmetry& FermionOnSphereWithSpinAllSzSzSymmetry::
   this->TotalLz = fermions.TotalLz;
   this->LzMax = fermions.LzMax;
   this->NbrLzValue = fermions.NbrLzValue;
-  //this->TotalSpin = fermions.TotalSpin;
-  //this->NbrFermionsUp = fermions.NbrFermionsUp;
-  //this->NbrFermionsDown = fermions.NbrFermionsDown;
+  this->TotalSpin = fermions.TotalSpin;
+  this->NbrFermionsUp = fermions.NbrFermionsUp;
+  this->NbrFermionsDown = fermions.NbrFermionsDown;
   this->StateDescription = fermions.StateDescription;
   this->StateHighestBit = fermions.StateHighestBit;
   this->MaximumLookUpShift = fermions.MaximumLookUpShift;

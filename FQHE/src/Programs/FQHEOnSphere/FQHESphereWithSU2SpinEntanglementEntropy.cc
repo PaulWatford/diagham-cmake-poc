@@ -10,6 +10,7 @@
 #include "HilbertSpace/FermionOnSphereWithSpinHaldaneBasisLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinHaldaneLargeBasis.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -136,7 +137,7 @@ int main(int argc, char** argv)
   bool Statistics = true;
   bool AllSzFlag = false;
   
-  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(FileName, NbrParticles, LzMax, TotalLz, TotalSz, LzSymmetry, SzSymmetry, Statistics, AllSzFlag) == false)
+  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(FileName, NbrParticles, LzMax, TotalLz, TotalSz, SzSymmetry, LzSymmetry, Statistics, AllSzFlag) == false)
     {
       cout << "error while retrieving system parameters from file name " << FileName << endl;
       return -1;
@@ -203,19 +204,38 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
+	      if (SzSymmetry == 0)
+		{
 #ifdef __64_BITS__
-	      if (LzMax <= 31)
+		  if (LzMax <= 31)
 #else
-		if (LzMax <= 15)
+		    if (LzMax <= 15)
 #endif
-		  {
-		    Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
-		  }
-		else
-		  {
-		    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
-		    return 0;
-		  }
+		      {
+			Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
+		      }
+		    else
+		      {
+			cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			return 0;
+		      }
+		}
+	      else
+		{
+#ifdef __64_BITS__
+		  if (LzMax <= 31)
+#else
+		    if (LzMax <= 15)
+#endif
+		      {
+			Space = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
+		      }
+		    else
+		      {
+			cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			return 0;
+		      }
+		}
 	    }
 	}
       else
@@ -399,7 +419,14 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      DensityMatrixFile << "# l_a    N    Lz    lambda" << endl;
+	      if (SzSymmetry == 0)
+		{
+		  DensityMatrixFile << "# l_a    N    Lz    lambda" << endl;
+		}
+	      else
+		{
+		  DensityMatrixFile << "# l_a    N    Sz<->-Sz    Lz    lambda" << endl;
+		}		
 	    }
 	  DensityMatrixFile.close();
 	}
@@ -636,39 +663,70 @@ int main(int argc, char** argv)
 			  ((ShiftedTotalLz - SubsystemTotalLz) >= ComplementarySubsystemMinTotalLz) && 
 			  ((EigenstateFlag == false) || ((FilterNa == SubsystemNbrParticles) && (FilterLza == SubsystemTrueTotalLz))))
 			{
-			  cout << "processing subsystem size=" << SubsystemSize << "  subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTrueTotalLz << endl;
-				  
-			  RealDiagonalMatrix TmpDiag;
-			  if (SVDFlag == false)
+			  int TmpMinSzSymmetry = -1;
+			  if (SzSymmetry == 0)
 			    {
-			      RealSymmetricMatrix PartialDensityMatrix;
+			      TmpMinSzSymmetry = 0;
 			    }
-			  else
+			  //			  TmpMinSzSymmetry = 0;
+			  for (int SubsystemSzSymmetry = TmpMinSzSymmetry; SubsystemSzSymmetry <= -TmpMinSzSymmetry; SubsystemSzSymmetry += 2)
 			    {
-			      RealMatrix PartialEntanglementMatrix = Space->EvaluatePartialEntanglementMatrix(SubsystemSize, SubsystemNbrParticles, SubsystemTrueTotalLz, GroundState);
-			      if (PartialEntanglementMatrix.GetNbrRow() != 0)
+			      if (TmpMinSzSymmetry == 0)
 				{
-				  TmpDiag = FQHESphereWithSU2SpinEntanglementEntropySVDCore(PartialEntanglementMatrix);
+				  cout << "processing subsystem size=" << SubsystemSize << "  subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTrueTotalLz << endl;
 				}
-			    }   
-		      
+			      else
+				{
+				  cout << "processing subsystem size=" << SubsystemSize << "  subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTrueTotalLz << " subsystem Sz<->-Sz=" << SubsystemSzSymmetry << endl;
+				}
+			      
+			      RealDiagonalMatrix TmpDiag;
+			      if (SVDFlag == false)
+				{
+				  RealSymmetricMatrix PartialDensityMatrix;
+				}
+			      else
+				{
+				  RealMatrix PartialEntanglementMatrix;
+				  if (TmpMinSzSymmetry == 0)
+				    {
+				      PartialEntanglementMatrix = Space->EvaluatePartialEntanglementMatrix(SubsystemSize, SubsystemNbrParticles, SubsystemTrueTotalLz, GroundState);
+				    }
+				  else
+				    {
+				      PartialEntanglementMatrix = Space->EvaluatePartialEntanglementMatrix(SubsystemSize, SubsystemNbrParticles, SubsystemTrueTotalLz, SubsystemSzSymmetry, GroundState);
+				    }
+				  if (PartialEntanglementMatrix.GetNbrRow() != 0)
+				    {
+				      TmpDiag = FQHESphereWithSU2SpinEntanglementEntropySVDCore(PartialEntanglementMatrix);
+				    }
+				}   
 			  
-			  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
-			    {
-			      if (TmpDiag[i] > 1e-14)
-				{
-				  EntanglementEntropy += TmpDiag[i] * log(TmpDiag[i]);
-				  DensitySum += TmpDiag[i];
-				}
-			    }
-			  if (DensityMatrixFileName != 0)
-			    {
-			      ofstream DensityMatrixFile;
-			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(14);
 			      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
-				DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTrueTotalLz << " " << TmpDiag[i] << endl;
-			      DensityMatrixFile.close();
+				{
+				  if (TmpDiag[i] > 1e-14)
+				    {
+				      EntanglementEntropy += TmpDiag[i] * log(TmpDiag[i]);
+				      DensitySum += TmpDiag[i];
+				    }
+				}
+			      if (DensityMatrixFileName != 0)
+				{
+				  ofstream DensityMatrixFile;
+				  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
+				  DensityMatrixFile.precision(14);
+				  if (SzSymmetry == 0)
+				    {
+				      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+					DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTrueTotalLz << " " << TmpDiag[i] << endl;
+				    }
+				  else
+				    {
+				      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+					DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemSzSymmetry << " " << SubsystemTrueTotalLz << " " << TmpDiag[i] << endl;
+				    }
+				  DensityMatrixFile.close();
+				}
 			    }
 			}
 		    }

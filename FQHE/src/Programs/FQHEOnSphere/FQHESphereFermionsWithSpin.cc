@@ -215,6 +215,12 @@ int main(int argc, char** argv)
 	}
     }
   int Max = (((LzMax - NbrUp + 1) * NbrUp) + ((LzMax - NbrDown + 1) * NbrDown));
+  if (Manager.GetBoolean("all-sz") == true)
+    {
+      int TmpNbrUp = NbrFermions / 2;
+      int TmpNbrDown = NbrFermions - TmpNbrUp;
+      Max = (((LzMax - TmpNbrUp + 1) * TmpNbrUp) + ((LzMax - TmpNbrDown + 1) * TmpNbrDown));
+    }
   cout << "maximum Lz value = " << Max << endl;
 
   int  L = 0;

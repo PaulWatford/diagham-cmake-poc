@@ -316,6 +316,10 @@ bool FQHESphereSU2GetPseudopotentials (char* fileName, int lzMax, double** pseud
 	  return false;
 	}
     }
+  else
+    {
+      oneBodyPseudopotentialUpUp = 0;
+    }
   if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialDownDown", ' ', oneBodyPseudopotentialDownDown, TmpNbrPseudoPotentials) == true)
     {
       if (TmpNbrPseudoPotentials != (lzMax + 1))
@@ -324,6 +328,10 @@ bool FQHESphereSU2GetPseudopotentials (char* fileName, int lzMax, double** pseud
 	  return false;
 	}
     }
+  else
+    {
+      oneBodyPseudopotentialDownDown = 0;
+    }
   if (InteractionDefinition.GetAsDoubleArray("OneBodyPotentialUpDown", ' ', oneBodyPseudopotentialUpDown, TmpNbrPseudoPotentials) == true)
     {
       if (TmpNbrPseudoPotentials != (lzMax + 1))
@@ -331,6 +339,10 @@ bool FQHESphereSU2GetPseudopotentials (char* fileName, int lzMax, double** pseud
 	  cout << "OneBodyPotentialUpDown has a wrong number of components or has a wrong value in " << fileName << endl;
 	  return false;
 	}
+    }
+  else
+    {
+      oneBodyPseudopotentialUpDown = 0;
     }
   return true;
 }

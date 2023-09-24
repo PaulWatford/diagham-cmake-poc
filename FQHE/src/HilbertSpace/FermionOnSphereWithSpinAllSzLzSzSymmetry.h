@@ -7,9 +7,10 @@
 //                                                                            //
 //                                                                            //
 //                     class of fermions on sphere with spin with             //
-//                        all Sz sectors and Sz<->-Sz symmetry                //
+//                     all Sz sectors and both Sz<->-Sz symmetry              //
+//                          and inversion Lz<->-Lz symmetry                   //
 //                                                                            //
-//                        last modification : 12/07/2023                      //
+//                        last modification : 23/09/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,12 +30,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef FERMIONONSPHEREWITHSPINALLSZSZSYMMETRY_H
-#define FERMIONONSPHEREWITHSPINALLSZSZSYMMETRY_H
+#ifndef FERMIONONSPHEREWITHSPINALLSZLZSZSYMMETRY_H
+#define FERMIONONSPHEREWITHSPINALLSZLZSZSYMMETRY_H
 
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSphereWithSpinSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 
 #include <iostream>
@@ -47,12 +48,9 @@ using std::dec;
 
 
 
-class FermionOnSphereWithSpinAllSzSzSymmetry :  public FermionOnSphereWithSpinSzSymmetry
+class FermionOnSphereWithSpinAllSzLzSzSymmetry :  public FermionOnSphereWithSpinLzSzSymmetry
 {
 
-
-  friend class FermionOnSphereWithSpinAllSzLzSzSymmetry;
-  
  protected:
 
   // temporary storage during state generation
@@ -63,37 +61,37 @@ class FermionOnSphereWithSpinAllSzSzSymmetry :  public FermionOnSphereWithSpinSz
 
   // default constructor 
   //
-  FermionOnSphereWithSpinAllSzSzSymmetry ();
+  FermionOnSphereWithSpinAllSzLzSzSymmetry ();
 
   // basic constructor
   // 
   // nbrFermions = number of fermions
-  // totalLz = twice the momentum total value
   // lzMax = twice the maximum Lz value reached by a fermion
-  // minusParity = select the Sz <-> -Sz symmetric sector with negative parity
+  // minusSzParity = select the  Sz <-> -Sz symmetric sector with negative parity
+  // minusLzParity = select the  Lz <-> -Lz symmetric sector with negative parity
   // memory = amount of memory granted for precalculations
-  FermionOnSphereWithSpinAllSzSzSymmetry (int nbrFermions, int totalLz, int lzMax, bool minusParity, unsigned long memory = 10000000);
+  FermionOnSphereWithSpinAllSzLzSzSymmetry (int nbrFermions, int lzMax, bool minusSzParity, bool minusLzParity, unsigned long memory = 10000000);
 
   // constructor from a binary file that describes the Hilbert space
   //
   // fileName = name of the binary file
   // memory = amount of memory granted for precalculations
-  FermionOnSphereWithSpinAllSzSzSymmetry (char* fileName, unsigned long memory = 10000000);
+  FermionOnSphereWithSpinAllSzLzSzSymmetry (char* fileName, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
-  FermionOnSphereWithSpinAllSzSzSymmetry(const FermionOnSphereWithSpinAllSzSzSymmetry& fermions);
+  FermionOnSphereWithSpinAllSzLzSzSymmetry(const FermionOnSphereWithSpinAllSzLzSzSymmetry& fermions);
 
   // destructor
   //
-  ~FermionOnSphereWithSpinAllSzSzSymmetry ();
+  ~FermionOnSphereWithSpinAllSzLzSzSymmetry ();
 
   // assignement (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
   // return value = reference on current hilbert space
-  FermionOnSphereWithSpinAllSzSzSymmetry& operator = (const FermionOnSphereWithSpinAllSzSzSymmetry& fermions);
+  FermionOnSphereWithSpinAllSzLzSzSymmetry& operator = (const FermionOnSphereWithSpinAllSzLzSzSymmetry& fermions);
 
   // clone Hilbert space (without duplicating datas)
   //
@@ -138,7 +136,7 @@ class FermionOnSphereWithSpinAllSzSzSymmetry :  public FermionOnSphereWithSpinSz
   // state = state that needs to be projected
   // su2Space = the subspace onto which the projection is carried out
   // SzValue = the desired value of Sz
-  virtual RealVector ForgeSU2FromTunneling(RealVector& state, FermionOnSphereWithSpinSzSymmetry& su2Space, int SzValue);
+  virtual RealVector ForgeSU2FromTunneling(RealVector& state, FermionOnSphereWithSpinLzSzSymmetry& su2Space, int SzValue);
 
   // evaluate a density matrix of a subsystem of the whole system described by a given ground state. The density matrix is only evaluated in a given Lz sector and fixed number of particles
   // 

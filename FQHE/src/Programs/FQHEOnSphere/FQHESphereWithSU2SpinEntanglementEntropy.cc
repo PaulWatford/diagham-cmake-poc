@@ -11,6 +11,7 @@
 #include "HilbertSpace/FermionOnSphereWithSpinHaldaneLargeBasis.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -204,37 +205,75 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      if (SzSymmetry == 0)
+	      if (LzSymmetry == 0)
 		{
+		  if (SzSymmetry == 0)
+		    {
 #ifdef __64_BITS__
-		  if (LzMax <= 31)
+		      if (LzMax <= 31)
 #else
-		    if (LzMax <= 15)
+			if (LzMax <= 15)
 #endif
-		      {
-			Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
-		      }
-		    else
-		      {
-			cout << "States of this Hilbert space cannot be represented in a single word." << endl;
-			return 0;
-		      }
+			  {
+			    Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
+			  }
+			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
+		  else
+		    {
+#ifdef __64_BITS__
+		      if (LzMax <= 31)
+#else
+			if (LzMax <= 15)
+#endif
+			  {
+			    Space = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
+			  }
+			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
 		}
 	      else
 		{
+		  if (SzSymmetry == 0)
+		    {
+// #ifdef __64_BITS__
+// 		      if (LzMax <= 31)
+// #else
+// 			if (LzMax <= 15)
+// #endif
+// 			  {
+// 			    Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
+// 			  }
+// 			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
+		  else
+		    {
 #ifdef __64_BITS__
-		  if (LzMax <= 31)
+		      if (LzMax <= 31)
 #else
-		    if (LzMax <= 15)
+			if (LzMax <= 15)
 #endif
-		      {
-			Space = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
-		      }
-		    else
-		      {
-			cout << "States of this Hilbert space cannot be represented in a single word." << endl;
-			return 0;
-		      }
+			  {
+			    Space = new FermionOnSphereWithSpinAllSzLzSzSymmetry  (NbrParticles, LzMax, (SzSymmetry == -1), (LzSymmetry == -1));
+			  }
+			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
 		}
 	    }
 	}

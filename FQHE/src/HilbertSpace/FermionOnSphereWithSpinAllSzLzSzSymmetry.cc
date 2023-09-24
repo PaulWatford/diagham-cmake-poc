@@ -7,9 +7,10 @@
 //                                                                            //
 //                                                                            //
 //                     class of fermions on sphere with spin with             //
-//                        all Sz sectors and Sz<->-Sz symmetry                //
+//                     all Sz sectors and both Sz<->-Sz symmetry              //
+//                          and inversion Lz<->-Lz symmetry                   //
 //                                                                            //
-//                        last modification : 12/07/2023                      //
+//                        last modification : 23/09/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -30,6 +31,7 @@
 
 
 #include "config.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
@@ -61,23 +63,23 @@ using std::bitset;
 // default constructor 
 //
 
-FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry ()
+FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmetry ()
 {
 }
 
 // basic constructor
 // 
 // nbrFermions = number of fermions
-// totalLz = twice the momentum total value
 // lzMax = twice the maximum Lz value reached by a fermion
-// minusParity = select the Sz <-> -Sz symmetric sector with negative parity
+// minusSzParity = select the  Sz <-> -Sz symmetric sector with negative parity
+// minusLzParity = select the  Lz <-> -Lz symmetric sector with negative parity
 // memory = amount of memory granted for precalculations
 
-FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry (int nbrFermions, int totalLz, int lzMax, bool minusParity, unsigned long memory)
+FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmetry (int nbrFermions, int lzMax, bool minusSzParity, bool minusLzParity, unsigned long memory)
 {
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
-  this->TotalLz = totalLz;
+  this->TotalLz = 0;
   this->TotalSpin = 0;
   this->LzMax = lzMax;
   this->NbrLzValue = this->LzMax + 1;
@@ -126,39 +128,89 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry (
 
 
   this->SzParitySign = 1.0;
-  if (minusParity == true)
+  if (minusSzParity == true)
     this->SzParitySign = -1.0;
+  this->LzParitySign = 1.0;
+  if (minusLzParity == true)
+    this->LzParitySign = -1.0;
+  if (minusLzParity == minusSzParity)
+    this->LzSzSameParityFlag = true;
+  else
+    this->LzSzSameParityFlag = false;
 
   this->Flag.Initialize();
   this->TargetSpace = this;
   long TmpHilbertSpaceDimension = 0l;
-  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+  if (minusSzParity == minusLzParity)
     {
-      if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
+      for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
 	{
-	  this->StateDescription[i] = 0x0ul;
-	}
-      else
-	{
-	  this->GetStateSymmetry(this->StateDescription[i]);
-	  if ((this->StateDescription[i] & FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT) == 0x0ul)
+	  if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
 	    {
-	      unsigned long TmpStateParity = this->StateDescription[i];
-	      this->GetStateSingletParity(TmpStateParity);
-	      if ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0) && (minusParity == false))
-		  || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0) && (minusParity == true)))
+	      this->StateDescription[i] = 0x0ul;
+	    }
+	  else
+	    {
+	      unsigned long TmpState = this->StateDescription[i];
+	      this->GetStateSymmetry(TmpState);
+	      if ((TmpState & FERMION_SPHERE_SU2_LZ_SZ_SYMMETRIC_BIT) == FERMION_SPHERE_SU2_LZ_SZ_SYMMETRIC_BIT)
+		++TmpHilbertSpaceDimension;
+	      else
 		{
-		  ++TmpHilbertSpaceDimension;
+		  unsigned long TmpStateParity = this->StateDescription[i];
+		  this->GetStateSingletParity(TmpStateParity);
+		  if ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusLzParity == false))
+		      || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusLzParity == true)))
+		    {
+		      ++TmpHilbertSpaceDimension;
+		    }
+		  else
+		    {
+		      this->StateDescription[i] = 0x0ul;
+		    }
+		}
+	    }
+	}
+    }
+  else
+    {
+      for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+	{
+	  if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
+	    {
+	      this->StateDescription[i] = 0x0ul;
+	    }
+	  else
+	    {
+	      unsigned long TmpState = this->StateDescription[i];
+	      this->GetStateSymmetry(TmpState);
+	      if (((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) != 0x0ul) && ((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) !=  FERMION_SPHERE_SU2_LZSZ_SYMMETRIC_BIT))		      
+		{
+		  if ((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) == FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT)
+		    {
+		      ++TmpHilbertSpaceDimension;
+		    }
+		  else
+		    {
+		      unsigned long TmpStateParity = TmpState;
+		      this->GetStateSingletParity(TmpStateParity);
+		      if ((((TmpState & FERMION_SPHERE_SU2_LZ_SYMMETRIC_BIT) == 0x0ul) && ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusLzParity == false))
+											   || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusLzParity == true))))
+			  || (((TmpState & FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT) == 0x0ul) && ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusSzParity == false))
+											      || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusSzParity == true)))))
+			{
+			  ++TmpHilbertSpaceDimension;
+			}
+		      else
+			{
+			  this->StateDescription[i] = 0x0ul;
+			}
+		    }
 		}
 	      else
 		{
 		  this->StateDescription[i] = 0x0ul;
 		}
-	    }
-	  else
-	    {
-	      ++TmpHilbertSpaceDimension;
-	      this->StateDescription[i] &= ~FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT;
 	    }
 	}
     }
@@ -226,7 +278,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry (
 // fileName = name of the binary file
 // memory = amount of memory granted for precalculations
 
-FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry (char* fileName, unsigned long memory)
+FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmetry (char* fileName, unsigned long memory)
 {
   this->ReadHilbertSpace(fileName);
   this->IncNbrFermions = this->NbrFermions + 1;
@@ -295,7 +347,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry (
 //
 // fermions = reference on the hilbert space to copy to copy
 
-FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry(const FermionOnSphereWithSpinAllSzSzSymmetry& fermions)
+FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmetry(const FermionOnSphereWithSpinAllSzLzSzSymmetry& fermions)
 {
   this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
   this->Flag = fermions.Flag;
@@ -320,6 +372,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry(c
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
   this->LzParitySign = fermions.LzParitySign;
   this->SzParitySign = fermions.SzParitySign;
+  this->LzSzSameParityFlag = fermions.LzSzSameParityFlag;
   this->LargeHilbertSpaceDimension = this->LargeHilbertSpaceDimension;
   this->TargetSpace = this;
 }
@@ -327,7 +380,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry(c
 // destructor
 //
 
-FermionOnSphereWithSpinAllSzSzSymmetry::~FermionOnSphereWithSpinAllSzSzSymmetry ()
+FermionOnSphereWithSpinAllSzLzSzSymmetry::~FermionOnSphereWithSpinAllSzLzSzSymmetry ()
 {
 }
 
@@ -336,7 +389,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry::~FermionOnSphereWithSpinAllSzSzSymmetry 
 // fermions = reference on the hilbert space to copy to copy
 // return value = reference on current hilbert space
 
-FermionOnSphereWithSpinAllSzSzSymmetry& FermionOnSphereWithSpinAllSzSzSymmetry::operator = (const FermionOnSphereWithSpinAllSzSzSymmetry& fermions)
+FermionOnSphereWithSpinAllSzLzSzSymmetry& FermionOnSphereWithSpinAllSzLzSzSymmetry::operator = (const FermionOnSphereWithSpinAllSzLzSzSymmetry& fermions)
 {
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
@@ -362,6 +415,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry& FermionOnSphereWithSpinAllSzSzSymmetry::
   this->LookUpTable = fermions.LookUpTable;  
   this->LzParitySign = fermions.LzParitySign;
   this->SzParitySign = fermions.SzParitySign;
+  this->LzSzSameParityFlag = fermions.LzSzSameParityFlag;
   this->LargeHilbertSpaceDimension = this->LargeHilbertSpaceDimension;
   this->TargetSpace = this;
   return *this;
@@ -371,9 +425,9 @@ FermionOnSphereWithSpinAllSzSzSymmetry& FermionOnSphereWithSpinAllSzSzSymmetry::
 //
 // return value = pointer to cloned Hilbert space
 
-AbstractHilbertSpace* FermionOnSphereWithSpinAllSzSzSymmetry::Clone()
+AbstractHilbertSpace* FermionOnSphereWithSpinAllSzLzSzSymmetry::Clone()
 {
-  return new FermionOnSphereWithSpinAllSzSzSymmetry(*this);
+  return new FermionOnSphereWithSpinAllSzLzSzSymmetry(*this);
 }
 
 
@@ -383,7 +437,7 @@ AbstractHilbertSpace* FermionOnSphereWithSpinAllSzSzSymmetry::Clone()
 // nbodyBasis = reference on the nbody-basis to use
 // return value = converted vector  
 
-RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis)
+RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ConvertToNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis)
 {
   RealVector TmpVector (nbodyBasis.GetHilbertSpaceDimension(), true);
   unsigned long TmpState;
@@ -409,7 +463,7 @@ RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToNbodyBasis(RealVecto
 // nbodyBasis = reference on the nbody-basis to use
 // return value = converted vector
 
-RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToSymmetricNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis)
+RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ConvertToSymmetricNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis)
 {
   RealVector TmpVector (this->GetHilbertSpaceDimension(), true);
   unsigned long TmpState;
@@ -459,9 +513,8 @@ RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToSymmetricNbodyBasis(
 // m = index of the creation operator
 // n = index of the annihilation operator
 // coefficient = reference on the double where the multiplicative factor has to be stored
-// return value = index of the destination state
-
-int FermionOnSphereWithSpinAllSzSzSymmetry::AduAd (int index, int m1, int n2, double& Coefficient)
+// return value = index of the destination state 
+int FermionOnSphereWithSpinAllSzLzSzSymmetry::AduAd (int index, int m1, int n2, double& Coefficient)
 {
 
   this->ProdATemporaryState = this->StateDescription[index];
@@ -483,7 +536,7 @@ int FermionOnSphereWithSpinAllSzSzSymmetry::AduAd (int index, int m1, int n2, do
   m1 <<= 1;
   ++m1;
 
-  if ((TmpState & (0x1ul << m1)) != 0x0ul) 
+  if ((TmpState & (0x1ul << m1)) != 0) 
     return this->HilbertSpaceDimension;
 
   Coefficient *= this->SignLookUpTable[(TmpState >> m1) & this->SignLookUpTableMask[m1]];
@@ -505,7 +558,7 @@ int FermionOnSphereWithSpinAllSzSzSymmetry::AduAd (int index, int m1, int n2, do
 // n = index of the annihilation operator
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
-int FermionOnSphereWithSpinAllSzSzSymmetry::AddAu (int index, int m1, int n2, double& Coefficient)
+int FermionOnSphereWithSpinAllSzLzSzSymmetry::AddAu (int index, int m1, int n2, double& Coefficient)
 {
 
   this->ProdATemporaryState = this->StateDescription[index];
@@ -528,7 +581,7 @@ int FermionOnSphereWithSpinAllSzSzSymmetry::AddAu (int index, int m1, int n2, do
   unsigned long TmpState = this->ProdATemporaryState;
   m1 <<= 1;
 
-  if ((TmpState & (0x1ul << m1)) != 0x0ul) 
+  if ((TmpState & (0x1ul << m1)) != 0) 
     return this->HilbertSpaceDimension;
 
   Coefficient *= this->SignLookUpTable[(TmpState >> m1) & this->SignLookUpTableMask[m1]];
@@ -549,7 +602,7 @@ int FermionOnSphereWithSpinAllSzSzSymmetry::AddAu (int index, int m1, int n2, do
 // su2Space = the subspace onto which the projection is carried out
 // SzValue = the desired value of Sz
 
-RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ForgeSU2FromTunneling(RealVector& state, FermionOnSphereWithSpinSzSymmetry& su2Space, int SzValue)
+RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ForgeSU2FromTunneling(RealVector& state, FermionOnSphereWithSpinLzSzSymmetry& su2Space, int SzValue)
 {
   RealVector FinalState(su2Space.GetHilbertSpaceDimension(), true);
   int counter=0;
@@ -587,8 +640,7 @@ RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ForgeSU2FromTunneling(RealVec
 // totalLz = momentum total value
 // pos = position in StateDescription array where to store states
 // return value = position from which new states have to be stored
-
-long FermionOnSphereWithSpinAllSzSzSymmetry::GenerateStates(int nbrFermions, int posMax, int totalLz, long pos)
+long FermionOnSphereWithSpinAllSzLzSzSymmetry::GenerateStates(int nbrFermions, int posMax, int totalLz, long pos)
 {
   if ((nbrFermions == 0) || (totalLz < 0)  || (posMax < (nbrFermions - 1)))
     return pos;
@@ -634,7 +686,7 @@ long FermionOnSphereWithSpinAllSzSzSymmetry::GenerateStates(int nbrFermions, int
 // totalLz = momentum total value
 // return value = Hilbert space dimension
 
-long FermionOnSphereWithSpinAllSzSzSymmetry::ShiftedEvaluateHilbertSpaceDimension(int nbrFermions, int posMax, int totalLz)
+long FermionOnSphereWithSpinAllSzLzSzSymmetry::ShiftedEvaluateHilbertSpaceDimension(int nbrFermions, int posMax, int totalLz)
 {
   if ((nbrFermions == 0) || (totalLz < 0)  || (posMax < (nbrFermions - 1)))
     return 0l;
@@ -666,7 +718,7 @@ long FermionOnSphereWithSpinAllSzSzSymmetry::ShiftedEvaluateHilbertSpaceDimensio
 // groundState = reference on the total system ground state
 // return value = density matrix of the subsytem  (return a wero dimension matrix if the density matrix is equal to zero)
 
-RealMatrix FermionOnSphereWithSpinAllSzSzSymmetry::EvaluatePartialEntanglementMatrix (int subsytemSize, int nbrFermionSector, int lzSector, RealVector& groundState)
+RealMatrix FermionOnSphereWithSpinAllSzLzSzSymmetry::EvaluatePartialEntanglementMatrix (int subsytemSize, int nbrFermionSector, int lzSector, RealVector& groundState)
 {
   if (subsytemSize <= 0)
     {
@@ -802,7 +854,7 @@ RealMatrix FermionOnSphereWithSpinAllSzSzSymmetry::EvaluatePartialEntanglementMa
 // groundState = reference on the total system ground state
 // return value = density matrix of the subsytem  (return a wero dimension matrix if the density matrix is equal to zero)
 
-RealMatrix FermionOnSphereWithSpinAllSzSzSymmetry::EvaluatePartialEntanglementMatrix (int subsytemSize, int nbrFermionSector, int lzSector, int szSymmetrySector, RealVector& groundState)
+RealMatrix FermionOnSphereWithSpinAllSzLzSzSymmetry::EvaluatePartialEntanglementMatrix (int subsytemSize, int nbrFermionSector, int lzSector, int szSymmetrySector, RealVector& groundState)
 {
   int TotalSzSymmetrySector = 1;
   if (this->SzParitySign < 0.0)

@@ -95,8 +95,10 @@ static  unsigned long FermionOnSphereWithSpinLzInvertTable[] = {0x0ul, 0x40ul, 0
 
 class FermionOnSphereWithSpinLzSzSymmetry :  public FermionOnSphereWithSpin
 {
-  friend class FermionOnSphereWithSpinHaldaneLzSzSymmetry;
 
+  friend class FermionOnSphereWithSpinHaldaneLzSzSymmetry;
+  friend class FermionOnSphereWithSpinAllSzLzSzSymmetry;
+  
  protected:
 
   // indicate that both the Lz and Sz symmetry have the same parity

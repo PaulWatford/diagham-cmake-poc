@@ -36,6 +36,8 @@
 #include "HilbertSpace/FermionOnSphereWithSpinLzSymmetryLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
@@ -131,23 +133,61 @@ int main(int argc, char** argv)
   bool FermionFlag = false;
   if (Manager.GetString("statistics") == 0)
     FermionFlag = true;
-  int TmpTotalSz=TotalSz;
+  int TmpTotalSz = TotalSz;
+  bool AllSzFlag = false;
   if (Manager.GetBoolean("all-sz"))
-    TmpTotalSz=-1;
-  if (NbrParticles==0)
     {
-      if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(Manager.GetString("state"), NbrParticles, LzMax, TotalLz, TmpTotalSz, SzSymmetrizedBasis, SzMinusParity, 
-							       LzSymmetrizedBasis, LzMinusParity, FermionFlag) == false)
+      TmpTotalSz = -1;
+      AllSzFlag = true;
+    }
+  int LzSymmetry = 0;
+  int SzSymmetry = 0;
+
+  if (NbrParticles == 0)
+    {
+      if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(Manager.GetString("state"), NbrParticles, LzMax, TotalLz, TmpTotalSz, SzSymmetry, LzSymmetry, FermionFlag, AllSzFlag) == false)
 	{
 	  return -1;
 	}
       else
 	{
-	  if (!Manager.GetBoolean("all-sz"))
-	    TotalSz=TmpTotalSz;
+	  if (SzSymmetry != 0)
+	    {
+	      SzSymmetrizedBasis = true;
+	      if (SzSymmetry < 0)
+		{
+		  SzMinusParity = true;
+		}
+	      else
+		{
+		  SzMinusParity = false;
+		}
+	    }
+	  if (LzSymmetry != 0)
+	    {
+	      LzSymmetrizedBasis = true;
+	      if (LzSymmetry < 0)
+		{
+		  LzMinusParity = true;
+		}
+	      else
+		{
+		  LzMinusParity = false;
+		}
+	    }
+	    //	  if (!Manager.GetBoolean("all-sz"))
+	    //	    TotalSz=TmpTotalSz;
 	  if (Manager.GetBoolean("show-extracted") == true)
 	    {
-	      cout << "N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz << "  TotalSz=" << TotalSz;
+	      cout << "N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz;
+	      if (AllSzFlag == false)
+		{		  
+		  cout<< "  TotalSz=" << TotalSz;
+		}
+	      else
+		{
+		  cout<< "  All Sz sectors ";
+		}
 	      if (LzSymmetrizedBasis == true)
 		{
 		  cout << "  Lz symmetrized basis ";
@@ -221,123 +261,152 @@ int main(int argc, char** argv)
   ParticleOnSphereWithSpin* Space;
   if (FermionFlag == true)
     {
-      if (Manager.GetBoolean("all-sz"))
+      if (AllSzFlag)
 	{
 	  if (LzSymmetrizedBasis == false)
-	    Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+	    {
+	      if (SzSymmetrizedBasis == false)
+		{
+		  Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		}
+	      else
+		{
+		  FermionOnSphereWithSpinAllSzSzSymmetry TmpSpace (NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+		  Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		  RealVector State2 = TmpSpace.ConvertToNbodyBasis(State, * ((FermionOnSphereWithSpinAllSz*) Space));
+		  State = State2;
+		  //		  Space = new FermionOnSphereWithSpinAllSzSzSymmetry (NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+		}
+	    }
 	  else
-	    Space = new FermionOnSphereWithSpinAllSzLzSymmetry (NbrParticles, LzMax, LzMinusParity, MemorySpace);
+	    {
+	      if (SzSymmetrizedBasis == false)
+		{
+		  Space = new FermionOnSphereWithSpinAllSzLzSymmetry (NbrParticles, LzMax, LzMinusParity, MemorySpace);
+		}
+	      else
+		{
+		  FermionOnSphereWithSpinAllSzLzSzSymmetry TmpSpace (NbrParticles, LzMax, SzMinusParity, LzMinusParity, MemorySpace);
+		  Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		  RealVector State2 = TmpSpace.ConvertToNbodyBasis(State, * ((FermionOnSphereWithSpinAllSz*) Space));
+		  State = State2;
+		  //		  Space = new FermionOnSphereWithSpinAllSzLzSzSymmetry (NbrParticles, LzMax, SzMinusParity, LzMinusParity, MemorySpace);
+		}
+	    }
 	}
-      else if ((SzSymmetrizedBasis == false) && (LzSymmetrizedBasis == false))
-	  {
-#ifdef __64_BITS__
-	  if (LzMax <= 31)
-#else
-	    if (LzMax <= 15)
-#endif
-	      {
-		Space = new FermionOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
-	      }
-	    else
-	      {
-#ifdef __128_BIT_LONGLONG__
-		if (LzMax <= 63)
-#else
-		  if (LzMax <= 31)
-#endif
-		    {
-		      Space = new FermionOnSphereWithSpinLong(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
-		    }
-		  else
-		    {
-		      cout << "States of this Hilbert space cannot be represented in a single word." << endl;
-		      return -1;
-		    }	
-	      }
-	  }
       else
 	{
-#ifdef __128_BIT_LONGLONG__
-	  if (LzMax >= 61)
-#else
-	    if (LzMax >= 29)
-#endif
-	      {
-		cout << "States of this Hilbert space cannot be represented in a single word." << endl;
-		return -1;
-	      }	
-	  if (SzSymmetrizedBasis == true) 
-	    if (LzSymmetrizedBasis == false)
-	      {
+	  if ((SzSymmetrizedBasis == false) && (LzSymmetrizedBasis == false))
+	    {
 #ifdef __64_BITS__
-		if (LzMax <= 28)
+	      if (LzMax <= 31)
 #else
-		  if (LzMax <= 13)
-#endif
-		    {
-		      if (Manager.GetString("load-hilbert") == 0)
-			Space = new FermionOnSphereWithSpinSzSymmetry(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
-		      else
-			Space = new FermionOnSphereWithSpinSzSymmetry(Manager.GetString("load-hilbert"), MemorySpace);
-		    }
-		  else
-		    {
-		      if (Manager.GetString("load-hilbert") == 0)
-			Space = new FermionOnSphereWithSpinSzSymmetryLong(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
-		      else
-			Space = new FermionOnSphereWithSpinSzSymmetryLong(Manager.GetString("load-hilbert"), MemorySpace);
-		    }
-		  }
-	    else
-#ifdef __64_BITS__
-	      if (LzMax <= 28)
-#else
-		if (LzMax <= 13)
+		if (LzMax <= 15)
 #endif
 		  {
-		    if (Manager.GetString("load-hilbert") == 0)
-		      {
-			Space = new FermionOnSphereWithSpinLzSzSymmetry(NbrParticles, LzMax, SzMinusParity,
-									LzMinusParity, MemorySpace);
-		      }
-		    else
-		      Space = new FermionOnSphereWithSpinLzSzSymmetry(Manager.GetString("load-hilbert"), MemorySpace);
+		    Space = new FermionOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
 		  }
 		else
 		  {
-		    if (Manager.GetString("load-hilbert") == 0)
+#ifdef __128_BIT_LONGLONG__
+		    if (LzMax <= 63)
+#else
+		      if (LzMax <= 31)
+#endif
+			{
+			  Space = new FermionOnSphereWithSpinLong(NbrParticles, TotalLz, LzMax, TotalSz, MemorySpace);
+			}
+		      else
+			{
+			  cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			  return -1;
+			}	
+		  }
+	    }
+	  else
+	    {
+#ifdef __128_BIT_LONGLONG__
+	      if (LzMax >= 61)
+#else
+		if (LzMax >= 29)
+#endif
+		  {
+		    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+		    return -1;
+		  }	
+	      if (SzSymmetrizedBasis == true) 
+		if (LzSymmetrizedBasis == false)
+		  {
+#ifdef __64_BITS__
+		    if (LzMax <= 28)
+#else
+		      if (LzMax <= 13)
+#endif
+			{
+			  if (Manager.GetString("load-hilbert") == 0)
+			    Space = new FermionOnSphereWithSpinSzSymmetry(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+			  else
+			    Space = new FermionOnSphereWithSpinSzSymmetry(Manager.GetString("load-hilbert"), MemorySpace);
+			}
+		      else
+			{
+			  if (Manager.GetString("load-hilbert") == 0)
+			    Space = new FermionOnSphereWithSpinSzSymmetryLong(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+			  else
+			    Space = new FermionOnSphereWithSpinSzSymmetryLong(Manager.GetString("load-hilbert"), MemorySpace);
+			}
+		  }
+		else
+#ifdef __64_BITS__
+		  if (LzMax <= 28)
+#else
+		    if (LzMax <= 13)
+#endif
 		      {
-			Space = new FermionOnSphereWithSpinLzSzSymmetryLong(NbrParticles, LzMax, SzMinusParity,
+			if (Manager.GetString("load-hilbert") == 0)
+			  {
+			    Space = new FermionOnSphereWithSpinLzSzSymmetry(NbrParticles, LzMax, SzMinusParity,
 									    LzMinusParity, MemorySpace);
+			  }
+			else
+			  Space = new FermionOnSphereWithSpinLzSzSymmetry(Manager.GetString("load-hilbert"), MemorySpace);
 		      }
 		    else
-		      Space = new FermionOnSphereWithSpinLzSzSymmetryLong(Manager.GetString("load-hilbert"), MemorySpace);
-		    
-		  }
-	      else
-#ifdef __64_BITS__
-		if (LzMax <= 28)
-#else
-		  if (LzMax <= 13)
-#endif
-		    {
-		      if (Manager.GetString("load-hilbert") == 0)
-			Space = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, LzMax, TotalSz, LzMinusParity, MemorySpace);
-		      else
-			Space = new FermionOnSphereWithSpinLzSymmetry(Manager.GetString("load-hilbert"), MemorySpace);	      
-		    }
+		      {
+			if (Manager.GetString("load-hilbert") == 0)
+			  {
+			    Space = new FermionOnSphereWithSpinLzSzSymmetryLong(NbrParticles, LzMax, SzMinusParity,
+										LzMinusParity, MemorySpace);
+			  }
+			else
+			  Space = new FermionOnSphereWithSpinLzSzSymmetryLong(Manager.GetString("load-hilbert"), MemorySpace);
+			
+		      }
 		  else
-		    {
-		      if (Manager.GetString("load-hilbert") == 0)
-			Space = new FermionOnSphereWithSpinLzSymmetryLong(NbrParticles, LzMax, TotalSz, LzMinusParity, MemorySpace);
+#ifdef __64_BITS__
+		    if (LzMax <= 28)
+#else
+		      if (LzMax <= 13)
+#endif
+			{
+			  if (Manager.GetString("load-hilbert") == 0)
+			    Space = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, LzMax, TotalSz, LzMinusParity, MemorySpace);
+			  else
+			    Space = new FermionOnSphereWithSpinLzSymmetry(Manager.GetString("load-hilbert"), MemorySpace);	      
+			}
 		      else
-			Space = new FermionOnSphereWithSpinLzSymmetryLong(Manager.GetString("load-hilbert"), MemorySpace);	      
-		    }
+			{
+			  if (Manager.GetString("load-hilbert") == 0)
+			    Space = new FermionOnSphereWithSpinLzSymmetryLong(NbrParticles, LzMax, TotalSz, LzMinusParity, MemorySpace);
+			  else
+			    Space = new FermionOnSphereWithSpinLzSymmetryLong(Manager.GetString("load-hilbert"), MemorySpace);	      
+			}
+	    }
 	}
     }
   else
     {
-      if (Manager.GetBoolean("all-sz"))
+      if (AllSzFlag)
 	{
 	  if ( PairParity >=0 ) 
 	    Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
@@ -391,6 +460,19 @@ int main(int argc, char** argv)
       cout << "dimension mismatch between the state (" << State.GetVectorDimension() << ") and the Hilbert space (" << Space->GetHilbertSpaceDimension() << ")" << endl;
       return -1;
     }
+
+
+  char* OutputFileName = ReplaceExtensionToFileName(Manager.GetString("state"), "vec", "l2s2");
+  if (OutputFileName == 0)
+    {
+      cout << "can't find .vec extension in " << Manager.GetString("state") << endl;
+      return 0;
+    }
+  
+  ofstream File;
+  File.open(OutputFileName, ios::out);
+  File.precision(14);
+  
   ParticleOnSphereWithSpinL2Hamiltonian Hamiltonian (Space, NbrParticles, LzMax, TotalLz, Architecture.GetArchitecture(), 1.0, 0);
   RealVector TmpState(Space->GetHilbertSpaceDimension());
   VectorHamiltonianMultiplyOperation Operation (&Hamiltonian, &State, &TmpState);
@@ -399,28 +481,33 @@ int main(int argc, char** argv)
   double RawTmpAngularMomentum = 0.5 * (sqrt (((double)4.0 * L2Value) + (double)1.0) - 1.0);
   cout << "<L^2> = " << L2Value << endl
        << "<L> = " << RawTmpAngularMomentum << endl;
+  File << "<L^2> = " << L2Value << endl
+       << "<L> = " << RawTmpAngularMomentum << endl;
+
   if (Manager.GetBoolean("no-spin") == false)
     {
-      bool fixedSz = !(Manager.GetBoolean("all-sz"));
+      bool fixedSz = !(AllSzFlag);
       if(!(Manager.GetBoolean("show-all")))
       {
-      ParticleOnSphereWithSpinS2Hamiltonian Hamiltonian2 (Space, NbrParticles, LzMax, TotalLz, TotalSz, Architecture.GetArchitecture(), 1.0, 0, fixedSz);
-//	ParticleOnSphereWithSpinS2Hamiltonian Hamiltonian2 (Space, NbrParticles, LzMax, TotalLz, TotalSz, Architecture.GetArchitecture(), 1.0, -1, false, 0, fixedSz);
-      VectorHamiltonianMultiplyOperation Operation2 (&Hamiltonian2, &State, &TmpState);
-      Operation2.ApplyOperation(Architecture.GetArchitecture());
-      L2Value = TmpState * State;
-      RawTmpAngularMomentum = 0.5 * (sqrt (((double)4.0 * L2Value) + (double) 1.0) - 1.0);
-      if (Manager.GetBoolean("all-sz"))
-      	{ 
-      	  cout << "Use option --show-all to get the correct value of S2" << endl;
-      	  exit(1);
-      	 }  
-      cout << "<S^2> = " << L2Value << endl
-	   << "<S> = " << RawTmpAngularMomentum << endl;
+	ParticleOnSphereWithSpinS2Hamiltonian Hamiltonian2 (Space, NbrParticles, LzMax, TotalLz, TotalSz, Architecture.GetArchitecture(), 1.0, 0, fixedSz);
+	//	ParticleOnSphereWithSpinS2Hamiltonian Hamiltonian2 (Space, NbrParticles, LzMax, TotalLz, TotalSz, Architecture.GetArchitecture(), 1.0, -1, false, 0, fixedSz);
+	VectorHamiltonianMultiplyOperation Operation2 (&Hamiltonian2, &State, &TmpState);
+	Operation2.ApplyOperation(Architecture.GetArchitecture());
+	L2Value = TmpState * State;
+	RawTmpAngularMomentum = 0.5 * (sqrt (((double)4.0 * L2Value) + (double) 1.0) - 1.0);
+	if (AllSzFlag)
+	  { 
+	    cout << "Use option --show-all to get the correct value of S2" << endl;
+	    exit(1);
+	  }  
+	cout << "<S^2> = " << L2Value << endl
+	     << "<S> = " << RawTmpAngularMomentum << endl;
+	File << "<S^2> = " << L2Value << endl
+	     << "<S> = " << RawTmpAngularMomentum << endl;
       }
     }
-//  if ((Manager.GetBoolean("all-sz"))||((Manager.GetBoolean("no-szparity") == false)&&(TotalSz==0)))
-  if ( (Manager.GetBoolean("no-szparity") == false) && (TotalSz==0) && (!Manager.GetBoolean("all-sz")) )
+  //  if ((AllSzFlag)||((Manager.GetBoolean("no-szparity") == false)&&(TotalSz==0)))
+  if ( (Manager.GetBoolean("no-szparity") == false) && (TotalSz==0) && (!AllSzFlag) )
     {
       Complex Tmp;
       if (SzSymmetrizedBasis == false)
@@ -439,9 +526,10 @@ int main(int argc, char** argv)
 	      Tmp = -1.0;
 	    }
 	}
-      cout  << "<P_sz> = " << Tmp.Re << endl;      
+      cout  << "<P_sz> = " << Tmp.Re << endl;
+      File << "<P_sz> = " << Tmp.Re << endl;
     }
-  if (Manager.GetBoolean("all-sz"))
+  if (AllSzFlag)
     {
       Complex Tmp;
             
@@ -450,27 +538,33 @@ int main(int argc, char** argv)
       ParticleOnSphereSpinOperator SxOperator(Space, 0, LzMax);
       Tmp = SxOperator.MatrixElement(State,State);
       cout << "<S_x> = " << Tmp.Re << endl;
-
+      File << "<S_x> = " << Tmp.Re << endl;
+      
       ParticleOnSphereSpinOperator SyOperator(Space, 1, LzMax);
       Tmp = SyOperator.MatrixElement(State,State);
       cout << "Im(<S_y>) = " << Tmp.Im << endl;
+      File << "Im(<S_y>) = " << Tmp.Im << endl;
       
       ParticleOnSphereSpinOperator SzOperator(Space, 2, LzMax);
       Tmp = SzOperator.MatrixElement(State,State);
       cout << "<S_z> = " << Tmp.Re << endl;
-
+      File << "<S_z> = " << Tmp.Re << endl;
+      
       cout << "====================================" << endl;
       
       if(Manager.GetBoolean("show-all"))
       {
 	Complex Sx2 = SxOperator.PartialMatrixElementSquare(State,State,0,Space->GetHilbertSpaceDimension());
 	cout << "<S_x^2> = " << Sx2.Re << endl;
+	File << "<S_x^2> = " << Sx2.Re << endl;
 	
 	Complex Sy2 = SyOperator.PartialMatrixElementSquare(State,State,0,Space->GetHilbertSpaceDimension());
 	cout << "<S_y^2> = " << Sy2.Re << endl;
+	File << "<S_y^2> = " << Sy2.Re << endl;
 	
 	Complex Sz2 = SzOperator.PartialMatrixElementSquare(State,State,0,Space->GetHilbertSpaceDimension());
 	cout << "<S_z^2> = " << Sz2.Re << endl;
+	File << "<S_z^2> = " << Sz2.Re << endl;
 	
 	cout << "====================================" << endl;
 
@@ -482,6 +576,7 @@ int main(int argc, char** argv)
       
     }
 
+  File.close();
 
   delete Space;
   return 0;

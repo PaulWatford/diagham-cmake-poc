@@ -4325,6 +4325,18 @@ Vector* RealVector::BroadcastClone(MPI::Intracomm& communicator, int id)
 
 Vector& RealVector::SendPartialClone(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent)
 {
+  cout << " send " << firstComponent << " " << (firstComponent + nbrComponent) << " components of vectors with dimension " << this->Dimension << endl;
+  for (int i = firstComponent; i < (firstComponent + nbrComponent); ++i)
+    {
+      cout << this->Components[i] << endl;
+    }
+  if ((firstComponent + nbrComponent) > this->Dimension)
+    {
+      int ErrorInt = -1;
+      communicator.Send(&ErrorInt, 1, MPI::INT, id, 1);
+      cout << "Cannot send " << (firstComponent + nbrComponent) << " components of vectors with dimension " << this->Dimension << endl;
+      return *this;      
+    }
   communicator.Send(&this->VectorType, 1, MPI::INT, id, 1);
   int TmpArray[5];
   TmpArray[0] = nbrComponent;

@@ -339,7 +339,7 @@ void FullReorthogonalizedBlockLanczosAlgorithm::RunLanczosAlgorithm (int nbrIter
       this->ReducedMatrix.Resize(Dimension, Dimension);
 
       for (int k = 0; k < this->BlockSize; ++k)
-	this->LanczosVectors[k + this->BlockSize] = RealVector(this->Hamiltonian->GetHilbertSpaceDimension());
+	this->LanczosVectors[k + this->BlockSize] = RealVector(this->Hamiltonian->GetHilbertSpaceDimension(), true);
       MultipleVectorHamiltonianMultiplyOperation Operation (this->Hamiltonian, this->LanczosVectors, &(this->LanczosVectors[this->BlockSize]), this->BlockSize);
       Operation.ApplyOperation(this->Architecture);
       
@@ -366,7 +366,7 @@ void FullReorthogonalizedBlockLanczosAlgorithm::RunLanczosAlgorithm (int nbrIter
       this->ReorthogonalizeVectors(&(this->LanczosVectors[this->BlockSize]), this->BlockSize, this->ReducedMatrix, 0, this->BlockSize);
       
       for (int k = 0; k < this->BlockSize; ++k)
-	this->LanczosVectors[k + (2 * this->BlockSize)] = RealVector(this->Hamiltonian->GetHilbertSpaceDimension());
+	this->LanczosVectors[k + (2 * this->BlockSize)] = RealVector(this->Hamiltonian->GetHilbertSpaceDimension(), true);
       MultipleVectorHamiltonianMultiplyOperation Operation3 (this->Hamiltonian, &(this->LanczosVectors[this->BlockSize]), 
 							     &(this->LanczosVectors[2 * this->BlockSize]), this->BlockSize);
       Operation3.ApplyOperation(this->Architecture);

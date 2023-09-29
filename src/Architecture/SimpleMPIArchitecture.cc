@@ -102,7 +102,7 @@ SimpleMPIArchitecture::SimpleMPIArchitecture(char* logFile, bool automaticLoadBa
   else
     {
       this->MasterNodeFlag = true;
-      this->TotalPerformanceIndex = this->PerformanceIndex;
+      this->TotalPerformanceIndex = this->PerformanceIndex;      
       this->ClusterPerformanceArray[0] = this->PerformanceIndex;
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{

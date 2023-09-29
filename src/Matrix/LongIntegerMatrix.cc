@@ -29,6 +29,7 @@
 
 
 #include "Matrix/LongIntegerMatrix.h"
+#include "Matrix/LongRationalMatrix.h"
 #include "Vector/LongIntegerVector.h"
 #include "Architecture/ArchitectureOperation/LongIntegerMatrixCharacteristicPolynomialOperation.h"
 #include "MathTools/IntegerAlgebraTools.h"
@@ -944,61 +945,12 @@ LongIntegerMatrix LongIntegerMatrix::DuplicateAndTranspose ()
 // accuracy = numerical accuracy used to define linearly dependence 
 // return value = rank
 
-// int LongIntegerMatrix::Rank(double accuracy)
-// {
-//   cout << "LongIntegerMatrix::Rank is untested and not functional" << endl;
-//   cout << "dim = " << this->NbrRow << " " <<  this->NbrColumn << endl;
-//   cout << (*this) << endl;
-//   int ReducedDim = this->NbrColumn;
-//   if (ReducedDim > this->NbrRow)
-//     ReducedDim = this->NbrRow;
-//   --ReducedDim;
-//   long Pivot;
-//   long Factor;
-//   int PivotPos = 0;
-//   for (int k = 0; k < ReducedDim; ++k)
-//     {
-//       PivotPos = k;
-//       while ((PivotPos < this->NbrColumn) && (this->Columns[PivotPos][k] == 0l))
-// 	{
-// 	  ++PivotPos;
-// 	}
-//       if (PivotPos < this->NbrColumn)
-// 	{
-// 	  if (PivotPos != k)
-// 	    {
-// 	      LongIntegerVector TmpColumn3(this->Columns[k]);
-// 	      this->Columns[k] = this->Columns[PivotPos];
-// 	      this->Columns[PivotPos] = TmpColumn3;	  
-// 	    }
-// 	  Pivot = 1l / this->Columns[k][k];       
-// 	  for (int i = k + 1; i < this->NbrColumn; ++i)
-// 	    {
-// 	      LongIntegerVector& TmpColumn = this->Columns[i];
-// 	      LongIntegerVector& TmpColumn2 = this->Columns[k];
-// 	      if (TmpColumn[k] != 0l)
-// 		{
-// 		  Factor = Pivot * TmpColumn[k];
-// 		  for (int j = k; j < this->NbrRow; ++j)
-// 		    {
-// 		      TmpColumn[j] -= TmpColumn2[j] * Factor;
-// 		    }
-// 		}
-// 	    }
-// 	}
-//     }
-//   int Rank = 0;
-//   ++ReducedDim;
-//   for (int k = 0; k < ReducedDim; ++k)
-//     {
-//       bool Flag = true;
-//       for (int i = k; (i < this->NbrRow) && (Flag == true); ++i)
-// 	Flag = (this->Columns[k][i] == 0l);
-//       if (Flag == false)
-// 	++Rank;
-//     }
-//   return Rank;
-// }
+int LongIntegerMatrix::Rank(double accuracy)
+ {
+   LongRationalMatrix TmpMatrix(*this);
+   return TmpMatrix.Rank(accuracy);
+ }
+
 
 // evaluate permanent associated to the (square) matrix using Ryser algorithm
 //

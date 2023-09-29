@@ -333,7 +333,7 @@ public:
   //
   // accuracy = numerical accuracy used to define linearly dependence 
   // return value = rank
-  //  virtual int Rank(double accuracy = MACHINE_PRECISION);
+  virtual int Rank(double accuracy = MACHINE_PRECISION);
 
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith
   //

@@ -30,6 +30,7 @@
 
 #include "Vector/LongRationalVector.h"
 #include "Vector/LongIntegerVector.h"
+#include "Matrix/IntegerMatrix.h"
 #include "GeneralTools/Endian.h"
 
 #include <fstream>
@@ -600,6 +601,62 @@ LongRationalVector& LongRationalVector::AddLinearCombination (const LongRational
     this->Components[i] += v1.Components[i] * x1 + v2.Components[i] * x2;
   return *this;
 }
+
+// left multiply a vector with a real matrix and use to store result in current vector (without creating temporary vector)
+//
+// M = matrix to use
+// V = vector to multiply
+// return value = reference on current vector
+
+LongRationalVector& LongRationalVector::Multiply (const IntegerMatrix&  M, LongRationalVector& V)
+{
+  return this->Multiply(M, V, 0, 1, 0, 1);
+}
+
+// do a partial left multication of a vector with a real matrix and store result in current vector (without creating temporary vector)
+//
+// M = matrix to use
+// V = vector to multiply
+// sourceStart = source vector first coordinate to modify
+// sourceNbrComponent = number of component to take into account in the source vector
+// destStart = destination vector first coordinate to modify
+// destStep = step to add to go to the following destination vector coordinate
+// return value = reference on current vector
+
+LongRationalVector& LongRationalVector::Multiply (const IntegerMatrix&  M, LongRationalVector& V, int sourceStart, int sourceStep, int destStart, int destStep)
+{
+  if ((this->Dimension == 0) || (V.Dimension != (M.NbrColumn * sourceStep + sourceStart)) 
+      || (this->Dimension != (M.NbrRow * destStep + destStart)))
+  this->Localize();
+  V.Localize();
+  int DestPos = destStart;
+  LongRational Tmp;
+  for (int i = 0; i < M.NbrRow; i ++)
+    {
+#ifdef __GMP__
+      this->Components[DestPos] = 0l;
+#else
+      this->Components[DestPos] = (LONGLONG) 0l;
+#endif
+      int SourcePos = sourceStart;
+      for (int j = 0; j < M.NbrColumn; j++)
+	{
+#ifdef __GMP__
+	  Tmp = V.Components[SourcePos];
+	  Tmp *= M.Columns[j].Components[i];
+	  this->Components[DestPos] += Tmp;
+#else
+	  this->Components[DestPos] += M.Columns[j].Components[i] * V.Components[SourcePos];
+#endif
+	  SourcePos += sourceStep;
+	}
+      DestPos += destStep;
+    }
+  this->Delocalize(true);
+  V.Delocalize();
+  return *this;
+}
+
 
 // write vector in a file 
 //

@@ -263,7 +263,7 @@ class LongIntegerVector : public Vector
   // return value = reference on current vector
   LongIntegerVector& Multiply (const LongIntegerMatrix&  M, LongIntegerVector& V, int sourceStart, int sourceStep, int destStart, int destStep);
 
-   // left multiply a vector with an antisymmetric matrix and add result to the current vector
+  // left multiply a vector with an antisymmetric matrix and add result to the current vector
   //
   // M = matrix to use
   // V = vector to multiply

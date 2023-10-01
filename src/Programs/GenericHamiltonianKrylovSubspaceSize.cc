@@ -2,6 +2,7 @@
 #include "Matrix/RealSymmetricMatrix.h"
 #include "Matrix/HermitianMatrix.h"
 #include "Matrix/RealMatrix.h"
+#include "Matrix/IntegerMatrix.h"
 #include "Matrix/LongIntegerMatrix.h"
 #include "Matrix/LongRationalMatrix.h"
 
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new  SingleIntegerOption ('\n', "basis-minrange", "scan the Krylov subpsace size for each basis state with at least this min index", 0); 
   (*SystemGroup) += new  SingleIntegerOption ('\n', "basis-maxrange", "scan the Krylov subpsace size for each basis state with up to this max index (if negative, up to Hilbert space dimension)", -1); 
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "output name for the characteristic polynomial");
+  (*MiscGroup) += new BooleanOption  ('\n', "show-time", "show the amount of time spent in various steps of the calculation");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   
@@ -199,7 +201,8 @@ int main(int argc, char** argv)
 	}
       cout << "Matrix size = " << NbrColumns << "x" << NbrColumns << " (" << NbrMatrixElements << " nbr matrix elements)" << endl;
       
-      LongIntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
+      //      LongIntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
+      IntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
 
       long* MatrixElements = HamiltonianFile.GetAsLongArray(2);
       if (MatrixElements == 0)
@@ -221,8 +224,15 @@ int main(int argc, char** argv)
 	{
 	  MaxRange = NbrColumns;
 	}
+      timeval TotalStartingTime;
+      timeval TotalEndingTime;
+      timeval StartingTime;
+      timeval EndingTime;
+      double Dt;
+      gettimeofday (&(TotalStartingTime), 0);
       for (int j = MinRange; j < MaxRange; ++j)
 	{
+	  //	  LongRationalMatrix Krylov(NbrColumns, NbrColumns, true);
 	  LongIntegerMatrix Krylov(NbrColumns, NbrColumns, true);
 	  Krylov.SetMatrixElement(j, 0, 1);
 	  int TmpRank = 0;
@@ -231,11 +241,22 @@ int main(int argc, char** argv)
 	      Krylov[i].Multiply(TmpMatrix, Krylov[i - 1]);
 	      if ((PartialRankTest > 0) && ((i % PartialRankTest) == 0))
 		{
+		  //		  LongRationalMatrix Krylov2(NbrColumns, NbrColumns, true);
+		  //		  Krylov2.Copy(Krylov);
 		  LongRationalMatrix Krylov2 (Krylov);
+		  gettimeofday (&(StartingTime), 0);
+		  Krylov2.Resize(NbrColumns, i + 1);
 		  int TmpRank2 = Krylov2.Rank();
 		  if (TmpRank2 != (i + 1))
 		    {
 		      TmpRank = TmpRank2;
+		    }
+		  gettimeofday (&(EndingTime), 0);
+		  Dt = (double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+		    ((EndingTime.tv_usec - StartingTime.tv_usec) / 1.0e6);		      
+		  if (Manager.GetBoolean("show-time"))
+		    {
+		      cout << "partial Krylov subspace dimension evaluated in " << Dt << "s" << endl;
 		    }
 		}
 	    }
@@ -244,6 +265,13 @@ int main(int argc, char** argv)
 	      TmpRank = Krylov.Rank();
 	    }
 	  cout << "size Krylov subspace |" << j << "> = " << TmpRank << endl;
+	  gettimeofday (&(TotalEndingTime), 0);
+	  Dt = (double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1.0e6);		      
+	  if (Manager.GetBoolean("show-time"))
+	    {
+	      cout << "Krylov subspace dimension evaluated in " << Dt << "s" << endl;
+	    }
 	}
       //    }
     }

@@ -53,6 +53,7 @@ class LongIntegerMatrix : public Matrix
 {
 
   friend class LongIntegerVector;
+  friend class LongRationalVector;
   friend class LongRationalMatrix;
   friend class LongIntegerMatrixCharacteristicPolynomialOperation;
   

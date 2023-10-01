@@ -52,7 +52,8 @@ class IntegerVector : public Vector
 {
 
   friend class IntegerMatrix;
-
+  friend class LongRationalVector;
+  
  protected:
 
   // array for the vector components

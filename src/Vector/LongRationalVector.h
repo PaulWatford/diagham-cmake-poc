@@ -48,6 +48,7 @@ using std::ostream;
 
 
 class LongIntegerVector;
+class IntegerMatrix;
 
 
 class LongRationalVector : public Vector
@@ -260,6 +261,24 @@ class LongRationalVector : public Vector
   // return value = reference on current vector
   LongRationalVector& AddLinearCombination (const LongRational& x1, LongRationalVector& v1, const LongRational& x2, 
 					    LongRationalVector& v2, int firstComponent, int nbrComponent);
+
+  // left multiply a vector with a real matrix and use to store result in current vector (without creating temporary vector)
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // return value = reference on current vector
+  LongRationalVector& Multiply (const IntegerMatrix&  M, LongRationalVector& V);
+
+  // do a partial left multication of a vector with a real matrix and store result in current vector (without creating temporary vector)
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // sourceStart = source vector first coordinate to modify
+  // sourceStep = step to add to go to the following source vector coordinate
+  // destStart = destination vector first coordinate to modify
+  // destStep = step to add to go to the following destination vector coordinate
+  // return value = reference on current vector
+  LongRationalVector& Multiply (const IntegerMatrix&  M, LongRationalVector& V, int sourceStart, int sourceStep, int destStart, int destStep);
 
   // write vector in a file 
   //

@@ -51,6 +51,7 @@ class IntegerMatrix : public Matrix
 {
 
   friend class IntegerVector;
+  friend class LongRationalVector;
 
  protected:
 

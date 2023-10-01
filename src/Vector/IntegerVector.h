@@ -53,6 +53,7 @@ class IntegerVector : public Vector
 
   friend class IntegerMatrix;
   friend class LongRationalVector;
+  friend class LongIntegerVector;
   
  protected:
 

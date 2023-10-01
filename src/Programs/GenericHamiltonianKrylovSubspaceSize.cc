@@ -202,6 +202,7 @@ int main(int argc, char** argv)
       cout << "Matrix size = " << NbrColumns << "x" << NbrColumns << " (" << NbrMatrixElements << " nbr matrix elements)" << endl;
       
       //      LongIntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
+      //      LongIntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
       IntegerMatrix TmpMatrix(NbrColumns, NbrColumns, true);
 
       long* MatrixElements = HamiltonianFile.GetAsLongArray(2);

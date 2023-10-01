@@ -53,6 +53,7 @@ using std::endl;
 
 
 class LongIntegerMatrix;
+class IntegerMatrix;
 
 
 class LongIntegerVector : public Vector
@@ -262,6 +263,24 @@ class LongIntegerVector : public Vector
   // destStep = step to add to go to the following destination vector coordinate
   // return value = reference on current vector
   LongIntegerVector& Multiply (const LongIntegerMatrix&  M, LongIntegerVector& V, int sourceStart, int sourceStep, int destStart, int destStep);
+
+  // left multiply a vector with a real matrix and use to store result in current vector (without creating temporary vector)
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // return value = reference on current vector
+  LongIntegerVector& Multiply (const IntegerMatrix&  M, LongIntegerVector& V);
+
+  // do a partial left multication of a vector with a real matrix and store result in current vector (without creating temporary vector)
+  //
+  // M = matrix to use
+  // V = vector to multiply
+  // sourceStart = source vector first coordinate to modify
+  // sourceStep = step to add to go to the following source vector coordinate
+  // destStart = destination vector first coordinate to modify
+  // destStep = step to add to go to the following destination vector coordinate
+  // return value = reference on current vector
+  LongIntegerVector& Multiply (const IntegerMatrix&  M, LongIntegerVector& V, int sourceStart, int sourceStep, int destStart, int destStep);
 
   // left multiply a vector with an antisymmetric matrix and add result to the current vector
   //

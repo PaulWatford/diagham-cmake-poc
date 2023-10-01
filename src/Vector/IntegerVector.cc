@@ -70,6 +70,13 @@ IntegerVector::IntegerVector(int size, bool zeroFlag)
   this->LargeTrueDimension = (long) size;
   this->VectorId = 0;
   this->Components = new long [this->LargeDimension];
+  if (zeroFlag == true)
+    {
+      for (long i = 0l; i < this->LargeDimension; ++i)
+	{
+	  this->Components[i] = 0l;
+	}
+    }
   this->Flag.Initialize();
 }
 
@@ -96,6 +103,13 @@ IntegerVector::IntegerVector(long size, bool zeroFlag)
 #endif
   this->TrueDimension = this->Dimension;
   this->Components = new long [this->LargeDimension];
+  if (zeroFlag == true)
+    {
+      for (long i = 0l; i < this->LargeDimension; ++i)
+	{
+	  this->Components[i] = 0l;
+	}
+    }
   this->Flag.Initialize();
 }
 

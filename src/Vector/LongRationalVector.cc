@@ -633,11 +633,7 @@ LongRationalVector& LongRationalVector::Multiply (const IntegerMatrix&  M, LongR
   LongRational Tmp;
   for (int i = 0; i < M.NbrRow; i ++)
     {
-#ifdef __GMP__
       this->Components[DestPos] = 0l;
-#else
-      this->Components[DestPos] = (LONGLONG) 0l;
-#endif
       int SourcePos = sourceStart;
       for (int j = 0; j < M.NbrColumn; j++)
 	{

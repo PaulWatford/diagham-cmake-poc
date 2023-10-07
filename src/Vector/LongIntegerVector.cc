@@ -701,7 +701,7 @@ LongIntegerVector& LongIntegerVector::operator -= (LongIntegerVector& vector)
 
 LongIntegerVector& LongIntegerVector::operator *= (const long& d)
 {
-  for (long i = 0; i < this->LargeDimension; ++i)
+  for (long i = 0l; i < this->LargeDimension; ++i)
     {
 #ifdef __GMP__
       mpz_mul_si(this->Components[i], this->Components[i], d);
@@ -860,6 +860,129 @@ LongIntegerVector& LongIntegerVector::AddLinearCombination (const long& x1, Long
 #endif
   return *this;
 }
+
+// rescale the current vector and add a linear combination to it
+//
+// rescalingFactor = rescaling factor to apply first
+// x = multiplicative coefficient
+// V = vector to add
+// return value = reference on current vector
+
+#ifdef __GMP__
+LongIntegerVector& LongIntegerVector::RescaleAndAddLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V)
+{
+  for (long i = 0l; i < this->LargeDimension; ++i)
+    {
+      mpz_mul(this->Components[i], this->Components[i], rescalingFactor);
+      mpz_addmul(this->Components[i], x, V.Components[i]);
+    }  
+  return *this;
+}
+#else
+LongIntegerVector& LongIntegerVector::RescaleAndAddLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V)
+{
+  for (long i = 0l; i < this->LargeDimension; ++i)
+    {
+      this->Components[i] *= rescalingFactor;
+      this->Components[i] += x * V.Components[i];
+    }  
+  return *this;
+}
+#endif
+
+
+  // rescale the current vector and add a linear combination to it, for a given range of indices
+  //
+  // rescalingFactor = rescaling factor to apply first
+  // x = multiplicative coefficient
+  // V = vector to add
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on current vector
+#ifdef __GMP__
+LongIntegerVector& LongIntegerVector::RescaleAndAddLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V, int firstComponent, int nbrComponent)
+{
+  int LastComponent = firstComponent + nbrComponent;
+  for (int i = firstComponent; i < LastComponent; ++i)
+    {
+      mpz_mul(this->Components[i], this->Components[i], rescalingFactor);
+      mpz_addmul(this->Components[i], x, V.Components[i]);
+    }  
+  return *this;
+}
+#else
+LongIntegerVector& LongIntegerVector::RescaleAndAddLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V, int firstComponent, int nbrComponent)
+{
+  int LastComponent = firstComponent + nbrComponent;
+  for (int i = firstComponent; i < LastComponent; ++i)
+    {
+      this->Components[i] *= rescalingFactor;
+      this->Components[i] += x * V.Components[i];
+    }
+}
+#endif
+
+// rescale the current vector and substract a linear combination to it
+//
+// rescalingFactor = rescaling factor to apply first
+// x = multiplicative coefficient
+// V = vector to substract
+// return value = reference on current vector
+
+#ifdef __GMP__
+LongIntegerVector& LongIntegerVector::RescaleAndSubLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V)
+{
+  for (long i = 0l; i < this->LargeDimension; ++i)
+    {
+      mpz_mul(this->Components[i], this->Components[i], rescalingFactor);
+      mpz_submul(this->Components[i], x, V.Components[i]);
+    }  
+  return *this;
+}
+#else
+LongIntegerVector& LongIntegerVector::RescaleAndSubLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V)
+{
+  for (long i = 0l; i < this->LargeDimension; ++i)
+    {
+      this->Components[i] *= rescalingFactor;
+      this->Components[i] -= x * V.Components[i];
+    }  
+  return *this;
+}
+#endif
+
+// rescale the current vector and substract a linear combination to it, for a given range of indices
+//
+// rescalingFactor = rescaling factor to apply first
+// x = multiplicative coefficient
+// V = vector to substract
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on current vector
+
+#ifdef __GMP__
+LongIntegerVector& LongIntegerVector::RescaleAndSubLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V, int firstComponent, int nbrComponent)
+{
+  int LastComponent = firstComponent + nbrComponent;
+  for (int i = firstComponent; i < LastComponent; ++i)
+    {
+      mpz_mul(this->Components[i], this->Components[i], rescalingFactor);
+      mpz_submul(this->Components[i], x, V.Components[i]);
+    }  
+  return *this;      
+}
+#else
+LongIntegerVector& LongIntegerVector::RescaleAndSubLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V, int firstComponent, int nbrComponent)
+{
+  int LastComponent = firstComponent + nbrComponent;
+  for (int i = firstComponent; i < LastComponent; ++i)
+    {
+      this->Components[i] *= rescalingFactor;
+      this->Components[i] -= x * V.Components[i];
+    }  
+  return *this;
+}
+#endif
 
 // left multiply a vector with a real matrix and use to store result in current vector (without creating temporary vector)
 //

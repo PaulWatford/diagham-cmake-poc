@@ -896,48 +896,75 @@ LongIntegerMatrix LongIntegerMatrix::DuplicateAndTranspose ()
 
 // long LongIntegerMatrix::Determinant () 
 // {
-//   cout << "LongIntegerMatrix::Determinant is untested and not functional" << endl;
-//   if (this->NbrColumn != this->NbrRow)
-//     return 0l;
-//   long TmpDet = 1.0;
-//   int ReducedNbrRow = this->NbrRow - 1;
-//   long Pivot;
-//   long Factor;
-//   int PivotPos = 0;
-//   for (int k = 0; k < ReducedNbrRow; ++k)
+//   if (this->NbrColumn > this->NbrRow)
 //     {
-//       PivotPos = k + 1;
-//       while ((PivotPos < this->NbrRow) && (this->Columns[PivotPos][k] == 0l))
+//       this->Transpose();
+//     }
+//   //  cout << "dim = " << this->NbrRow << " " <<  this->NbrColumn << endl;
+//   // cout << (*this) << endl;
+//   int ReducedDim = this->NbrColumn;
+//   --ReducedDim;
+//   int PivotPos = 0;
+//   for (int k = 0; k < ReducedDim; ++k)
+//     {
+//       int TmpFirstNonZero = k;
+//       bool FindPivotFlag = false;
+//       while ((PivotPos < this->NbrRow) && (FindPivotFlag == false))
 // 	{
-// 	  ++PivotPos;
-// 	}
-//       if (PivotPos == this->NbrRow)
-// 	{
-// 	  return 0l;
-// 	}
-//       else
-// 	{
-// 	  Pivot = this->Columns[PivotPos][k];	  
-// 	  LongIntegerVector TmpColumn3(this->Columns[k]);
-// 	  this->Columns[k] = this->Columns[PivotPos];
-// 	  this->Columns[PivotPos] = TmpColumn3;	  
-// 	  TmpDet *= -1l;
-// 	}
-//       TmpDet *= Pivot;
-//       Pivot = 1l / Pivot;       
-//       for (int i = k + 1; i < this->NbrRow; ++i)
-// 	{
-// 	  LongIntegerVector& TmpColumn = this->Columns[i];
-// 	  LongIntegerVector& TmpColumn2 = this->Columns[k];
-// 	  Factor = Pivot * TmpColumn[k];
-// 	  for (int j = k + 1; j < this->NbrRow; ++j)
+// 	  TmpFirstNonZero = k;
+// #ifdef __GMP__
+// 	  while ((TmpFirstNonZero < this->NbrColumn) && (mpz_sgn(this->Columns[TmpFirstNonZero][PivotPos]) == 0))
+// #else      
+// 	    while ((TmpFirstNonZero < this->NbrColumn) && (this->Columns[TmpFirstNonZero][PivotPos] == ((LONGLONG) 0l)))
+// #endif
 // 	    {
-// 	      TmpColumn[j] -= TmpColumn2[j] * Factor;
+// 	      ++TmpFirstNonZero;
+// 	    }
+// 	  if (TmpFirstNonZero < this->NbrColumn)
+// 	    {
+// 	      FindPivotFlag = true;
+// 	    }
+// 	  else
+// 	    {
+// 	      ++PivotPos;
+// 	    }
+// 	}
+//       if (FindPivotFlag == true)
+// 	{
+// 	  if (TmpFirstNonZero != k)
+// 	    {
+// 	      LongIntegerVector TmpVector = this->Columns[k];
+// 	      this->Columns[k] =  this->Columns[TmpFirstNonZero];
+// 	      this->Columns[TmpFirstNonZero] = TmpVector;
+// 	    }
+// 	  LongIntegerVector& TmpColumn2 = this->Columns[k];
+// 	  Pivot = 1l / TmpColumn2[PivotPos];
+// 	  for (TmpFirstNonZero = k + 1; TmpFirstNonZero < this->NbrColumn; ++TmpFirstNonZero)
+// 	    {
+// 	      this->Columns[TmpFirstNonZero].(TmpColumn2[PivotPos], TmpColumn2);
+// 	      LongIntegerVector& TmpColumn = this->Columns[TmpFirstNonZero];
+// 	      if (TmpColumn[PivotPos].IsZero() == false)
+// 		{
+// 		  Factor = Pivot * TmpColumn[PivotPos];
+//    		  for (int j = PivotPos; j < this->NbrRow; ++j)
+//    		    {
+//    		      TmpColumn[j] -= TmpColumn2[j] * Factor;
+//    		    }
+// 		}
 // 	    }
 // 	}
 //     }
-//   TmpDet *= this->Columns[ReducedNbrRow][ReducedNbrRow];
-//   return TmpDet;
+//   int Rank = 0;
+//   for (int k = 0; k < this->NbrColumn; ++k)
+//     {
+//       if (this->Columns[k].IsNullVector() == false)
+// 	{
+// 	  ++Rank;
+// 	}
+//     }
+//   //  cout << (*this) << endl;
+//   //  cout << "rank = " << Rank << endl;
+//   return Rank;
 // }
 
 // evaluate matrix rank
@@ -947,8 +974,99 @@ LongIntegerMatrix LongIntegerMatrix::DuplicateAndTranspose ()
 
 int LongIntegerMatrix::Rank(double accuracy)
  {
-   LongRationalMatrix TmpMatrix(*this);
-   return TmpMatrix.Rank(accuracy);
+   // LongRationalMatrix TmpMatrix(*this);
+   // return TmpMatrix.Rank(accuracy);
+
+  if (this->NbrColumn > this->NbrRow)
+    {
+      this->Transpose();
+    }
+  int ReducedDim = this->NbrColumn;
+  --ReducedDim;
+  int PivotPos = 0;
+#ifdef __GMP__
+  mpz_t Factor;
+  mpz_init(Factor);
+#else
+  LONGLONG Factor = (LONGLONG) 0l;
+#endif
+  for (int k = 0; k < ReducedDim; ++k)
+    {
+      int TmpFirstNonZero = k;
+      bool FindPivotFlag = false;
+      while ((PivotPos < this->NbrRow) && (FindPivotFlag == false))
+	{
+	  TmpFirstNonZero = k;
+#ifdef __GMP__
+	  while ((TmpFirstNonZero < this->NbrColumn) && (mpz_sgn(this->Columns[TmpFirstNonZero][PivotPos]) == 0))
+#else      
+	    while ((TmpFirstNonZero < this->NbrColumn) && (this->Columns[TmpFirstNonZero][PivotPos] == ((LONGLONG) 0l)))
+#endif
+	    {
+	      ++TmpFirstNonZero;
+	    }
+	  if (TmpFirstNonZero < this->NbrColumn)
+	    {
+	      FindPivotFlag = true;
+	    }
+	  else
+	    {
+	      ++PivotPos;
+	    }
+	}
+      if (FindPivotFlag == true)
+	{
+	  if (TmpFirstNonZero != k)
+	    {
+	      LongIntegerVector TmpVector = this->Columns[k];
+	      this->Columns[k] =  this->Columns[TmpFirstNonZero];
+	      this->Columns[TmpFirstNonZero] = TmpVector;
+	    }
+	  LongIntegerVector& TmpColumn2 = this->Columns[k];
+	  for (TmpFirstNonZero = k + 1; TmpFirstNonZero < this->NbrColumn; ++TmpFirstNonZero)
+	    {
+	      // cout << k << " " << TmpFirstNonZero << endl;
+#ifdef __GMP__
+	      mpz_set(Factor, this->Columns[TmpFirstNonZero][PivotPos]);
+#else	      
+	      Factor = this->Columns[TmpFirstNonZero][PivotPos];
+#endif
+	      this->Columns[TmpFirstNonZero].RescaleAndSubLinearCombination(TmpColumn2[PivotPos], Factor, TmpColumn2, PivotPos, this->NbrRow - PivotPos);
+	      this->Columns[TmpFirstNonZero].Normalize();
+	    }
+	  // Pivot = 1l / TmpColumn2[PivotPos];
+	  // for (TmpFirstNonZero = k + 1; TmpFirstNonZero < this->NbrColumn; ++TmpFirstNonZero)
+	  //   {
+	  //     LongIntegerVector& TmpColumn = this->Columns[TmpFirstNonZero];
+	  //     if (TmpColumn[PivotPos].IsZero() == false)
+	  // 	{
+	  // 	  Factor = Pivot * TmpColumn[PivotPos];
+   	  // 	  for (int j = PivotPos; j < this->NbrRow; ++j)
+   	  // 	    {
+   	  // 	      TmpColumn[j] -= TmpColumn2[j] * Factor;
+   	  // 	    }
+	  // 	}
+	  //   }
+	}
+    }
+  int Rank = this->NbrColumn - 1;
+  while ((Rank >= 0) && (this->Columns[Rank].IsNullVector() == true))
+    {
+      --Rank;
+    }
+  Rank++;
+  // int Rank = 0;
+  // for (int k = 0; k < this->NbrColumn; ++k)
+  //   {
+  //     if (this->Columns[k].IsNullVector() == false)
+  // 	{
+  // 	  ++Rank;
+  // 	}
+  //   }
+  //  cout << (*this) << endl;
+  //  cout << "rank = " << Rank << endl;
+  return Rank;
+
  }
 
 

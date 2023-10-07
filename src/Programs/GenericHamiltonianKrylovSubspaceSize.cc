@@ -242,9 +242,9 @@ int main(int argc, char** argv)
 	      Krylov[i].Multiply(TmpMatrix, Krylov[i - 1]);
 	      if ((PartialRankTest > 0) && ((i % PartialRankTest) == 0))
 		{
-		  //		  LongRationalMatrix Krylov2(NbrColumns, NbrColumns, true);
-		  //		  Krylov2.Copy(Krylov);
-		  LongRationalMatrix Krylov2 (Krylov);
+		  LongIntegerMatrix Krylov2(NbrColumns, NbrColumns, true);
+		  Krylov2.Copy(Krylov);
+		  //		  LongRationalMatrix Krylov2 (Krylov);
 		  gettimeofday (&(StartingTime), 0);
 		  Krylov2.Resize(NbrColumns, i + 1);
 		  int TmpRank2 = Krylov2.Rank();

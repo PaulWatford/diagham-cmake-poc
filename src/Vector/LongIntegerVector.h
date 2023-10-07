@@ -225,7 +225,60 @@ class LongIntegerVector : public Vector
   // return value = reference on current vector
   LongIntegerVector& AddLinearCombination (const long& x, LongIntegerVector& V, int firstComponent, int nbrComponent);
 
-  // add a linear combination of two vectors to a given vector
+  // rescale the current vector and add a linear combination to it
+  //
+  // rescalingFactor = rescaling factor to apply first
+  // x = multiplicative coefficient
+  // V = vector to add
+  // return value = reference on current vector
+#ifdef __GMP__
+  LongIntegerVector& RescaleAndAddLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V);
+#else
+  LongIntegerVector& RescaleAndAddLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V);
+#endif
+
+  // rescale the current vector and add a linear combination to it, for a given range of indices
+  //
+  // rescalingFactor = rescaling factor to apply first
+  // x = multiplicative coefficient
+  // V = vector to add
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on current vector
+#ifdef __GMP__
+  LongIntegerVector& RescaleAndAddLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V, int firstComponent, int nbrComponent);
+#else
+  LongIntegerVector& RescaleAndAddLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V, int firstComponent, int nbrComponent);
+#endif
+
+  // rescale the current vector and substract a linear combination to it
+  //
+  // rescalingFactor = rescaling factor to apply first
+  // x = multiplicative coefficient
+  // V = vector to substract
+  // return value = reference on current vector
+#ifdef __GMP__
+  LongIntegerVector& RescaleAndSubLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V);
+#else
+  LongIntegerVector& RescaleAndSubLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V);
+#endif
+
+  // rescale the current vector and substract a linear combination to it, for a given range of indices
+  //
+  // rescalingFactor = rescaling factor to apply first
+  // x = multiplicative coefficient
+  // V = vector to substract
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on current vector
+#ifdef __GMP__
+  LongIntegerVector& RescaleAndSubLinearCombination (mpz_t& rescalingFactor, mpz_t& x, LongIntegerVector& V, int firstComponent, int nbrComponent);
+#else
+  LongIntegerVector& RescaleAndSubLinearCombination (LONGLONG& rescalingFactor, LONGLONG& x, LongIntegerVector& V, int firstComponent, int nbrComponent);
+#endif
+
+
+ // add a linear combination of two vectors to a given vector
   //
   // x1 = multiplicative coefficient of first vector
   // v1 = first vector to add

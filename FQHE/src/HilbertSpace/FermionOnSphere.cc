@@ -234,6 +234,7 @@ FermionOnSphere::FermionOnSphere(const FermionOnSphere& fermions)
   this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
   this->LookUpTableShift = fermions.LookUpTableShift;
   this->LookUpTable = fermions.LookUpTable;
+  this->LargeLookUpTable = fermions.LargeLookUpTable;
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
@@ -362,6 +363,7 @@ FermionOnSphere& FermionOnSphere::operator = (const FermionOnSphere& fermions)
   this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
   this->LookUpTableShift = fermions.LookUpTableShift;
   this->LookUpTable = fermions.LookUpTable;
+  this->LargeLookUpTable = fermions.LargeLookUpTable;
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
@@ -1724,6 +1726,7 @@ void FermionOnSphere::GenerateLookUpTable(unsigned long memory)
 
   // construct  look-up tables for searching states
   this->LookUpTable = new int* [this->NbrLzValue];
+  this->LargeLookUpTable = 0;
   this->LookUpTableShift = new int [this->NbrLzValue];
   for (int i = 0; i < this->NbrLzValue; ++i)
     this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];

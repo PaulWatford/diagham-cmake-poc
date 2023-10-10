@@ -8,6 +8,8 @@
 
 #include "HilbertSpace/FermionOnSphereWithSpin.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -214,7 +216,7 @@ int main(int argc, char** argv)
       SzSymmetry[i] = 0;
       if (NoSzFlag == false)
 	{
-	  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(GroundStateFiles[i], NbrParticles, LzMax, TotalLz[i], TotalSz[i], LzSymmetry[i], SzSymmetry[i],
+	  if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(GroundStateFiles[i], NbrParticles, LzMax, TotalLz[i], TotalSz[i], SzSymmetry[i], LzSymmetry[i],
 								   Statistics, AllSzFlag) == false)
 	    {
 	      cout << "error while retrieving system parameters from file name " << GroundStateFiles[i] << endl;
@@ -257,9 +259,8 @@ int main(int argc, char** argv)
   for (int i = 0; i < NbrSpaces; ++i)
     { 
       NbrNUp[i] = (NbrParticles + TotalSz[i]);
-      NbrNDown[i] = (NbrParticles - TotalSz[i]);
       NbrNUp[i] >>= 1;
-      NbrNDown[i] >>= 1;
+      NbrNDown[i] = NbrParticles - NbrNUp[i];
       if (NbrNUp[i] > MaxNbrNUp)
 	MaxNbrNUp = NbrNUp[i];
       if (NbrNDown[i] > MaxNbrNDown)
@@ -283,6 +284,11 @@ int main(int argc, char** argv)
 	{
 	  int LocalMinNbrNUp = 0;
 	  int LocalMaxNbrNUp = MaxNbrNUp;
+	  if (NoSzFlag == true)
+	    {
+	      LocalMinNbrNUp = SubsystemNbrParticles >> 1;
+	      LocalMaxNbrNUp = LocalMinNbrNUp;
+	    }
 	  if (Manager.GetBoolean("single-sza") == true)
 	    {
 	      LocalMinNbrNUp = (SubsystemNbrParticles + Manager.GetInteger("only-sza")) /2;
@@ -303,20 +309,31 @@ int main(int argc, char** argv)
 		  if (Statistics == true)
 		    {
 		      SubsystemMaxTotalLz = (((SubsystemNbrNUp * LzMax) - (SubsystemNbrNUp * (SubsystemNbrNUp - 1)))
-					     + ((SubsystemNbrNDown * LzMax) - (SubsystemNbrNDown * (SubsystemNbrNDown - 1))));
+						 + ((SubsystemNbrNDown * LzMax) - (SubsystemNbrNDown * (SubsystemNbrNDown - 1))));
 		    }
 		  else
 		    {
 		      SubsystemMaxTotalLz = SubsystemNbrParticles * LzMax;
 		    }
 		  int SubsystemTotalLz = -SubsystemMaxTotalLz; 
+		  int LocalMinSzSymmetrySector = -1;
+		  int LocalMaxSzSymmetrySector = 1;
+		  if (((SubsystemTotalSz != 0) && (NoSzFlag == false)) || (SzSymmetry[0] == 0) || (Manager.GetBoolean("disable-szsymmetry") == true))
+		    {
+		      LocalMinSzSymmetrySector = 0;
+		      LocalMaxSzSymmetrySector = 0;
+		    }
 		  for (; SubsystemTotalLz <= SubsystemMaxTotalLz; SubsystemTotalLz += 2)
 		    {
-		      ++TotalNbrReducedDensityMatrixBlocks;
+		      for (int SubsystemSzSymmetrySector = LocalMinSzSymmetrySector; SubsystemSzSymmetrySector <= LocalMaxSzSymmetrySector; SubsystemSzSymmetrySector += 2)
+			{
+			  ++TotalNbrReducedDensityMatrixBlocks;
+			}
 		    }
 		}
 	    }
 	}
+      cout << "Quantum number sectors for the reduced density matrix" << endl;
       SubsystemNbrParticleSectors = new int[TotalNbrReducedDensityMatrixBlocks];
       SubsystemTotalSzSectors = new int[TotalNbrReducedDensityMatrixBlocks];
       SubsystemTotalLzSectors = new int[TotalNbrReducedDensityMatrixBlocks];
@@ -326,6 +343,11 @@ int main(int argc, char** argv)
 	{
 	  int LocalMinNbrNUp = 0;
 	  int LocalMaxNbrNUp = MaxNbrNUp;
+	  if (NoSzFlag == true)
+	    {
+	      LocalMinNbrNUp = SubsystemNbrParticles >> 1;
+	      LocalMaxNbrNUp = LocalMinNbrNUp;
+	    }
 	  if (Manager.GetBoolean("single-sza") == true)
 	    {
 	      LocalMinNbrNUp = (SubsystemNbrParticles + Manager.GetInteger("only-sza")) /2;
@@ -355,19 +377,20 @@ int main(int argc, char** argv)
 		  int SubsystemTotalLz = -SubsystemMaxTotalLz; 
 		  int LocalMinSzSymmetrySector = -1;
 		  int LocalMaxSzSymmetrySector = 1;
-		  if ((SubsystemTotalSz != 0) || (SzSymmetry[0] == 0) || (Manager.GetBoolean("disable-szsymmetry") == true))
+		  if (((SubsystemTotalSz != 0) && (NoSzFlag == false)) || (SzSymmetry[0] == 0) || (Manager.GetBoolean("disable-szsymmetry") == true))
 		    {
 		      LocalMinSzSymmetrySector = 0;
 		      LocalMaxSzSymmetrySector = 0;
 		    }
 		  for (; SubsystemTotalLz <= SubsystemMaxTotalLz; SubsystemTotalLz += 2)
 		    {
-		      for (int SubsystemSzSymmetrySector = LocalMinSzSymmetrySector; SubsystemSzSymmetrySector <= LocalMinSzSymmetrySector; SubsystemSzSymmetrySector += 2)
+		      for (int SubsystemSzSymmetrySector = LocalMinSzSymmetrySector; SubsystemSzSymmetrySector <= LocalMaxSzSymmetrySector; SubsystemSzSymmetrySector += 2)
 			{
 			  SubsystemNbrParticleSectors[TotalNbrReducedDensityMatrixBlocks] = SubsystemNbrParticles;
 			  SubsystemTotalSzSectors[TotalNbrReducedDensityMatrixBlocks] = SubsystemTotalSz;
 			  SubsystemTotalLzSectors[TotalNbrReducedDensityMatrixBlocks] = SubsystemTotalLz;
 			  SubsystemSzSymmetrySectors[TotalNbrReducedDensityMatrixBlocks] = SubsystemSzSymmetrySector;
+			  cout << "NA=" << SubsystemNbrParticles << " LzA=" << SubsystemTotalLz << " SzA=" << (SubsystemNbrNUp - SubsystemNbrNDown) << " SzA<->-SzA=" << SubsystemSzSymmetrySector << endl;
 			  ++TotalNbrReducedDensityMatrixBlocks;
 			}
 		    }
@@ -442,11 +465,66 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout << "error : fermions without Sz are not yet supported" << endl;
-	      return 0;
-//	      Spaces[i] = new FermionOnSphereWithSpin (NbrParticles, TotalLz[i], LzMax);
+	      if (LzSymmetry[i] == 0)
+		{
+		  if (SzSymmetry[i] == 0)
+		    {
+#ifdef __64_BITS__
+		      if (LzMax <= 31)
+#else
+			if (LzMax <= 15)
+#endif
+			  {
+			    Spaces[i] = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz[i], LzMax);
+			  }
+			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
+		  else
+		    {
+#ifdef __64_BITS__
+		      if (LzMax <= 31)
+#else
+			if (LzMax <= 15)
+#endif
+			  {
+			    Spaces[i] = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz[i], LzMax, (SzSymmetry[i] == -1));
+			  }
+			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
+		}
+	      else
+		{
+		  if (SzSymmetry == 0)
+		    {
+		      cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+		      return 0;
+		    }
+		  else
+		    {
+#ifdef __64_BITS__
+		      if (LzMax <= 31)
+#else
+			if (LzMax <= 15)
+#endif
+			  {
+			    Spaces[i] = new FermionOnSphereWithSpinAllSzLzSzSymmetry  (NbrParticles, LzMax, (SzSymmetry[i] == -1), (LzSymmetry[i] == -1));
+			  }
+			else
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
+		}
 	    }
-	  
 	}
       else
 	{
@@ -548,7 +626,14 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      DensityMatrixFile << "#  N    Lz    lambda";
+	      if (SzSymmetry[0] == 0)
+		{
+		  DensityMatrixFile << "#  N    Lz    lambda";
+		}
+	      else
+		{
+		  DensityMatrixFile << "#  N    Lz    Sz<->-Sz     lambda";
+		}
 	    }
 	}
       else
@@ -559,7 +644,14 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      DensityMatrixFile << "#  N    lambda";
+	      if (SzSymmetry[0] == 0)
+		{
+		  DensityMatrixFile << "#  N    lambda";
+		}
+	      else
+		{
+		  DensityMatrixFile << "#  N    Sz<->-Sz     lambda";
+		}
 	    }
 	}
       DensityMatrixFile << endl;
@@ -972,6 +1064,7 @@ int main(int argc, char** argv)
     }
   else
     {
+      // non-symmetry breaking patch or PES
       for (int BlockIndex = 0; BlockIndex < TotalNbrReducedDensityMatrixBlocks; ++BlockIndex)
 	{
 	  int SubsystemNbrParticles = SubsystemNbrParticleSectors[BlockIndex];
@@ -998,7 +1091,12 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout << "processing subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTotalLz << endl;
+	      cout << "processing subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTotalLz;
+	      if (SubsystemSzSymmetrySector != 0)
+		{
+		  cout << " subsystem Sz<->Sz =" << SubsystemSzSymmetrySector;
+		}
+	      cout << endl;
 	    }
 	  RealSymmetricMatrix PartialDensityMatrix;
 	  HermitianMatrix ComplexPartialDensityMatrix;
@@ -1019,7 +1117,8 @@ int main(int argc, char** argv)
 		{
 		  ComplementaryMaxTotalLz = (ComplementaryNbrNUp + ComplementaryNbrNDown) * LzMax;
 		}
-	      
+
+	      //	      cout << " SubsystemNbrNUp=" << SubsystemNbrNUp << " " <<  NbrNUp[i] << " SubsystemNbrNDown=" <<SubsystemNbrNDown << " " << NbrNDown[i] << " TotalLz[i]-SubsystemTotalLz=" << (abs(TotalLz[i] - SubsystemTotalLz)) << " ComplementaryMaxTotalLz=" << ComplementaryMaxTotalLz << endl;
 	      if ((SubsystemNbrNUp <= NbrNUp[i]) && (SubsystemNbrNDown <= NbrNDown[i]) && (abs(TotalLz[i] - SubsystemTotalLz) <= ComplementaryMaxTotalLz ))
 		{
 		  RealSymmetricMatrix TmpMatrix;
@@ -1033,10 +1132,30 @@ int main(int argc, char** argv)
 			    {
 			      if (RealSpaceCut == true)
 				{
-				  PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, GroundStates[i] , true);
+				  if (SubsystemSzSymmetrySector == 0)
+				    {
+				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, GroundStates[i] , true);
+				    }
+				  else
+				    {
+				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, SubsystemSzSymmetrySector, GroundStates[i] , true);
+				    }
 				  if(PartialEntanglementMatrix.GetNbrRow() != 0)
 				    {
-				      Spaces[i]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, SubsystemNbrNUp - SubsystemNbrNDown ,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), PartialEntanglementMatrix);
+				      if (SubsystemSzSymmetrySector == 0)
+					{
+					  Spaces[i]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, SubsystemNbrNUp - SubsystemNbrNDown, 
+																       NbrAOrbitals, WeightAOrbitalsUp, WeightAOrbitalsDown,
+																       NbrBOrbitals, WeightBOrbitalsUp, WeightBOrbitalsDown, 
+																       PartialEntanglementMatrix);
+					}
+				      else
+					{
+					  Spaces[i]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, SubsystemNbrNUp - SubsystemNbrNDown, SubsystemSzSymmetrySector,
+																       NbrAOrbitals, WeightAOrbitalsUp, WeightAOrbitalsDown,
+																       NbrBOrbitals, WeightBOrbitalsUp, WeightBOrbitalsDown, 
+																       PartialEntanglementMatrix);
+					}
 				      if ((SVDFlag == false) && (PartialDiagonalization == false))
 					{
 					  if (PartialEntanglementMatrix.GetNbrRow() >= PartialEntanglementMatrix.GetNbrColumn())
@@ -1053,8 +1172,16 @@ int main(int argc, char** argv)
 				}
 			      else
 				{
-				  PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz , 
-															    SubsystemNbrNUp - SubsystemNbrNDown, GroundStates[i] , false);
+				  if (SubsystemSzSymmetrySector == 0)
+				    {
+				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz , 
+																SubsystemNbrNUp - SubsystemNbrNDown, GroundStates[i] , false);
+				    }
+				  else
+				    {
+				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz , 
+																SubsystemNbrNUp - SubsystemNbrNDown, SubsystemSzSymmetrySector, GroundStates[i] , false);
+				    }
 				}
 			    }
 			  else
@@ -1414,8 +1541,16 @@ int main(int argc, char** argv)
 			}
 		      else
 			{
-			  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
-			    DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
+			  if (SubsystemSzSymmetrySector == 0)
+			    {
+			      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+				DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
+			    }
+			  else
+			    {
+			      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+				DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << SubsystemSzSymmetrySector << " " << TmpDiag[i] << endl;
+			    }
 			}
 		      DensityMatrixFile.close();
 		    }
@@ -1452,7 +1587,14 @@ int main(int argc, char** argv)
 			    }
 			  else
 			    {
-			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
+			      if (SubsystemSzSymmetrySector == 0)
+				{
+				  DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
+				}
+			      else
+				{
+				  DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << SubsystemSzSymmetrySector << " " << TmpValue << endl;
+				}
 			    }
 			  DensityMatrixFile.close();
 			}		  

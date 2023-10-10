@@ -240,11 +240,11 @@ FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmet
 	this->GetStateSymmetry(this->StateDescription[i]);
 
 #ifdef __DEBUG__
-      int UsedMemory = 0;
-      UsedMemory += this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
+      long UsedMemory = 0l;
+      UsedMemory += this->LargeHilbertSpaceDimension * sizeof(unsigned long);
       cout << "memory requested for Hilbert space = ";
-      if (UsedMemory >= 1024)
-	if (UsedMemory >= 1048576)
+      if (UsedMemory >= 1024l)
+	if (UsedMemory >= 1048576l)
 	  cout << (UsedMemory >> 20) << "Mo" << endl;
 	else
 	  cout << (UsedMemory >> 10) << "ko" <<  endl;
@@ -253,8 +253,8 @@ FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmet
       UsedMemory = this->NbrLzValue * sizeof(int);
       UsedMemory += this->NbrLzValue * this->LookUpTableMemorySize * sizeof(int);
       cout << "memory requested for lookup table = ";
-      if (UsedMemory >= 1024)
-	if (UsedMemory >= 1048576)
+      if (UsedMemory >= 1024l)
+	if (UsedMemory >= 1048576l)
 	  cout << (UsedMemory >> 20) << "Mo" << endl;
 	else
 	  cout << (UsedMemory >> 10) << "ko" <<  endl;
@@ -313,17 +313,17 @@ FermionOnSphereWithSpinAllSzLzSzSymmetry::FermionOnSphereWithSpinAllSzLzSzSymmet
     {
       this->GenerateLookUpTable(memory);
       delete[] this->StateHighestBit;
-      for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+      for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
 	this->GetStateSymmetry(this->StateDescription[i]);
       this->StateHighestBit = 0;
     }
-  this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+  this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
 #ifdef __DEBUG__
-  int UsedMemory = 0;
-  UsedMemory += this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
+  long UsedMemory = 0l;
+  UsedMemory += this->LargeHilbertSpaceDimension * sizeof(unsigned long);
   cout << "memory requested for Hilbert space = ";
-  if (UsedMemory >= 1024)
-    if (UsedMemory >= 1048576)
+  if (UsedMemory >= 1024l)
+    if (UsedMemory >= 1048576l)
       cout << (UsedMemory >> 20) << "Mo" << endl;
     else
       cout << (UsedMemory >> 10) << "ko" <<  endl;

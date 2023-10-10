@@ -230,9 +230,9 @@ int main(int argc, char** argv)
       timeval StartingTime;
       timeval EndingTime;
       double Dt;
-      gettimeofday (&(TotalStartingTime), 0);
       for (int j = MinRange; j < MaxRange; ++j)
 	{
+	  gettimeofday (&(TotalStartingTime), 0);
 	  //	  LongRationalMatrix Krylov(NbrColumns, NbrColumns, true);
 	  LongIntegerMatrix Krylov(NbrColumns, NbrColumns, true);
 	  Krylov.SetMatrixElement(j, 0, 1);

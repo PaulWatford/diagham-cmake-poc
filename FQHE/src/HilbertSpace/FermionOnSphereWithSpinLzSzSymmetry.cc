@@ -130,7 +130,7 @@ FermionOnSphereWithSpinLzSzSymmetry::FermionOnSphereWithSpinLzSzSymmetry (int nb
   this->StateHighestBit = new int [this->HilbertSpaceDimension];  
   this->HilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->LzMax, (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1, 
 						     (this->TotalSpin + this->NbrFermions) >> 1, 0l);
-  int TmpHilbertSpaceDimension = 0;
+  long TmpHilbertSpaceDimension = 0l;
   if (minusSzParity == minusLzParity)
     {
       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
@@ -156,40 +156,44 @@ FermionOnSphereWithSpinLzSzSymmetry::FermionOnSphereWithSpinLzSzSymmetry (int nb
     }
   else
     {
-      for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-	if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
-	  this->StateDescription[i] = 0x0ul;
-	else
-	  {
-	    unsigned long TmpState = this->StateDescription[i];
-	    this->GetStateSymmetry(TmpState);
-	    if (((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) != 0x0ul) && ((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) !=  FERMION_SPHERE_SU2_LZSZ_SYMMETRIC_BIT))		      
-	      {
-		if ((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) == FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT)
-		  {
-		    ++TmpHilbertSpaceDimension;
-		  }
-		else
-		  {
-		    unsigned long TmpStateParity = TmpState;
-		    this->GetStateSingletParity(TmpStateParity);
-		    if ((((TmpState & FERMION_SPHERE_SU2_LZ_SYMMETRIC_BIT) == 0x0ul) && ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusLzParity == false))
-											 || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusLzParity == true))))
-			|| (((TmpState & FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT) == 0x0ul) && ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusSzParity == false))
-											    || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusSzParity == true)))))
-		      ++TmpHilbertSpaceDimension;
-		    else
-		      this->StateDescription[i] = 0x0ul;		    
-		  }
-	      }
-	    else
+      for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+	{
+	  if (this->GetCanonicalState(this->StateDescription[i]) != this->StateDescription[i])
+	    {
 	      this->StateDescription[i] = 0x0ul;
-	  }
+	    }
+	  else
+	    {
+	      unsigned long TmpState = this->StateDescription[i];
+	      this->GetStateSymmetry(TmpState);
+	      if (((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) != 0x0ul) && ((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) !=  FERMION_SPHERE_SU2_LZSZ_SYMMETRIC_BIT))		      
+		{
+		  if ((TmpState & FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT) == FERMION_SPHERE_SU2_FULLY_SYMMETRIC_BIT)
+		    {
+		      ++TmpHilbertSpaceDimension;
+		    }
+		  else
+		    {
+		      unsigned long TmpStateParity = TmpState;
+		      this->GetStateSingletParity(TmpStateParity);
+		      if ((((TmpState & FERMION_SPHERE_SU2_LZ_SYMMETRIC_BIT) == 0x0ul) && ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusLzParity == false))
+											   || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusLzParity == true))))
+			  || (((TmpState & FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT) == 0x0ul) && ((((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0x0ul) && (minusSzParity == false))
+											      || (((TmpStateParity & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0x0ul) && (minusSzParity == true)))))
+			++TmpHilbertSpaceDimension;
+		      else
+			this->StateDescription[i] = 0x0ul;		    
+		    }
+		}
+	      else
+		this->StateDescription[i] = 0x0ul;
+	    }
+	}
     }
   cout << "dim = " << TmpHilbertSpaceDimension << endl;
   unsigned long* TmpStateDescription = new unsigned long [TmpHilbertSpaceDimension];
-  TmpHilbertSpaceDimension = 0;
-  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+  TmpHilbertSpaceDimension = 0l;
+  for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
     if (this->StateDescription[i] != 0x0ul)
       {
 	TmpStateDescription[TmpHilbertSpaceDimension] = this->StateDescription[i];
@@ -197,8 +201,8 @@ FermionOnSphereWithSpinLzSzSymmetry::FermionOnSphereWithSpinLzSzSymmetry (int nb
       }
   delete[] this->StateDescription;
   this->StateDescription = TmpStateDescription;
-  this->HilbertSpaceDimension = TmpHilbertSpaceDimension;
-  this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+  this->LargeHilbertSpaceDimension = TmpHilbertSpaceDimension;
+  this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
 
   if (this->HilbertSpaceDimension > 0)
     {
@@ -210,11 +214,11 @@ FermionOnSphereWithSpinLzSzSymmetry::FermionOnSphereWithSpinLzSzSymmetry (int nb
       this->StateHighestBit = 0;
     }
 #ifdef __DEBUG__
-  int UsedMemory = 0;
-  UsedMemory += this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
+  long UsedMemory = 0l;
+  UsedMemory += this->LargeHilbertSpaceDimension * sizeof(unsigned long);
   cout << "memory requested for Hilbert space = ";
-  if (UsedMemory >= 1024)
-    if (UsedMemory >= 1048576)
+  if (UsedMemory >= 1024l)
+    if (UsedMemory >= 1048576l)
       cout << (UsedMemory >> 20) << "Mo" << endl;
     else
       cout << (UsedMemory >> 10) << "ko" <<  endl;

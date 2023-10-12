@@ -54,6 +54,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "shift-pattern", "shift the pattern away from the pole from a given number of orbitals", 0);
   (*SystemGroup) += new BooleanOption  ('\n', "no-unnormalized", "do not use the unnormalized basis as an intermediate step");
   (*SystemGroup) += new BooleanOption  ('\n', "north-south", " compute the ODLRO between north pole and south pole");
+  (*SystemGroup) += new BooleanOption  ('\n', "suppress-normalization", "do not normalize states");
 
   (*OutputGroup) += new BooleanOption ('\n', "save-truncated", "save the truncated state");
   (*OutputGroup) += new SingleStringOption ('\n', "truncated-name", "output file name used to store the truncated state (default name uses input-state and add odlro_pattern to the interaction name)");
@@ -239,47 +240,58 @@ int main(int argc, char** argv)
   if (NorthNorm > 1e-10)
     {
       if (NoUnnormalization == false)
-	OutputBasis->ConvertFromUnnormalizedMonomial(TruncatedState, -1l);
+	       OutputBasis->ConvertFromUnnormalizedMonomial(TruncatedState, -1l);
       NorthNorm = TruncatedState.Norm();
       cout << "NorthNorm = " << NorthNorm  << endl;
-      if ((Manager.GetBoolean("save-truncated") == false) || (Manager.GetBoolean("north-south") == true))
-	TruncatedState /= NorthNorm;
+      if (Manager.GetBoolean("suppress-normalization") == false)
+        {
+          if ((Manager.GetBoolean("save-truncated") == false) || (Manager.GetBoolean("north-south") == true))
+	          TruncatedState /= NorthNorm;
+        }
+      else
+            cout << "Suppressing North normalization " << NorthNorm << endl;
     }
   else
     {
+    	cout << "NorthNorm is low = " << NorthNorm  << endl;
       if (Manager.GetBoolean("north-south") == true)
-	{
-	  cout << "ODLRO=0" << endl;  
-	  return 0;
-	}
+	     {
+	       cout << "ODLRO=0" << endl;  
+	       return 0;
+	     }
     }
   RealVector SouthPoleTruncatedState;
   if (Manager.GetBoolean("north-south") == true)
     {
       int* SouthPattern = new int [PatternLzMax + 1];
       for (int i = 0; i <= PatternLzMax; ++i)
-	SouthPattern[i] = Pattern[PatternLzMax - i];
+	       SouthPattern[i] = Pattern[PatternLzMax - i];
       int TmpShift = InputLzMax - PatternLzMax;
       SouthPoleTruncatedState = InputBasis->TruncateStateWithPatternConstraint(InputState, OutputBasis, SouthPattern, PatternLzMax + 1, TmpShift);      
       if (NoUnnormalization == false)
-	{
-	  double SouthNorm = SouthPoleTruncatedState.Norm();
-	  if (SouthNorm > 1e-10)
-	    {
-	      if (NoUnnormalization == false)
-		OutputBasis->ConvertFromUnnormalizedMonomial(SouthPoleTruncatedState, -1l);
-	      SouthNorm = SouthPoleTruncatedState.Norm();
-	      SouthPoleTruncatedState /= SouthNorm;
+	     {
+	       double SouthNorm = SouthPoleTruncatedState.Norm();
+	       cout << "SouthNorm = " << SouthNorm  << endl;
+	       if (SouthNorm > 1e-10)
+	        {
+	           if (NoUnnormalization == false)
+		            OutputBasis->ConvertFromUnnormalizedMonomial(SouthPoleTruncatedState, -1l);
+	           SouthNorm = SouthPoleTruncatedState.Norm();
+             if (Manager.GetBoolean("suppress-normalization") == false)
+   	            SouthPoleTruncatedState /= SouthNorm;
+             else
+                cout << "Suppress South normalization " << SouthNorm << endl;
+	        }
+	      else
+	       {
+	       	 cout << "SouthhNorm is low = " << NorthNorm  << endl;
+	         if (Manager.GetBoolean("north-south") == true)
+		        {
+		          cout << "ODLRO=0" << endl;  
+		          return 0;
+		        }
+	       }
 	    }
-	  else
-	    {
-	      if (Manager.GetBoolean("north-south") == true)
-		{
-		  cout << "ODLRO=0" << endl;  
-		  return 0;
-		}
-	    }
-	}
     }
   
   if (Manager.GetBoolean("save-truncated") == true)

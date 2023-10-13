@@ -30,4 +30,5 @@ OperatorMultipleMatrixElementOperation.cc \
 MatrixFullDiagonalizeOperation.cc \
 MultipleVectorOperatorMultiplyOperation.cc \
 HermitianMatrixFromMatrixOperation.cc \
-LongIntegerMatrixCharacteristicPolynomialOperation.cc
+LongIntegerMatrixCharacteristicPolynomialOperation.cc \
+LongIntegerMatrixRankOperation.cc

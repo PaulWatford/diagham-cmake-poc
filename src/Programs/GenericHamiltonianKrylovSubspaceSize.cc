@@ -247,7 +247,7 @@ int main(int argc, char** argv)
 		  //		  LongRationalMatrix Krylov2 (Krylov);
 		  gettimeofday (&(StartingTime), 0);
 		  Krylov2.Resize(NbrColumns, i + 1);
-		  int TmpRank2 = Krylov2.Rank();
+		  int TmpRank2 = Krylov2.Rank(Architecture.GetArchitecture());
 		  if (TmpRank2 != (i + 1))
 		    {
 		      TmpRank = TmpRank2;
@@ -263,7 +263,7 @@ int main(int argc, char** argv)
 	    }
 	  if (TmpRank == 0)
 	    {
-	      TmpRank = Krylov.Rank();
+	      TmpRank = Krylov.Rank(Architecture.GetArchitecture());
 	    }
 	  cout << "size Krylov subspace |" << j << "> = " << TmpRank << endl;
 	  gettimeofday (&(TotalEndingTime), 0);

@@ -56,6 +56,7 @@ class LongIntegerMatrix : public Matrix
   friend class LongRationalVector;
   friend class LongRationalMatrix;
   friend class LongIntegerMatrixCharacteristicPolynomialOperation;
+  friend class LongIntegerMatrixRankOperation;
   
  protected:
 
@@ -336,6 +337,12 @@ public:
   // return value = rank
   virtual int Rank(double accuracy = MACHINE_PRECISION);
 
+  // evaluate matrix rank with parallel optimization
+  //
+  // architecture = pointer to the architecture
+  // return value = rank
+  int Rank(AbstractArchitecture* architecture);
+    
   // compute the characteristic polynomial using the Faddeev–Le Verrier algorith
   //
   // architecture = pointer to the architecture

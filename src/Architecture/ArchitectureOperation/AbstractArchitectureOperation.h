@@ -57,6 +57,7 @@ class AbstractArchitectureOperation
       MatrixMatrixMultiply = 0x8,
       SparseMatrixMatrixMultiply = 0x9,
       LongIntegerMatrixMultiply = 0xa,
+      LongIntegerMatrixRank = 0xb,
       AddComplexLinearCombination = 0x10,
       MultipleComplexScalarProduct = 0x20,
       MultipleVectorHamiltonianMultiply = 0x40,

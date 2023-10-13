@@ -32,6 +32,7 @@
 #include "Matrix/LongRationalMatrix.h"
 #include "Vector/LongIntegerVector.h"
 #include "Architecture/ArchitectureOperation/LongIntegerMatrixCharacteristicPolynomialOperation.h"
+#include "Architecture/ArchitectureOperation/LongIntegerMatrixRankOperation.h"
 #include "MathTools/IntegerAlgebraTools.h"
 
 #include <math.h>
@@ -1065,6 +1066,85 @@ int LongIntegerMatrix::Rank(double accuracy)
   //   }
   //  cout << (*this) << endl;
   //  cout << "rank = " << Rank << endl;
+  return Rank;
+
+ }
+
+
+// evaluate matrix rank with parallel optimization
+//
+// architecture = pointer to the architecture
+// return value = rank
+
+int LongIntegerMatrix::Rank(AbstractArchitecture* architecture)
+ {
+  if (this->NbrColumn > this->NbrRow)
+    {
+      this->Transpose();
+    }
+  int ReducedDim = this->NbrColumn;
+  --ReducedDim;
+  int PivotPos = 0;
+#ifdef __GMP__
+  mpz_t Factor;
+  mpz_init(Factor);
+#else
+  LONGLONG Factor = (LONGLONG) 0l;
+#endif
+  for (int k = 0; k < ReducedDim; ++k)
+    {
+      int TmpFirstNonZero = k;
+      bool FindPivotFlag = false;
+      while ((PivotPos < this->NbrRow) && (FindPivotFlag == false))
+	{
+	  TmpFirstNonZero = k;
+#ifdef __GMP__
+	  while ((TmpFirstNonZero < this->NbrColumn) && (mpz_sgn(this->Columns[TmpFirstNonZero][PivotPos]) == 0))
+#else      
+	    while ((TmpFirstNonZero < this->NbrColumn) && (this->Columns[TmpFirstNonZero][PivotPos] == ((LONGLONG) 0l)))
+#endif
+	    {
+	      ++TmpFirstNonZero;
+	    }
+	  if (TmpFirstNonZero < this->NbrColumn)
+	    {
+	      FindPivotFlag = true;
+	    }
+	  else
+	    {
+	      ++PivotPos;
+	    }
+	}
+      if (FindPivotFlag == true)
+	{
+	  if (TmpFirstNonZero != k)
+	    {
+	      LongIntegerVector TmpVector = this->Columns[k];
+	      this->Columns[k] =  this->Columns[TmpFirstNonZero];
+	      this->Columns[TmpFirstNonZero] = TmpVector;
+	    }
+	  LongIntegerMatrixRankOperation TmpOperation(this, k + 1, PivotPos);
+	  TmpOperation.ApplyOperation(architecture);
+	  
+// 	  LongIntegerVector& TmpColumn2 = this->Columns[k];
+// 	  for (TmpFirstNonZero = k + 1; TmpFirstNonZero < this->NbrColumn; ++TmpFirstNonZero)
+// 	    {
+// #ifdef __GMP__
+// 	      mpz_set(Factor, this->Columns[TmpFirstNonZero][PivotPos]);
+// #else	      
+// 	      Factor = this->Columns[TmpFirstNonZero][PivotPos];
+// #endif
+// 	      this->Columns[TmpFirstNonZero].RescaleAndSubLinearCombination(TmpColumn2[PivotPos], Factor, TmpColumn2, PivotPos, this->NbrRow - PivotPos);
+// 	      this->Columns[TmpFirstNonZero].Normalize();
+// 	    }
+	}
+    }
+  int Rank = this->NbrColumn - 1;
+  while ((Rank >= 0) && (this->Columns[Rank].IsNullVector() == true))
+    {
+      --Rank;
+    }
+  Rank++;
   return Rank;
 
  }

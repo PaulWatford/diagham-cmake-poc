@@ -1007,17 +1007,19 @@ int main(int argc, char** argv)
 																		      TmpNbrNonZeroEntanglementMatrices, TmpEntanglementMatrixLzSectors, TmpEntanglementMatrices);
 		  timeval TotalStartingTime;
 		  timeval TotalEndingTime;
+		  timeval SVDTotalStartingTime;
+		  timeval SVDTotalEndingTime;
 		  if (ShowTimeFlag == true)
 		    {
-		      gettimeofday (&(TotalStartingTime), 0);
+		      gettimeofday (&(SVDTotalStartingTime), 0);
 		    }
 //		  cout << PartialEntanglementMatrix << endl;
 		  double* TmpValues = PartialEntanglementMatrix.SingularValueDecomposition();
 		  if (ShowTimeFlag == true)
 		    {
 		      gettimeofday (&(TotalEndingTime), 0);
-		      double Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
-					    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));		      
+		      double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+					    ((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
 		      cout << "singular value decomposition done in " << Dt << "s" << endl;
 		    }
 		  int TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
@@ -1075,6 +1077,8 @@ int main(int argc, char** argv)
 	  int SubsystemNbrNDown = (SubsystemNbrParticles - SubsystemTotalSz) / 2;
 	  timeval TotalStartingTime;
 	  timeval TotalEndingTime;
+	  timeval SVDTotalStartingTime;
+	  timeval SVDTotalEndingTime;
 	  if (ShowTimeFlag == true)
 	    {
 	      gettimeofday (&(TotalStartingTime), 0);
@@ -1132,16 +1136,31 @@ int main(int argc, char** argv)
 			    {
 			      if (RealSpaceCut == true)
 				{
+				  if (ShowTimeFlag == true)
+				    {
+				      gettimeofday (&(SVDTotalStartingTime), 0);
+				    }
 				  if (SubsystemSzSymmetrySector == 0)
 				    {
-				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, GroundStates[i] , true);
+				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, GroundStates[i] , true, Architecture.GetArchitecture());
 				    }
 				  else
 				    {
-				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, SubsystemSzSymmetrySector, GroundStates[i] , true);
+				      PartialEntanglementMatrix = Spaces[i]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,  SubsystemNbrNUp - SubsystemNbrNDown, SubsystemSzSymmetrySector, GroundStates[i] , true, Architecture.GetArchitecture());
+				    }
+				  if (ShowTimeFlag == true)
+				    {
+				      gettimeofday (&(SVDTotalEndingTime), 0);
+				      double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+							    ((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
+				      cout << "particle entanglement matrix evaluated in " << Dt << "s" << endl;
 				    }
 				  if(PartialEntanglementMatrix.GetNbrRow() != 0)
 				    {
+				      if (ShowTimeFlag == true)
+					{
+					  gettimeofday (&(SVDTotalStartingTime), 0);
+					}
 				      if (SubsystemSzSymmetrySector == 0)
 					{
 					  Spaces[i]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, SubsystemNbrNUp - SubsystemNbrNDown, 
@@ -1156,6 +1175,13 @@ int main(int argc, char** argv)
 																       NbrBOrbitals, WeightBOrbitalsUp, WeightBOrbitalsDown, 
 																       PartialEntanglementMatrix);
 					}
+				      if (ShowTimeFlag == true)
+					{
+					  gettimeofday (&(SVDTotalEndingTime), 0);
+					  double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+								((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
+					  cout << "conversion from particle entanglement matrix to real space entanglement matrix done in " << Dt << "s" << endl;
+					}					      
 				      if ((SVDFlag == false) && (PartialDiagonalization == false))
 					{
 					  if (PartialEntanglementMatrix.GetNbrRow() >= PartialEntanglementMatrix.GetNbrColumn())
@@ -1250,9 +1276,9 @@ int main(int argc, char** argv)
 				      if (ShowTimeFlag == true)
 					{
 					  gettimeofday (&(SVDTotalEndingTime), 0);
-				      double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
-							    ((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
-				      cout << "conversion from particle entanglement matrix to real space entanglement matrix done in " << Dt << "s" << endl;
+					  double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+								((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
+					  cout << "conversion from particle entanglement matrix to real space entanglement matrix done in " << Dt << "s" << endl;
 					}					      
 				      
 				      if ((SVDFlag == false) || (PartialDiagonalization == true))
@@ -1514,7 +1540,18 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
+		      if (ShowTimeFlag == true)
+			{
+			  gettimeofday (&(SVDTotalStartingTime), 0);
+			}
 		      double* TmpValues = PartialEntanglementMatrix.SingularValueDecomposition();
+		      if (ShowTimeFlag == true)
+			{
+			  gettimeofday (&(SVDTotalEndingTime), 0);
+			  double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+						((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
+			  cout << "singular value decomposition done in " << Dt << "s" << endl;
+			}
 		      int TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
 		      if (TmpDimension > PartialEntanglementMatrix.GetNbrRow())
 			{

@@ -40,6 +40,7 @@
 #include "FunctionBasis/AbstractFunctionBasis.h"
 #include "MathTools/BinomialCoefficients.h"
 #include "GeneralTools/UnsignedIntegerTools.h"
+#include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementMatrixOperation.h"
 #include <math.h>
 #include <bitset>
 
@@ -320,7 +321,7 @@ FermionOnSphereWithSpinAllSzSzSymmetry::FermionOnSphereWithSpinAllSzSzSymmetry(c
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
   this->LzParitySign = fermions.LzParitySign;
   this->SzParitySign = fermions.SzParitySign;
-  this->LargeHilbertSpaceDimension = this->LargeHilbertSpaceDimension;
+  this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
   this->TargetSpace = this;
 }
 
@@ -1046,9 +1047,19 @@ RealMatrix FermionOnSphereWithSpinAllSzSzSymmetry::EvaluatePartialEntanglementMa
     {
       RealMatrix TmpEntanglementMatrix(SubsytemSpace.GetHilbertSpaceDimension(), ComplementarySubsytemSpace.GetHilbertSpaceDimension(), true);
       
-      long TmpNbrNonZeroElements = this->EvaluatePartialEntanglementMatrixParticlePartitionCore(0, ComplementarySubsytemSpace.GetHilbertSpaceDimension(),
+      long TmpNbrNonZeroElements = 0l;
+      if (architecture != 0)
+	{
+	  FQHESphereParticleEntanglementMatrixOperation TmpOperation (this, &SubsytemSpace, &ComplementarySubsytemSpace, groundState, TmpEntanglementMatrix, removeBinomialCoefficient);
+	  TmpOperation.ApplyOperation(architecture);
+	  TmpNbrNonZeroElements = TmpOperation.GetNbrNonZeroMatrixElements();
+	}
+      else
+	{
+	  TmpNbrNonZeroElements = this->EvaluatePartialEntanglementMatrixParticlePartitionCore(0, ComplementarySubsytemSpace.GetHilbertSpaceDimension(),
 												&ComplementarySubsytemSpace, &SubsytemSpace, 
 												groundState, &TmpEntanglementMatrix, removeBinomialCoefficient);
+	}
       if (TmpNbrNonZeroElements > 0l)
 	{
 	  return TmpEntanglementMatrix;
@@ -1137,9 +1148,19 @@ RealMatrix FermionOnSphereWithSpinAllSzSzSymmetry::EvaluatePartialEntanglementMa
     {
       RealMatrix TmpEntanglementMatrix(SubsytemSpace.GetHilbertSpaceDimension(), ComplementarySubsytemSpace.GetHilbertSpaceDimension(), true);
       
-      long TmpNbrNonZeroElements = this->EvaluatePartialEntanglementMatrixParticlePartitionCore(0, ComplementarySubsytemSpace.GetHilbertSpaceDimension(),
+      long TmpNbrNonZeroElements = 0l;
+      if (architecture != 0)
+	{
+	  FQHESphereParticleEntanglementMatrixOperation TmpOperation (this, &SubsytemSpace, &ComplementarySubsytemSpace, groundState, TmpEntanglementMatrix, removeBinomialCoefficient);
+	  TmpOperation.ApplyOperation(architecture);
+	  TmpNbrNonZeroElements = TmpOperation.GetNbrNonZeroMatrixElements();
+	}
+      else
+	{
+	  TmpNbrNonZeroElements = this->EvaluatePartialEntanglementMatrixParticlePartitionCore(0, ComplementarySubsytemSpace.GetHilbertSpaceDimension(),
 												&ComplementarySubsytemSpace, &SubsytemSpace, 
 												groundState, &TmpEntanglementMatrix, removeBinomialCoefficient);
+	}
       if (TmpNbrNonZeroElements > 0l)
 	{
 	  return TmpEntanglementMatrix;

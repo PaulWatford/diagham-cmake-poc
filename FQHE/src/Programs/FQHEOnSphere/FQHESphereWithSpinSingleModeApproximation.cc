@@ -97,7 +97,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "lz-boost", "Lz momentum that has to be transfer via the SMA", 0);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "spin-indices", "0 for c_{up,M}^+ c_{up,M+boost}, 1 for c_{up,M}^+ c_{down,M+boost}, 2 for c_{down,M}^+ c_{up,M+boost}, 3 for c_{down,M}^+ c_{down,M+boost}");
   (*SystemGroup) += new BooleanOption ('\n', "compute-bilinears", "compute the action of all the bilinear operators on the ground state");
-    (*SystemGroup) += new BooleanOption ('\n', "compute-spinwave", "compute the spin-wave excitation (one spin flip relative to ground state) with the given momentum L=lz-boost");
+  (*SystemGroup) += new BooleanOption ('\n', "compute-spinwave", "compute the spin-wave excitation (one spin flip relative to ground state) with the given momentum L=lz-boost");
+  (*SystemGroup) += new BooleanOption ('\n', "compute-sma", "compute the SMA excitation by acting with rho (up or down) with the given momentum L=lz-boost. Specify whether spin-up or spin-down using the spin-indices option!");
   (*SystemGroup) += new SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "sma");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 
                   500);
@@ -316,6 +317,77 @@ int main(int argc, char** argv)
       char* OutputNameLz = new char [strlen(OutputNamePrefix)+ 16];
       sprintf (OutputNameLz, "%s.0.vec", OutputNamePrefix);
       SWState.WriteVector(OutputNameLz); 
+  }
+  else if (Manager.GetBoolean("compute-sma"))
+  {
+     cout << "Computing SMA state acting with rho_L in layer combination " << SpinIndices << endl;
+     cout << "Using the expression |psi_{L,sigma}> = sum_k (-1)^(S-k) <S,L+k; S,-k| L,L> c_{L+k,sigma}^+ c_{k,sigma} |psi_0> " << endl;
+
+     ClebschGordanCoefficients Coefficients(LzMax, LzMax);
+      
+     int MinLzValue = 0;
+     int MaxLzValue = LzMax;
+     if (LzBoost >= 0)
+       {
+         MaxLzValue = LzMax - LzBoost;   
+       }
+     else
+       {
+         MinLzValue = -LzBoost;    
+       }
+
+     RealVector TmpState(OutputSpace->GetHilbertSpaceDimension());
+
+     RealVector SMAState(OutputSpace->GetHilbertSpaceDimension(), true);
+
+     if (SpinIndices == 0) //up-up case
+      {
+       for (int m = MinLzValue; m <= MaxLzValue; ++m)
+        {
+          cout << "computing up c^+_"<< (m + LzBoost) << " c_" << m << " |Psi>" << endl;
+
+          ParticleOnSphereWithSpinDensityOperator* TmpOperator;
+          TmpOperator = new ParticleOnSphereWithSpinDensityOperator(InputSpace, m + LzBoost, 1, m, 1);
+          VectorOperatorMultiplyOperation Operation(TmpOperator, &InputState, &TmpState);
+          Operation.ApplyOperation(Architecture.GetArchitecture());
+    
+          double TmpCoeff = Coefficients.GetCoefficient(2*m + 2*LzBoost - LzMax, LzMax-2*m, 2*LzBoost);
+          
+          if (m%2 == 1)
+            TmpCoeff *= -1.0;
+
+          cout << TmpCoeff << " " << TmpState.Norm() << endl; 
+          SMAState.AddLinearCombination(TmpCoeff, TmpState);
+        }
+      cout << "Final SMA state norm " << SMAState.Norm() << endl;
+      }
+    else //down-down case
+      {
+       for (int m = MinLzValue; m <= MaxLzValue; ++m)
+        {
+          cout << "computing down c^+_"<< (m + LzBoost) << " c_" << m << " |Psi>" << endl;
+
+          ParticleOnSphereWithSpinDensityOperator* TmpOperator;
+          TmpOperator = new ParticleOnSphereWithSpinDensityOperator(InputSpace, m + LzBoost, 0, m, 0);
+          VectorOperatorMultiplyOperation Operation(TmpOperator, &InputState, &TmpState);
+          Operation.ApplyOperation(Architecture.GetArchitecture());
+    
+          double TmpCoeff = Coefficients.GetCoefficient(2*m + 2*LzBoost - LzMax, LzMax-2*m, 2*LzBoost);
+          
+          if (m%2 == 1)
+            TmpCoeff *= -1.0;
+
+          cout << TmpCoeff << " " << TmpState.Norm() << endl; 
+          SMAState.AddLinearCombination(TmpCoeff, TmpState);
+        }
+      cout << "Final SMA state norm " << SMAState.Norm() << endl;
+      } 
+       
+      if (SMAState.Norm() > 1e-10)
+	      SMAState /= SMAState.Norm();  
+      char* OutputNameLz = new char [strlen(OutputNamePrefix)+ 16];
+      sprintf (OutputNameLz, "%s.0.vec", OutputNamePrefix);
+      SMAState.WriteVector(OutputNameLz); 
   }   
 
 

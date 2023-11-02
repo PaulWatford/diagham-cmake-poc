@@ -98,6 +98,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "structure-factor", "evaluate the projected structure factor instead of (density-)density (use with radians option)", false);
   (*SystemGroup) += new BooleanOption  ('\n', "guidingcenter-structurefactor", "evaluate the guiding center structure factor instead of (density-)density", false);
   (*SystemGroup) += new BooleanOption  ('\n', "coefficients-only", "only compute the one or two body coefficients that are requested to evaluate the density-density correlation", false);
+  (*SystemGroup) += new BooleanOption  ('\n', "all-coefficients", "compute all 2-point coefficients <c_m1^+ c_m2^+ c_m3 c_{m1+m2-m3}>", false);
   (*PrecalculationGroup) += new SingleIntegerOption  ('\n', "fast-search", "amount of memory that can be allocated for fast state search (in Mbytes)", 9);
   (*PrecalculationGroup) += new SingleIntegerOption  ('\n', "huge-memory", "maximum memory (in MBytes) that can allocated for precalculations when using huge mode", 100);
   (*PrecalculationGroup) += new SingleIntegerOption  ('\n', "large-memory", "maximum memory (in kBytes) that can allocated for precalculations when using huge mode", 1);
@@ -134,6 +135,7 @@ int main(int argc, char** argv)
   bool HaldaneBasisFlag = Manager.GetBoolean("haldane");
   bool SymmetrizedBasis = Manager.GetBoolean("symmetrized-basis");
   bool CoefficientOnlyFlag = Manager.GetBoolean("coefficients-only");
+  bool AllCoefficientsFlag = Manager.GetBoolean("all-coefficients");
   bool Statistics = true;
   if (Manager.GetString("eigenstate") == 0)
     {
@@ -331,6 +333,61 @@ int main(int argc, char** argv)
       }
    }
   cout << Space->GetHilbertSpaceDimension() << endl;
+
+  if (AllCoefficientsFlag == true)
+   {
+     cout<<"Evaluating all the coefficients <c_m1^+ c_m2^+ c_m3 c_{m1+m2-m3}>" << endl;
+     ofstream File;
+     File.precision(14);
+     if (Manager.GetString("output-file") != 0)
+       File.open(Manager.GetString("output-file"), ios::binary | ios::out);
+     else
+      {
+        cout << "Enter output file! " << endl;
+        exit(1);
+      }
+  
+     RealVector State;
+     if (State.ReadVectorTest(Manager.GetString("eigenstate")) == true)
+      {
+        if (State.ReadVector (Manager.GetString("eigenstate")) == false)
+	     {
+	       cout << "can't open vector file " << Manager.GetString("eigenstate") << endl;
+	       return -1;      
+	     }
+	   if (Space->GetLargeHilbertSpaceDimension()!=State.GetLargeVectorDimension())
+	    {
+	      cout << "Dimension mismatch between state and Hilbert space!"<<endl;
+	      return -1;
+	    }
+
+
+    OperatorMatrixElementOperation* Operation;
+    ParticleOnSphereDensityDensityOperator* DensityDensityOperator;
+
+    for (int m1 = 0; m1 <= LzMax; ++m1)
+      for (int m2 = 0; m2 <= LzMax; ++m2)
+        for (int m3 = 0; m3 <= LzMax; ++m3)
+         {
+           int m4 = m1 + m2 - m3;
+           if ((m4 >= 0) && (m4 <= LzMax))
+            {
+               DensityDensityOperator = new ParticleOnSphereDensityDensityOperator(Space, m1, m2, m3, m4);
+               Operation = new OperatorMatrixElementOperation (DensityDensityOperator, State, State);          
+               Operation->ApplyOperation(Architecture.GetArchitecture());               
+
+               cout << m1 << " " << m2 << " " << m3 << " " << m4 << " " << Operation->GetScalar().Re << " " << Operation->GetScalar().Im << endl;
+               File << m1 << " " << m2 << " " << m3 << " " << m4 << " " << Operation->GetScalar().Re << " " << Operation->GetScalar().Im << endl;
+
+               delete DensityDensityOperator;
+               delete Operation;
+            }
+         }
+
+     return 0;
+    }
+   }
+
 
   if (GuidingCenterStructureFactorFlag == true)
    {

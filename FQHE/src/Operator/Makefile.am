@@ -41,4 +41,5 @@ ParticleOnTorusAnnihilationOperator.cc \
 ParticleOnSphereLPlusOperator.cc \
 ParticleOnTorusDensityOperator.cc \
 ParticleOnSphereWithSpinAnnihilationOperator.cc \
-ParticleOnSphereWithSpinCreationOperator.cc
+ParticleOnSphereWithSpinCreationOperator.cc \
+ParticleOnSquareLatticeWithGenericSpinBandDensityOperator.cc

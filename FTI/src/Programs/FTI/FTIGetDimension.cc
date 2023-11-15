@@ -4,6 +4,7 @@
 #include "Options/BooleanOption.h"
 #include "Options/SingleIntegerOption.h"
 #include "Options/SingleStringOption.h"
+#include "MathTools/BinomialCoefficients.h"
 
 #include <iostream>
 #include <cstdlib>
@@ -59,7 +60,52 @@ long FermionTwoBandEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentu
 // return value = Hilbert space dimension
 long FermionTwoBandWithSpinEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrSpinUp, int currentTotalKx = 0, int currentTotalKy = 0);
 
-// evaluate Hilbert space dimensionn for fermions within a four band basis
+// evaluate Hilbert space dimension for fermions within a three band
+//
+// nbrParticles = number of nbrParticles
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+long FermionThreeBandEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int currentTotalKx = 0, int currentTotalKy = 0);
+
+// evaluate Hilbert space dimension for fermions within a three band and spin conserved basis
+//
+// nbrParticles = number of nbrParticles
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// nbrSpinUp = number of particles with a spin up  
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+long FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrSpinUp, int currentTotalKx = 0, int currentTotalKy = 0);
+
+// evaluate Hilbert space dimension for fermions within a three band and spin and valley conserved basis
+//
+// nbrParticles = number of nbrParticles
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// nbrSpinUp = number of particles with a spin up  
+// nbrValleyPlus = number of particles with a valley plus  
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+long FermionThreeBandWithSpinAndValleyEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrSpinUp, int nbrValleyPlus, int currentTotalKx = 0, int currentTotalKy = 0);
+
+// evaluate Hilbert space dimension for fermions within a four band basis
 //
 // nbrFermions = number of fermions
 // kxMomentum = total momentum along x
@@ -315,6 +361,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "bosons", "use bosonic statistics instead of fermionic statistics");
   (*SystemGroup) += new BooleanOption  ('\n', "no-inversion", "do not assume inversion symmetry");
   (*SystemGroup) += new BooleanOption  ('\n', "spin-conserved", "assume that the spin is conserved in the two band model");
+  (*SystemGroup) += new BooleanOption  ('\n', "add-valley", "add a conserved  U(1) valley degree of freedom");
   (*SystemGroup) += new BooleanOption  ('\n', "3d", "consider a 3d model instead of a 2d model");
   (*SystemGroup) += new BooleanOption  ('\n', "4d", "consider a 4d model instead of a 2d model");
   (*OutputGroup) += new BooleanOption  ('\n', "save-disk", "save output on disk");
@@ -452,6 +499,7 @@ int main(int argc, char** argv)
 
   if (Manager.GetInteger("nbr-subbands") == 3)
     {
+      long TotalDimension = 0l;
       for (int kx = 0; kx < NbrSitesX; ++kx)
 	{
 	  for (int ky = 0; ky < NbrSitesY; ++ky)
@@ -468,16 +516,56 @@ int main(int argc, char** argv)
 			      long Dimension = 0l;
 			      if (Manager.GetBoolean("bosons") == false)
 				{
-				  cout << "warning : not implemented for fermions" << endl;
+				  Dimension = FermionThreeBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
 				}
 			      else
-				Dimension = BosonThreeBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
+				{
+				  Dimension = BosonThreeBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
+				}
+			      TotalDimension += Dimension;
 			      cout << "(kx=" << kx << ",ky=" << ky << ") : " << Dimension << endl;
 			    }
 			  else
 			    {
-			      cout << "warning : not implemented" << endl;
-			      return 0;
+			      if (Manager.GetBoolean("add-valley") == false)
+				{
+				  for (int NbrSpinUp = 0; NbrSpinUp <= NbrParticles; ++NbrSpinUp)
+				    {
+				      long Dimension = 0l;
+				      if (Manager.GetBoolean("bosons") == false)
+					{
+					  Dimension = FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1, NbrSpinUp);
+					}
+				      else
+					{
+					  cout << "warning : not implemented" << endl;
+					  return 0;
+					}
+				      TotalDimension += Dimension;
+				      cout << "(kx=" << kx << ",ky=" << ky << ") 2Sz=" << ((2 * NbrSpinUp) - NbrParticles) << " : " << Dimension << endl;			  
+				    }
+				}
+			      else
+				{
+				  for (int NbrValleyPlus = 0; NbrValleyPlus <= NbrParticles; ++NbrValleyPlus)
+				    {
+				      for (int NbrSpinUp = 0; NbrSpinUp <= NbrParticles; ++NbrSpinUp)
+					{
+					  long Dimension = 0l;
+					  if (Manager.GetBoolean("bosons") == false)
+					    {
+					      Dimension = FermionThreeBandWithSpinAndValleyEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1, NbrSpinUp, NbrValleyPlus);
+					    }
+					  else
+					    {
+					      cout << "warning : not implemented" << endl;
+					      return 0;
+					    }
+					  TotalDimension += Dimension;
+					  cout << "(kx=" << kx << ",ky=" << ky << ") 2Pz=" << ((2 * NbrValleyPlus) - NbrParticles) << " 2Sz=" << ((2 * NbrSpinUp) - NbrParticles) << " : " << Dimension << endl;			  
+					}
+				    }
+				}
 			    }
 			}
 		    }
@@ -495,6 +583,17 @@ int main(int argc, char** argv)
 		}
 	    }
 	}
+      cout << TotalDimension << endl;
+      // if (Manager.GetBoolean("spin-conserved") == false)
+      // 	{
+      // 	  BinomialCoefficients Binomial (3 * NbrSitesX * NbrSitesY);
+      // 	  cout << Binomial(3 * NbrSitesX * NbrSitesY, NbrParticles) << endl;
+      // 	}
+      // else
+      // 	{
+      // 	  BinomialCoefficients Binomial (6 * NbrSitesX * NbrSitesY);
+      // 	  cout << Binomial(6 * NbrSitesX * NbrSitesY, NbrParticles) << endl;
+      // 	}
     }
 
   if (Manager.GetInteger("nbr-subbands") == 4)
@@ -710,7 +809,213 @@ long FermionTwoBandWithSpinEvaluateHilbertSpaceDimension(int nbrParticles, int k
   return Count;
 }
 
-// evaluate Hilbert space dimensionn for fermions within a four band basis
+// evaluate Hilbert space dimension for fermions within a three band basis
+//
+// nbrFermions = number of fermions
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+
+long FermionThreeBandEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = nbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrFermions < 0)
+    return 0l;
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % nbrSiteX) == kxMomentum) && ((currentTotalKy % nbrSiteY) == kyMomentum))
+	{
+	  return 1l;
+	}
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+	    Count += 3l;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = nbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+		Count += 3l;
+	    }
+	}
+      return Count;
+    }
+  Count += (FermionThreeBandEvaluateHilbertSpaceDimension(nbrFermions - 3,  kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
+  Count += (3 * FermionThreeBandEvaluateHilbertSpaceDimension(nbrFermions - 2,  kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
+  Count += (3 * FermionThreeBandEvaluateHilbertSpaceDimension(nbrFermions - 1,  kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy));
+  Count += FermionThreeBandEvaluateHilbertSpaceDimension(nbrFermions,  kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, currentTotalKx, currentTotalKy);
+  return Count;
+}
+
+// evaluate Hilbert space dimension for fermions within a three band spin-conserved basis
+//
+// nbrFermions = number of fermions
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+
+long FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrFermionsUp, int currentTotalKx, int currentTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = nbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrFermionsUp < 0) || (nbrFermionsUp > nbrFermions))
+    return 0l;
+
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % nbrSiteX) == kxMomentum) && ((currentTotalKy % nbrSiteY) == kyMomentum))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+	    Count += 3;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = nbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+		Count += 3;
+	    }
+	}
+      return Count;
+    }
+  Count += FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 6, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 3, currentTotalKx + (6 * currentKx), currentTotalKy + (6 * currentKy));
+  
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 5, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 3, currentTotalKx + (5 * currentKx), currentTotalKy + (5 * currentKy));
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 5, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 2, currentTotalKx + (5 * currentKx), currentTotalKy + (5 * currentKy));
+  
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 4, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 3, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy));
+  Count += 9 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 4, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 2, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy));
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 4, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy));
+
+
+  Count += FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 3, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy));
+  Count += 9 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 2, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy));
+  Count += 9 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy));
+  Count += FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy));
+
+  
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 2, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+  Count += 9 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + currentKx, currentTotalKy + currentKy);
+  Count += 3 * FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp, currentTotalKx + currentKx, currentTotalKy + currentKy);
+
+  Count += FermionThreeBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp, currentTotalKx, currentTotalKy);
+  return Count;
+}
+
+
+// evaluate Hilbert space dimension for fermions within a three band and spin and valley conserved basis
+//
+// nbrFermions = number of nbrFermions
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// nbrSpinUp = number of fermions with a spin up  
+// nbrValleyPlus = number of fermions with a valley plus  
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+
+long FermionThreeBandWithSpinAndValleyEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrSpinUp, int nbrValleyPlus, int currentTotalKx, int currentTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = nbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions) || (nbrValleyPlus < 0) || (nbrValleyPlus > nbrFermions))
+    return 0l;
+
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % nbrSiteX) == kxMomentum) && ((currentTotalKy % nbrSiteY) == kyMomentum))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+	    Count += 3;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = nbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+		Count += 3;
+	    }
+	}
+      return Count;
+    }
+  for (int i = 12; i >= 0; --i)
+    {
+      int MaxS = 6;
+       if (i < MaxS)
+	{
+	  MaxS = i;
+	}
+      for (int s = MaxS; s >= 0; --s)
+	{	  
+	  for (int k = MaxS; k >= 0; --k)
+	    {
+	      Count += FermionThreeBandWithSpinAndValleyEvaluateHilbertSpaceDimension(nbrFermions - i, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrSpinUp - s, nbrValleyPlus - k, currentTotalKx + (i * currentKx), currentTotalKy + (i * currentKy));
+	    }
+	}
+    }
+  return Count;
+}
+
+// evaluate Hilbert space dimension for fermions within a four band basis
 //
 // nbrFermions = number of fermions
 // kxMomentum = total momentum along x
@@ -955,6 +1260,7 @@ long BosonTwoBandEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum,
 // currentTotalKx = current total momentum along x
 // currentTotalKy = current total momentum along y
 // return value = Hilbert space dimension
+
 long BosonTwoBandWithSpinEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrSpinUp, int currentTotalKx, int currentTotalKy)
 {
   if (currentKy < 0)

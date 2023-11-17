@@ -45,6 +45,24 @@ long FermionSingleBandEvaluateHilbertSpaceDimension(int nbrParticles, int kxMome
 // return value = Hilbert space dimension
 long FermionTwoBandEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int currentTotalKx = 0, int currentTotalKy = 0);
 
+// evaluate Hilbert space dimension for fermions within a two band and a cap on the number of particles per band
+//
+// nbrParticles = number of nbrParticles
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// maxBand0 = maximum number of particles in band 0
+// maxBand1 = maximum number of particles in band 1
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentBand0 = current number of particles in band 0
+// currentBand1 = current number of particles in band 1
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+long FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int maxBand0, int maxBand1, int currentKx, int currentKy, int currentBand0 = 0, int currentBand1 = 0, int currentTotalKx = 0, int currentTotalKy = 0);
+
 // evaluate Hilbert space dimension for fermions within a two band and spin conserved basis
 //
 // nbrParticles = number of nbrParticles
@@ -128,10 +146,30 @@ long FermionFourBandEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentu
 // nbrSiteY = number of sites along y
 // currentKx = current momentum along x for a single particle
 // currentKy = current momentum along y for a single particle
+// nbrSpinUp = number of particles with a spin up  
 // currentTotalKx = current total momentum along x
 // currentTotalKy = current total momentum along y
 // return value = Hilbert space dimension
 long FermionFourBandWithSpinEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int currentKx, int currentKy, int nbrSpinUp, int currentTotalKx = 0, int currentTotalKy = 0);
+
+// evaluate Hilbert space dimension for fermions within a four band spin-conserved basis and a cap on the number of particles per band
+//
+// nbrFermions = number of fermions
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// maxBand0 = maximum number of particles in band 0
+// maxBand1 = maximum number of particles in band 1
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// nbrSpinUp = number of particles with a spin up  
+// currentBand0 = current number of particles in band 0
+// currentBand1 = current number of particles in band 1
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+long FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int maxBand0, int maxBand1, int currentKx, int currentKy, int nbrSpinUp, int currentBand0 = 0, int currentBand1 = 0, int currentTotalKx = 0, int currentTotalKy = 0);
 
 // evaluate Hilbert space dimension for bosions within a single band
 //
@@ -364,6 +402,9 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "add-valley", "add a conserved  U(1) valley degree of freedom");
   (*SystemGroup) += new BooleanOption  ('\n', "3d", "consider a 3d model instead of a 2d model");
   (*SystemGroup) += new BooleanOption  ('\n', "4d", "consider a 4d model instead of a 2d model");
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band0", "maximum number of particles in band 0 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band1", "maximum number of particles in band 1 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band2", "maximum number of particles in band 2 (negative if this number should be equal to the number of orbitals)", -1);
   (*OutputGroup) += new BooleanOption  ('\n', "save-disk", "save output on disk");
   (*OutputGroup) += new SingleStringOption ('\n', "output-file", "use this file name instead of statistics_topinsulator_nbrsubbands_n_nbrparticles_x_nbrsitex_y_nbrsitey.dim");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
@@ -437,9 +478,30 @@ int main(int argc, char** argv)
 			    {
 			      long Dimension = 0l;
 			      if (Manager.GetBoolean("bosons") == false)
- 				Dimension = FermionTwoBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
+				{
+				  if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0))
+				    {
+				      Dimension = FermionTwoBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
+				    }
+				  else
+				    {
+				      int MaxBand0 = Manager.GetInteger("max-band0");
+				      int MaxBand1 = Manager.GetInteger("max-band1");
+				      if (MaxBand0 < 0)
+					{
+					  MaxBand0 = NbrSitesX * NbrSitesY;
+					}
+				      if (MaxBand1 < 0)
+					{
+					  MaxBand1 = NbrSitesX * NbrSitesY;
+					}
+				      Dimension = FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, NbrSitesX - 1, NbrSitesY - 1);
+				    }
+				}
 			      else
-				Dimension = BosonTwoBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
+				{
+				  Dimension = BosonTwoBandEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1);
+				}
 			      cout << "(kx=" << kx << ",ky=" << ky << ") : " << Dimension << endl;
 			    }
 			  else
@@ -633,7 +695,26 @@ int main(int argc, char** argv)
 			{
 			  long Dimension = 0l;
 			  if (Manager.GetBoolean("bosons") == false)
-			    Dimension = FermionFourBandWithSpinEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1, NbrSpinUp);
+			    {
+			      if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0))
+				{
+				  Dimension = FermionFourBandWithSpinEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, NbrSitesX - 1, NbrSitesY - 1, NbrSpinUp);
+				}
+			      else
+				{
+				  int MaxBand0 = Manager.GetInteger("max-band0");
+				  int MaxBand1 = Manager.GetInteger("max-band1");
+				  if (MaxBand0 < 0)
+				    {
+				      MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+				    }
+				  if (MaxBand1 < 0)
+				    {
+				      MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+				    }
+				  Dimension = FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(NbrParticles, kx, ky, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, NbrSitesX - 1, NbrSitesY - 1, NbrSpinUp);
+				}
+			    }
 			  TotalDimension += Dimension;
 			  cout << "(kx=" << kx << ",ky=" << ky << ") 2Sz=" << ((2 * NbrSpinUp) - NbrParticles) << " : " << Dimension << endl;
 			}
@@ -752,6 +833,72 @@ long FermionTwoBandEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentu
   return Count;
 }
 
+
+// evaluate Hilbert space dimension for fermions within a two band and a cap on the number of particles per band
+//
+// nbrParticles = number of nbrParticles
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// maxBand0 = maximum number of particles in band 0
+// maxBand1 = maximum number of particles in band 1
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentBand0 = current number of particles in band 0
+// currentBand1 = current number of particles in band 1
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+
+long FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(int nbrParticles, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int maxBand0, int maxBand1, int currentKx, int currentKy, int currentBand0, int currentBand1, int currentTotalKx, int currentTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = nbrSiteY - 1;
+      currentKx--;
+    }
+  if ((currentBand0 > maxBand0) || (currentBand1 > maxBand1))
+    {
+      return 0l;
+    }
+  if (nbrParticles == 0)
+    {
+      if (((currentTotalKx % nbrSiteX) == kxMomentum) && ((currentTotalKy % nbrSiteY) == kyMomentum))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    {
+      return 0l;
+    }
+  long Count = 0;
+  if (nbrParticles == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+	    Count += 2l;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = nbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+		Count += 2l;
+	    }
+	}
+      return Count;
+    }
+  Count += FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(nbrParticles - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), currentBand0 + 1, currentBand1 + 1);
+  Count += FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(nbrParticles - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, currentBand0 + 1, currentBand1);
+  Count += FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(nbrParticles - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, currentBand0, currentBand1 + 1);
+  Count += FermionTwoBandWithBandCapEvaluateHilbertSpaceDimension(nbrParticles, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, currentBand0, currentBand1);
+  return Count;
+}
+
+
 // evaluate Hilbert space dimension for fermions within a two band and spin conserved basis
 //
 // nbrParticles = number of nbrParticles
@@ -808,6 +955,8 @@ long FermionTwoBandWithSpinEvaluateHilbertSpaceDimension(int nbrParticles, int k
   Count += FermionTwoBandWithSpinEvaluateHilbertSpaceDimension(nbrParticles, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrSpinUp, currentTotalKx, currentTotalKy);
   return Count;
 }
+
+
 
 // evaluate Hilbert space dimension for fermions within a three band basis
 //
@@ -1131,8 +1280,8 @@ long FermionFourBandWithSpinEvaluateHilbertSpaceDimension(int nbrFermions, int k
   Count += (2 * FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 2, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
   Count += (2 * FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
   
-  Count += (2 * FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
   Count += FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 2, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+  Count += (2 * FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
   Count += (2 * FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
   Count += FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
   
@@ -1140,6 +1289,101 @@ long FermionFourBandWithSpinEvaluateHilbertSpaceDimension(int nbrFermions, int k
   Count += (2 * FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp - 1, currentTotalKx + currentKx, currentTotalKy + currentKy));
   
   Count += FermionFourBandWithSpinEvaluateHilbertSpaceDimension(nbrFermions, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, currentKx, currentKy - 1, nbrFermionsUp, currentTotalKx, currentTotalKy);
+  return Count;
+}
+
+// evaluate Hilbert space dimension for fermions within a four band spin-conserved basis and a cap on the number of particles per band
+//
+// nbrFermions = number of fermions
+// kxMomentum = total momentum along x
+// kyMomentum = total momentum along y
+// nbrSiteX = number of sites along x
+// nbrSiteY = number of sites along y
+// maxBand0 = maximum number of particles in band 0
+// maxBand1 = maximum number of particles in band 1
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// nbrSpinUp = number of particles with a spin up  
+// currentBand0 = current number of particles in band 0
+// currentBand1 = current number of particles in band 1
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+
+long FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(int nbrFermions, int kxMomentum, int kyMomentum, int nbrSiteX, int nbrSiteY, int maxBand0, int maxBand1, int currentKx, int currentKy, int nbrSpinUp, int currentBand0, int currentBand1, int currentTotalKx, int currentTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = nbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrFermions < 0)|| (nbrSpinUp < 0) ||  (nbrSpinUp > nbrFermions) || (currentBand0 > maxBand0) || (currentBand1 > maxBand1))
+    return 0l;
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % nbrSiteX) == kxMomentum) && ((currentTotalKy % nbrSiteY) == kyMomentum))
+	{
+	  return 1l;
+	}
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      int TmpIncrement = 0;
+      if (currentBand0 < maxBand0)
+	{
+	  TmpIncrement++;
+	}
+      if (currentBand1 < maxBand1)
+	{
+	  TmpIncrement++;
+	}
+      
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+	    {
+	      Count += TmpIncrement;
+	    }
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = nbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % nbrSiteX) == kxMomentum) && (((j + currentTotalKy) % nbrSiteY) == kyMomentum))
+		{
+		  Count += TmpIncrement;
+		}
+	    }
+	}
+      return Count;
+    }
+  
+  Count += FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 4, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 2, currentBand0 + 2, currentBand1 + 2, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy));
+  
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 2, currentBand0 + 2, currentBand1 + 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 2, currentBand0 + 1, currentBand1 + 2, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
+  
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0 + 2, currentBand1 + 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
+  Count += ( FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 3, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0 + 1, currentBand1 + 2, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
+  
+  Count += FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 2, currentBand0 + 1, currentBand1 + 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0 + 2, currentBand1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
+  Count += (2 * FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0 + 1, currentBand1 + 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0, currentBand1 + 2, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
+  Count += FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 2, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp, currentBand0 + 1, currentBand1 + 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+  
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp, currentBand0 + 1, currentBand1, currentTotalKx + currentKx, currentTotalKy + currentKy));
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp, currentBand0, currentBand1 + 1, currentTotalKx + currentKx, currentTotalKy + currentKy));
+  
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0 + 1, currentBand1, currentTotalKx + currentKx, currentTotalKy + currentKy));
+  Count += (FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions - 1, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp - 1, currentBand0, currentBand1 + 1, currentTotalKx + currentKx, currentTotalKy + currentKy));
+  
+  Count += FermionFourBandWithSpinAndBandCapEvaluateHilbertSpaceDimension(nbrFermions, kxMomentum, kyMomentum, nbrSiteX, nbrSiteY, maxBand0, maxBand1, currentKx, currentKy - 1, nbrSpinUp, currentBand0, currentBand1, currentTotalKx, currentTotalKy);
   return Count;
 }
 

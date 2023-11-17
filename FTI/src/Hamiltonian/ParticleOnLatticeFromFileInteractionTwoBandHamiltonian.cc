@@ -533,6 +533,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
       else
 	{
 	  // spinful case
+	  int ReducedNbrInternalIndices = this->NbrInternalIndices / 2;
 	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
 	    {
 	      for (int sigma2 = sigma1; sigma2 < this->NbrInternalIndices; ++sigma2)
@@ -685,7 +686,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 	      if (TmpSign != 0.0)
 		{
 		  this->InteractionFactorsSigma[Sigma1][Sigma2][Sigma3][Sigma4][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
-		  this->InteractionFactorsSigma[Sigma1 + 2][Sigma2 + 2][Sigma3 + 2][Sigma4 + 2][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+		  this->InteractionFactorsSigma[Sigma1 + ReducedNbrInternalIndices][Sigma2 + ReducedNbrInternalIndices][Sigma3 + ReducedNbrInternalIndices][Sigma4 + ReducedNbrInternalIndices][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
 		  TotalNbrInteractionFactors += 2l;
 		}
 	    }	  	
@@ -706,11 +707,11 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 	      TmpIndex = ((this->NbrInterSectorIndicesPerSum[TmpSumK] * TmpLinearizedKInterIndices[TmpSumK][K4][K3])
 	       		  + TmpLinearizedKInterIndices[TmpSumK][K1][K2]);
 	      TmpSign = -1.0;
-	      this->InteractionFactorsSigma[Sigma1][Sigma2 + 2][Sigma4][Sigma3 + 2][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+	      this->InteractionFactorsSigma[Sigma1][Sigma2 + ReducedNbrInternalIndices][Sigma4][Sigma3 + ReducedNbrInternalIndices][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
 	      TmpIndex = ((this->NbrInterSectorIndicesPerSum[TmpSumK] * TmpLinearizedKInterIndices[TmpSumK][K3][K4])
 	       		  + TmpLinearizedKInterIndices[TmpSumK][K2][K1]);
 	      TmpSign = -1.0;
-	      this->InteractionFactorsSigma[Sigma2][Sigma1 + 2][Sigma3][Sigma4 + 2][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+	      this->InteractionFactorsSigma[Sigma2][Sigma1 + ReducedNbrInternalIndices][Sigma3][Sigma4 + ReducedNbrInternalIndices][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
 	      TotalNbrInteractionFactors += 2l;
 	    }
 	}

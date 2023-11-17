@@ -88,6 +88,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "sz1-value", "twice the Sz value in valley 1", 0);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "sz2-value", "twice the Sz value in valley 2", 0);
   (*SystemGroup) += new BooleanOption  ('\n', "conserve-bandoccuption", "assume that the interaction conserves the number of particles per band");
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band0", "maximum number of particles in band 0 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band1", "maximum number of particles in band 1 (negative if this number should be equal to the number of orbitals)", -1);
   (*SystemGroup) += new SingleStringOption ('\n', "selected-sectors", "provide an ascii file that indicates which symmetry sectors have to be computed");
   (*SystemGroup) += new BooleanOption  ('\n', "disable-pzsymmetry", "disable the valley Pz<->-Pz symmetry");
   (*SystemGroup) += new BooleanOption  ('\n', "disable-szsymmetry", "disable the valley Sz<->-Sz symmetry");
@@ -295,15 +297,38 @@ int main(int argc, char** argv)
 	    }
 	}
     }
-  char* FilePrefix = new char [512 + strlen(FileSystemGeometry)];
-  if (Manager.GetBoolean("flat-band"))
+  char* BandCapPrefix = new char [256];
+  if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0))
     {
-      sprintf (FilePrefix, "%s_twoband_flatband_%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), FileSystemGeometry);
+      sprintf (BandCapPrefix, "");
     }
   else
     {
-      sprintf (FilePrefix, "%s_twoband_u_%.3f_%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
-	       Manager.GetString("interaction-name"), FileSystemGeometry);
+      if (Manager.GetInteger("max-band0") < 0)
+	{
+	  sprintf (BandCapPrefix, "_maxband1_%d", Manager.GetInteger("max-band1"));
+	}
+      else
+	{
+	  if (Manager.GetInteger("max-band1") < 0)
+	    {
+	      sprintf (BandCapPrefix, "_maxband0_%d", Manager.GetInteger("max-band0"));
+	    }
+	  else
+	    {
+	      sprintf (BandCapPrefix, "_maxband0_%d_maxband1_%d", Manager.GetInteger("max-band0"), Manager.GetInteger("max-band1"));
+	    }
+	}
+    }
+  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix)];
+  if (Manager.GetBoolean("flat-band"))
+    {
+      sprintf (FilePrefix, "%s_twoband_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+    }
+  else
+    {
+      sprintf (FilePrefix, "%s_twoband_u_%.3f_%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
+	       Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
     }
   
   char* EigenvalueOutputFile = new char [512 + strlen(FilePrefix)];

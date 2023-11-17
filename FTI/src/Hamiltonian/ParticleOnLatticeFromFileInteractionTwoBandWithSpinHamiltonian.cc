@@ -535,6 +535,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
       else
 	{
 	  // spinful case
+	  int ReducedNbrInternalIndices = this->NbrInternalIndices / 2;
 	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
 	    {
 	      for (int sigma2 = sigma1; sigma2 < this->NbrInternalIndices; ++sigma2)
@@ -694,7 +695,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
 	      if (TmpSign != 0.0)
 		{
 		  this->InteractionFactorsSigma[Sigma1][Sigma2][Sigma3][Sigma4][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
-		  this->InteractionFactorsSigma[Sigma1 + 4][Sigma2 + 4][Sigma3 + 4][Sigma4 + 4][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+		  this->InteractionFactorsSigma[Sigma1 + ReducedNbrInternalIndices][Sigma2 + ReducedNbrInternalIndices][Sigma3 + ReducedNbrInternalIndices][Sigma4 + ReducedNbrInternalIndices][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
 		}
 	    }	  	
 	  for (int i = 0; i < TmpNbrTwoBodyMatrixElements; ++i)
@@ -714,11 +715,11 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
 	      TmpIndex = ((this->NbrInterSectorIndicesPerSum[TmpSumK] * TmpLinearizedKInterIndices[TmpSumK][K4][K3])
 	       		  + TmpLinearizedKInterIndices[TmpSumK][K1][K2]);
 	      TmpSign = -1.0;
-	      this->InteractionFactorsSigma[Sigma1][Sigma2 + 4][Sigma4][Sigma3 + 4][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+	      this->InteractionFactorsSigma[Sigma1][Sigma2 + ReducedNbrInternalIndices][Sigma4][Sigma3 + ReducedNbrInternalIndices][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
 	      TmpIndex = ((this->NbrInterSectorIndicesPerSum[TmpSumK] * TmpLinearizedKInterIndices[TmpSumK][K3][K4])
 	       		  + TmpLinearizedKInterIndices[TmpSumK][K2][K1]);
 	      TmpSign = -1.0;
-	      this->InteractionFactorsSigma[Sigma2][Sigma1 + 4][Sigma3][Sigma4 + 4][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+	      this->InteractionFactorsSigma[Sigma2][Sigma1 + ReducedNbrInternalIndices][Sigma3][Sigma4 + ReducedNbrInternalIndices][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
 	    }
 	}
     }

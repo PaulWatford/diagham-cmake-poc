@@ -641,6 +641,10 @@ int FermionOnSphereWithSU4SpinLong::AddmAdm (int index, int m, int n, double& co
 
 int FermionOnSphereWithSU4SpinLong::FindStateIndex(ULONGLONG stateDescription, int lzmax)
 {
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
+    {
+      return this->HilbertSpaceDimension;
+    }
   ULONGLONG CurrentState = stateDescription >> this->LookUpTableShift[lzmax];
   int PosMin = this->LookUpTable[lzmax][CurrentState];
   int PosMax = this->LookUpTable[lzmax][CurrentState+ 1];
@@ -662,7 +666,10 @@ int FermionOnSphereWithSU4SpinLong::FindStateIndex(ULONGLONG stateDescription, i
   if (CurrentState == stateDescription)
     return PosMid;
   else
-    return PosMin;
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
 }
 
 

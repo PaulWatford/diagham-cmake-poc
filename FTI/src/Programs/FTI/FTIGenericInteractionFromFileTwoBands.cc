@@ -7,6 +7,8 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzPzPreservingEzSymmetry.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU8SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU8SpinMomentumSpaceLong.h"
 #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
@@ -1678,29 +1680,55 @@ int main(int argc, char** argv)
 		{
 		  // valley but no spin
 		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
-		    {			  
-		      if ((NbrSitesX * NbrSitesY) <= 16)
+		    {
+		      if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0))
 			{
-			  if (PzParityValues1[SymmetrySectorIndex] == 0)
+			  if ((NbrSitesX * NbrSitesY) <= 16)
 			    {
-			      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-											  PzValues[SymmetrySectorIndex], 10000000ul);
+			      if (PzParityValues1[SymmetrySectorIndex] == 0)
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+											      PzValues[SymmetrySectorIndex], 10000000ul);
+				}
+			      else
+				{
+				  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
+				  // 									    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+				  // 									    PzValues[SymmetrySectorIndex],
+				  // 									    (PzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzPzPreservingEzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
+														      KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+														      PzValues[SymmetrySectorIndex],
+														      (PzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
+				}			    
 			    }
 			  else
 			    {
-			      // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
-			      // 									    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			      // 									    PzValues[SymmetrySectorIndex],
-			      // 									    (PzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
-			      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzPzPreservingEzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
-														  KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-														  PzValues[SymmetrySectorIndex],
-														  (PzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
-			    }			    
+			      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+			    }
 			}
 		      else
 			{
-			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+			  int MaxBand0 = Manager.GetInteger("max-band0");
+			  if (MaxBand0 < 0)
+			    {
+			      MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  int MaxBand1 = Manager.GetInteger("max-band1");
+			  if (MaxBand1 < 0)
+			    {
+			      MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  if ((NbrSitesX * NbrSitesY) <= 16)
+			    {
+			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+												      PzValues[SymmetrySectorIndex], 10000000ul);
+			    }
+			  else
+			    {
+			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+													  PzValues[SymmetrySectorIndex], 10000000ul);
+			    }
 			}
 		    }
 		  else
@@ -1729,24 +1757,50 @@ int main(int argc, char** argv)
 		{
 		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
-		      if ((NbrSitesX * NbrSitesY) <= 16)
+		      if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0))
 			{
-			  if (SzParityValues1[SymmetrySectorIndex] == 0)
+			  if ((NbrSitesX * NbrSitesY) <= 16)
 			    {
-			      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-											  SzValues[SymmetrySectorIndex], 10000000ul);
+			      if (SzParityValues1[SymmetrySectorIndex] == 0)
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+											      SzValues[SymmetrySectorIndex], 10000000ul);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
+													KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+													SzValues[SymmetrySectorIndex],
+													(SzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
+				}
 			    }
 			  else
 			    {
-			      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
-												    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-												    SzValues[SymmetrySectorIndex],
-												    (SzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
+			      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
 			    }
 			}
 		      else
 			{
-			  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			  int MaxBand0 = Manager.GetInteger("max-band0");
+			  if (MaxBand0 < 0)
+			    {
+			      MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  int MaxBand1 = Manager.GetInteger("max-band1");
+			  if (MaxBand1 < 0)
+			    {
+			      MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  if ((NbrSitesX * NbrSitesY) <= 16)
+			    {
+			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+												      SzValues[SymmetrySectorIndex], 10000000ul);
+			    }
+			  else
+			    {
+			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+													  SzValues[SymmetrySectorIndex], 10000000ul);
+			    }
 			}
 		    }
 		  else

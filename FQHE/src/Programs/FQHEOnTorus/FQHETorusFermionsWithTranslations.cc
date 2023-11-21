@@ -122,6 +122,8 @@ int main(int argc, char** argv)
   double *Pseudopotentials=NULL;
   double HaveCoulomb=false;
   double DielectricScreening = 0.0;
+  double FiniteWidth = 0.0;
+  int FiniteWidthAnsatz = 0;
   char *InteractionName=NULL;
   if (Manager.GetString("interaction-file")!=NULL)
     {
@@ -140,6 +142,12 @@ int main(int argc, char** argv)
 	{
 	  DielectricScreening = atof(InteractionDefinition["DielectricScreening"]);
 	}
+      if (InteractionDefinition["FiniteWidth"] != NULL)
+	{
+	  FiniteWidth = atof(InteractionDefinition["FiniteWidth"]);
+	  FiniteWidthAnsatz = atoi(InteractionDefinition["FiniteWidthAnsatz"]); //1 for Zhang-Das Sarma, 2 for Fang-Howard, 3 for Infinite Well
+	}
+
       if (InteractionDefinition["Name"] == NULL)
 	{
 	  if ((InteractionDefinition["CoulombLandauLevel"] != NULL) && (InteractionDefinition["Pseudopotentials"] == NULL))
@@ -453,7 +461,7 @@ int main(int argc, char** argv)
 		      Lanczos.SetRealAlgorithms();
 		      Hamiltonian = new ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
 												      XRatio, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
-												      !Manager.GetBoolean("add-wigner"), DielectricScreening,
+												      !Manager.GetBoolean("add-wigner"), DielectricScreening, FiniteWidth, FiniteWidthAnsatz,
 												      Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 		    }
 		  else
@@ -461,7 +469,7 @@ int main(int argc, char** argv)
 		      cout << "using complex hamiltonian" << endl;
 		      Hamiltonian = new ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
 												  XRatio, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
-												  !Manager.GetBoolean("add-wigner"), DielectricScreening,
+												  !Manager.GetBoolean("add-wigner"), DielectricScreening, FiniteWidth, FiniteWidthAnsatz,
 												  Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 		    }
 		}
@@ -476,7 +484,7 @@ int main(int argc, char** argv)
       else
 	{
           Hamiltonian = new ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
-											     XRatio, Angle * M_PI, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, !Manager.GetBoolean("add-wigner"),
+											     XRatio, Angle * M_PI, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, !Manager.GetBoolean("add-wigner"), FiniteWidth, FiniteWidthAnsatz, 
 											     Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 	}
       

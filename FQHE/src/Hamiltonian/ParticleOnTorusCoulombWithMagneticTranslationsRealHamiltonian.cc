@@ -81,6 +81,8 @@ ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::ParticleOnTorusCo
 // pseudopotentials = pseudopotential coefficients
 // noWignerEnergy = do not consider the energy contribution from the Wigner crystal
 // dielectricScreening = dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
+// finiteWidth = finite width in the z-direction
+// finiteWidthAnsatz = convention to use for finite width (according to Peterson, Jolicoeur and Das Sarma paper)
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
@@ -89,7 +91,7 @@ ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::ParticleOnTorusCo
 															     int nbrParticles, int maxMomentum, 
 															     int xMomentum, double ratio, bool haveCoulomb, int landauLevel,
 															     int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
-															     double dielectricScreening,
+															     double dielectricScreening,  double finiteWidth, int finiteWidthAnsatz, 
 															     AbstractArchitecture* architecture, long memory, 
 															     char* precalculationFileName)
 {
@@ -140,6 +142,12 @@ ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::ParticleOnTorusCo
     this->WignerEnergy = ((double) this->NbrParticles) * this->EvaluateWignerCrystalEnergy() / 2.0;
   else 
     this->WignerEnergy = 0.0;
+
+  this->FiniteWidth = finiteWidth;
+  this->FiniteWidthAnsatz = finiteWidthAnsatz;
+  if (this->FiniteWidth != 0)
+    cout << "Using finite width of " << this->FiniteWidth << " according to ansatz " << this->FiniteWidthAnsatz << endl;
+
   this->Architecture = architecture;
   long MinIndex;
   long MaxIndex;
@@ -424,11 +432,39 @@ double ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian::GetVofQ(do
 {
   double Result;
   double Q2=2.0*Q2_half;
+  double FiniteWidthFF = 1.0;
+  double Numerator, Denominator, Qw; 
   if ((this->HaveCoulomb) && (Q2_half!=0.0))
     {
       //cout << "branch 1 : Ln="<<this->FormFactor.GetValue(Q2_half)<<" Ln2="<<GETSQR(this->FormFactor(Q2_half))<<", exp="<<exp(-Q2_half)<<" 1/Q="<<1.0/sqrt(Q2)<<" ";
       //this->FormFactor.PrintValue(cout, Q2_half)<<" ";
       Result=GETSQR(this->FormFactor(Q2_half)) / (sqrt(Q2) * (1.0 + (sqrt(Q2) * this->DielectricScreening)));
+
+      if (this->FiniteWidth != 0)
+        {
+          if (this->FiniteWidthAnsatz == 1)
+            FiniteWidthFF = exp(-0.5 * sqrt(Q2) * this->FiniteWidth);
+          else if (this->FiniteWidthAnsatz == 2)
+            {
+			  Qw = sqrt(Q2) * this->FiniteWidth;
+              Numerator = 9.0 * (24.0 + 9.0 * Qw + pow(Qw,2)); 
+              Denominator = 8.0 * pow(3.0 + Qw, 3);   
+              FiniteWidthFF = Numerator/Denominator;
+            }
+          else if (this->FiniteWidthAnsatz == 3)
+            {
+			  Qw = sqrt(Q2) * this->FiniteWidth;
+              Numerator = 3.0 * Qw + 8.0 * pow(M_PI, 2)/Qw - 32.0 * pow(M_PI, 4) * (1.0 - exp(-Qw))/(pow(Qw, 2) * (pow(Qw, 2) + 4.0 * pow(M_PI, 2))); 
+              Denominator = pow(Qw, 2) + 4.0 * pow(M_PI, 2);
+              FiniteWidthFF = Numerator/Denominator;
+            }
+          else
+           {
+             cout << "Invalid value for finite width ansatz " << endl;
+             exit(-1);
+           }
+          Result *= FiniteWidthFF;
+        }
     }
   else
     Result=0.0;

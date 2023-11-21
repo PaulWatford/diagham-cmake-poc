@@ -71,13 +71,15 @@ static double MySqrArg;
 // landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
 // nbrPseudopotentials = number of pseudopotentials indicated
 // pseudopotentials = pseudopotential coefficients
-// noWignerEnergy = do not consider the energy contribution from the Wigner crystal 
+// noWignerEnergy = do not consider the energy contribution from the Wigner crystal
+// finiteWidth = finite width in the z-direction
+// finiteWidthAnsatz = convention to use for finite width (according to Peterson, Jolicoeur and Das Sarma paper) 
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
 ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian(ParticleOnTorusWithMagneticTranslations* particles, 
-        int nbrParticles, int maxMomentum, int xMomentum, double ratio, double angle, bool haveCoulomb, int landauLevel, int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
+        int nbrParticles, int maxMomentum, int xMomentum, double ratio, double angle, bool haveCoulomb, int landauLevel, int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy, double finiteWidth, int finiteWidthAnsatz,
         AbstractArchitecture* architecture, long memory, char* precalculationFileName)
 {
   this->Particles = particles;
@@ -128,6 +130,12 @@ ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::ParticleOnTwis
 	}
     }
   cout << "FormFactor=" << this->FormFactor << endl;
+
+  this->FiniteWidth = finiteWidth;
+  this->FiniteWidthAnsatz = finiteWidthAnsatz;
+  if (this->FiniteWidth != 0)
+    cout << "Using finite width of " << this->FiniteWidth << " according to ansatz " << this->FiniteWidthAnsatz << endl;
+
   if ((particles->GetHilbertSpaceDimension() > 0) && (noWignerEnergy == false))
     this->WignerEnergy = this->EvaluateWignerCrystalEnergy() / 2.0;
   else 
@@ -632,9 +640,36 @@ double ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian::GetVofQ
 { 
   double Result;
   double Q2 = 2.0 * Q2_half;
+  double FiniteWidthFF = 1.0;
+  double Numerator, Denominator, Qw; 
   if ((this->HaveCoulomb) && (Q2 != 0.0))
     {
       Result = pow(this->FormFactor.PolynomialEvaluate(Q2_half), 2) * (2.0 * M_PI)/sqrt(Q2);
+      if (this->FiniteWidth != 0)
+        {
+          if (this->FiniteWidthAnsatz == 1)
+            FiniteWidthFF = exp(-0.5 * sqrt(Q2) * this->FiniteWidth);
+          else if (this->FiniteWidthAnsatz == 2)
+            {
+			  Qw = sqrt(Q2) * this->FiniteWidth;
+              Numerator = 9.0 * (24.0 + 9.0 * Qw + pow(Qw,2)); 
+              Denominator = 8.0 * pow(3.0 + Qw, 3);   
+              FiniteWidthFF = Numerator/Denominator;
+            }
+          else if (this->FiniteWidthAnsatz == 3)
+            {
+			  Qw = sqrt(Q2) * this->FiniteWidth;
+              Numerator = 3.0 * Qw + 8.0 * pow(M_PI, 2)/Qw - 32.0 * pow(M_PI, 4) * (1.0 - exp(-Qw))/(pow(Qw, 2) * (pow(Qw, 2) + 4.0 * pow(M_PI, 2))); 
+              Denominator = pow(Qw, 2) + 4.0 * pow(M_PI, 2);
+              FiniteWidthFF = Numerator/Denominator;
+            }
+          else
+           {
+             cout << "Invalid value for finite width ansatz " << endl;
+             exit(-1);
+           }
+          Result *= FiniteWidthFF;
+        }
     }
   else
     Result = 0.0;

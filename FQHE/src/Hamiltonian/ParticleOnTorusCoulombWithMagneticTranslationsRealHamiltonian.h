@@ -77,6 +77,12 @@ class ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian : public Abs
 
   // dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
   double DielectricScreening;
+
+  // finite width in the z-direction
+  double FiniteWidth;
+
+  // ansatz to use for the finite width (conventions as in Peterson, Jolicoeur and Das Sarma paper)
+  int FiniteWidthAnsatz;
   
  public:
 
@@ -97,12 +103,14 @@ class ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian : public Abs
   // pseudopotentials = pseudopotential coefficients
   // noWignerEnergy = do not consider the energy contribution from the Wigner crystal 
   // dielectricScreening = dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
+  // finiteWidth = finite width in the z-direction
+  // finiteWidthAnsatz = convention to use for finite width (according to Peterson, Jolicoeur and Das Sarma paper)
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
   ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian(ParticleOnTorusWithMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
 								double ratio, bool haveCoulomb, int landauLevel, int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
-								double dielectricScreening, AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
+								double dielectricScreening,  double finiteWidth, int finiteWidthAnsatz, AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
 
   // destructor
   //

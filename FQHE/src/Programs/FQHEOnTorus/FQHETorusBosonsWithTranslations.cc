@@ -9,6 +9,7 @@
 #include "Hamiltonian/ParticleOnTorusDeltaWithMagneticTranslationsHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian.h"
 #include "Hamiltonian/ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian.h"
+#include "Hamiltonian/ParticleOnTorusCoulombMassAnisotropyWithMagneticTranslationsHamiltonian.h"
 
 #include "LanczosAlgorithm/LanczosManager.h"
 
@@ -79,6 +80,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "full-reducedbz", "calculate all points within the full reduced Brillouin zone", false);
   (*SystemGroup) += new SingleStringOption ('\n', "selected-points", "provide a two column ascii file that indicates which momentum sectors have to be computed");
   (*SystemGroup) += new BooleanOption  ('\n', "add-wigner", "consider the energy contribution from the Wigner crystal", false);
+  (*SystemGroup) += new BooleanOption  ('\n', "mass-anisotropy", "use a mass anisotropy for the system");
+  (*SystemGroup) += new SingleDoubleOption  ('\n', "anisotropy", "value of the anisotropy parameter alpha (i.e. q_g^2 = alpha q_x^2 + q_y^2 / alpha)", 1.0);
   (*SystemGroup) += new SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
   (*SystemGroup) += new SingleStringOption ('\n', "export-hilberttransformation", "export (in a binary file), the transformation matrix from the reduced Hilbert space to the eigentate basis");
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 
@@ -391,6 +394,8 @@ int main(int argc, char** argv)
       Architecture.GetArchitecture()->SetDimension(TotalSpace->GetHilbertSpaceDimension());
 
       AbstractQHEHamiltonian* Hamiltonian = 0;
+ 
+ /*
       if (Angle == 0.0)
 	{
 	  Hamiltonian = new ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian (TotalSpace, NbrBosons, MaxMomentum, XMomentum, XRatio, 
@@ -405,6 +410,45 @@ int main(int argc, char** argv)
 											     !Manager.GetBoolean("add-wigner"), FiniteWidth, FiniteWidthAnsatz,
 											     Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 	}
+*/
+
+
+
+      if (Angle == 0.0)
+	{
+	  if (Manager.GetBoolean("mass-anisotropy") == false)
+	    {		      
+		      cout << "using complex hamiltonian" << endl;
+		      Hamiltonian = new ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrBosons, MaxMomentum, XMomentum, 
+												  XRatio, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
+												  !Manager.GetBoolean("add-wigner"), 0.0, FiniteWidth, FiniteWidthAnsatz,
+												  Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
+	    }
+	  else
+	    {
+	      Hamiltonian = new ParticleOnTorusCoulombMassAnisotropyWithMagneticTranslationsHamiltonian(TotalSpace, NbrBosons, MaxMomentum, XMomentum, 
+													XRatio, Manager.GetDouble("anisotropy"), HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, !Manager.GetBoolean("add-wigner"),
+													Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
+	    }
+	}
+      else
+	{
+          Hamiltonian = new ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrBosons, MaxMomentum, XMomentum, 
+											     XRatio, Angle * M_PI, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials, !Manager.GetBoolean("add-wigner"), FiniteWidth, FiniteWidthAnsatz, 
+											     Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
+	}
+
+
+
+
+
+
+
+
+
+
+
+
       char* EigenvectorName = 0;
       if (Manager.GetBoolean("eigenstate"))	
 	{

@@ -34,10 +34,10 @@
 
 #include "config.h"
 #include "MathTools/Complex.h"
-#include "HilbertSpace/ParticleOnSphere.h"
+#include "HilbertSpace/ParticleOnSphereWithSpin.h"
 
 
-class ParticleOnSphereWithSU3Spin :  public ParticleOnSphere
+class ParticleOnSphereWithSU3Spin :  public ParticleOnSphereWithSpin
 {
 
  public:

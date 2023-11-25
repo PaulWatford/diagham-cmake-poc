@@ -52,28 +52,6 @@ class ParticleOnLatticeFromFileInteractionThreeBandHamiltonian : public Particle
 
  protected:
  
-  // numerical factor for momentum along x
-  double KxFactor;
-  // numerical factor for momentum along y
-  double KyFactor;
-  
-  // index of the filled first band
-  int BandIndex1;
-  // index of the filled second band
-  int BandIndex2;
-  
-  // use flat band model
-  bool FlatBand;
-
-  // global rescaling factor for the two-body interaction term
-  double InteractionRescalingFactor;
-
-  // include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
-  bool AdditionalSpinFlag;
-  
-  // name of the ASCII file containing the matrix element for the generic two body interaction term
-  char* MatrixElementsInteractionFile;
-  
  public:
 
   // default constructor

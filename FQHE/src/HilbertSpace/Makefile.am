@@ -209,4 +209,10 @@ FermionOnSphereWithSpinAllSzSzSymmetry.cc \
 FermionOnSphereWithSpinAllSzLzSzSymmetry.cc \
 FermionOnSphereWithSU3SpinLong.cc \
 FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace.cc \
-FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong.cc
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong.cc \
+ParticleOnSphereWithSU6Spin.cc \
+FermionOnSphereWithSU6Spin.cc \
+FermionOnSquareLatticeWithSU6SpinMomentumSpace.cc \
+FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.cc \
+FermionOnSphereWithSU6SpinLong.cc \
+FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.cc

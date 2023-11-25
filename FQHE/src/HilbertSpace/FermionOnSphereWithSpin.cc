@@ -2266,7 +2266,8 @@ void FermionOnSphereWithSpin::GenerateLookUpTable(unsigned long memory)
 }
 
 // generate look-up table for sign calculation
-// 
+//
+
 void FermionOnSphereWithSpin::GenerateSignLookUpTable()
 {
   // look-up tables for evaluating sign when applying creation/annihilation operators

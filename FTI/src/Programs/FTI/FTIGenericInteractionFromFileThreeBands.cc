@@ -375,8 +375,8 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      if (((Manager.GetBoolean("add-valley") == false) && (NbrEnergies != (6 * NbrSitesX * NbrSitesY)))
-		  || ((Manager.GetBoolean("add-valley") == true) && (NbrEnergies != (12 * NbrSitesX * NbrSitesY))))
+	      if (((Manager.GetBoolean("add-valley") == false) && (NbrEnergies != (9 * NbrSitesX * NbrSitesY)))
+		  || ((Manager.GetBoolean("add-valley") == true) && (NbrEnergies != (18 * NbrSitesX * NbrSitesY))))
 		{
 		  cout << Manager.GetString("singleparticle-file") << " has a wrong number of lines (has "
 		       << NbrEnergies << ", should be " << (6 * NbrSitesX * NbrSitesY)
@@ -1251,7 +1251,7 @@ int main(int argc, char** argv)
 	  cout << Manager.GetString("selected-sectors") << " is an empty file" << endl;
 	  return 0;
 	}
-      if (Manager.GetBoolean("conserve-bandoccuption") == false)
+      //      if (Manager.GetBoolean("conserve-bandoccuption") == false)
 	{
 	  if (Manager.GetBoolean("add-spin") == false)
 	    {
@@ -1431,107 +1431,107 @@ int main(int argc, char** argv)
 		}
 	    }
 	}
-      else
-	{
-	  if (Manager.GetBoolean("add-spin") == false)
-	    {
-	      if (Manager.GetBoolean("add-valley") == false)
-		{
-		  if (SymmetrySectorsFile.GetNbrColumns() < 4)
-		    {
-		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least four when using --conserve-bandoccuption without spin and valley)" << endl;
-		      return 0;
-		    }
-		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
-		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
-		  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
-		  NbrParticlesBand1UpMinus = new int [NbrSymmetrySectors];
-		  NbrParticlesBand1DownPlus = new int [NbrSymmetrySectors];
-		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
-		  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(3);
-		  NbrParticlesBand2UpMinus = new int [NbrSymmetrySectors];
-		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
-		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
-		  PzParityValues1 = new int[NbrSymmetrySectors];
-		  SzParityValues1 = new int[NbrSymmetrySectors];
-		  PzParityValues2 = new int[NbrSymmetrySectors];
-		  SzParityValues2 = new int[NbrSymmetrySectors];
-		  for (int i = 0; i < NbrSymmetrySectors; ++i)
-		    {
-		      NbrParticlesBand1UpMinus[i] = 0;
-		      NbrParticlesBand2UpMinus[i] = 0;
-		      NbrParticlesBand1DownPlus[i] = 0;
-		      NbrParticlesBand2DownPlus[i] = 0;
-		      NbrParticlesBand1DownMinus[i] = 0;
-		      NbrParticlesBand2DownMinus[i] = 0;
-		      PzParityValues1[i] = 0;
-		      SzParityValues1[i] = 0;
-		      PzParityValues2[i] = 0;
-		      SzParityValues2[i] = 0;
-		    }
+      // else
+      // 	{
+      // 	  if (Manager.GetBoolean("add-spin") == false)
+      // 	    {
+      // 	      if (Manager.GetBoolean("add-valley") == false)
+      // 		{
+      // 		  if (SymmetrySectorsFile.GetNbrColumns() < 4)
+      // 		    {
+      // 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least four when using --conserve-bandoccuption without spin and valley)" << endl;
+      // 		      return 0;
+      // 		    }
+      // 		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
+      // 		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
+      // 		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+      // 		  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
+      // 		  NbrParticlesBand1UpMinus = new int [NbrSymmetrySectors];
+      // 		  NbrParticlesBand1DownPlus = new int [NbrSymmetrySectors];
+      // 		  NbrParticlesBand1DownMinus = new int [NbrSymmetrySectors];
+      // 		  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(3);
+      // 		  NbrParticlesBand2UpMinus = new int [NbrSymmetrySectors];
+      // 		  NbrParticlesBand2DownPlus = new int [NbrSymmetrySectors];
+      // 		  NbrParticlesBand2DownMinus = new int [NbrSymmetrySectors];
+      // 		  PzParityValues1 = new int[NbrSymmetrySectors];
+      // 		  SzParityValues1 = new int[NbrSymmetrySectors];
+      // 		  PzParityValues2 = new int[NbrSymmetrySectors];
+      // 		  SzParityValues2 = new int[NbrSymmetrySectors];
+      // 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
+      // 		    {
+      // 		      NbrParticlesBand1UpMinus[i] = 0;
+      // 		      NbrParticlesBand2UpMinus[i] = 0;
+      // 		      NbrParticlesBand1DownPlus[i] = 0;
+      // 		      NbrParticlesBand2DownPlus[i] = 0;
+      // 		      NbrParticlesBand1DownMinus[i] = 0;
+      // 		      NbrParticlesBand2DownMinus[i] = 0;
+      // 		      PzParityValues1[i] = 0;
+      // 		      SzParityValues1[i] = 0;
+      // 		      PzParityValues2[i] = 0;
+      // 		      SzParityValues2[i] = 0;
+      // 		    }
 		  
-		}
-	      else
-		{
-		  cout << "--selected-sector is not available when using --conserve-bandoccuption with valley and without spin)" << endl;
-		  return 0;
-		}
-	    }
-	  else
-	    {
-	      if (Manager.GetBoolean("add-valley") == false)
-		{
-		  cout << "--selected-sector is not available when using --conserve-bandoccuption without valley and with spin)" << endl;
-		  return 0;
-		}
-	      else
-		{
-		  if (SymmetrySectorsFile.GetNbrColumns() < 10)
-		    {
-		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least ten when using --conserve-bandoccuption)" << endl;
-		      return 0;
-		    }
-		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
-		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
-		  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
-		  NbrParticlesBand1UpMinus = SymmetrySectorsFile.GetAsIntegerArray(3);
-		  NbrParticlesBand1DownPlus = SymmetrySectorsFile.GetAsIntegerArray(4);
-		  NbrParticlesBand1DownMinus = SymmetrySectorsFile.GetAsIntegerArray(5);
-		  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(6);
-		  NbrParticlesBand2UpMinus = SymmetrySectorsFile.GetAsIntegerArray(7);
-		  NbrParticlesBand2DownPlus = SymmetrySectorsFile.GetAsIntegerArray(8);
-		  NbrParticlesBand2DownMinus = SymmetrySectorsFile.GetAsIntegerArray(9);
-		  SzValues = new int [NbrSymmetrySectors];
-		  PzValues = new int [NbrSymmetrySectors];
-		  EzValues = new int [NbrSymmetrySectors];
-		  PzParityValues1 = new int[NbrSymmetrySectors];
-		  SzParityValues1 = new int[NbrSymmetrySectors];
-		  PzParityValues2 = new int[NbrSymmetrySectors];
-		  SzParityValues2 = new int[NbrSymmetrySectors];
-		  for (int i = 0; i < NbrSymmetrySectors; ++i)
-		    {
-		      SzValues[i] = (NbrParticlesBand1UpPlus[i] + NbrParticlesBand1UpMinus[i]
-				     - NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
-				     + NbrParticlesBand2UpPlus[i] + NbrParticlesBand2UpMinus[i]
-				     - NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
-		      PzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
-				     + NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
-				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
-				     + NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
-		      EzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
-				     - NbrParticlesBand1DownPlus[i] + NbrParticlesBand1DownMinus[i]
-				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
-				     - NbrParticlesBand2DownPlus[i] + NbrParticlesBand2DownMinus[i]);
-		      PzParityValues1[i] = 0;
-		      SzParityValues1[i] = 0;
-		      PzParityValues2[i] = 0;
-		      SzParityValues2[i] = 0;
-		    }
-		}
-	    }
-	}
+      // 		}
+      // 	      else
+      // 		{
+      // 		  cout << "--selected-sector is not available when using --conserve-bandoccuption with valley and without spin)" << endl;
+      // 		  return 0;
+      // 		}
+      // 	    }
+      // 	  else
+      // 	    {
+      // 	      if (Manager.GetBoolean("add-valley") == false)
+      // 		{
+      // 		  cout << "--selected-sector is not available when using --conserve-bandoccuption without valley and with spin)" << endl;
+      // 		  return 0;
+      // 		}
+      // 	      else
+      // 		{
+      // 		  if (SymmetrySectorsFile.GetNbrColumns() < 10)
+      // 		    {
+      // 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least ten when using --conserve-bandoccuption)" << endl;
+      // 		      return 0;
+      // 		    }
+      // 		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
+      // 		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
+      // 		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+      // 		  NbrParticlesBand1UpPlus = SymmetrySectorsFile.GetAsIntegerArray(2);
+      // 		  NbrParticlesBand1UpMinus = SymmetrySectorsFile.GetAsIntegerArray(3);
+      // 		  NbrParticlesBand1DownPlus = SymmetrySectorsFile.GetAsIntegerArray(4);
+      // 		  NbrParticlesBand1DownMinus = SymmetrySectorsFile.GetAsIntegerArray(5);
+      // 		  NbrParticlesBand2UpPlus = SymmetrySectorsFile.GetAsIntegerArray(6);
+      // 		  NbrParticlesBand2UpMinus = SymmetrySectorsFile.GetAsIntegerArray(7);
+      // 		  NbrParticlesBand2DownPlus = SymmetrySectorsFile.GetAsIntegerArray(8);
+      // 		  NbrParticlesBand2DownMinus = SymmetrySectorsFile.GetAsIntegerArray(9);
+      // 		  SzValues = new int [NbrSymmetrySectors];
+      // 		  PzValues = new int [NbrSymmetrySectors];
+      // 		  EzValues = new int [NbrSymmetrySectors];
+      // 		  PzParityValues1 = new int[NbrSymmetrySectors];
+      // 		  SzParityValues1 = new int[NbrSymmetrySectors];
+      // 		  PzParityValues2 = new int[NbrSymmetrySectors];
+      // 		  SzParityValues2 = new int[NbrSymmetrySectors];
+      // 		  for (int i = 0; i < NbrSymmetrySectors; ++i)
+      // 		    {
+      // 		      SzValues[i] = (NbrParticlesBand1UpPlus[i] + NbrParticlesBand1UpMinus[i]
+      // 				     - NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
+      // 				     + NbrParticlesBand2UpPlus[i] + NbrParticlesBand2UpMinus[i]
+      // 				     - NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
+      // 		      PzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
+      // 				     + NbrParticlesBand1DownPlus[i] - NbrParticlesBand1DownMinus[i]
+      // 				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
+      // 				     + NbrParticlesBand2DownPlus[i] - NbrParticlesBand2DownMinus[i]);
+      // 		      EzValues[i] = (NbrParticlesBand1UpPlus[i] - NbrParticlesBand1UpMinus[i]
+      // 				     - NbrParticlesBand1DownPlus[i] + NbrParticlesBand1DownMinus[i]
+      // 				     + NbrParticlesBand2UpPlus[i] - NbrParticlesBand2UpMinus[i]
+      // 				     - NbrParticlesBand2DownPlus[i] + NbrParticlesBand2DownMinus[i]);
+      // 		      PzParityValues1[i] = 0;
+      // 		      SzParityValues1[i] = 0;
+      // 		      PzParityValues2[i] = 0;
+      // 		      SzParityValues2[i] = 0;
+      // 		    }
+      // 		}
+// 	    }
+// }
     }
   
   int TotalDim = 0;
@@ -1639,7 +1639,7 @@ int main(int argc, char** argv)
 		  // no valley, no spin
 		  //		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
-		      if ((NbrSitesX * NbrSitesY) <= 32)
+		      if ((NbrSitesX * NbrSitesY) <= 21)
 			{
 			  Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 			}
@@ -1663,7 +1663,7 @@ int main(int argc, char** argv)
 	      else
 		{
 		  // valley but no spin
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  //		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {			  
 		      if ((NbrSitesX * NbrSitesY) <= 10)
 			{
@@ -1689,23 +1689,23 @@ int main(int argc, char** argv)
 			  Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
 			}
 		    }
-		  else
-		    {
-		      int FakePz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-				    + NbrParticlesBand1UpMinus[SymmetrySectorIndex] - NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
-		      int FakeEz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-				    - NbrParticlesBand1UpMinus[SymmetrySectorIndex] + NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
-		      if ((NbrSitesX * NbrSitesY) <= 16)
-			{
-			  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			  // 							      PzValues[SymmetrySectorIndex], FakePz, FakeEz, 10000000ul);
-			}
-		      else
-			{
-			  cout << "SU(4) not supported with more than 16 momenta" << endl;
-			  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], FakePz, FakeEz);
-			}
-		    }
+		  // else
+		  //   {
+		  //     int FakePz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
+		  // 		    + NbrParticlesBand1UpMinus[SymmetrySectorIndex] - NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
+		  //     int FakeEz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
+		  // 		    - NbrParticlesBand1UpMinus[SymmetrySectorIndex] + NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
+		  //     if ((NbrSitesX * NbrSitesY) <= 16)
+		  // 	{
+		  // 	  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+		  // 	  // 							      PzValues[SymmetrySectorIndex], FakePz, FakeEz, 10000000ul);
+		  // 	}
+		  //     else
+		  // 	{
+		  // 	  cout << "SU(4) not supported with more than 16 momenta" << endl;
+		  // 	  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], FakePz, FakeEz);
+		  // 	}
+		  //   }
 		}
 	    }
 	  else
@@ -1713,7 +1713,7 @@ int main(int argc, char** argv)
 	      // spinful case
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  //		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if ((NbrSitesX * NbrSitesY) <= 10)
 			{
@@ -1735,26 +1735,26 @@ int main(int argc, char** argv)
 			  Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], 10000000ul);
 			}
 		    }
-		  else
-		    {
-		      int FakePz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-				    + NbrParticlesBand1DownPlus[SymmetrySectorIndex] - NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
-		      int FakeEz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-				    - NbrParticlesBand1DownPlus[SymmetrySectorIndex] + NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
-		      // if ((NbrSitesX * NbrSitesY) <= 16)
-		      // 	{
-		      // 	  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-		      // 								      SzValues[SymmetrySectorIndex], FakePz, FakeEz, 10000000ul);
-		      // 	}
-		      // else
-		      // 	{
-		      // 	  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], FakePz, FakeEz);
-		      // 	}
-		    }
+		  // else
+		  //   {
+		  //     int FakePz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
+		  // 		    + NbrParticlesBand1DownPlus[SymmetrySectorIndex] - NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
+		  //     int FakeEz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
+		  // 		    - NbrParticlesBand1DownPlus[SymmetrySectorIndex] + NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
+		  //     // if ((NbrSitesX * NbrSitesY) <= 16)
+		  //     // 	{
+		  //     // 	  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+		  //     // 								      SzValues[SymmetrySectorIndex], FakePz, FakeEz, 10000000ul);
+		  //     // 	}
+		  //     // else
+		  //     // 	{
+		  //     // 	  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], FakePz, FakeEz);
+		  //     // 	}
+		  //   }
 		}
 	      else
 		{
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  //		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if ((NbrSitesX * NbrSitesY) <= 8)
 			{
@@ -1777,34 +1777,34 @@ int main(int argc, char** argv)
 			    }
 			}
 		    }
-		  else
-		    {
-		      int TmpNbrParticles[8];
-		      TmpNbrParticles[0] = NbrParticlesBand1DownMinus[SymmetrySectorIndex];
-		      TmpNbrParticles[1] = NbrParticlesBand2DownMinus[SymmetrySectorIndex];
-		      TmpNbrParticles[2] = NbrParticlesBand1DownPlus[SymmetrySectorIndex];
-		      TmpNbrParticles[3] = NbrParticlesBand2DownPlus[SymmetrySectorIndex];
-		      TmpNbrParticles[4] = NbrParticlesBand1UpMinus[SymmetrySectorIndex];
-		      TmpNbrParticles[5] = NbrParticlesBand2UpMinus[SymmetrySectorIndex];
-		      TmpNbrParticles[6] = NbrParticlesBand1UpPlus[SymmetrySectorIndex];
-		      TmpNbrParticles[7] = NbrParticlesBand2UpPlus[SymmetrySectorIndex];
-		      if ((NbrSitesX * NbrSitesY) <= 8)
-			{
-			  // Space = new FermionOnSquareLatticeWithSU8SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], TmpNbrParticles, 10000000ul);
-			}
-		      else
-			{
-			  if ((NbrSitesX * NbrSitesY) <= 16)
-			    {			  
-			      // Space = new FermionOnSquareLatticeWithSU8SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], TmpNbrParticles, 10000000ul);
-			    }
-			  else
-			    {
-			      cout << "SU(8) not supported with more than 16 momenta" << endl;
-			      Space = 0;			      
-			    }
-			}
-		    }
+		  // else
+		  //   {
+		  //     int TmpNbrParticles[8];
+		  //     TmpNbrParticles[0] = NbrParticlesBand1DownMinus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[1] = NbrParticlesBand2DownMinus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[2] = NbrParticlesBand1DownPlus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[3] = NbrParticlesBand2DownPlus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[4] = NbrParticlesBand1UpMinus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[5] = NbrParticlesBand2UpMinus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[6] = NbrParticlesBand1UpPlus[SymmetrySectorIndex];
+		  //     TmpNbrParticles[7] = NbrParticlesBand2UpPlus[SymmetrySectorIndex];
+		  //     if ((NbrSitesX * NbrSitesY) <= 8)
+		  // 	{
+		  // 	  // Space = new FermionOnSquareLatticeWithSU8SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], TmpNbrParticles, 10000000ul);
+		  // 	}
+		  //     else
+		  // 	{
+		  // 	  if ((NbrSitesX * NbrSitesY) <= 16)
+		  // 	    {			  
+		  // 	      // Space = new FermionOnSquareLatticeWithSU8SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], TmpNbrParticles, 10000000ul);
+		  // 	    }
+		  // 	  else
+		  // 	    {
+		  // 	      cout << "SU(8) not supported with more than 16 momenta" << endl;
+		  // 	      Space = 0;			      
+		  // 	    }
+		  // 	}
+		  //   }
 		}
 	    }
 	}
@@ -1869,21 +1869,21 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-spin") == false)
 		{
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  // if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      sprintf (ContentPrefix, "%d %d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 		      sprintf (TmpExtention, "_kx_%d_ky_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 		    }
-		  else
-		    {
-		      sprintf (ContentPrefix, "%d %d %d %d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], NbrParticlesBand1UpPlus[SymmetrySectorIndex],
-			       NbrParticlesBand2UpPlus[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_bz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]));
-		    }
+		  // else
+		  //   {
+		  //     sprintf (ContentPrefix, "%d %d %d %d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], NbrParticlesBand1UpPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand2UpPlus[SymmetrySectorIndex]);
+		  //     sprintf (TmpExtention, "_kx_%d_ky_%d_bz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]));
+		  //   }
 		}
 	      else
 		{
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  // if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if (UseSzMinusSzSymmetry == false)
 			{
@@ -1898,20 +1898,20 @@ int main(int argc, char** argv)
 				   SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
 			}
 		    }
-		  else
-		    {
-		      sprintf (ContentPrefix, "%d %d %d %d %d %d %d", SzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], NbrParticlesBand1UpPlus[SymmetrySectorIndex],
-			       NbrParticlesBand1DownPlus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex], 
-			       NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_sz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
-		    }
+		  // else
+		  //   {
+		  //     sprintf (ContentPrefix, "%d %d %d %d %d %d %d", SzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], NbrParticlesBand1UpPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1DownPlus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex], 
+		  // 	       NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
+		  //     sprintf (TmpExtention, "_kx_%d_ky_%d_sz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+		  //   }
 		}
 	    }
 	  else
 	    {
 	      if (Manager.GetBoolean("add-spin") == false)
 		{
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  // if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if (UsePzMinusPzSymmetry == false)
 			{
@@ -1926,17 +1926,17 @@ int main(int argc, char** argv)
 				   PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex]);
 			}
 		    }
-		  else
-		    {
-		      sprintf (ContentPrefix, "%d %d %d %d %d %d %d", PzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], NbrParticlesBand1UpPlus[SymmetrySectorIndex],
-			       NbrParticlesBand1UpMinus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex], 
-			       NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex]);
-		    }
+		  // else
+		  //   {
+		  //     sprintf (ContentPrefix, "%d %d %d %d %d %d %d", PzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], NbrParticlesBand1UpPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1UpMinus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex], 
+		  // 	       NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
+		  //     sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex]);
+		  //   }
 		}
 	      else
 		{
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  // if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if ((UsePzMinusPzSymmetry == false) && (UseSzMinusSzSymmetry == false))
 			{
@@ -1955,21 +1955,21 @@ int main(int argc, char** argv)
 				   PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
 			}
 		    }
-		  else
-		    {
-		      sprintf (ContentPrefix, "%d %d %d %d %d %d %d %d %d %d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], EzValues[SymmetrySectorIndex],
-			       KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			       NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex],
-			       NbrParticlesBand1UpMinus[SymmetrySectorIndex], NbrParticlesBand2UpMinus[SymmetrySectorIndex],
-			       NbrParticlesBand1DownPlus[SymmetrySectorIndex], NbrParticlesBand2DownPlus[SymmetrySectorIndex],
-			       NbrParticlesBand1DownMinus[SymmetrySectorIndex], NbrParticlesBand2DownMinus[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_s1_%d_s2_%d_s3_%d_s4_%d_s5_%d_s6_%d_s7_%d_s8_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			       NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex],
-			       NbrParticlesBand1UpMinus[SymmetrySectorIndex], NbrParticlesBand2UpMinus[SymmetrySectorIndex],
-			       NbrParticlesBand1DownPlus[SymmetrySectorIndex], NbrParticlesBand2DownPlus[SymmetrySectorIndex],
-			       NbrParticlesBand1DownMinus[SymmetrySectorIndex], NbrParticlesBand2DownMinus[SymmetrySectorIndex]);
+		  // else
+		  //   {
+		  //     sprintf (ContentPrefix, "%d %d %d %d %d %d %d %d %d %d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], EzValues[SymmetrySectorIndex],
+		  // 	       KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1UpMinus[SymmetrySectorIndex], NbrParticlesBand2UpMinus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1DownPlus[SymmetrySectorIndex], NbrParticlesBand2DownPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1DownMinus[SymmetrySectorIndex], NbrParticlesBand2DownMinus[SymmetrySectorIndex]);
+		  //     sprintf (TmpExtention, "_kx_%d_ky_%d_s1_%d_s2_%d_s3_%d_s4_%d_s5_%d_s6_%d_s7_%d_s8_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrParticlesBand2UpPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1UpMinus[SymmetrySectorIndex], NbrParticlesBand2UpMinus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1DownPlus[SymmetrySectorIndex], NbrParticlesBand2DownPlus[SymmetrySectorIndex],
+		  // 	       NbrParticlesBand1DownMinus[SymmetrySectorIndex], NbrParticlesBand2DownMinus[SymmetrySectorIndex]);
 			      
-		    }
+		  //   }
 		}
 	    }
 	  EigenstateOutputFile = ReplaceExtensionToFileName(EigenvalueOutputFile, ".dat", TmpExtention);

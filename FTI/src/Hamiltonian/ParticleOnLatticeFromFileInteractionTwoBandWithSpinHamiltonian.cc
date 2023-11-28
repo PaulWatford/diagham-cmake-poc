@@ -221,10 +221,10 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
   int* TmpSigma4 = new int[TmpNbrTwoBodyMatrixElements];
   for (int i = 0; i < TmpNbrTwoBodyMatrixElements; ++i)
     {
-      TmpSigma1[i] = (TmpSpinIndex1[i] + 1) + TmpBandIndex1[i];
-      TmpSigma2[i] = (TmpSpinIndex2[i] + 1) + TmpBandIndex2[i];
-      TmpSigma3[i] = (TmpSpinIndex3[i] + 1) + TmpBandIndex3[i];
-      TmpSigma4[i] = (TmpSpinIndex4[i] + 1) + TmpBandIndex4[i];
+      TmpSigma1[i] = this->GetLinearizedSpinBandIndex(TmpSpinIndex1[i], TmpBandIndex1[i]);
+      TmpSigma2[i] = this->GetLinearizedSpinBandIndex(TmpSpinIndex2[i], TmpBandIndex2[i]);
+      TmpSigma3[i] = this->GetLinearizedSpinBandIndex(TmpSpinIndex3[i], TmpBandIndex3[i]);
+      TmpSigma4[i] = this->GetLinearizedSpinBandIndex(TmpSpinIndex4[i], TmpBandIndex4[i]);
       if ((TmpSpinIndex1[i] + TmpSpinIndex2[i]) != (TmpSpinIndex3[i] + TmpSpinIndex4[i]))
 	{
 	  cout << "error spin conservation violation at line " << i << " : " << TmpSigma1[i] << " " << TmpSigma2[i] << " " << TmpSigma3[i] << " " << TmpSigma4[i] << endl;
@@ -382,7 +382,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
 		      for (int sigma4 = sigma3; sigma4 < this->NbrInternalIndices; ++sigma4)
 			{
 			  if ((InternalIndicesFlags[sigma3][sigma4][sigma1][sigma2] == true) &&
-			      (((sigma1 & 2) + (sigma2 & 2)) == ((sigma3 & 2) + (sigma4 & 2))))
+			      (this->TestSpinConservation(sigma1, sigma2, sigma3, sigma4) == true))
 			    {
 			      if (sigma3 == sigma4)
 				{
@@ -534,8 +534,9 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
 	}
       else
 	{
-	  // spinful case
+	  // spinful case	  
 	  int ReducedNbrInternalIndices = this->NbrInternalIndices / 2;
+	  int TmpNbrInternalIndicesMask = (1 << ReducedNbrInternalIndices) - 1;
 	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
 	    {
 	      for (int sigma2 = sigma1; sigma2 < this->NbrInternalIndices; ++sigma2)
@@ -546,8 +547,8 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
 			{
 			  // if ((((sigma1 & 4) + (sigma2 & 4)) == ((sigma3 & 4) + (sigma4 & 4))) &&
 			  //     (((sigma1 & 2) + (sigma2 & 2)) == ((sigma3 & 2) + (sigma4 & 2))))
-			  if ((InternalIndicesFlags[sigma3 & 3][sigma4 & 3][sigma1 & 3][sigma2 & 3] == true) && 
-			      ((((sigma1 & 4) == (sigma3 & 4)) && ((sigma2 & 4) == (sigma4 & 4)))))
+			  if ((InternalIndicesFlags[sigma3 & TmpNbrInternalIndicesMask][sigma4 & TmpNbrInternalIndicesMask][sigma1 & TmpNbrInternalIndicesMask][sigma2 & TmpNbrInternalIndicesMask] == true) && 
+			      (this->TestSpinfulValleyConservation(sigma1, sigma2, sigma3, sigma4) == true))
 			    //			    || (((sigma1 & 6) == (sigma4 & 6)) && ((sigma2 & 6) == (sigma3 & 6)))))
 			    {
 			      if (sigma3 == sigma4)

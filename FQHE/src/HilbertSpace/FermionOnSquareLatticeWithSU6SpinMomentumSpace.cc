@@ -384,7 +384,7 @@ long FermionOnSquareLatticeWithSU6SpinMomentumSpace::GenerateStates(int nbrFermi
 
   long TmpPos = 0l;
 
-  for (int TmpMask = 0x3f; TmpMask >= 0; --TmpMask)
+  for (int TmpMask = 0x3f; TmpMask > 0; --TmpMask)
     {
       int TmpNbrParticles = TmpMask & 1;
       TmpNbrParticles += (TmpMask >> 1) & 1;
@@ -502,7 +502,7 @@ long FermionOnSquareLatticeWithSU6SpinMomentumSpace::GenerateStates(int nbrFermi
 
   long TmpPos = 0l;
 
-  for (int TmpMask = 0x3f; TmpMask >= 0; --TmpMask)
+  for (int TmpMask = 0x3f; TmpMask > 0; --TmpMask)
     {
       int TmpNbrParticles = (TmpMask >> 5) & 1;
       TmpNbrParticles += (TmpMask >> 4) & 1;
@@ -514,7 +514,9 @@ long FermionOnSquareLatticeWithSU6SpinMomentumSpace::GenerateStates(int nbrFermi
       TmpPos = this->GenerateStates(nbrFermions - TmpNbrParticles, currentKx, currentKy - 1, currentTotalKx + (TmpNbrParticles * currentKx), currentTotalKy + (TmpNbrParticles * currentKy), nbrSpinUp - TmpNbrParticlesUp, pos);
       unsigned long Mask = ((unsigned long) TmpMask) << (((currentKx * this->NbrSiteY) + currentKy) * 6);
       for (; pos < TmpPos; ++pos)
-	this->StateDescription[pos] |= Mask;
+	{
+	  this->StateDescription[pos] |= Mask;
+	}
     }
 
   return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp, pos);
@@ -628,24 +630,24 @@ long FermionOnSquareLatticeWithSU6SpinMomentumSpace::EvaluateHilbertSpaceDimensi
     }
   Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 6, currentKx, currentKy - 1, currentTotalKx + (6 * currentKx), currentTotalKy + (6 * currentKy), nbrSpinUp - 3);
   
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 5, currentKx, currentKy - 1, currentTotalKx + (5 * currentKx), currentTotalKy + (5 * currentKy)), nbrSpinUp - 3);
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 5, currentKx, currentKy - 1, currentTotalKx + (5 * currentKx), currentTotalKy + (5 * currentKy)), nbrSpinUp - 2);
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 5, currentKx, currentKy - 1, currentTotalKx + (5 * currentKx), currentTotalKy + (5 * currentKy), nbrSpinUp - 3));
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 5, currentKx, currentKy - 1, currentTotalKx + (5 * currentKx), currentTotalKy + (5 * currentKy), nbrSpinUp - 2));
   
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy)), nbrSpinUp - 3);
-  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy)), nbrSpinUp - 2);
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy)), nbrSpinUp - 1);
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), nbrSpinUp - 3));
+  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), nbrSpinUp - 2));
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), nbrSpinUp - 1));
   
-  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)), nbrSpinUp - 3);
-  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)), nbrSpinUp - 2);
-  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)), nbrSpinUp - 1);
-  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)), nbrSpinUp);
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrSpinUp - 3));
+  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrSpinUp - 2));
+  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrSpinUp - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrSpinUp));
   
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)), nbrSpinUp - 2);
-  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)), nbrSpinUp - 1);
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)), nbrSpinUp);
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrSpinUp - 2));
+  Count += (9 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrSpinUp - 1));
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrSpinUp));
 
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy), nbrSpinUp - 1);
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy), nbrSpinUp);
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp - 1));
+  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrSpinUp));
   
   Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrSpinUp);
   return Count;

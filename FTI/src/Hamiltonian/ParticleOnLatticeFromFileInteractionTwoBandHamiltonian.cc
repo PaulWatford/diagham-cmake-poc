@@ -848,8 +848,8 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateOneBodyFact
 // return value = array that indicates which internal degrees of freedom are conserved
 
 bool**** ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::TestMatrixElementsConservedDegreesOfFreedom (int nbrMatrixElements,
-														  int* sigmaIndices1, int* sigmaIndices2,
-														  int* sigmaIndices3, int* sigmaIndices4)
+													      int* sigmaIndices1, int* sigmaIndices2,
+													      int* sigmaIndices3, int* sigmaIndices4)
 {
   int ReducedNbrInternalIndices = this->NbrInternalIndices;
   if (this->AdditionalSpinFlag == true)

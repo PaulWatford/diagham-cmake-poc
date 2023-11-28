@@ -36,7 +36,7 @@
 
 
 #include "config.h"
-#include "Hamiltonian/ParticleOnLatticeFromFileInteractionThreeBandHamiltonian.h"
+#include "Hamiltonian/ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian.h"
 #include "Tools/FTITightBinding/Abstract2DTightBindingModel.h"
 #include "Matrix/ComplexMatrix.h"
 
@@ -48,7 +48,7 @@ using std::cout;
 using std::endl;
 
 
-class ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian : public ParticleOnLatticeFromFileInteractionThreeBandHamiltonian
+class ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian : public ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian
 {
 
  protected:
@@ -85,7 +85,71 @@ class ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian : public 
 
  protected:
  
+  // convert spin and band indices into a linearized index
+  //
+  // spinValue = spin value (+1 or -1)
+  // bandIndex = band index
+  // return value = linearized index
+  virtual int GetLinearizedSpinBandIndex(int spinValue, int bandIndex);
+
+  // test if the sum of spin projection (s_1+s2==s_3+s_4) is conserved from the linearized indices of the internal degrees of freedom
+  //
+  // sigma1 = first linearized index
+  // sigma2 = second linearized index
+  // sigma3 = third linearized index
+  // sigma4 = fourth linearized index
+  // return value = true if the spin projection is conserved
+  virtual bool TestSpinConservation(int sigma1, int sigma2, int sigma3, int sigma4);
+
+  // test if the sum of spin projection (s_1+s2==s_3+s_4) is conserved from the linearized indices of the internal degrees of freedom (assuming both spin and valley)
+  //
+  // sigma1 = first linearized index
+  // sigma2 = second linearized index
+  // sigma3 = third linearized index
+  // sigma4 = fourth linearized index
+  // return value = true if the spin projection is conserved
+  virtual bool TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4);
+
 };
+
+// convert spin and band indices into a linearized index
+//
+// spinValue = spin value (+1 or -1)
+// bandIndex = band index
+// return value = linearized index
+
+inline int ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::GetLinearizedSpinBandIndex(int spinValue, int bandIndex)
+{
+  return ((3 * ((spinValue + 1) >> 1))+ bandIndex);
+}
+
+// test if the sum of spin projection (s_1+s2==s_3+s_4) is conserved from the linearized indices of the internal degrees of freedom
+//
+// sigma1 = first linearized index
+// sigma2 = second linearized index
+// sigma3 = third linearized index
+// sigma4 = fourth linearized index
+// return value = true if the spin projection is conserved
+
+inline bool ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::TestSpinConservation(int sigma1, int sigma2, int sigma3, int sigma4)
+{
+  return (((sigma1 / 3) + (sigma2 / 3)) == ((sigma3 / 3) + (sigma4 / 3)));
+}
+
+
+// test if the sum of spin projection (s_1+s2==s_3+s_4) is conserved from the linearized indices of the internal degrees of freedom (assuming both spin and valley)
+//
+// sigma1 = first linearized index
+// sigma2 = second linearized index
+// sigma3 = third linearized index
+// sigma4 = fourth linearized index
+// return value = true if the spin projection is conserved
+
+inline bool ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4)
+{
+  cout << "should be fixed" << endl;
+  return  (((sigma1 & 4) == (sigma3 & 4)) && ((sigma2 & 4) == (sigma4 & 4)));
+}
 
 
 #endif

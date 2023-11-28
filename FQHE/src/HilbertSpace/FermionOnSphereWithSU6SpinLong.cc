@@ -176,23 +176,24 @@ void FermionOnSphereWithSU6SpinLong::GenerateLookUpTable(unsigned long memory)
   CurrentHighestBit = this->StateHighestBit[0];
   
   // evaluate look-up table size
-  memory /= (sizeof(int*) * 2*this->NbrLzValue);
+  memory /= (sizeof(int*) * 6 * this->NbrLzValue);
   this->MaximumLookUpShift = 1;
   while (memory > 0)
     {
       memory >>= 1;
       ++this->MaximumLookUpShift;
     }
-  if (this->MaximumLookUpShift > 2*this->NbrLzValue)
-    this->MaximumLookUpShift = 2*this->NbrLzValue;
+  if (this->MaximumLookUpShift > 6 * this->NbrLzValue)
+    this->MaximumLookUpShift = 6 * this->NbrLzValue;
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
-  this->LookUpTable = new int* [2*this->NbrLzValue];
-  this->LookUpTableShift = new int [2*this->NbrLzValue];
-  for (int i = 0; i < 2*this->NbrLzValue; ++i)
+  CurrentHighestBit = this->StateHighestBit[0];
+  this->LookUpTable = new int* [CurrentHighestBit + 1];
+  this->LookUpTableShift = new int [CurrentHighestBit + 1];
+  for (int i = 0; i <= CurrentHighestBit; ++i)
     this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
-  int CurrentLargestBit = this->StateHighestBit[0];
+  int CurrentLargestBit = CurrentHighestBit;
   int* TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
   if (CurrentLargestBit < this->MaximumLookUpShift)
     this->LookUpTableShift[CurrentLargestBit] = 0;

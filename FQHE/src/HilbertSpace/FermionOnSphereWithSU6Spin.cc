@@ -189,9 +189,10 @@ void FermionOnSphereWithSU6Spin::GenerateLookUpTable(unsigned long memory)
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
-  this->LookUpTable = new int* [2*this->NbrLzValue];
-  this->LookUpTableShift = new int [2*this->NbrLzValue];
-  for (int i = 0; i < 2*this->NbrLzValue; ++i)
+  CurrentHighestBit = this->StateHighestBit[0];
+  this->LookUpTable = new int* [CurrentHighestBit + 1];
+  this->LookUpTableShift = new int [CurrentHighestBit + 1];
+  for (int i = 0; i <= CurrentHighestBit; ++i)
     this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
   int CurrentLargestBit = CurrentHighestBit;
   int* TmpLookUpTable = this->LookUpTable[CurrentLargestBit];

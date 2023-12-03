@@ -255,6 +255,7 @@ FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong& FermionOnSquareLatticeWithSU
   this->KyMomentum = fermions.KyMomentum;
   this->NbrLzValue = fermions.NbrLzValue;
   this->SzFlag = fermions.SzFlag;
+  this->TotalSz = fermions.TotalSz;
   this->StateDescription = fermions.StateDescription;
   this->StateHighestBit = fermions.StateHighestBit;
   this->MaximumLookUpShift = fermions.MaximumLookUpShift;

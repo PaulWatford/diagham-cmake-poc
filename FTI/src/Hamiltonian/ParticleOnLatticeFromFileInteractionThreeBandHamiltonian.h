@@ -80,9 +80,33 @@ class ParticleOnLatticeFromFileInteractionThreeBandHamiltonian : public Particle
   //
   ~ParticleOnLatticeFromFileInteractionThreeBandHamiltonian();
   
-
+protected:
+  
+  // test if the sum of spin projection is conserved from the linearized indices of the internal degrees of freedom (assuming both spin and valley)
+  //
+  // sigma1 = first linearized index
+  // sigma2 = second linearized index
+  // sigma3 = third linearized index
+  // sigma4 = fourth linearized index
+  // return value = true if the spin projection is conserved
+  virtual bool TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4);
+  
 
 };
+
+// test if the sum of spin projection is conserved from the linearized indices of the internal degrees of freedom (assuming both spin and valley)
+//
+// sigma1 = first linearized index
+// sigma2 = second linearized index
+// sigma3 = third linearized index
+// sigma4 = fourth linearized index
+// return value = true if the spin projection is conserved
+
+inline bool ParticleOnLatticeFromFileInteractionThreeBandHamiltonian::TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4)
+{
+  return  (((sigma1 / 3) == (sigma3 / 3)) && ((sigma2 / 3) == (sigma4 / 3)));
+}
+
 
 
 #endif

@@ -133,7 +133,7 @@ inline int ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::Get
 
 inline bool ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::TestSpinConservation(int sigma1, int sigma2, int sigma3, int sigma4)
 {
-  return (((sigma1 / 3) + (sigma2 / 3)) == ((sigma3 / 3) + (sigma4 / 3)));
+  return ((((sigma1 / 3) & 1) + ((sigma2 / 3) & 1)) == (((sigma3 / 3) & 1) + ((sigma4 / 3) & 1)));
 }
 
 
@@ -147,8 +147,7 @@ inline bool ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::Te
 
 inline bool ParticleOnLatticeFromFileInteractionThreeBandWithSpinHamiltonian::TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4)
 {
-  cout << "should be fixed" << endl;
-  return  (((sigma1 & 4) == (sigma3 & 4)) && ((sigma2 & 4) == (sigma4 & 4)));
+  return  (((sigma1 / 6) == (sigma3 / 6)) && ((sigma2 / 6) == (sigma4 / 6)));
 }
 
 

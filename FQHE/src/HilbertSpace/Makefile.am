@@ -215,4 +215,9 @@ FermionOnSphereWithSU6Spin.cc \
 FermionOnSquareLatticeWithSU6SpinMomentumSpace.cc \
 FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.cc \
 FermionOnSphereWithSU6SpinLong.cc \
-FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.cc
+FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.cc \
+ParticleOnSphereWithSU12Spin.cc \
+FermionOnSphereWithSU12Spin.cc \
+FermionOnSphereWithSU12SpinLong.cc \
+FermionOnSquareLatticeWithSU12SpinMomentumSpace.cc \
+FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.cc

@@ -6,10 +6,9 @@
 //                   Copyright (C) 2001-2005 Nicolas Regnault                 //
 //                                                                            //
 //                                                                            //
-//                   class of fermions on sphere with SU(6) spin              //
-//                            for more than 10 orbitals                       //
+//                   class of fermions on sphere with SU(12) spin             //
 //                                                                            //
-//                        last modification : 23/11/2023                      //
+//                        last modification : 27/11/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,12 +28,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef FERMIONONSPHEREWITHSU6SPINLONG_H
-#define FERMIONONSPHEREWITHSU6SPINLONG_H
+#ifndef FERMIONONSPHEREWITHSU12SPIN_H
+#define FERMIONONSPHEREWITHSU12SPIN_H
 
 
 #include "config.h"
-#include "HilbertSpace/ParticleOnSphereWithSU6Spin.h"
+#include "HilbertSpace/ParticleOnSphereWithSU12Spin.h"
 
 #include <iostream>
 
@@ -42,7 +41,7 @@
 class FermionOnSphere;
 
 
-class FermionOnSphereWithSU6SpinLong :  public ParticleOnSphereWithSU6Spin
+class FermionOnSphereWithSU12Spin :  public ParticleOnSphereWithSU12Spin
 {
 
 
@@ -60,7 +59,7 @@ class FermionOnSphereWithSU6SpinLong :  public ParticleOnSphereWithSU6Spin
   int NbrLzValue;
 
   // array describing each state
-  ULONGLONG* StateDescription;
+  unsigned long* StateDescription;
   // array giving maximum Lz value reached for a fermion in a given state
   int* StateHighestBit;
 
@@ -76,12 +75,12 @@ class FermionOnSphereWithSU6SpinLong :  public ParticleOnSphereWithSU6Spin
   // a table containing ranging from 0 to 2^MaximumSignLookUp - 1
   double* SignLookUpTable;
   // a table containing the mask on the bits to keep for each shift that is requested by sign evaluation
-  ULONGLONG* SignLookUpTableMask;
+  unsigned long* SignLookUpTableMask;
   // number to evalute size of SignLookUpTable
   int MaximumSignLookUp;
 
   // temporary state used when applying ProdA operator
-  ULONGLONG ProdATemporaryState;
+  unsigned long ProdATemporaryState;
   // Lz maximum value associated to temporary state used when applying ProdA operator
   int ProdALzMax;
 
@@ -89,11 +88,11 @@ class FermionOnSphereWithSU6SpinLong :  public ParticleOnSphereWithSU6Spin
 
   // default constructor
   // 
-  FermionOnSphereWithSU6SpinLong ();
+  FermionOnSphereWithSU12Spin ();
 
   // destructor
   //
-  virtual ~FermionOnSphereWithSU6SpinLong ();
+  virtual ~FermionOnSphereWithSU12Spin ();
 
   // get the particle statistic 
   //
@@ -161,7 +160,7 @@ protected:
   // stateDescription = unsigned integer describing the state
   // lzmax = maximum Lz value reached by a fermion in the state
   // return value = corresponding index
-  virtual int FindStateIndex(ULONGLONG stateDescription, int lzmax);
+  virtual int FindStateIndex(unsigned long stateDescription, int lzmax);
 
 
   // generate look-up table associated to current Hilbert space
@@ -185,7 +184,7 @@ protected:
   // factorized code that is used to compute any symmetry information of a given state
   //
   // state = reference on the state that has been produced with the operator action
-  virtual void SymmetrizeAAInput(ULONGLONG& state);
+  virtual void SymmetrizeAAInput(unsigned long& state);
   
   // factorized code that is used to symmetrize the result of any operator action
   //
@@ -193,7 +192,7 @@ protected:
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // highestBit = highest bit set to one in state
   // return value = index of the destination state  
-  virtual int SymmetrizeAdAdResult(ULONGLONG& state, double& coefficient, int highestBit);
+  virtual int SymmetrizeAdAdResult(unsigned long& state, double& coefficient, int highestBit);
 
 };
 
@@ -201,7 +200,7 @@ protected:
 //
 // return value = particle statistic
 
-inline int FermionOnSphereWithSU6SpinLong::GetParticleStatistic()
+inline int FermionOnSphereWithSU12Spin::GetParticleStatistic()
 {
   return AbstractQHEParticle::FermionicStatistic;
 }
@@ -215,39 +214,31 @@ inline int FermionOnSphereWithSU6SpinLong::GetParticleStatistic()
 // sigma2 = SU(3) index for the second annihilation operator
 // return value =  multiplicative factor 
 
-inline double FermionOnSphereWithSU6SpinLong::AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2)
+inline double FermionOnSphereWithSU12Spin::AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2)
 {
   this->ProdATemporaryState = this->StateDescription[index];
-  n1 *= 6;
+  n1 *= 12;
   n1 += sigma1;
-  n2 *= 6;
+  n2 *= 12;
   n2 += sigma2;
- if (((this->ProdATemporaryState & (((ULONGLONG) 0x1ul) << n1)) == 0) || ((this->ProdATemporaryState & (((ULONGLONG) 0x1ul) << n2)) == 0) || (n1 == n2))
+ if (((this->ProdATemporaryState & (0x1ul << n1)) == 0) || ((this->ProdATemporaryState & (0x1ul << n2)) == 0) || (n1 == n2))
     return 0.0;
   this->ProdALzMax = this->StateHighestBit[index];
   double Coefficient = this->SignLookUpTable[(this->ProdATemporaryState >> n2) & this->SignLookUpTableMask[n2]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 16))  & this->SignLookUpTableMask[n2 + 16]];
+#ifdef  __64_BITS__
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 32)) & this->SignLookUpTableMask[n2 + 32]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 48)) & this->SignLookUpTableMask[n2 + 48]];
-#ifdef __128_BIT_LONGLONG__
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 64)) & this->SignLookUpTableMask[n2 + 64]];
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 80)) & this->SignLookUpTableMask[n2 + 80]];
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 96)) & this->SignLookUpTableMask[n2 + 96]];
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 112)) & this->SignLookUpTableMask[n2 + 112]];
 #endif
-  this->ProdATemporaryState &= ~(((ULONGLONG) 0x1ul) << n2);
+  this->ProdATemporaryState &= ~(0x1ul << n2);
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> n1) & this->SignLookUpTableMask[n1]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 16))  & this->SignLookUpTableMask[n1 + 16]];
+#ifdef  __64_BITS__
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 32)) & this->SignLookUpTableMask[n1 + 32]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 48)) & this->SignLookUpTableMask[n1 + 48]];
-#ifdef __128_BIT_LONGLONG__
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 64)) & this->SignLookUpTableMask[n1 + 64]];
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 80)) & this->SignLookUpTableMask[n1 + 80]];
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 96)) & this->SignLookUpTableMask[n1 + 96]];
-  Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n1 + 112)) & this->SignLookUpTableMask[n1 + 112]];
 #endif
-  this->ProdATemporaryState &= ~(((ULONGLONG) 0x1ul) << n1);
-  if (this->ProdATemporaryState != ((ULONGLONG) 0x0ul))
+  this->ProdATemporaryState &= ~(0x1ul << n1);
+  if (this->ProdATemporaryState != 0x0ul)
     {
       while ((this->ProdATemporaryState >> this->ProdALzMax) == 0)
 	--this->ProdALzMax;
@@ -266,14 +257,14 @@ inline double FermionOnSphereWithSU6SpinLong::AsigmaAsigma (int index, int n1, i
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
 
-inline int FermionOnSphereWithSU6SpinLong::AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient)
+inline int FermionOnSphereWithSU12Spin::AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient)
 {
-  ULONGLONG TmpState = this->ProdATemporaryState;
-  m1 *= 6;
+  unsigned long TmpState = this->ProdATemporaryState;
+  m1 *= 12;
   m1 += sigma1;
-  m2 *= 6;
+  m2 *= 12;
   m2 += sigma2;
-  if (((TmpState & (((ULONGLONG) 0x1ul) << m1)) != ((ULONGLONG) 0x0ul)) || ((TmpState & (((ULONGLONG) 0x1ul) << m2)) != ((ULONGLONG) 0x0ul)) || (m1 == m2))
+  if (((TmpState & (0x1ul << m1)) != 0) || ((TmpState & (0x1ul << m2)) != 0) || (m1 == m2))
     return this->HilbertSpaceDimension;
   int NewLzMax = this->ProdALzMax;
   coefficient = 1.0;
@@ -283,32 +274,24 @@ inline int FermionOnSphereWithSU6SpinLong::AdsigmaAdsigma (int m1, int m2, int s
     {
       coefficient *= this->SignLookUpTable[(TmpState >> m2) & this->SignLookUpTableMask[m2]];
       coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 16))  & this->SignLookUpTableMask[m2 + 16]];
+#ifdef  __64_BITS__
       coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 32)) & this->SignLookUpTableMask[m2 + 32]];
       coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 48)) & this->SignLookUpTableMask[m2 + 48]];
-#ifdef __128_BIT_LONGLONG__
-      coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 64)) & this->SignLookUpTableMask[m2 + 64]];
-      coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 80))  & this->SignLookUpTableMask[m2 + 80]];
-      coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 96)) & this->SignLookUpTableMask[m2 + 96]];
-      coefficient *= this->SignLookUpTable[(TmpState >> (m2 + 112)) & this->SignLookUpTableMask[m2 + 112]];
 #endif
     }
-  TmpState |= (((ULONGLONG) 0x1ul) << m2);
+  TmpState |= (0x1ul << m2);
   if (m1 > NewLzMax)
     NewLzMax = m1;
   else
     {
       coefficient *= this->SignLookUpTable[(TmpState >> m1) & this->SignLookUpTableMask[m1]];
       coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 16))  & this->SignLookUpTableMask[m1 + 16]];
+#ifdef  __64_BITS__
       coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 32)) & this->SignLookUpTableMask[m1 + 32]];
       coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 48)) & this->SignLookUpTableMask[m1 + 48]];
-#ifdef __128_BIT_LONGLONG__
-      coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 64)) & this->SignLookUpTableMask[m1 + 64]];
-      coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 80))  & this->SignLookUpTableMask[m1 + 80]];
-      coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 96)) & this->SignLookUpTableMask[m1 + 96]];
-      coefficient *= this->SignLookUpTable[(TmpState >> (m1 + 112)) & this->SignLookUpTableMask[m1 + 112]];
 #endif
     }
-  TmpState |= (((ULONGLONG) 0x1ul) << m1);
+  TmpState |= (0x1ul << m1);
   return this->SymmetrizeAdAdResult(TmpState, coefficient, NewLzMax);
 }
 
@@ -319,9 +302,9 @@ inline int FermionOnSphereWithSU6SpinLong::AdsigmaAdsigma (int m1, int m2, int s
 // sigma = internal degree of freedom label of the creation and annihilation operator
 // return value = coefficient obtained when applying a^+_m a_m
 
-inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m, int sigma)
+inline double FermionOnSphereWithSU12Spin::AdsigmaAsigma (int index, int m, int sigma)
 {
-  return ((double) ((this->StateDescription[index] >> ((m * 6) + sigma)) & ((ULONGLONG) 0x1ul)));
+  return ((double) ((this->StateDescription[index] >> ((m * 12) + sigma)) & 0x1ul));
 }
 
 // apply a^+_m_s a_m_s operator to a given state)
@@ -331,9 +314,9 @@ inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m, i
 // sigma = internal degree of freedom label of the creation and annihilation operator
 // return value = coefficient obtained when applying a^+_m a_m
 
-inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (long index, int m, int sigma)
+inline double FermionOnSphereWithSU12Spin::AdsigmaAsigma (long index, int m, int sigma)
 {
-  return ((double) ((this->StateDescription[index] >> ((m * 6) + sigma)) & ((ULONGLONG) 0x1ul)));
+  return ((double) ((this->StateDescription[index] >> ((m * 12) + sigma)) & 0x1ul));
 }
 
 // apply a^+_m1_s1 a_m2_s2 operator to a given state
@@ -346,9 +329,9 @@ inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (long index, int m, 
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
 
-inline int FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
+inline int FermionOnSphereWithSU12Spin::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
 {
-  return this->GenericAdA(index, (m1 * 6) + sigma1, (m2 * 6) + sigma2, coefficient);
+  return this->GenericAdA(index, (m1 * 12) + sigma1, (m2 * 12) + sigma2, coefficient);
 }
 
 // factorized code for any a^+_m_x a_n_y operator 
@@ -359,11 +342,11 @@ inline int FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m1, int
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
 
-inline int FermionOnSphereWithSU6SpinLong::GenericAdA(int index, int m, int n, double& coefficient)
+inline int FermionOnSphereWithSU12Spin::GenericAdA(int index, int m, int n, double& coefficient)
 {
   int StateHighestBit = this->StateHighestBit[index];
-  ULONGLONG State = this->StateDescription[index];
-  if ((n > StateHighestBit) || ((State & (((ULONGLONG) 0x1ul) << n)) == ((ULONGLONG) 0x0ul)) )
+  unsigned long State = this->StateDescription[index];
+  if ((n > StateHighestBit) || ((State & (0x1ul << n)) == 0x0ul) )
     {
       coefficient = 0.0;
       return this->HilbertSpaceDimension;
@@ -371,21 +354,17 @@ inline int FermionOnSphereWithSU6SpinLong::GenericAdA(int index, int m, int n, d
   this->SymmetrizeAAInput(State);
   int NewLargestBit = StateHighestBit;
   coefficient = -this->SignLookUpTable[(State >> n) & this->SignLookUpTableMask[n]];
-  coefficient *= this->SignLookUpTable[(State >> (n + 16))  & this->SignLookUpTableMask[n + 16]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 16)) & this->SignLookUpTableMask[n + 16]];
+#ifdef  __64_BITS__
   coefficient *= this->SignLookUpTable[(State >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
   coefficient *= this->SignLookUpTable[(State >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
-#ifdef __128_BIT_LONGLONG__
-  coefficient *= this->SignLookUpTable[(State >> (n + 64)) & this->SignLookUpTableMask[n + 64]];
-  coefficient *= this->SignLookUpTable[(State >> (n + 80)) & this->SignLookUpTableMask[n + 80]];
-  coefficient *= this->SignLookUpTable[(State >> (n + 96)) & this->SignLookUpTableMask[n + 96]];
-  coefficient *= this->SignLookUpTable[(State >> (n + 112)) & this->SignLookUpTableMask[n + 112]];
 #endif
-  State &= ~(((ULONGLONG) 0x1ul) << n);
-  if (State != ((ULONGLONG) 0x0ul))
-    while ((State >> NewLargestBit) == ((ULONGLONG) 0x0ul))
+  State &= ~(0x1ul << n);
+  if (State != 0x0ul)
+    while ((State >> NewLargestBit) == 0x0ul)
       --NewLargestBit;
 
-  if ((State & (((ULONGLONG) 0x1ul) << m)) != ((ULONGLONG) 0x0ul))
+  if ((State & (0x1ul << m)) != 0x0ul)
     {
       coefficient = 0.0;
       return this->HilbertSpaceDimension;
@@ -397,17 +376,13 @@ inline int FermionOnSphereWithSU6SpinLong::GenericAdA(int index, int m, int n, d
   else
     {
       coefficient *= this->SignLookUpTable[(State >> m) & this->SignLookUpTableMask[m]];
-      coefficient *= this->SignLookUpTable[(State >> (m + 16))  & this->SignLookUpTableMask[m + 16]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 16)) & this->SignLookUpTableMask[m + 16]];
+#ifdef  __64_BITS__
       coefficient *= this->SignLookUpTable[(State >> (m + 32)) & this->SignLookUpTableMask[m + 32]];
       coefficient *= this->SignLookUpTable[(State >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
-#ifdef __128_BIT_LONGLONG__
-      coefficient *= this->SignLookUpTable[(State >> (m + 64)) & this->SignLookUpTableMask[m + 64]];
-      coefficient *= this->SignLookUpTable[(State >> (m + 80)) & this->SignLookUpTableMask[m + 80]];
-      coefficient *= this->SignLookUpTable[(State >> (m + 96)) & this->SignLookUpTableMask[m + 96]];
-      coefficient *= this->SignLookUpTable[(State >> (m + 112)) & this->SignLookUpTableMask[m + 112]];
 #endif
     }
-  State |= ((ULONGLONG) 0x1ul) << m;
+  State |= 0x1ul << m;
   return this->SymmetrizeAdAdResult(State, coefficient, NewLargestBit);
 }
 
@@ -418,7 +393,7 @@ inline int FermionOnSphereWithSU6SpinLong::GenericAdA(int index, int m, int n, d
 // highestBit = highest bit set to one in state
 // return value = index of the destination state  
 
-inline int FermionOnSphereWithSU6SpinLong::SymmetrizeAdAdResult(ULONGLONG& state, double& coefficient, int highestBit)
+inline int FermionOnSphereWithSU12Spin::SymmetrizeAdAdResult(unsigned long& state, double& coefficient, int highestBit)
 {
   return this->FindStateIndex(state, highestBit);
 }
@@ -427,7 +402,7 @@ inline int FermionOnSphereWithSU6SpinLong::SymmetrizeAdAdResult(ULONGLONG& state
 //
 // state = reference on the state that has been produced with the operator action
 
-inline void FermionOnSphereWithSU6SpinLong::SymmetrizeAAInput(ULONGLONG& state)
+inline void FermionOnSphereWithSU12Spin::SymmetrizeAAInput(unsigned long& state)
 {
 }
 

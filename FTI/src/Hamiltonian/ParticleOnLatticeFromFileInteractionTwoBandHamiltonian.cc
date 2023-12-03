@@ -542,8 +542,9 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 		    {
 		      for (int sigma4 = sigma3; sigma4 < this->NbrInternalIndices; ++sigma4)
 			{
-			  if ((InternalIndicesFlags[sigma3 & 1][sigma4 & 1][sigma1 & 1][sigma2 & 1] == true) &&
-			      ((((sigma1 & 2) == (sigma3 & 2)) && ((sigma2 & 2) == (sigma4 & 2)))))
+			  if ((InternalIndicesFlags[sigma3 % ReducedNbrInternalIndices][sigma4 % ReducedNbrInternalIndices][sigma1 % ReducedNbrInternalIndices][sigma2 % ReducedNbrInternalIndices] == true) &&
+			      (this->TestSpinfulValleyConservation(sigma1, sigma2, sigma3, sigma4) == true))
+			    //			      ((((sigma1 & 2) == (sigma3 & 2)) && ((sigma2 & 2) == (sigma4 & 2)))))
 			    {
 			      if (sigma3 == sigma4)
 				{

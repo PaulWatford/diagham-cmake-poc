@@ -129,7 +129,29 @@ class ParticleOnLatticeFromFileInteractionTwoBandHamiltonian : public ParticleOn
   // internalIndicesFlags = array that indicates which internal degrees of freedom are conserved
   void FreeMatrixElementsConservedDegreesOfFreedom (bool**** internalIndicesFlags);
 
+  // test if the sum of spin projection is conserved from the linearized indices of the internal degrees of freedom (assuming both spin and valley)
+  //
+  // sigma1 = first linearized index
+  // sigma2 = second linearized index
+  // sigma3 = third linearized index
+  // sigma4 = fourth linearized index
+  // return value = true if the spin projection is conserved
+  virtual bool TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4);
+  
 };
+
+// test if the sum of spin projection is conserved from the linearized indices of the internal degrees of freedom (assuming both spin and valley)
+//
+// sigma1 = first linearized index
+// sigma2 = second linearized index
+// sigma3 = third linearized index
+// sigma4 = fourth linearized index
+// return value = true if the spin projection is conserved
+
+inline bool ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4)
+{
+  return  (((sigma1 & 2) == (sigma3 & 2)) && ((sigma2 & 2) == (sigma4 & 2)));
+}
 
 
 #endif

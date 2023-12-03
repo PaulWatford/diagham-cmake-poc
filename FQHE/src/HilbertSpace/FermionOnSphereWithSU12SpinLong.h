@@ -6,10 +6,10 @@
 //                   Copyright (C) 2001-2005 Nicolas Regnault                 //
 //                                                                            //
 //                                                                            //
-//                   class of fermions on sphere with SU(6) spin              //
-//                            for more than 10 orbitals                       //
+//                   class of fermions on sphere with SU(12) spin             //
+//                            for more than 5 orbitals                        //
 //                                                                            //
-//                        last modification : 23/11/2023                      //
+//                        last modification : 27/11/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,12 +29,12 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef FERMIONONSPHEREWITHSU6SPINLONG_H
-#define FERMIONONSPHEREWITHSU6SPINLONG_H
+#ifndef FERMIONONSPHEREWITHSU12SPINLONG_H
+#define FERMIONONSPHEREWITHSU12SPINLONG_H
 
 
 #include "config.h"
-#include "HilbertSpace/ParticleOnSphereWithSU6Spin.h"
+#include "HilbertSpace/ParticleOnSphereWithSU12Spin.h"
 
 #include <iostream>
 
@@ -42,7 +42,7 @@
 class FermionOnSphere;
 
 
-class FermionOnSphereWithSU6SpinLong :  public ParticleOnSphereWithSU6Spin
+class FermionOnSphereWithSU12SpinLong :  public ParticleOnSphereWithSU12Spin
 {
 
 
@@ -89,11 +89,11 @@ class FermionOnSphereWithSU6SpinLong :  public ParticleOnSphereWithSU6Spin
 
   // default constructor
   // 
-  FermionOnSphereWithSU6SpinLong ();
+  FermionOnSphereWithSU12SpinLong ();
 
   // destructor
   //
-  virtual ~FermionOnSphereWithSU6SpinLong ();
+  virtual ~FermionOnSphereWithSU12SpinLong ();
 
   // get the particle statistic 
   //
@@ -201,7 +201,7 @@ protected:
 //
 // return value = particle statistic
 
-inline int FermionOnSphereWithSU6SpinLong::GetParticleStatistic()
+inline int FermionOnSphereWithSU12SpinLong::GetParticleStatistic()
 {
   return AbstractQHEParticle::FermionicStatistic;
 }
@@ -215,12 +215,12 @@ inline int FermionOnSphereWithSU6SpinLong::GetParticleStatistic()
 // sigma2 = SU(3) index for the second annihilation operator
 // return value =  multiplicative factor 
 
-inline double FermionOnSphereWithSU6SpinLong::AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2)
+inline double FermionOnSphereWithSU12SpinLong::AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2)
 {
   this->ProdATemporaryState = this->StateDescription[index];
-  n1 *= 6;
+  n1 *= 12;
   n1 += sigma1;
-  n2 *= 6;
+  n2 *= 12;
   n2 += sigma2;
  if (((this->ProdATemporaryState & (((ULONGLONG) 0x1ul) << n1)) == 0) || ((this->ProdATemporaryState & (((ULONGLONG) 0x1ul) << n2)) == 0) || (n1 == n2))
     return 0.0;
@@ -266,12 +266,12 @@ inline double FermionOnSphereWithSU6SpinLong::AsigmaAsigma (int index, int n1, i
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
 
-inline int FermionOnSphereWithSU6SpinLong::AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient)
+inline int FermionOnSphereWithSU12SpinLong::AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient)
 {
   ULONGLONG TmpState = this->ProdATemporaryState;
-  m1 *= 6;
+  m1 *= 12;
   m1 += sigma1;
-  m2 *= 6;
+  m2 *= 12;
   m2 += sigma2;
   if (((TmpState & (((ULONGLONG) 0x1ul) << m1)) != ((ULONGLONG) 0x0ul)) || ((TmpState & (((ULONGLONG) 0x1ul) << m2)) != ((ULONGLONG) 0x0ul)) || (m1 == m2))
     return this->HilbertSpaceDimension;
@@ -319,9 +319,9 @@ inline int FermionOnSphereWithSU6SpinLong::AdsigmaAdsigma (int m1, int m2, int s
 // sigma = internal degree of freedom label of the creation and annihilation operator
 // return value = coefficient obtained when applying a^+_m a_m
 
-inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m, int sigma)
+inline double FermionOnSphereWithSU12SpinLong::AdsigmaAsigma (int index, int m, int sigma)
 {
-  return ((double) ((this->StateDescription[index] >> ((m * 6) + sigma)) & ((ULONGLONG) 0x1ul)));
+  return ((double) ((this->StateDescription[index] >> ((m * 12) + sigma)) & ((ULONGLONG) 0x1ul)));
 }
 
 // apply a^+_m_s a_m_s operator to a given state)
@@ -331,9 +331,9 @@ inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m, i
 // sigma = internal degree of freedom label of the creation and annihilation operator
 // return value = coefficient obtained when applying a^+_m a_m
 
-inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (long index, int m, int sigma)
+inline double FermionOnSphereWithSU12SpinLong::AdsigmaAsigma (long index, int m, int sigma)
 {
-  return ((double) ((this->StateDescription[index] >> ((m * 6) + sigma)) & ((ULONGLONG) 0x1ul)));
+  return ((double) ((this->StateDescription[index] >> ((m * 12) + sigma)) & ((ULONGLONG) 0x1ul)));
 }
 
 // apply a^+_m1_s1 a_m2_s2 operator to a given state
@@ -346,9 +346,9 @@ inline double FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (long index, int m, 
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
 
-inline int FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
+inline int FermionOnSphereWithSU12SpinLong::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
 {
-  return this->GenericAdA(index, (m1 * 6) + sigma1, (m2 * 6) + sigma2, coefficient);
+  return this->GenericAdA(index, (m1 * 12) + sigma1, (m2 * 12) + sigma2, coefficient);
 }
 
 // factorized code for any a^+_m_x a_n_y operator 
@@ -359,7 +359,7 @@ inline int FermionOnSphereWithSU6SpinLong::AdsigmaAsigma (int index, int m1, int
 // coefficient = reference on the double where the multiplicative factor has to be stored
 // return value = index of the destination state 
 
-inline int FermionOnSphereWithSU6SpinLong::GenericAdA(int index, int m, int n, double& coefficient)
+inline int FermionOnSphereWithSU12SpinLong::GenericAdA(int index, int m, int n, double& coefficient)
 {
   int StateHighestBit = this->StateHighestBit[index];
   ULONGLONG State = this->StateDescription[index];
@@ -418,7 +418,7 @@ inline int FermionOnSphereWithSU6SpinLong::GenericAdA(int index, int m, int n, d
 // highestBit = highest bit set to one in state
 // return value = index of the destination state  
 
-inline int FermionOnSphereWithSU6SpinLong::SymmetrizeAdAdResult(ULONGLONG& state, double& coefficient, int highestBit)
+inline int FermionOnSphereWithSU12SpinLong::SymmetrizeAdAdResult(ULONGLONG& state, double& coefficient, int highestBit)
 {
   return this->FindStateIndex(state, highestBit);
 }
@@ -427,7 +427,7 @@ inline int FermionOnSphereWithSU6SpinLong::SymmetrizeAdAdResult(ULONGLONG& state
 //
 // state = reference on the state that has been produced with the operator action
 
-inline void FermionOnSphereWithSU6SpinLong::SymmetrizeAAInput(ULONGLONG& state)
+inline void FermionOnSphereWithSU12SpinLong::SymmetrizeAAInput(ULONGLONG& state)
 {
 }
 

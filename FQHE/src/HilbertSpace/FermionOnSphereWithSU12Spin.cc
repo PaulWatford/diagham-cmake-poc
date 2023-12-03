@@ -6,9 +6,9 @@
 //                   Copyright (C) 2001-2005 Nicolas Regnault                 //
 //                                                                            //
 //                                                                            //
-//                 class of particle on sphere with SU(6) spin                //
+//                  class of particle on sphere with SU(12) spin              //
 //                                                                            //
-//                        last modification : 19/11/2023                      //
+//                        last modification : 27/11/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,7 +29,7 @@
 
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSphereWithSU6Spin.h"
+#include "HilbertSpace/FermionOnSphereWithSU12Spin.h"
 #include "HilbertSpace/FermionOnSphere.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "QuantumNumber/SzQuantumNumber.h"
@@ -51,19 +51,19 @@ using std::dec;
 // default constructor
 // 
 
-FermionOnSphereWithSU6Spin::FermionOnSphereWithSU6Spin ()
+FermionOnSphereWithSU12Spin::FermionOnSphereWithSU12Spin ()
 {
 }
 
 // destructor
 //
 
-FermionOnSphereWithSU6Spin::~FermionOnSphereWithSU6Spin ()
+FermionOnSphereWithSU12Spin::~FermionOnSphereWithSU12Spin ()
 {
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
       unsigned long TmpPosition = this->StateDescription[0];
-      int CurrentHighestBit = (this->LzMax + 1) * 6 - 1;
+      int CurrentHighestBit = (this->LzMax + 1) * 12 - 1;
       while ((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul)
 	--CurrentHighestBit;  
       delete[] this->StateDescription;
@@ -82,7 +82,7 @@ FermionOnSphereWithSU6Spin::~FermionOnSphereWithSU6Spin ()
 // lzmax = maximum Lz value reached by a fermion in the state
 // return value = corresponding index
 
-int FermionOnSphereWithSU6Spin::FindStateIndex(unsigned long stateDescription, int lzmax)
+int FermionOnSphereWithSU12Spin::FindStateIndex(unsigned long stateDescription, int lzmax)
 {
   if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
     {
@@ -123,15 +123,15 @@ int FermionOnSphereWithSU6Spin::FindStateIndex(unsigned long stateDescription, i
 // state = ID of the state to print
 // return value = reference on current output stream 
 
-ostream& FermionOnSphereWithSU6Spin::PrintState (ostream& Str, int state)
+ostream& FermionOnSphereWithSU12Spin::PrintState (ostream& Str, int state)
 {
   unsigned long TmpState = this->StateDescription[state];
   unsigned long Tmp;
   Str << " | ";
   for (int i = this->NbrLzValue-1; i >=0 ; --i)
     {
-      Tmp = ((TmpState >> (i * 6)) & ((unsigned long) 0x3ful));
-      for (int j = 0; j < 6; ++j)
+      Tmp = ((TmpState >> (i * 12)) & ((unsigned long) 0x3ful));
+      for (int j = 0; j < 12; ++j)
 	{
 	  if (((Tmp >> j) & 0x1ul) != 0x0ul)
 	    {
@@ -151,7 +151,7 @@ ostream& FermionOnSphereWithSU6Spin::PrintState (ostream& Str, int state)
 // 
 // memory = memory size that can be allocated for the look-up table
 
-void FermionOnSphereWithSU6Spin::GenerateLookUpTable(unsigned long memory)
+void FermionOnSphereWithSU12Spin::GenerateLookUpTable(unsigned long memory)
 {
   // get every highest bit poisition
   unsigned long TmpPosition = this->StateDescription[0];
@@ -177,15 +177,15 @@ void FermionOnSphereWithSU6Spin::GenerateLookUpTable(unsigned long memory)
     }
 
   // evaluate look-up table size
-  memory /= (sizeof(int*) * 6 * this->NbrLzValue);
+  memory /= (sizeof(int*) * 12 * this->NbrLzValue);
   this->MaximumLookUpShift = 1;
   while (memory > 0)
     {
       memory >>= 1;
       ++this->MaximumLookUpShift;
     }
-  if (this->MaximumLookUpShift > (6 * this->NbrLzValue))
-    this->MaximumLookUpShift = (6 * this->NbrLzValue);
+  if (this->MaximumLookUpShift > (12 * this->NbrLzValue))
+    this->MaximumLookUpShift = (12 * this->NbrLzValue);
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
@@ -279,7 +279,7 @@ void FermionOnSphereWithSU6Spin::GenerateLookUpTable(unsigned long memory)
 // generate look-up table for sign calculation
 //
 
-void FermionOnSphereWithSU6Spin::GenerateSignLookUpTable()
+void FermionOnSphereWithSU12Spin::GenerateSignLookUpTable()
 {
   // look-up tables for evaluating sign when applying creation/annihilation operators
   int Size = 1 << this->MaximumSignLookUp;

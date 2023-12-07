@@ -220,4 +220,7 @@ ParticleOnSphereWithSU12Spin.cc \
 FermionOnSphereWithSU12Spin.cc \
 FermionOnSphereWithSU12SpinLong.cc \
 FermionOnSquareLatticeWithSU12SpinMomentumSpace.cc \
-FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.cc
+FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.cc \
+FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.cc \
+FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.cc
+

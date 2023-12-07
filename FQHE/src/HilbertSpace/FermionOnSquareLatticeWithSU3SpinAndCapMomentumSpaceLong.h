@@ -8,8 +8,9 @@
 //                                                                            //
 //              class of fermions on a square lattice with SU(3) spin         //
 //                  for more than 21 orbitals in momentum space               //
+//                 with a cap on the number of particles per band             //
 //                                                                            //
-//                        last modification : 23/11/2023                      //
+//                        last modification : 03/12/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,78 +30,62 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef FERMIONONSQUARELATTICEWITHSU3SPINMOMENTUMSPACELONG_H
-#define FERMIONONSQUARELATTICEWITHSU3SPINMOMENTUMSPACELONG_H
+#ifndef FERMIONONSQUARELATTICEWITHSU3SPINANDCAPMOMENTUMSPACELONG_H
+#define FERMIONONSQUARELATTICEWITHSU3SPINANDCAPMOMENTUMSPACELONG_H
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSphereWithSU3SpinLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
 
 #include <iostream>
 
 
 
-class FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong : public FermionOnSphereWithSU3SpinLong
+class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong
 {
 
  protected:
 
-  // number of sites in the x direction
-  int NbrSiteX;
-  // number of sites in the y direction
-  int NbrSiteY;
-
-  // momentum along the x direction
-  int KxMomentum;
-  // momentum along the y direction
-  int KyMomentum;
-
-  // flag to indicate that the Hilbert space should preserve Sz
-  bool SzFlag;
-  // flag to indicate that the Hilbert space should preserve Pz (Pz being the difference N_A - N_B)
-  bool PzFlag;
+  // maximum number of particles in band 0
+  int MaxNbrParticlesBand0;
+  // maximum number of particles in band 1
+  int MaxNbrParticlesBand1;
+  // maximum number of particles in band 2
+  int MaxNbrParticlesBand2;
 
  public:
 
-  // default constructor
-  //
-  FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong();
-  
   // basic constructor
   // 
   // nbrFermions = number of fermions
   // nbrSiteX = number of sites in the x direction
   // nbrSiteY = number of sites in the y direction
+  // maxNbrParticlesBand0 = maximum number of particles in band 0
+  // maxNbrParticlesBand1 = maximum number of particles in band 1
+  // maxNbrParticlesBand2 = maximum number of particles in band 2
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
-  FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong(const FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong& fermions);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong(const FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& fermions);
 
   // destructor
   //
-  ~FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong ();
+  ~FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong ();
 
   // assignement (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
   // return value = reference on current hilbert space
-  FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong& operator = (const FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong& fermions);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& operator = (const FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& fermions);
 
   // clone Hilbert space (without duplicating datas)
   //
   // return value = pointer to cloned Hilbert space
   AbstractHilbertSpace* Clone();
-
-  // print a given State
-  //
-  // Str = reference on current output stream 
-  // state = ID of the state to print
-  // return value = reference on current output stream 
-  virtual ostream& PrintState (ostream& Str, int state);
 
  protected:
 
@@ -111,8 +96,11 @@ class FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong : public FermionOnSpher
   // currentKy = current momentum along y for a single particle
   // currentTotalKx = current total momentum along x
   // currentTotalKy = current total momentum along y
+  // maxNbrParticlesBand0 = current maximum number of particles in band 0
+  // maxNbrParticlesBand1 = current maximum number of particles in band 1
+  // maxNbrParticlesBand2 = current maximum number of particles in band 2
   // return value = Hilbert space dimension
-  virtual long EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy);
+  virtual long EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2);
 
   // generate all states corresponding to the constraints
   // 
@@ -121,9 +109,12 @@ class FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong : public FermionOnSpher
   // currentKy = current momentum along y for a single particle
   // currentTotalKx = current total momentum along x
   // currentTotalKy = current total momentum along y
+  // maxNbrParticlesBand0 = current maximum number of particles in band 0
+  // maxNbrParticlesBand1 = current maximum number of particles in band 1
+  // maxNbrParticlesBand2 = current maximum number of particles in band 2
   // pos = position in StateDescription array where to store states
   // return value = position from which new states have to be stored
-  virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos);
+  virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, long pos);
 
 
 };

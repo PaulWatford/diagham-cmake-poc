@@ -253,14 +253,28 @@ int main(int argc, char** argv)
     }
   else
     {
-      if (NbrLz==1)
+      if (Manager.GetBoolean("gutzwiller") == false)
 	{
-	  sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz_%d.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, L);
+	  if (NbrLz==1)
+	    {
+	      sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz_%d.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, L);
+	    }
+	  else
+	    {
+	      sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax);
+	    }
 	}
       else
 	{
-	  sprintf (OutputNameLz, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax);
-	}
+	  if (NbrLz==1)
+	    {
+	      sprintf (OutputNameLz, "fermions_sphere_su2_gutzwiller_%s%s_n_%d_2s_%d_lz_%d.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax, L);
+	    }
+	  else
+	    {
+	      sprintf (OutputNameLz, "fermions_sphere_su2_gutzwiller_%s%s_n_%d_2s_%d_lz.dat", Manager.GetString("interaction-name"), ExtraTerms, NbrFermions, LzMax);
+	    }
+	}	
     }
   
   for (; L <= Max; L += 2)

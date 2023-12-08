@@ -61,6 +61,8 @@
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjection.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry.h"
 
 #include "HilbertSpace/FermionOnSphereWithSU3Spin.h"
 #include "HilbertSpace/FermionOnSphereWithSU3SpinTzSymmetry.h"
@@ -181,6 +183,7 @@ void ParticleOnSphereManager::AddOptionGroup(OptionManager* manager, const char*
 	(*SystemGroup) += new BooleanOption  ('\n', "minus-lzparity", "select the  Lz <-> -Lz symmetric sector with negative parity");
 	(*SystemGroup) += new SingleIntegerOption ('\n', "nbrspin-polarized", "number of orbitals which ar fully spin up polarized (from the one with the lowest momentum)", 0);
 	(*SystemGroup) += new BooleanOption  ('\n', "all-sz", "use Hilbert-space with all values of sz");
+	(*SystemGroup) += new BooleanOption  ('\n', "gutzwiller", "use Gutzwiller projection in orbital space (i.e., no double occupation in orbital space)");
 	if (this->FermionFlag == true) // symmetrized bases not defined for bosons at the moment
 	  {
 	    (*SystemGroup) += new BooleanOption  ('\n', "haldane", "use Haldane basis instead of the usual n-body basis");
@@ -632,7 +635,14 @@ ParticleOnSphere* ParticleOnSphereManager::GetHilbertSpaceSU2(int totalLz)
 			{
 			  if (this->Options->GetBoolean("all-sz"))
 			    {
-			      Space = new FermionOnSphereWithSpinAllSz(NbrFermions, totalLz, LzMax, MemorySpace);
+			      if (this->Options->GetBoolean("gutzwiller"))
+				{
+				  Space = new FermionOnSphereWithSpinAllSzGutzwillerProjection(NbrFermions, totalLz, LzMax, MemorySpace);
+				}
+			      else
+				{
+				  Space = new FermionOnSphereWithSpinAllSz(NbrFermions, totalLz, LzMax, MemorySpace);
+				}
 			    }
 			  else
 			    {
@@ -680,10 +690,20 @@ ParticleOnSphere* ParticleOnSphereManager::GetHilbertSpaceSU2(int totalLz)
 			    if (LzMax <= 13)
 #endif
 			      {
-				if (this->Options->GetString("load-hilbert") == 0)
-				  Space = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrFermions, totalLz, LzMax, this->Options->GetBoolean("minus-szparity"), MemorySpace);
+				if (this->Options->GetBoolean("gutzwiller") == false)
+				  {
+				    if (this->Options->GetString("load-hilbert") == 0)
+				      Space = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrFermions, totalLz, LzMax, this->Options->GetBoolean("minus-szparity"), MemorySpace);
+				    else
+				      Space = new FermionOnSphereWithSpinAllSzSzSymmetry(this->Options->GetString("load-hilbert"), MemorySpace);
+				  }
 				else
-				  Space = new FermionOnSphereWithSpinAllSzSzSymmetry(this->Options->GetString("load-hilbert"), MemorySpace);
+				  {
+				    if (this->Options->GetString("load-hilbert") == 0)
+				      Space = new FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry(NbrFermions, totalLz, LzMax, this->Options->GetBoolean("minus-szparity"), MemorySpace);
+				    else
+				      Space = new FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry(this->Options->GetString("load-hilbert"), MemorySpace);
+				  }
 			      }
 			    else
 			      {

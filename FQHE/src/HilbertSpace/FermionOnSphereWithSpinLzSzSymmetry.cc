@@ -1469,6 +1469,11 @@ int FermionOnSphereWithSpinLzSzSymmetry::SzToMinusSz (int index, double& coeffic
 int FermionOnSphereWithSpinLzSzSymmetry::FindStateIndex(unsigned long stateDescription, int lzmax)
 {
   stateDescription &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+  if ((stateDescription > (this->StateDescription[0] & FERMION_SPHERE_SU2_SYMMETRIC_MASK)) ||
+      (stateDescription < (this->StateDescription[this->HilbertSpaceDimension - 1] & FERMION_SPHERE_SU2_SYMMETRIC_MASK)))
+    {
+      return this->HilbertSpaceDimension;
+    }
   long PosMax = stateDescription >> this->LookUpTableShift[lzmax];
   long PosMin = this->LookUpTable[lzmax][PosMax];
   PosMax = this->LookUpTable[lzmax][PosMax + 1];
@@ -1490,7 +1495,11 @@ int FermionOnSphereWithSpinLzSzSymmetry::FindStateIndex(unsigned long stateDescr
   if (CurrentState == stateDescription)
     return PosMid;
   else
-    return PosMin;
+    if (((this->StateDescription[PosMin] & FERMION_SPHERE_SU2_SYMMETRIC_MASK) != stateDescription) &&
+	((this->StateDescription[PosMax] & FERMION_SPHERE_SU2_SYMMETRIC_MASK) != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
 }
 
 // evaluate wave function in real space using a given basis and only for agiven range of components

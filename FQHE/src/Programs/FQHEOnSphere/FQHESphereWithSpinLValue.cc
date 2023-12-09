@@ -38,6 +38,8 @@
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjection.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
@@ -135,6 +137,7 @@ int main(int argc, char** argv)
     FermionFlag = true;
   int TmpTotalSz = TotalSz;
   bool AllSzFlag = false;
+  bool GutzwillerFlag = false;
   if (Manager.GetBoolean("all-sz"))
     {
       TmpTotalSz = -1;
@@ -151,6 +154,10 @@ int main(int argc, char** argv)
 	}
       else
 	{
+	  if (strstr(Manager.GetString("state"), "_gutzwiller_"))
+	    {
+	      GutzwillerFlag = true;
+	    }
 	  if (SzSymmetry != 0)
 	    {
 	      SzSymmetrizedBasis = true;
@@ -267,14 +274,31 @@ int main(int argc, char** argv)
 	    {
 	      if (SzSymmetrizedBasis == false)
 		{
-		  Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		  if (GutzwillerFlag == false)
+		    {
+		      Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		    }
+		  else
+		    {
+		      Space = new FermionOnSphereWithSpinAllSzGutzwillerProjection(NbrParticles, TotalLz, LzMax, MemorySpace);
+		    }
 		}
 	      else
 		{
-		  FermionOnSphereWithSpinAllSzSzSymmetry TmpSpace (NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
-		  Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
-		  RealVector State2 = TmpSpace.ConvertToNbodyBasis(State, * ((FermionOnSphereWithSpinAllSz*) Space));
-		  State = State2;
+		  if (GutzwillerFlag == false)
+		    {
+		      FermionOnSphereWithSpinAllSzSzSymmetry TmpSpace (NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+		      Space = new FermionOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		      RealVector State2 = TmpSpace.ConvertToNbodyBasis(State, * ((FermionOnSphereWithSpinAllSz*) Space));
+		      State = State2;
+		    }
+		  else
+		    {
+		      FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry TmpSpace (NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+		      Space = new FermionOnSphereWithSpinAllSzGutzwillerProjection (NbrParticles, TotalLz, LzMax, MemorySpace);
+		      RealVector State2 = TmpSpace.ConvertToNbodyBasis(State, * ((FermionOnSphereWithSpinAllSzGutzwillerProjection*) Space));
+		      State = State2;
+		    }
 		  //		  Space = new FermionOnSphereWithSpinAllSzSzSymmetry (NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
 		}
 	    }

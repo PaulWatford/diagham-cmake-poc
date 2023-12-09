@@ -384,9 +384,18 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      sprintf (EigenvectorName, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz_%d",
-		       Manager.GetString("interaction-name"), ExtraTerms,
-		       NbrFermions, LzMax, L);
+	      if (Manager.GetBoolean("gutzwiller") == false)
+		{
+		  sprintf (EigenvectorName, "fermions_sphere_su2_%s%s_n_%d_2s_%d_lz_%d",
+			   Manager.GetString("interaction-name"), ExtraTerms,
+			   NbrFermions, LzMax, L);
+		}
+	      else
+		{
+		  sprintf (EigenvectorName, "fermions_sphere_su2_gutzwiller_%s%s_n_%d_2s_%d_lz_%d",
+			   Manager.GetString("interaction-name"), ExtraTerms,
+			   NbrFermions, LzMax, L);
+		}
 	    }
 	}
       QHEOnSphereMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName, LzMax, Projectors, NbrProjectors);

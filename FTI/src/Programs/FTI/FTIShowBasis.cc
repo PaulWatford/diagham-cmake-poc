@@ -8,6 +8,15 @@
 #include "HilbertSpace/FermionOnCubicLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnCubicLatticeWithSU4SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnHyperCubicLatticeWithSpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.h"
+
 
 #include "HilbertSpace/BosonOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/BosonOnSquareLatticeWannierSpace.h"
@@ -97,9 +106,9 @@ int main(int argc, char** argv)
     }
   
   int NbrParticles = Manager.GetInteger("nbr-particles"); 
-  int NbrSiteX = Manager.GetInteger("nbr-sitex"); 
-  int NbrSiteY = Manager.GetInteger("nbr-sitey"); 
-  int NbrSiteZ = Manager.GetInteger("nbr-sitez"); 
+  int NbrSitesX = Manager.GetInteger("nbr-sitex"); 
+  int NbrSitesY = Manager.GetInteger("nbr-sitey"); 
+  int NbrSitesZ = Manager.GetInteger("nbr-sitez"); 
   int NbrSiteT = Manager.GetInteger("nbr-sitet"); 
   int NbrAllowedKx = Manager.GetInteger("nbr-allowed-sitex"); 
   int NbrAllowedKy = Manager.GetInteger("nbr-allowed-sitey"); 
@@ -118,7 +127,7 @@ int main(int argc, char** argv)
       double Mass = 0.0;
       bool Statistics = false;
       if (FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(Manager.GetString("state"),
-							      NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy, Mass, Statistics) == false)
+							      NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Mass, Statistics) == false)
 	{
 	  cout << "error while retrieving system parameters from file name " << Manager.GetString("state") << endl;
 	  return -1;
@@ -131,7 +140,7 @@ int main(int argc, char** argv)
       if (Manager.GetBoolean("non-periodic") == true)
 	{
 	  if (Manager.GetInteger("nbr-subbands") == 1)
-	    Space = new FermionOnSquareLatticeNonPeriodicMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, NbrAllowedKx, NbrAllowedKy, MinKx, MinKy, TotalKx, TotalKy);
+	    Space = new FermionOnSquareLatticeNonPeriodicMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, NbrAllowedKx, NbrAllowedKy, MinKx, MinKy, TotalKx, TotalKy);
 	  else
 	    return 0;
 	}
@@ -141,7 +150,7 @@ int main(int argc, char** argv)
 	    {
               if (Manager.GetBoolean("3d") == false)
                 {
-                  Space = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+                  Space = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
                   if (Manager.GetString("save-hilbert") != 0)
                     {
                       Space->WriteHilbertSpace(Manager.GetString("save-hilbert"));
@@ -150,7 +159,7 @@ int main(int argc, char** argv)
                 }
               else
                 {
-                  Space = new FermionOnCubicLatticeMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, TotalKx, TotalKy, TotalKz);
+                  Space = new FermionOnCubicLatticeMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, TotalKx, TotalKy, TotalKz);
                 }
 	    }
 	  else
@@ -163,21 +172,21 @@ int main(int argc, char** argv)
 			{
 			  if (Manager.GetBoolean("spin-conserved") == false)
 			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 			    }
 			  else
 			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace(NbrParticles, (Sz + NbrParticles) / 2, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace(NbrParticles, (Sz + NbrParticles) / 2, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 			    }
 			}
 		      else
 			{
-			  Space = new FermionOnHyperCubicLatticeWithSpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, NbrSiteT, TotalKx, TotalKy, TotalKz, TotalKt);
+			  Space = new FermionOnHyperCubicLatticeWithSpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, NbrSiteT, TotalKx, TotalKy, TotalKz, TotalKt);
 			}
 		    }
 		  else
 		    {
-		      Space = new FermionOnCubicLatticeWithSpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, TotalKx, TotalKy, TotalKz);
+		      Space = new FermionOnCubicLatticeWithSpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, TotalKx, TotalKy, TotalKz);
 		    }		
 		}
 	      else
@@ -186,44 +195,133 @@ int main(int argc, char** argv)
 		    {
 		      if (Manager.GetBoolean("3d") == true)
 			{
-			  if (NbrSiteX*NbrSiteY*NbrSiteZ <= 15)
+			  if (NbrSitesX*NbrSitesY*NbrSitesZ <= 15)
 			  {
-			    Space = new FermionOnCubicLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, TotalKx, TotalKy, TotalKz);
+			    Space = new FermionOnCubicLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, TotalKx, TotalKy, TotalKz);
 			  }
 			  else
 			  {
-			     Space = new FermionOnCubicLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, TotalKx, TotalKy, TotalKz);
+			     Space = new FermionOnCubicLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, TotalKx, TotalKy, TotalKz);
 			  }
 			}
 		      else 
 			{
 			  if (Manager.GetBoolean("spin-conserved") == false)
 			    {
-			      if ((NbrSiteX * NbrSiteY) <= 16)
+			      if ((NbrSitesX * NbrSitesY) <= 16)
 				{
-				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 				}
 			      else
 				{
-				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 				}
 			    }
 			  else
 			    {
-			      if ((NbrSiteX * NbrSiteY) <= 16)
+			      if ((NbrSitesX * NbrSitesY) <= 16)
 				{
-				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy, Sz);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz);
 				}
 			      else
 				{
-				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy, Sz);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz);
 				}
 			    }
 			}
 		    }
 		  else
 		    {
-		      return 0;
+		      if (Manager.GetInteger("nbr-subbands") == 3)
+			{
+			  if (Manager.GetBoolean("3d") == false)
+			    {
+			      if (Manager.GetBoolean("4d") == false)
+				{
+				  if ((NbrSitesX * NbrSitesY) <= 21)
+				    {
+				      Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+				    }
+				  else
+				    {
+				      Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+				    }
+				}
+			    }
+			}
+		      else
+			{
+			  if (Manager.GetInteger("nbr-subbands") == 6)
+			    {
+			      if (Manager.GetBoolean("3d") == false)
+				{
+				  if (Manager.GetBoolean("4d") == false)
+				    {
+				      if (Manager.GetBoolean("spin-conserved") == false)
+					{
+					  if ((NbrSitesX * NbrSitesY) <= 10)
+					    {
+					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+					    }
+					  else
+					    {
+					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+					    }
+					}
+				      else
+					{
+					  if ((NbrSitesX * NbrSitesY) <= 10)
+					    {
+					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+					    }
+					  else
+					    {
+					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+					    }
+					}
+				    }
+				}
+			    }
+			  else
+			    {
+			      if (Manager.GetInteger("nbr-subbands") == 12)
+				{
+				  if (Manager.GetBoolean("3d") == false)
+				    {
+				      if (Manager.GetBoolean("4d") == false)
+					{
+					  if (Manager.GetBoolean("spin-conserved") == false)
+					    {
+					      if ((NbrSitesX * NbrSitesY) <= 5)
+						{
+						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+						}
+					      else
+						{
+						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+						}
+					    }
+					  else
+					    {
+					      if ((NbrSitesX * NbrSitesY) <= 5)
+						{
+						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+						}
+					      else
+						{
+						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+						}
+					    }
+					}
+				    }
+				}
+			      else
+				{
+				  cout << "number of bands not supported" << endl;
+				  return 0;
+				}
+			    }
+			}
 		    }
 		}
 	    }
@@ -237,11 +335,11 @@ int main(int argc, char** argv)
 	    {
               if (Manager.GetBoolean("wannier"))
                 {
-                  Space = new BosonOnSquareLatticeWannierSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKy);
+                  Space = new BosonOnSquareLatticeWannierSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKy);
                 }
               else
                 {
-                  Space = new BosonOnSquareLatticeMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+                  Space = new BosonOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
                 }
               if (Manager.GetString("save-hilbert") != 0)
                 {
@@ -251,7 +349,7 @@ int main(int argc, char** argv)
             }
           else
             {
-	      Space = new BosonOnCubicLatticeMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, TotalKx, TotalKy, TotalKz);
+	      Space = new BosonOnCubicLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, TotalKx, TotalKy, TotalKz);
             }
 	}
       if (Manager.GetInteger("nbr-subbands") == 2)
@@ -262,46 +360,46 @@ int main(int argc, char** argv)
 		{
 		  if (Manager.GetBoolean("spin-conserved") == false)
 		    {
-		      Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+		      Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 		    }
 		  else
 		    {
-		      Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (Sz + NbrParticles) / 2, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+		      Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (Sz + NbrParticles) / 2, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 		    }
 		}
 	      else
 		{
-		  Space = new BosonOnHyperCubicLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ, NbrSiteT,
+		  Space = new BosonOnHyperCubicLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ, NbrSiteT,
 										TotalKx, TotalKy, TotalKz, TotalKt);
 		}
 	    }
 	  else
 	    {
-	      Space = new BosonOnCubicLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ,
+	      Space = new BosonOnCubicLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ,
 								       TotalKx, TotalKy, TotalKz);
 	    }
 	}
       if (Manager.GetInteger("nbr-subbands") == 3)
 	{
-	  Space = new BosonOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+	  Space = new BosonOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 	}
       if (Manager.GetInteger("nbr-subbands") == 4)
 	{
 	  if (Manager.GetBoolean("3d") == false)
 	    {
-	      Space = new BosonOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy);
+	      Space = new BosonOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 	    }
 	  else
 	    {
-	      if (NbrParticles + NbrSiteX*NbrSiteY*NbrSiteZ <= 64)
+	      if (NbrParticles + NbrSitesX*NbrSitesY*NbrSitesZ <= 64)
 	      {
-		Space = new BosonOnCubicLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ,
-								       TotalKx, TotalKy, TotalKz);
+		Space = new BosonOnCubicLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ,
+									 TotalKx, TotalKy, TotalKz);
 	      }
 	      else
 	      {
-		Space = new BosonOnCubicLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSiteX, NbrSiteY, NbrSiteZ,
-								       TotalKx, TotalKy, TotalKz);
+		Space = new BosonOnCubicLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, NbrSitesZ,
+									     TotalKx, TotalKy, TotalKz);
 	      }
 	    }
 	}

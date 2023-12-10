@@ -25,6 +25,15 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
 
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.h"
+
 #include "HilbertSpace/FermionOnCubicLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/BosonOnCubicLatticeWithSU2SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnCubicLatticeMomentumSpace.h"
@@ -445,6 +454,62 @@ int main(int argc, char** argv)
 			}
 		    }
 		}
+	      if (NbrBands == 3)
+		{
+		  if (FlagDecoupled == false)
+		    {
+		      if (Statistics == true)
+			{
+			  if ((NbrSiteX * NbrSiteY) <= 32)
+			    {
+			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i]);
+			    }
+			  else
+			    {
+			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i]);
+			    }
+			}
+		      else
+			{
+			  cout << "bosons with 3 bands are not supported" << endl;
+			  return 0;
+			}
+		      sprintf (FileHeader, "# kx ky sigma sigma' <c^+ c>");
+		      NbrDensityIndices = 9 * NbrSiteX * NbrSiteY;
+		      NbrDensityPartialTraces = 3;
+		      PartialTraceLabels = new char* [NbrDensityPartialTraces];
+		      for (int i = 0; i < NbrDensityPartialTraces; ++i)
+			{
+			  PartialTraceLabels[i] = new char [256];
+			  sprintf(PartialTraceLabels[i], "sigma=%d", i);
+			}
+		      CreationMomentumIndices = new int[NbrDensityIndices];
+		      AnnihilationMomentumIndices = new int[NbrDensityIndices];
+		      CreationSigmaIndices = new int[NbrDensityIndices];
+		      AnnihilationSigmaIndices = new int[NbrDensityIndices];
+		      IndexLabels = new char*[NbrDensityIndices];
+		      NbrDensityIndices = 0;
+		      for (int kx = 0; kx < NbrSiteX; ++kx)
+			{	
+			  for (int ky = 0; ky < NbrSiteY; ++ky)
+			    {
+			      for (int i = 0; i <= 2; ++i)
+				{
+				  for (int j = 0; j <= 2; ++j)
+				    {
+				      CreationMomentumIndices[NbrDensityIndices] = ((kx * NbrSiteY) + ky);
+				      AnnihilationMomentumIndices[NbrDensityIndices] = ((kx * NbrSiteY) + ky);
+				      CreationSigmaIndices[NbrDensityIndices] = i;
+				      AnnihilationSigmaIndices[NbrDensityIndices] = j;
+				      IndexLabels[NbrDensityIndices] = new char[256];
+				      sprintf(IndexLabels[NbrDensityIndices], "%d %d %d %d", kx, ky, i, j);
+				      ++NbrDensityIndices;
+				    }
+				}
+			    }
+			}
+		    }
+		}
 	      if (NbrBands == 4)
 		{
 		  if (Statistics == true)
@@ -500,6 +565,61 @@ int main(int argc, char** argv)
 			}
 		    }
 		}
+	      if (NbrBands == 6)
+		{
+		  if (Statistics == true)
+		    {
+		      if ((NbrSiteX * NbrSiteY) <= 16)
+			{
+			  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU6SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			}
+		      else
+			{
+			  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			}
+		    }
+		  sprintf (FileHeader, "# kx ky spin sigma sigma' <c^+ c>");
+		  NbrDensityIndices = 18 * NbrSiteX * NbrSiteY;
+		  NbrDensityPartialTraces = 6;
+		  PartialTraceLabels = new char* [NbrDensityPartialTraces];
+		  for (int i = 0; i < NbrDensityPartialTraces; i++)
+		    {
+		      PartialTraceLabels[i] = new char [256];
+		      sprintf(PartialTraceLabels[i], "spin=%d sigma=%d", (i / 3), (i % 3));
+		    }
+		  CreationMomentumIndices = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices = new int[NbrDensityIndices];
+		  CreationSigmaIndices = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices = new int[NbrDensityIndices];
+		  IndexLabels = new char*[NbrDensityIndices];
+		  NbrDensityIndices = 0;
+		  for (int kx = 0; kx < NbrSiteX; ++kx)
+		    {	
+		      for (int ky = 0; ky < NbrSiteY; ++ky)
+			{
+			  for (int i = 0; i <= 2; ++i)
+			    {
+			      for (int j = 0; j <= 2; ++j)
+				{
+				  CreationMomentumIndices[NbrDensityIndices] = ((kx * NbrSiteY) + ky);
+				  AnnihilationMomentumIndices[NbrDensityIndices] = ((kx * NbrSiteY) + ky);
+				  CreationSigmaIndices[NbrDensityIndices] = i;
+				  AnnihilationSigmaIndices[NbrDensityIndices] = j;
+				  IndexLabels[NbrDensityIndices] = new char[256];
+				  sprintf(IndexLabels[NbrDensityIndices], "%d %d 0 %d %d", kx, ky, i, j);
+				  ++NbrDensityIndices;
+				  CreationMomentumIndices[NbrDensityIndices] = ((kx * NbrSiteY) + ky);
+				  AnnihilationMomentumIndices[NbrDensityIndices] = ((kx * NbrSiteY) + ky);
+				  CreationSigmaIndices[NbrDensityIndices] = 3 + i;
+				  AnnihilationSigmaIndices[NbrDensityIndices] = 3 + j;
+				  IndexLabels[NbrDensityIndices] = new char[256];
+				  sprintf(IndexLabels[NbrDensityIndices], "%d %d 1 %d %d", kx, ky, i, j);
+				  ++NbrDensityIndices;
+				}
+			    }
+			}
+		    }
+		}	      
 	    }
 	  else
 	    {

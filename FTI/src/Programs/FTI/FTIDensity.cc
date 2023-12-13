@@ -569,7 +569,7 @@ int main(int argc, char** argv)
 		{
 		  if (Statistics == true)
 		    {
-		      if ((NbrSiteX * NbrSiteY) <= 16)
+		      if ((NbrSiteX * NbrSiteY) <= 10)
 			{
 			  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU6SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
 			}

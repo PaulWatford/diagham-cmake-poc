@@ -95,7 +95,17 @@ FermionOnSquareLatticeWithSU6SpinMomentumSpace::FermionOnSquareLatticeWithSU6Spi
 	}
 //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
 // 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
-      this->GenerateLookUpTable(memory);
+      this->GenerateLookUpTable(memory); 
+      // cout << "start check find index" << endl;
+      // for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (i != this->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]))
+      // 	    {
+      // 	      cout << "Error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "check find index done" << endl;
+// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
       
 #ifdef __DEBUG__
       long UsedMemory = 0;
@@ -167,6 +177,23 @@ FermionOnSquareLatticeWithSU6SpinMomentumSpace::FermionOnSquareLatticeWithSU6Spi
 // 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
       this->GenerateLookUpTable(memory);
       
+      // for (int i = 1; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (this->StateDescription[i - 1] < this->StateDescription[i])
+      // 	    {
+      // 	      cout << "sorting error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "start check find index" << endl;
+      // for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (i != this->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]))
+      // 	    {
+      // 	      cout << "Error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "check find index done" << endl;
+
 #ifdef __DEBUG__
       long UsedMemory = 0;
       UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));

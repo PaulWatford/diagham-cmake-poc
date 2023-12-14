@@ -7,9 +7,10 @@
 //                                                                            //
 //                                                                            //
 //              class of fermions on a square lattice with SU(3) spin         //
+//                  for more than 21 orbitals in momentum space               //
 //                          in a filtered momentum space                      //
 //                                                                            //
-//                        last modification : 13/12/2023                      //
+//                        last modification : 14/12/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,24 +30,24 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef FERMIONONSQUARELATTICEWITHSU3SPINFILTEREDMOMENTUMSPACE_H
-#define FERMIONONSQUARELATTICEWITHSU3SPINFILTEREDMOMENTUMSPACE_H
+#ifndef FERMIONONSQUARELATTICEWITHSU3SPINFILTEREDMOMENTUMSPACELONG_H
+#define FERMIONONSQUARELATTICEWITHSU3SPINFILTEREDMOMENTUMSPACELONG_H
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
 
 #include <iostream>
 
 
 
-class FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace : public FermionOnSquareLatticeWithSU3SpinMomentumSpace
+class FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong : public FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong
 {
 
  protected:
 
   // orbital filering mask (i.e. state should be 0 once the mask is applied)
-  unsigned long OrbitalFilteringMask;
-
+  ULONGLONG OrbitalFilteringMask;
+  
  public:
 
   // basic constructor
@@ -58,28 +59,27 @@ class FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace : public FermionOnS
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
-  FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace(const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& fermions);
+  FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong(const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& fermions);
 
   // destructor
   //
-  ~FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace ();
+  ~FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong ();
 
   // assignement (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
   // return value = reference on current hilbert space
-  FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& operator = (const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& fermions);
+  FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& operator = (const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& fermions);
 
   // clone Hilbert space (without duplicating datas)
   //
   // return value = pointer to cloned Hilbert space
   AbstractHilbertSpace* Clone();
-
 
  protected:
 
@@ -87,7 +87,6 @@ class FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace : public FermionOnS
   //
   // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
   virtual void FilterHilbertSpace(char* allowedOrbitalsFileName);
-
 
 };
 

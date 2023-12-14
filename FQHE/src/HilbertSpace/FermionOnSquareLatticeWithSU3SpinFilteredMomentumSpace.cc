@@ -41,6 +41,7 @@
 #include "GeneralTools/UnsignedIntegerTools.h"
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
+#include "GeneralTools/MultiColumnASCIIFile.h"
 
 #include <math.h>
 #include <cstdlib>
@@ -202,24 +203,61 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& FermionOnSquareLatticeWi
   return *this;
 }
 
+// clone Hilbert space (without duplicating datas)
+//
+// return value = pointer to cloned Hilbert space
+
+AbstractHilbertSpace* FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::Clone()
+{
+  return new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace(*this);
+}
+
 // filter Hilbert to remove forbidden orbitals
 //
 // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
 
 void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FilterHilbertSpace(char* allowedOrbitalsFileName)
 {
+  MultiColumnASCIIFile AllowedOrbitalsFile;
+  if (AllowedOrbitalsFile.Parse(allowedOrbitalsFileName) == false)
+    {
+      AllowedOrbitalsFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  if (AllowedOrbitalsFile.GetNbrLines() == 0)
+    {
+      cout << allowedOrbitalsFileName << " is an empty file" << endl;
+      exit(0);
+    }
+  if (AllowedOrbitalsFile.GetNbrColumns() < 3)
+    {
+      cout << allowedOrbitalsFileName << " needs at least three columns" << endl;
+      exit(0);
+    }
+  int* TmpKxValues = AllowedOrbitalsFile.GetAsIntegerArray(0);
+  int* TmpKyValues = AllowedOrbitalsFile.GetAsIntegerArray(1);
+  int* TmpBandValues = AllowedOrbitalsFile.GetAsIntegerArray(2);
+  
+  this->OrbitalFilteringMask = 0x0ul;
+  for (int i = 0 ; i < AllowedOrbitalsFile.GetNbrLines(); ++i)
+    {
+      this->OrbitalFilteringMask |= 0x1ul << ((((TmpKxValues[i]  * this->NbrSiteY) + TmpKyValues[i]) * 3) + TmpBandValues[i]);
+    }
+  this->OrbitalFilteringMask = ~this->OrbitalFilteringMask;
+  
   long TmpHilbertSpaceDimension = 0l;
   for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
     {
-      if (this->StateDescription[i] == 0x0ul)
+      if ((this->StateDescription[i] & this->OrbitalFilteringMask) == 0x0ul)
 	{
 	  TmpHilbertSpaceDimension++;
 	}
     }
   unsigned long* TmpStateDescription = new unsigned long [TmpHilbertSpaceDimension];
+  TmpHilbertSpaceDimension = 0l;
   for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
     {
-      if (this->StateDescription[i] == 0x0ul)
+      if ((this->StateDescription[i] & this->OrbitalFilteringMask) == 0x0ul)
 	{
 	  TmpStateDescription[TmpHilbertSpaceDimension] = this->StateDescription[i];
 	  TmpHilbertSpaceDimension++;

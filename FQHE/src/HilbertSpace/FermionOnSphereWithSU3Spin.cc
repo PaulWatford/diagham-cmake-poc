@@ -300,6 +300,10 @@ double FermionOnSphereWithSU3Spin::Ad3A3 (int index, int m)
 
 int FermionOnSphereWithSU3Spin::FindStateIndex(unsigned long stateDescription, int lzmax)
 {
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
+    {
+      return this->HilbertSpaceDimension;
+    }
   unsigned long CurrentState = stateDescription >> this->LookUpTableShift[lzmax];
   int PosMin = this->LookUpTable[lzmax][CurrentState];
   int PosMax = this->LookUpTable[lzmax][CurrentState+ 1];
@@ -321,7 +325,10 @@ int FermionOnSphereWithSU3Spin::FindStateIndex(unsigned long stateDescription, i
   if (CurrentState == stateDescription)
     return PosMid;
   else
-    return PosMin;
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
 }
 
 
@@ -455,46 +462,54 @@ long FermionOnSphereWithSU3Spin::GenerateStates(int nbrFermions, int lzMax, int 
 
 void FermionOnSphereWithSU3Spin::GenerateLookUpTable(unsigned long memory)
 {
-  // get every highest bit poisition
+   // get every highest bit poisition
   unsigned long TmpPosition = this->StateDescription[0];
-  int CurrentHighestBit = (this->LzMax + 1) * 3 - 1;
-  while ((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul)
-    --CurrentHighestBit;  
-  int MaxHighestBit = CurrentHighestBit;
-  this->StateHighestBit[0] = CurrentHighestBit;
-  for (int i = 1; i < this->HilbertSpaceDimension; ++i)
+#ifdef __64_BITS__
+  int CurrentHighestBit = 63;
+#else
+  int CurrentHighestBit = 31;
+#endif
+  while (((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul) && (CurrentHighestBit > 0))
+    --CurrentHighestBit;
+  
+  if (this->StateHighestBit != 0)
     {
-      TmpPosition = this->StateDescription[i];
-      while ((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul)
-	--CurrentHighestBit;  
-      this->StateHighestBit[i] = CurrentHighestBit;
-   }
+      this->StateHighestBit[0] = CurrentHighestBit;
+      for (int i = 1; i < this->HilbertSpaceDimension; ++i)
+	{
+	  TmpPosition = this->StateDescription[i];
+	  while (((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul) && (CurrentHighestBit > 0))
+	    --CurrentHighestBit;  
+	  this->StateHighestBit[i] = CurrentHighestBit;
+	}
+      CurrentHighestBit = this->StateHighestBit[0];
+    }
 
   // evaluate look-up table size
-  memory /= (sizeof(int*) * MaxHighestBit);
+  memory /= (sizeof(int*) * 3 * this->NbrLzValue);
   this->MaximumLookUpShift = 1;
   while (memory > 0)
     {
       memory >>= 1;
       ++this->MaximumLookUpShift;
     }
-  if (this->MaximumLookUpShift > MaxHighestBit)
-    this->MaximumLookUpShift = MaxHighestBit;
+  if (this->MaximumLookUpShift > (6 * this->NbrLzValue))
+    this->MaximumLookUpShift = (6 * this->NbrLzValue);
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
-  this->LookUpTable = new int* [MaxHighestBit + 1];
-  this->LookUpTableShift = new int [MaxHighestBit + 1];
-  for (int i = 0; i <= MaxHighestBit; ++i)
-    this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
-
   CurrentHighestBit = this->StateHighestBit[0];
-  int* TmpLookUpTable = this->LookUpTable[CurrentHighestBit];
-  if (CurrentHighestBit < this->MaximumLookUpShift)
-    this->LookUpTableShift[CurrentHighestBit] = 0;
+  this->LookUpTable = new int* [CurrentHighestBit + 1];
+  this->LookUpTableShift = new int [CurrentHighestBit + 1];
+  for (int i = 0; i <= CurrentHighestBit; ++i)
+    this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+  int CurrentLargestBit = CurrentHighestBit;
+  int* TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
+  if (CurrentLargestBit < this->MaximumLookUpShift)
+    this->LookUpTableShift[CurrentLargestBit] = 0;
   else
-    this->LookUpTableShift[CurrentHighestBit] = CurrentHighestBit + 1 - this->MaximumLookUpShift;
-  int CurrentShift = this->LookUpTableShift[CurrentHighestBit];
+    this->LookUpTableShift[CurrentLargestBit] = CurrentLargestBit + 1 - this->MaximumLookUpShift;
+  int CurrentShift = this->LookUpTableShift[CurrentLargestBit];
   unsigned long CurrentLookUpTableValue = this->LookUpTableMemorySize;
   unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
   while (CurrentLookUpTableValue > TmpLookUpTableValue)
@@ -504,8 +519,11 @@ void FermionOnSphereWithSU3Spin::GenerateLookUpTable(unsigned long memory)
     }
   TmpLookUpTable[CurrentLookUpTableValue] = 0;
   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-    {
-      if (CurrentHighestBit != this->StateHighestBit[i])
+    {     
+      TmpPosition = this->StateDescription[i];
+      while (((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul) && (CurrentHighestBit > 0))
+	--CurrentHighestBit;  
+      if (CurrentLargestBit != CurrentHighestBit)
 	{
 	  while (CurrentLookUpTableValue > 0)
 	    {
@@ -513,13 +531,28 @@ void FermionOnSphereWithSU3Spin::GenerateLookUpTable(unsigned long memory)
 	      --CurrentLookUpTableValue;
 	    }
 	  TmpLookUpTable[0] = i;
- 	  CurrentHighestBit = this->StateHighestBit[i];
-	  TmpLookUpTable = this->LookUpTable[CurrentHighestBit];
-	  if (CurrentHighestBit < this->MaximumLookUpShift)
-	    this->LookUpTableShift[CurrentHighestBit] = 0;
+	  CurrentLargestBit--;
+	  while (CurrentLargestBit > CurrentHighestBit)
+	    {
+	      if (CurrentLargestBit < this->MaximumLookUpShift)
+		this->LookUpTableShift[CurrentLargestBit] = 0;
+	      else
+		this->LookUpTableShift[CurrentLargestBit] = CurrentLargestBit + 1 - this->MaximumLookUpShift;
+	      TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
+	      CurrentLookUpTableValue = this->LookUpTableMemorySize;
+	      while (CurrentLookUpTableValue > 0x0ul)
+		{
+		  TmpLookUpTable[CurrentLookUpTableValue] = i;
+		  --CurrentLookUpTableValue;
+		}
+	      CurrentLargestBit--;
+	    }
+	  TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
+	  if (CurrentLargestBit < this->MaximumLookUpShift)
+	    this->LookUpTableShift[CurrentLargestBit] = 0;
 	  else
-	    this->LookUpTableShift[CurrentHighestBit] = CurrentHighestBit + 1 - this->MaximumLookUpShift;
-	  CurrentShift = this->LookUpTableShift[CurrentHighestBit];
+	    this->LookUpTableShift[CurrentLargestBit] = CurrentLargestBit + 1 - this->MaximumLookUpShift;
+	  CurrentShift = this->LookUpTableShift[CurrentLargestBit];
 	  TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
 	  CurrentLookUpTableValue = this->LookUpTableMemorySize;
 	  while (CurrentLookUpTableValue > TmpLookUpTableValue)
@@ -549,7 +582,15 @@ void FermionOnSphereWithSU3Spin::GenerateLookUpTable(unsigned long memory)
       --CurrentLookUpTableValue;
     }
   TmpLookUpTable[0] = this->HilbertSpaceDimension - 1;
+  this->GenerateSignLookUpTable();
 
+}
+
+// generate look-up table for sign calculation
+//
+
+void FermionOnSphereWithSU3Spin::GenerateSignLookUpTable()
+{
   // look-up tables for evaluating sign when applying creation/annihilation operators
   int Size = 1 << this->MaximumSignLookUp;
   this->SignLookUpTable = new double [Size];

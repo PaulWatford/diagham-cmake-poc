@@ -101,9 +101,29 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
-//       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
+
       this->GenerateLookUpTable(memory);
+
+      // for (int i = 1; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (this->StateDescription[i - 1] < this->StateDescription[i])
+      // 	    {
+      // 	      cout << "sorting error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "start check find index" << endl;
+      // for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (i != this->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]))
+      // 	    {
+      // 	      cout << "Error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "check find index done" << endl;
+
+      
+      //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
       
 #ifdef __DEBUG__
       long UsedMemory = 0;

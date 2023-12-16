@@ -92,8 +92,9 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatti
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
-      this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
-      this->StateHighestBit = new int [this->HilbertSpaceDimension];  
+      cout << "temporary Hilbert space dimension: " << this->LargeHilbertSpaceDimension << endl;
+      this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
+      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
       long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
       if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
 	{

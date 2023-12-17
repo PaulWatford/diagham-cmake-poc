@@ -1,0 +1,141 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                                                                            //
+//                            DiagHam  version 0.01                           //
+//                                                                            //
+//                    Copyright (C) 2001-2011 Nicolas Regnault                //
+//                                                                            //
+//                                                                            //
+//              class of fermions on a square lattice with SU(4) spin         //
+//                          in a filtered momentum space                      //
+//                                                                            //
+//                        last modification : 16/12/2023                      //
+//                                                                            //
+//                                                                            //
+//    This program is free software; you can redistribute it and/or modify    //
+//    it under the terms of the GNU General Public License as published by    //
+//    the Free Software Foundation; either version 2 of the License, or       //
+//    (at your option) any later version.                                     //
+//                                                                            //
+//    This program is distributed in the hope that it will be useful,         //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of          //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           //
+//    GNU General Public License for more details.                            //
+//                                                                            //
+//    You should have received a copy of the GNU General Public License       //
+//    along with this program; if not, write to the Free Software             //
+//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.               //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+#ifndef FERMIONONSQUARELATTICEWITHSU4SPINFILTEREDMOMENTUMSPACE_H
+#define FERMIONONSQUARELATTICEWITHSU4SPINFILTEREDMOMENTUMSPACE_H
+
+#include "config.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
+
+
+#include <iostream>
+
+
+
+class FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace : public FermionOnSquareLatticeWithSU4SpinMomentumSpace
+{
+
+ protected:
+
+  // orbital filering mask (i.e. state should be 0 once the mask is applied)
+  unsigned long OrbitalFilteringMask;
+  
+ public:
+
+  // default constructor
+  //
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace ();
+
+  // basic constructor
+  // 
+  // nbrFermions = number of fermions
+  // nbrSiteX = number of sites in the x direction
+  // nbrSiteY = number of sites in the y direction
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  // kxMomentum = momentum along the x direction
+  // kyMomentum = momentum along the y direction
+  // memory = amount of memory granted for precalculations
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  
+  // constructor when preserving only spin
+  // 
+  // nbrFermions = number of fermions
+  // nbrSiteX = number of sites in the x direction
+  // nbrSiteY = number of sites in the y direction
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  // kxMomentum = momentum along the x direction
+  // kyMomentum = momentum along the y direction
+  // totalSpin = twice the total spin value
+  // memory = amount of memory granted for precalculations
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, int totalSpin, unsigned long memory = 10000000);
+
+  // constructor when preserving spin and isospin
+  // 
+  // nbrFermions = number of fermions
+  // nbrSiteX = number of sites in the x direction
+  // nbrSiteY = number of sites in the y direction
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  // kxMomentum = momentum along the x direction
+  // kyMomentum = momentum along the y direction
+  // totalSpin = twice the total spin value
+  // totalIsospin = twice the total isospin value
+  // memory = amount of memory granted for precalculations
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, int totalSpin, int totalIsospin, unsigned long memory = 10000000);
+
+  // constructor when preserving the three Cartan quantum numbers
+  // 
+  // nbrFermions = number of fermions
+  // nbrSiteX = number of sites in the x direction
+  // nbrSiteY = number of sites in the y direction
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  // kxMomentum = momentum along the x direction
+  // kyMomentum = momentum along the y direction
+  // totalSpin = twice the total spin value
+  // totalIsospin = twice the total isospin value
+  // totalEntanglement = twice the total entanglement value
+  // memory = amount of memory granted for precalculations
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, int totalSpin, int totalIsospin,
+						  int totalEntanglement, unsigned long memory = 10000000);
+
+  // copy constructor (without duplicating datas)
+  //
+  // fermions = reference on the hilbert space to copy to copy
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace(const FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace& fermions);
+
+  // destructor
+  //
+  ~FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace ();
+
+  // assignement (without duplicating datas)
+  //
+  // fermions = reference on the hilbert space to copy to copy
+  // return value = reference on current hilbert space
+  FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace& operator = (const FermionOnSquareLatticeWithSU4SpinFilteredMomentumSpace& fermions);
+
+  // clone Hilbert space (without duplicating datas)
+  //
+  // return value = pointer to cloned Hilbert space
+  AbstractHilbertSpace* Clone();
+
+
+ protected:
+
+  // filter Hilbert to remove forbidden orbitals
+  //
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  virtual void FilterHilbertSpace(char* allowedOrbitalsFileName);
+  
+};
+
+
+#endif
+
+

@@ -3,6 +3,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry.h"
@@ -73,6 +74,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-kx", "only evalute a given x momentum sector (negative if all kx sectors have to be computed)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-ky", "only evalute a given y momentum sector (negative if all ky sectors have to be computed)", -1);
   (*SystemGroup) += new BooleanOption  ('\n', "full-momentum", "compute the spectrum for all momentum sectors, disregarding symmetries");
+  (*SystemGroup) += new BooleanOption  ('\n', "3band-convention", "use the same convention than the three band code (safest option)"); 
   (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics instead of fermionic statistics");
   (*SystemGroup) += new SingleStringOption  ('\n', "interaction-file", "name of the file containing the two-body interaction matrix elements");
   (*SystemGroup) += new BooleanOption  ('\n', "real-interaction", "assume that the two-body interaction matrix elements are real");
@@ -1654,10 +1656,17 @@ int main(int argc, char** argv)
 		{
 		  // no valley, no spin
 		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
-		    {
+		    {		      
 		      if ((NbrSitesX * NbrSitesY) <= 32)
 			{
-			  Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  if (Manager.GetBoolean("3band-convention"))
+			    {
+			      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			    }
+			  else
+			    {
+			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			    }
 			}
 		      else
 			{
@@ -1668,7 +1677,14 @@ int main(int argc, char** argv)
 		    {
 		      if ((NbrSitesX * NbrSitesY) <= 32)
 			{
-			  Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  if (Manager.GetBoolean("3band-convention"))
+			    {
+			      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			    }
+			  else
+			    {
+			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			    }
 			}
 		      else
 			{

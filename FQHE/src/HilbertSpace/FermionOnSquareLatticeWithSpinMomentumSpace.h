@@ -60,6 +60,10 @@ class FermionOnSquareLatticeWithSpinMomentumSpace : public FermionOnSphereWithSp
 
  public:
 
+  // default constructor
+  //
+  FermionOnSquareLatticeWithSpinMomentumSpace ();
+  
   // basic constructor
   // 
   // nbrFermions = number of fermions

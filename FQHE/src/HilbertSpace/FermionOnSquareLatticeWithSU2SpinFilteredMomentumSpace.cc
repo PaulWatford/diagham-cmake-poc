@@ -6,10 +6,11 @@
 //                    Copyright (C) 2001-2011 Nicolas Regnault                //
 //                                                                            //
 //                                                                            //
-//              class of fermions on a square lattice with SU(3) spin         //
-//       in momentum space with a cap on the number of particles per band     //
+//                   class of fermions on square lattice with spin            //
+//                        in filtered momentum space                          //
+// using a simplified version more in line with SU(3), SU(6) or SU(12) codes  //
 //                                                                            //
-//                        last modification : 03/12/2023                      //
+//                        last modification : 17/12/2023                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -30,7 +31,7 @@
 
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "QuantumNumber/SzQuantumNumber.h"
 #include "Matrix/ComplexMatrix.h"
@@ -41,6 +42,8 @@
 #include "GeneralTools/UnsignedIntegerTools.h"
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
+#include "GeneralTools/ArrayTools.h"
+#include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
 #include "GeneralTools/MultiColumnASCIIFile.h"
 
 #include <math.h>
@@ -66,20 +69,20 @@ using std::ios;
 // kyMomentum = momentum along the y direction
 // memory = amount of memory granted for precalculations
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory)
+FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory)
 {  
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
   this->SzFlag = false;
-  this->PzFlag = false;
   this->TotalLz = 0;
-  this->TotalTz = 0;
-  this->TotalY = 0;
+  this->TotalSpin = 0;
+  this->NbrFermionsUp = 0;
+  this->NbrFermionsDown = 0;
   this->NbrSiteX = nbrSiteX;
   this->NbrSiteY = nbrSiteY;
+  this->OrbitalFilteringMask = 0x0ul;
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
-  this->OrbitalFilteringMask = 0x0ul;
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
@@ -92,16 +95,100 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FermionOnSquareLatticeWi
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
+      this->TargetSpace = this;
       this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
+      this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
+      this->FilterHilbertSpace(allowedOrbitalsFileName);
+      this->GenerateLookUpTable(memory);
+      
+#ifdef __DEBUG__
+      long UsedMemory = 0;
+      UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
+      cout << "memory requested for Hilbert space = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+      UsedMemory = this->NbrLzValue * sizeof(int);
+      UsedMemory += this->NbrLzValue * this->LookUpTableMemorySize * sizeof(int);
+      cout << "memory requested for lookup table = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+#endif
+    }
+}
+
+// basic constructor when Sz is preserved
+// 
+// nbrFermions = number of fermions
+// nbrSpinUp = number of particles with spin up
+// nbrSiteX = number of sites in the x direction
+// nbrSiteY = number of sites in the y direction
+// allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+// kxMomentum = momentum along the x direction
+// kyMomentum = momentum along the y direction
+// memory = amount of memory granted for precalculations
+
+FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace (int nbrFermions, int nbrSpinUp, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory)
+{
+  this->NbrFermions = nbrFermions;
+  this->IncNbrFermions = this->NbrFermions + 1;
+  this->SzFlag = true;
+  this->TotalLz = 0;
+  this->NbrFermionsUp = nbrSpinUp;
+  this->NbrFermionsDown = this->NbrFermions - this->NbrFermionsUp;
+  this->TotalSpin = (this->NbrFermionsUp - this->NbrFermionsDown);
+  this->OrbitalFilteringMask = 0x0ul;
+  this->NbrSiteX = nbrSiteX;
+  this->NbrSiteY = nbrSiteY;
+  this->KxMomentum = kxMomentum;
+  this->KyMomentum = kyMomentum;
+  this->LzMax = this->NbrSiteX * this->NbrSiteY;
+  this->NbrLzValue = this->LzMax + 1;
+  this->MaximumSignLookUp = 16;
+  if (this->NbrFermions <= (this->NbrSiteX * this->NbrSiteY))
+    {
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp);
+    }
+  else
+    {
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) * this->NbrSiteY, (this->NbrSiteY * (this->NbrSiteY - 1)) * this->NbrSiteX, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp);      
+    }
+  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+    this->HilbertSpaceDimension = 0;
+  else
+    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+  cout << "Temporary Hilbert space dimension: " << this->LargeHilbertSpaceDimension << endl;
+  if ( this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->Flag.Initialize();
+      this->TargetSpace = this;
+      this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];
+      long TmpLargeHilbertSpaceDimension = 0l;
+      if (this->NbrFermions <= (this->NbrSiteX * this->NbrSiteY))
+	{
+	   TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp, 0l);
+	}
+      else
+	{
+	  TmpLargeHilbertSpaceDimension = this->GenerateStatesHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) * this->NbrSiteY, (this->NbrSiteY * (this->NbrSiteY - 1)) * this->NbrSiteX, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp, 0l);
+	  SortArrayDownOrdering<unsigned long>(this->StateDescription, TmpLargeHilbertSpaceDimension);
+	}
       if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
       this->FilterHilbertSpace(allowedOrbitalsFileName);
-//       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
       this->GenerateLookUpTable(memory);
       
 #ifdef __DEBUG__
@@ -133,7 +220,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FermionOnSquareLatticeWi
 //
 // fermions = reference on the hilbert space to copy to copy
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace(const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& fermions)
+FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace(const FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace& fermions)
 {
   this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
   this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
@@ -143,15 +230,18 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FermionOnSquareLatticeWi
   this->TotalLz = fermions.TotalLz;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
-  this->OrbitalFilteringMask = fermions.OrbitalFilteringMask;
   this->KxMomentum = fermions.KxMomentum;
   this->KyMomentum = fermions.KyMomentum;
   this->LzMax = fermions.LzMax;
   this->NbrLzValue = fermions.NbrLzValue;
-  this->TotalTz = fermions.TotalTz;
-  this->TotalY = fermions.TotalY;
+  this->TotalSpin = fermions.TotalSpin;
+  this->SzFlag = fermions.SzFlag;
+  this->OrbitalFilteringMask = fermions.OrbitalFilteringMask;
+  this->NbrFermionsUp = fermions.NbrFermionsUp;
+  this->NbrFermionsDown = fermions.NbrFermionsDown;
   this->StateDescription = fermions.StateDescription;
   this->StateHighestBit = fermions.StateHighestBit;
+  this->HighestBit = fermions.HighestBit;
   this->MaximumLookUpShift = fermions.MaximumLookUpShift;
   this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
   this->LookUpTableShift = fermions.LookUpTableShift;
@@ -159,12 +249,16 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FermionOnSquareLatticeWi
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
 }
 
 // destructor
 //
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::~FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace ()
+FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::~FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace ()
 {
 }
 
@@ -173,13 +267,17 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::~FermionOnSquareLatticeW
 // fermions = reference on the hilbert space to copy to copy
 // return value = reference on current hilbert space
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::operator = (const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& fermions)
+FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace& FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::operator = (const FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace& fermions)
 {
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
       delete[] this->StateDescription;
       delete[] this->StateHighestBit;
     }
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
   this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
   this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
   this->Flag = fermions.Flag;
@@ -187,16 +285,16 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& FermionOnSquareLatticeWi
   this->IncNbrFermions = fermions.IncNbrFermions;
   this->TotalLz = fermions.TotalLz;
   this->LzMax = fermions.LzMax;
+  this->OrbitalFilteringMask = fermions.OrbitalFilteringMask;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
-  this->OrbitalFilteringMask = fermions.OrbitalFilteringMask;
   this->KxMomentum = fermions.KxMomentum;
   this->KyMomentum = fermions.KyMomentum;
   this->NbrLzValue = fermions.NbrLzValue;
   this->SzFlag = fermions.SzFlag;
-  this->PzFlag = fermions.PzFlag;
-  this->TotalTz = fermions.TotalTz;
-  this->TotalY  = fermions.TotalY;
+  this->TotalSpin = fermions.TotalSpin;
+  this->NbrFermionsUp = fermions.NbrFermionsUp;
+  this->NbrFermionsDown = fermions.NbrFermionsDown;
   this->StateDescription = fermions.StateDescription;
   this->StateHighestBit = fermions.StateHighestBit;
   this->MaximumLookUpShift = fermions.MaximumLookUpShift;
@@ -210,16 +308,16 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace& FermionOnSquareLatticeWi
 //
 // return value = pointer to cloned Hilbert space
 
-AbstractHilbertSpace* FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::Clone()
+AbstractHilbertSpace* FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::Clone()
 {
-  return new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace(*this);
+  return new FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace(*this);
 }
 
 // filter Hilbert to remove forbidden orbitals
 //
 // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
 
-void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FilterHilbertSpace(char* allowedOrbitalsFileName)
+void FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace::FilterHilbertSpace(char* allowedOrbitalsFileName)
 {
   MultiColumnASCIIFile AllowedOrbitalsFile;
   if (AllowedOrbitalsFile.Parse(allowedOrbitalsFileName) == false)
@@ -244,7 +342,7 @@ void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace::FilterHilbertSpace(
   this->OrbitalFilteringMask = 0x0ul;
   for (int i = 0 ; i < AllowedOrbitalsFile.GetNbrLines(); ++i)
     {
-      this->OrbitalFilteringMask |= 0x1ul << ((((TmpKxValues[i]  * this->NbrSiteY) + TmpKyValues[i]) * 3) + TmpBandValues[i]);
+      this->OrbitalFilteringMask |= 0x1ul << ((((TmpKxValues[i]  * this->NbrSiteY) + TmpKyValues[i]) << 1) + TmpBandValues[i]);
     }
   this->OrbitalFilteringMask = ~this->OrbitalFilteringMask;
   

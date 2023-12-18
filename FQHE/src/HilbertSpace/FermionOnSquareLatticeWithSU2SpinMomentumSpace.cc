@@ -58,6 +58,13 @@ using std::ifstream;
 using std::ios;
 
 
+// default constructor
+//
+
+FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2SpinMomentumSpace()
+{
+}
+  
 // basic constructor
 // 
 // nbrFermions = number of fermions

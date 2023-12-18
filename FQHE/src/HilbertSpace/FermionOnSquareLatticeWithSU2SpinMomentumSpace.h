@@ -49,6 +49,10 @@ class FermionOnSquareLatticeWithSU2SpinMomentumSpace : public FermionOnSquareLat
 
  public:
 
+  // default constructor
+  //
+  FermionOnSquareLatticeWithSU2SpinMomentumSpace();
+  
   // basic constructor
   // 
   // nbrFermions = number of fermions

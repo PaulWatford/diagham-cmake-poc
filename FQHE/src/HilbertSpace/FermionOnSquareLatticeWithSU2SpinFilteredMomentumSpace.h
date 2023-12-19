@@ -97,7 +97,32 @@ public:
 
 protected:
 
+  // generate all states corresponding to the constraints
+  // 
+  // nbrFermions = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // pos = position in StateDescription array where to store states
+  // return value = position from which new states have to be stored
+  virtual long GenerateFilteredStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos);
+
+  // evaluate Hilbert space dimension
+  //
+  // nbrFermions = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // return value = Hilbert space dimension
+  virtual long EvaluateFilteredHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy);
   
+  // parse the ascii file providing the orbitals that are allowed
+  //
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  virtual void ParseOrbitalFile(char* allowedOrbitalsFileName);
+
   // filter Hilbert to remove forbidden orbitals
   //
   // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed

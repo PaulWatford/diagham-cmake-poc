@@ -98,7 +98,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
-  
+  (*ToolsGroup) += new SingleStringOption  ('\n', "export-hamiltonian", "export matrix representation of the hamiltonian in sparse format (provide ASCII file)", 0);  
   (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
   (*MiscGroup) += new SingleStringOption('\n', "conjugate-vector", "name of the file containing the state vector that will be used for inner product with H|psi_0>, where psi_0 is provided by --energy-expectation");
   (*MiscGroup) += new SingleStringOption('\n', "store-vector", "name of the file containing the vector obtained by acting with H on the ground state");

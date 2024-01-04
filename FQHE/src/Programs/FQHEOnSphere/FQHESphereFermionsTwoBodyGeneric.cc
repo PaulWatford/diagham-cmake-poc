@@ -359,8 +359,8 @@ int main(int argc, char** argv)
        }   
 	  return 0;
   	 }
-      
-      Hamiltonian->ShiftHamiltonian(Shift);
+
+    Hamiltonian->ShiftHamiltonian(Shift);
 //       AbstractQHEHamiltonian *Projector=NULL;
 //       if (Manager.GetBoolean("l2-project"))
 // 	{
@@ -395,6 +395,8 @@ int main(int argc, char** argv)
 	}
       
       QHEOnSphereMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName, LzMax, Projectors, NbrProjectors);
+      if (Manager.GetString("export-hamiltonian") != 0)
+        return 0;            
       MainTaskOperation TaskOperation (&Task);
       TaskOperation.ApplyOperation(Architecture.GetArchitecture());
       if (EigenvectorName != 0)

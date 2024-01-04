@@ -217,6 +217,7 @@ int main(int argc, char** argv)
 	  return 0;
   	 }
       
+     
       Hamiltonian->ShiftHamiltonian(Shift);
       char* EigenvectorName = 0;
       if (Manager.GetBoolean("eigenstate") == true)	
@@ -225,6 +226,8 @@ int main(int argc, char** argv)
 	  sprintf (EigenvectorName, "bosons_%s_n_%d_2s_%d_lz_%d", InteractionName, NbrBosons, LzMax, L);
 	}
       QHEOnSphereMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName, LzMax);
+      if (Manager.GetString("export-hamiltonian") != 0)
+        return 0;            
       MainTaskOperation TaskOperation (&Task);
       TaskOperation.ApplyOperation(Architecture.GetArchitecture());
       delete Hamiltonian;

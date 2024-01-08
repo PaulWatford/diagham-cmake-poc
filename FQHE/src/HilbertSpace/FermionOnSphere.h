@@ -1548,4 +1548,6 @@ inline void FermionOnSphere::GetOccupationNumber(long index, unsigned long*& fin
     finalState[l] = (TmpState >> l) & 0x1ul;
 }
 
+
+
 #endif

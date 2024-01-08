@@ -56,6 +56,16 @@ using std::ifstream;
 using std::ios;
 
 
+// default constructor
+//
+
+FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong()
+{
+  this->MaxNbrParticlesBand0 = 0;
+  this->MaxNbrParticlesBand1 = 0;
+  this->MaxNbrParticlesBand2 = 0;
+}
+  
 // basic constructor
 // 
 // nbrFermions = number of fermions

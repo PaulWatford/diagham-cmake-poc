@@ -1484,8 +1484,11 @@ int FermionOnSphere::CheckOrder (int* m, int* n, int nbrIndices)
 
 int FermionOnSphere::FindStateIndex(unsigned long stateDescription, int lzmax)
 {
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
+    {
+      return this->HilbertSpaceDimension;
+    }
   long PosMax = stateDescription >> this->LookUpTableShift[lzmax];
-//   cout << this->LookUpTableShift[lzmax] << endl;
   long PosMin = this->LookUpTable[lzmax][PosMax];
   PosMax = this->LookUpTable[lzmax][PosMax + 1];
   long PosMid = (PosMin + PosMax) >> 1;
@@ -1506,7 +1509,33 @@ int FermionOnSphere::FindStateIndex(unsigned long stateDescription, int lzmax)
   if (CurrentState == stateDescription)
     return PosMid;
   else
-    return PosMin;
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
+  // old code (new one is based on FermionOnSphereWithSpin) - 01/04/2024
+  // long PosMax = stateDescription >> this->LookUpTableShift[lzmax];
+  // long PosMin = this->LookUpTable[lzmax][PosMax];
+  // PosMax = this->LookUpTable[lzmax][PosMax + 1];
+  // long PosMid = (PosMin + PosMax) >> 1;
+  // unsigned long CurrentState = this->StateDescription[PosMid];
+  // while ((PosMax != PosMid) && (CurrentState != stateDescription))
+  //   {
+  //     if (CurrentState > stateDescription)
+  // 	{
+  // 	  PosMax = PosMid;
+  // 	}
+  //     else
+  // 	{
+  // 	  PosMin = PosMid;
+  // 	} 
+  //     PosMid = (PosMin + PosMax) >> 1;
+  //     CurrentState = this->StateDescription[PosMid];
+  //   }
+  // if (CurrentState == stateDescription)
+  //   return PosMid;
+  // else
+  //   return PosMin;
 }
 
 // find state index from a string
@@ -1755,7 +1784,9 @@ void FermionOnSphere::GenerateLookUpTable(unsigned long memory)
 	      --CurrentLookUpTableValue;
 	    }
 	  TmpLookUpTable[0] = i;
- 	  CurrentLzMax = this->StateLzMax[i];
+	  
+	  CurrentLzMax = this->StateLzMax[i];
+	  
 	  TmpLookUpTable = this->LookUpTable[CurrentLzMax];
 	  if (CurrentLzMax < this->MaximumLookUpShift)
 	    this->LookUpTableShift[CurrentLzMax] = 0;

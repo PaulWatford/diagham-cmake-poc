@@ -7,10 +7,10 @@
 //                                                                            //
 //                                                                            //
 //              class of fermions on a square lattice with SU(3) spin         //
-//                  for more than 21 orbitals in momentum space               //
 //                          in a filtered momentum space                      //
+//                 with a cap on the number of particles per band             //
 //                                                                            //
-//                        last modification : 14/12/2023                      //
+//                        last modification : 02/01/2024                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -31,7 +31,7 @@
 
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "QuantumNumber/SzQuantumNumber.h"
 #include "Matrix/ComplexMatrix.h"
@@ -63,11 +63,14 @@ using std::ios;
 // nbrSiteX = number of sites in the x direction
 // nbrSiteY = number of sites in the y direction
 // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+// maxNbrParticlesBand0 = maximum number of particles in band 0
+// maxNbrParticlesBand1 = maximum number of particles in band 1
+// maxNbrParticlesBand2 = maximum number of particles in band 2
 // kxMomentum = momentum along the x direction
 // kyMomentum = momentum along the y direction
 // memory = amount of memory granted for precalculations
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int kxMomentum, int kyMomentum, unsigned long memory)
+FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory)
 {  
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
@@ -78,25 +81,28 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatti
   this->TotalY = 0;
   this->NbrSiteX = nbrSiteX;
   this->NbrSiteY = nbrSiteY;
-  this->OrbitalFilteringMask = (ULONGLONG) 0x0ul;
+  this->MaxNbrParticlesBand0 = maxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = maxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = maxNbrParticlesBand2;
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
+  this->OrbitalFilteringMask = 0x0ul;
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   this->ParseOrbitalFile(allowedOrbitalsFileName);
-  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0);
+  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+  cout << "Temporary Hilbert space dimension: " << this->LargeHilbertSpaceDimension << endl;
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
-      cout << "temporary Hilbert space dimension: " << this->LargeHilbertSpaceDimension << endl;
-      this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
+      this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
+      long TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
       if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
@@ -108,7 +114,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatti
       
 #ifdef __DEBUG__
       long UsedMemory = 0;
-      UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(ULONGLONG) + sizeof(int));
+      UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
       cout << "memory requested for Hilbert space = ";
       if (UsedMemory >= 1024)
 	if (UsedMemory >= 1048576)
@@ -135,7 +141,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatti
 //
 // fermions = reference on the hilbert space to copy to copy
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong(const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& fermions)
+FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace(const FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace& fermions)
 {
   this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
   this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
@@ -145,6 +151,9 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatti
   this->TotalLz = fermions.TotalLz;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
+  this->MaxNbrParticlesBand0 = fermions.MaxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = fermions.MaxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = fermions.MaxNbrParticlesBand2;
   this->OrbitalFilteringMask = fermions.OrbitalFilteringMask;
   this->KxMomentum = fermions.KxMomentum;
   this->KyMomentum = fermions.KyMomentum;
@@ -166,7 +175,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FermionOnSquareLatti
 // destructor
 //
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::~FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong ()
+FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::~FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace ()
 {
 }
 
@@ -175,7 +184,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::~FermionOnSquareLatt
 // fermions = reference on the hilbert space to copy to copy
 // return value = reference on current hilbert space
 
-FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::operator = (const FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& fermions)
+FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace& FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::operator = (const FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace& fermions)
 {
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
@@ -191,6 +200,9 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& FermionOnSquareLatti
   this->LzMax = fermions.LzMax;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
+  this->MaxNbrParticlesBand0 = fermions.MaxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = fermions.MaxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = fermions.MaxNbrParticlesBand2;
   this->OrbitalFilteringMask = fermions.OrbitalFilteringMask;
   this->KxMomentum = fermions.KxMomentum;
   this->KyMomentum = fermions.KyMomentum;
@@ -212,16 +224,16 @@ FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong& FermionOnSquareLatti
 //
 // return value = pointer to cloned Hilbert space
 
-AbstractHilbertSpace* FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::Clone()
+AbstractHilbertSpace* FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::Clone()
 {
-  return new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong(*this);
+  return new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace(*this);
 }
 
 // parse the ascii file providing the orbitals that are allowed
 //
 // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
 
-void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::ParseOrbitalFile(char* allowedOrbitalsFileName)
+void FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::ParseOrbitalFile(char* allowedOrbitalsFileName)
 {
   MultiColumnASCIIFile AllowedOrbitalsFile;
   if (AllowedOrbitalsFile.Parse(allowedOrbitalsFileName) == false)
@@ -243,10 +255,10 @@ void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::ParseOrbitalFil
   int* TmpKyValues = AllowedOrbitalsFile.GetAsIntegerArray(1);
   int* TmpBandValues = AllowedOrbitalsFile.GetAsIntegerArray(2);
   
-  this->OrbitalFilteringMask = (ULONGLONG) 0x0ul;
+  this->OrbitalFilteringMask = 0x0ul;
   for (int i = 0 ; i < AllowedOrbitalsFile.GetNbrLines(); ++i)
     {
-      this->OrbitalFilteringMask |= ((ULONGLONG) 0x1ul) << ((((TmpKxValues[i]  * this->NbrSiteY) + TmpKyValues[i]) * 3) + TmpBandValues[i]);
+      this->OrbitalFilteringMask |= 0x1ul << ((((TmpKxValues[i]  * this->NbrSiteY) + TmpKyValues[i]) * 3) + TmpBandValues[i]);
     }
   this->OrbitalFilteringMask = ~this->OrbitalFilteringMask;
 }
@@ -255,22 +267,22 @@ void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::ParseOrbitalFil
 //
 // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
 
-void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FilterHilbertSpace(char* allowedOrbitalsFileName)
+void FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FilterHilbertSpace(char* allowedOrbitalsFileName)
 {
   this->ParseOrbitalFile(allowedOrbitalsFileName);
   long TmpHilbertSpaceDimension = 0l;
   for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
     {
-      if ((this->StateDescription[i] & this->OrbitalFilteringMask) == ((ULONGLONG) 0x0ul))
+      if ((this->StateDescription[i] & this->OrbitalFilteringMask) == 0x0ul)
 	{
 	  TmpHilbertSpaceDimension++;
 	}
     }
-  ULONGLONG* TmpStateDescription = new ULONGLONG [TmpHilbertSpaceDimension];
+  unsigned long* TmpStateDescription = new unsigned long [TmpHilbertSpaceDimension];
   TmpHilbertSpaceDimension = 0l;
   for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
     {
-      if ((this->StateDescription[i] & this->OrbitalFilteringMask) == ((ULONGLONG) 0x0ul))
+      if ((this->StateDescription[i] & this->OrbitalFilteringMask) == 0x0ul)
 	{
 	  TmpStateDescription[TmpHilbertSpaceDimension] = this->StateDescription[i];
 	  TmpHilbertSpaceDimension++;
@@ -294,23 +306,26 @@ void FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::FilterHilbertSp
 // currentKy = current momentum along y for a single particle
 // currentTotalKx = current total momentum along x
 // currentTotalKy = current total momentum along y
+// maxNbrParticlesBand0 = current maximum number of particles in band 0
+// maxNbrParticlesBand1 = current maximum number of particles in band 1
+// maxNbrParticlesBand2 = current maximum number of particles in band 2
 // pos = position in StateDescription array where to store states
 // return value = position from which new states have to be stored
 
-long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::GenerateFilteredStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos)
+long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::GenerateFilteredStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, long pos)
 {
   if (currentKy < 0)
     {
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if (nbrFermions < 0)
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < 0) || (maxNbrParticlesBand1 < 0) || (maxNbrParticlesBand2 < 0))
     return pos;
   if (nbrFermions == 0)
     {
       if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
 	{
-	  this->StateDescription[pos] = ((ULONGLONG) 0x0ul);	  
+	  this->StateDescription[pos] = 0x0ul;	  
 	  return (pos + 1l);
 	}
       else	
@@ -320,25 +335,25 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::GenerateFiltere
     return pos;
   if (nbrFermions == 1)
     {
-      ULONGLONG Mask;;
+      unsigned long Mask;;
       for (int j = currentKy; j >= 0; --j)
 	{
 	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 	    {
-	      Mask = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + j) * 3);
-	      if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+	      Mask = 0x4ul << (((currentKx * this->NbrSiteY) + j) * 3);
+	      if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand2 > 0))
 		{
 		  this->StateDescription[pos] = Mask;
 		  ++pos;
 		}
-	      Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + j) * 3);
-	      if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+	      Mask = 0x2ul << (((currentKx * this->NbrSiteY) + j) * 3);
+	      if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand1 > 0))
 		{
 		  this->StateDescription[pos] = Mask;
 		  ++pos;
 		}
-	      Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + j) * 3);
-	      if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+	      Mask = 0x1ul << (((currentKx * this->NbrSiteY) + j) * 3);
+	      if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand0 > 0))
 		{
 		  this->StateDescription[pos] = Mask;
 		  ++pos;
@@ -351,20 +366,20 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::GenerateFiltere
 	    {
 	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 		{
-		  Mask = ((ULONGLONG) 0x4ul) << (((i * this->NbrSiteY) + j) * 3);
-		  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+		  Mask = 0x4ul << (((i * this->NbrSiteY) + j) * 3);
+		  if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand2 > 0))
 		    {
 		      this->StateDescription[pos] = Mask;
 		      ++pos;
 		    }
-		  Mask = ((ULONGLONG) 0x2ul) << (((i * this->NbrSiteY) + j) * 3);
-		  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+		  Mask = 0x2ul << (((i * this->NbrSiteY) + j) * 3);
+		  if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand1 > 0))
 		    {
 		      this->StateDescription[pos] = Mask;
 		      ++pos;
 		    }
-		  Mask = ((ULONGLONG) 0x1ul) << (((i * this->NbrSiteY) + j) * 3);
-		  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+		  Mask = 0x1ul << (((i * this->NbrSiteY) + j) * 3);
+		  if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand0 > 0))
 		    {
 		      this->StateDescription[pos] = Mask;
 		      ++pos;
@@ -377,63 +392,63 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::GenerateFiltere
 
   long TmpPos;
 
-  ULONGLONG Mask = ((ULONGLONG) 0x7ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  unsigned long Mask = 0x7ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
   
-  Mask = ((ULONGLONG) 0x6ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x6ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
   
-  Mask = ((ULONGLONG) 0x5ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x5ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
   
-  Mask = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x4ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
   
-  Mask = ((ULONGLONG) 0x3ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x3ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
   
-  Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x2ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
   
-  Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x1ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      TmpPos = this->GenerateFilteredStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos);
+      TmpPos = this->GenerateFilteredStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2, pos);
       for (; pos < TmpPos; ++pos)
 	this->StateDescription[pos] |= Mask;
     }
 
-  return this->GenerateFilteredStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, pos);
+  return this->GenerateFilteredStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2, pos);
 };
 
 
@@ -444,16 +459,19 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::GenerateFiltere
 // currentKy = current momentum along y for a single particle
 // currentTotalKx = current total momentum along x
 // currentTotalKy = current total momentum along y
+// maxNbrParticlesBand0 = current maximum number of particles in band 0
+// maxNbrParticlesBand1 = current maximum number of particles in band 1
+// maxNbrParticlesBand2 = current maximum number of particles in band 2
 // return value = Hilbert space dimension
 
-long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::EvaluateFilteredHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy)
+long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::EvaluateFilteredHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2)
 {
   if (currentKy < 0)
     {
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if (nbrFermions < 0)
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < 0) || (maxNbrParticlesBand1 < 0) || (maxNbrParticlesBand2 < 0))
     return 0l;
   if (nbrFermions == 0)
     {
@@ -469,23 +487,23 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::EvaluateFiltere
   long Count = 0;
   if (nbrFermions == 1)
     {
-      ULONGLONG Mask;
+      unsigned long Mask;
       for (int j = currentKy; j >= 0; --j)
 	{
 	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 	    {
-	      Mask = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + j) * 3);
-	      if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+	      Mask = 0x4ul << (((currentKx * this->NbrSiteY) + j) * 3);
+	      if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand0 > 0))
 		{
 		  Count++;
 		}
-	      Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + j) * 3);
-	      if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+	      Mask = 0x2ul << (((currentKx * this->NbrSiteY) + j) * 3);
+	      if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand1 > 0))
 		{
 		  Count++;
 		}
-	      Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + j) * 3);
-	      if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+	      Mask = 0x1ul << (((currentKx * this->NbrSiteY) + j) * 3);
+	      if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand2 > 0))
 		{
 		  Count++;
 		}
@@ -497,18 +515,18 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::EvaluateFiltere
 	    {
 	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 		{
-		  Mask = ((ULONGLONG) 0x4ul) << (((i * this->NbrSiteY) + j) * 3);
-		  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+		  Mask = 0x4ul << (((i * this->NbrSiteY) + j) * 3);
+		  if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand0 > 0))
 		    {
 		      Count++;
 		    }
-		  Mask = ((ULONGLONG) 0x2ul) << (((i * this->NbrSiteY) + j) * 3);
-		  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+		  Mask = 0x2ul << (((i * this->NbrSiteY) + j) * 3);
+		  if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand1 > 0))
 		    {
 		      Count++;
 		    }
-		  Mask = ((ULONGLONG) 0x1ul) << (((i * this->NbrSiteY) + j) * 3);
-		  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+		  Mask = 0x1ul << (((i * this->NbrSiteY) + j) * 3);
+		  if (((this->OrbitalFilteringMask & Mask) == 0x0ul) && (maxNbrParticlesBand2 > 0))
 		    {
 		      Count++;
 		    }
@@ -517,41 +535,41 @@ long FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong::EvaluateFiltere
 	}
       return Count;
     }
-  ULONGLONG Mask = ((ULONGLONG) 0x7ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  unsigned long Mask = 0x7ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy));
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1);
     }
-  Mask = ((ULONGLONG) 0x6ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x6ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1);
     }
-  Mask = ((ULONGLONG) 0x5ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x5ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1);
     }
-  Mask = ((ULONGLONG) 0x3ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x3ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy));
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2);
     }
-  Mask = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x4ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy);
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1);
     }
-  Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x2ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy);
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2);
     }
-  Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) * 3);
-  if ((this->OrbitalFilteringMask & Mask) == ((ULONGLONG) 0x0ul))
+  Mask = 0x1ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  if ((this->OrbitalFilteringMask & Mask) == 0x0ul)
     {
-      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy);
+      Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2);
     }
-  Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy);
+  Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2);
   return Count;
 }

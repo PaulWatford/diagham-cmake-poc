@@ -7,6 +7,8 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
@@ -384,7 +386,7 @@ int main(int argc, char** argv)
 	  DummyChemicalPotentials[0] = 0.0;
 	  DummyChemicalPotentials[1] = 0.0;
 	  DummyChemicalPotentials[2] = 0.0;
-	  TightBindingModel = new TightBindingModel2DAtomicLimitLattice (NbrSitesX, NbrSitesY, 2, DummyChemicalPotentials,
+	  TightBindingModel = new TightBindingModel2DAtomicLimitLattice (NbrSitesX, NbrSitesY, 3, DummyChemicalPotentials,
 									 0.0, 0.0, Architecture.GetArchitecture(), true);
 	}
       else
@@ -435,8 +437,8 @@ int main(int argc, char** argv)
 		  || ((Manager.GetBoolean("add-valley") == true) && (NbrEnergies != (18 * NbrSitesX * NbrSitesY))))
 		{
 		  cout << Manager.GetString("singleparticle-file") << " has a wrong number of lines (has "
-		       << NbrEnergies << ", should be " << (6 * NbrSitesX * NbrSitesY)
-		       << " without valley and --full-singleparticle, " << (12 * NbrSitesX * NbrSitesY) << " with valley and --full-singleparticle)" << endl;
+		       << NbrEnergies << ", should be " << (9 * NbrSitesX * NbrSitesY)
+		       << " without valley and --full-singleparticle, " << (18 * NbrSitesX * NbrSitesY) << " with valley and --full-singleparticle)" << endl;
 		  return 0;
 		}
 	      if (((Manager.GetBoolean("add-valley") == false) && (OneBodyEnergyFile.GetNbrColumns() < 5))

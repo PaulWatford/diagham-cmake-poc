@@ -167,48 +167,24 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
   this->InteractionFactorsdowndownupdown = 0;
   this->InteractionFactorsupdownupdown = 0;
 
-  MultiColumnASCIIFile TmpInteractionFile;
-  if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
-    {
-      TmpInteractionFile.DumpErrors(cout) << endl;
-      exit(0);
-    }
-  if (TmpInteractionFile.GetNbrLines() == 0)
-    {
-      cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
-      exit(0);
-    }
-  if (TmpInteractionFile.GetNbrColumns() < 13)
-    {
-      cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
-	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
-      exit(0);
-    }
-  int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
-  cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
-
-  int* TmpBandIndex1 = TmpInteractionFile.GetAsIntegerArray(0);
-  int* TmpBandIndex2 = TmpInteractionFile.GetAsIntegerArray(4);
-  int* TmpBandIndex3 = TmpInteractionFile.GetAsIntegerArray(8);
-  int* TmpBandIndex4 = TmpInteractionFile.GetAsIntegerArray(12);
-  int* TmpSpinIndex1 = TmpInteractionFile.GetAsIntegerArray(1);
-  int* TmpSpinIndex2 = TmpInteractionFile.GetAsIntegerArray(5);
-  int* TmpSpinIndex3 = TmpInteractionFile.GetAsIntegerArray(9);
-  int* TmpSpinIndex4 = TmpInteractionFile.GetAsIntegerArray(13);
-  int* TmpKx1 = TmpInteractionFile.GetAsIntegerArray(2);
-  int* TmpKx2 = TmpInteractionFile.GetAsIntegerArray(6);
-  int* TmpKx3 = TmpInteractionFile.GetAsIntegerArray(10);
-  int* TmpKx4 = TmpInteractionFile.GetAsIntegerArray(14);
-  int* TmpKy1 = TmpInteractionFile.GetAsIntegerArray(3);
-  int* TmpKy2 = TmpInteractionFile.GetAsIntegerArray(7);
-  int* TmpKy3 = TmpInteractionFile.GetAsIntegerArray(11);
-  int* TmpKy4 = TmpInteractionFile.GetAsIntegerArray(15);
-  Complex* TmpMatrixElements = TmpInteractionFile.GetAsComplexArray(16);
-  if (TmpMatrixElements == 0)
-    {
-      TmpInteractionFile.DumpErrors(cout) << endl;
-      exit(0);
-    }
+  int* TmpBandIndex1 = 0;
+  int* TmpBandIndex2 = 0;
+  int* TmpBandIndex3 = 0;
+  int* TmpBandIndex4 = 0;
+  int* TmpSpinIndex1 = 0;
+  int* TmpSpinIndex2 = 0;
+  int* TmpSpinIndex3 = 0;
+  int* TmpSpinIndex4 = 0;
+  int* TmpKx1 = 0;
+  int* TmpKx2 = 0;
+  int* TmpKx3 = 0;
+  int* TmpKx4 = 0;
+  int* TmpKy1 = 0;
+  int* TmpKy2 = 0;
+  int* TmpKy3 = 0;
+  int* TmpKy4 = 0;
+  Complex* TmpMatrixElements = 0;
+  int TmpNbrTwoBodyMatrixElements = this->ProcessTwoBodyMatrixElements(TmpBandIndex1, TmpBandIndex2, TmpBandIndex3, TmpBandIndex4, TmpSpinIndex1, TmpSpinIndex2, TmpSpinIndex3, TmpSpinIndex4, TmpKx1, TmpKy1, TmpKx2, TmpKy2, TmpKx3, TmpKy3, TmpKx4, TmpKy4, TmpMatrixElements);
   
   int* TmpLinearizedSumK = new int[TmpNbrTwoBodyMatrixElements];
   int* TmpLinearizedK1 = new int[TmpNbrTwoBodyMatrixElements];
@@ -778,3 +754,70 @@ void ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::EvaluateInt
   cout << "====================================" << endl;
 }
 
+// process the matrix elements from the ascii file
+//
+// arraySigma1 = reference on the array containing the indices of the internal degree freedom for the operator 1
+// arraySigma2 = reference on the array containing the indices of the internal degree freedom for the operator 2
+// arraySigma3 = reference on the array containing the indices of the internal degree freedom for the operator 3
+// arraySigma4 = reference on the array containing the indices of the internal degree freedom for the operator 4
+// arraySpinIndex1 = reference on the array containing the indices of the spin degree freedom for the operator 1
+// arraySpinIndex2 = reference on the array containing the indices of the spin degree freedom for the operator 2
+// arraySpinIndex3 = reference on the array containing the indices of the spin degree freedom for the operator 3
+// arraySpinIndex4 = reference on the array containing the indices of the spin degree freedom for the operator 4
+// arrayKx1 = reference on the array containing the momentum along x for the operator 1
+// arrayKy1 = reference on the array containing the momentum along y for the operator 1
+// arrayKx2 = reference on the array containing the momentum along x for the operator 2
+// arrayKy2 = reference on the array containing the momentum along y for the operator 2
+// arrayKx3 = reference on the array containing the momentum along x for the operator 3
+// arrayKy3 = reference on the array containing the momentum along y for the operator 3
+// arrayKx4 = reference on the array containing the momentum along x for the operator 4
+// arrayKy4 = reference on the array containing the momentum along y for the operator 4
+// arrayMatrixElements = reference on the array containing the matrix elements
+// return value = number of entries
+
+int ParticleOnLatticeFromFileInteractionTwoBandWithSpinHamiltonian::ProcessTwoBodyMatrixElements(int*& arraySigma1, int*& arraySigma2, int*& arraySigma3, int*& arraySigma4, int*& arraySpinIndex1, int*& arraySpinIndex2, int*& arraySpinIndex3, int*& arraySpinIndex4, int*& arrayKx1, int*& arrayKy1, int*& arrayKx2, int*& arrayKy2, int*& arrayKx3, int*& arrayKy3, int*& arrayKx4, int*& arrayKy4, Complex*& arrayMatrixElements)
+{
+  MultiColumnASCIIFile TmpInteractionFile;
+  if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
+    {
+      TmpInteractionFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  if (TmpInteractionFile.GetNbrLines() == 0)
+    {
+      cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
+      exit(0);
+    }
+  if (TmpInteractionFile.GetNbrColumns() < 13)
+    {
+      cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
+	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 17)" << endl;
+      exit(0);
+    }
+  int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
+  cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
+
+  arraySigma1 = TmpInteractionFile.GetAsIntegerArray(0);
+  arraySigma2 = TmpInteractionFile.GetAsIntegerArray(4);
+  arraySigma3 = TmpInteractionFile.GetAsIntegerArray(8);
+  arraySigma4 = TmpInteractionFile.GetAsIntegerArray(12);
+  arraySpinIndex1 = TmpInteractionFile.GetAsIntegerArray(1);
+  arraySpinIndex2 = TmpInteractionFile.GetAsIntegerArray(5);
+  arraySpinIndex3 = TmpInteractionFile.GetAsIntegerArray(9);
+  arraySpinIndex4 = TmpInteractionFile.GetAsIntegerArray(13);
+  arrayKx1 = TmpInteractionFile.GetAsIntegerArray(2);
+  arrayKx2 = TmpInteractionFile.GetAsIntegerArray(6);
+  arrayKx3 = TmpInteractionFile.GetAsIntegerArray(10);
+  arrayKx4 = TmpInteractionFile.GetAsIntegerArray(14);
+  arrayKy1 = TmpInteractionFile.GetAsIntegerArray(3);
+  arrayKy2 = TmpInteractionFile.GetAsIntegerArray(7);
+  arrayKy3 = TmpInteractionFile.GetAsIntegerArray(11);
+  arrayKy4 = TmpInteractionFile.GetAsIntegerArray(15);
+  arrayMatrixElements = TmpInteractionFile.GetAsComplexArray(16);
+  if (arrayMatrixElements == 0)
+    {
+      TmpInteractionFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  return TmpNbrTwoBodyMatrixElements;
+}

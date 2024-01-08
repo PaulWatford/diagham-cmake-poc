@@ -164,44 +164,60 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
   this->InteractionFactorsdowndownupdown = 0;
   this->InteractionFactorsupdownupdown = 0;
 
-  MultiColumnASCIIFile TmpInteractionFile;
-  if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
-    {
-      TmpInteractionFile.DumpErrors(cout) << endl;
-      exit(0);
-    }
-  if (TmpInteractionFile.GetNbrLines() == 0)
-    {
-      cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
-      exit(0);
-    }
-  if (TmpInteractionFile.GetNbrColumns() < 13)
-    {
-      cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
-	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
-      exit(0);
-    }
-  int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
-  cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
+  int* TmpSigma1 = 0;
+  int* TmpSigma2 = 0;
+  int* TmpSigma3 = 0;
+  int* TmpSigma4 = 0;
+  int* TmpKx1 = 0;
+  int* TmpKx2 = 0;
+  int* TmpKx3 = 0;
+  int* TmpKx4 = 0;
+  int* TmpKy1 = 0;
+  int* TmpKy2 = 0;
+  int* TmpKy3 = 0;
+  int* TmpKy4 = 0;
+  Complex* TmpMatrixElements = 0;
+  int TmpNbrTwoBodyMatrixElements = this->ProcessTwoBodyMatrixElements(TmpSigma1, TmpSigma2, TmpSigma3, TmpSigma4, TmpKx1, TmpKy1, TmpKx2, TmpKy2, TmpKx3, TmpKy3, TmpKx4, TmpKy4, TmpMatrixElements);
 
-  int* TmpSigma1 = TmpInteractionFile.GetAsIntegerArray(0);
-  int* TmpSigma2 = TmpInteractionFile.GetAsIntegerArray(3);
-  int* TmpSigma3 = TmpInteractionFile.GetAsIntegerArray(6);
-  int* TmpSigma4 = TmpInteractionFile.GetAsIntegerArray(9);
-  int* TmpKx1 = TmpInteractionFile.GetAsIntegerArray(1);
-  int* TmpKx2 = TmpInteractionFile.GetAsIntegerArray(4);
-  int* TmpKx3 = TmpInteractionFile.GetAsIntegerArray(7);
-  int* TmpKx4 = TmpInteractionFile.GetAsIntegerArray(10);
-  int* TmpKy1 = TmpInteractionFile.GetAsIntegerArray(2);
-  int* TmpKy2 = TmpInteractionFile.GetAsIntegerArray(5);
-  int* TmpKy3 = TmpInteractionFile.GetAsIntegerArray(8);
-  int* TmpKy4 = TmpInteractionFile.GetAsIntegerArray(11);
-  Complex* TmpMatrixElements = TmpInteractionFile.GetAsComplexArray(12);
-  if (TmpMatrixElements == 0)
-    {
-      TmpInteractionFile.DumpErrors(cout) << endl;
-      exit(0);
-    }
+  
+  // MultiColumnASCIIFile TmpInteractionFile;
+  // if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
+  //   {
+  //     TmpInteractionFile.DumpErrors(cout) << endl;
+  //     exit(0);
+  //   }
+  // if (TmpInteractionFile.GetNbrLines() == 0)
+  //   {
+  //     cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
+  //     exit(0);
+  //   }
+  // if (TmpInteractionFile.GetNbrColumns() < 13)
+  //   {
+  //     cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
+  // 	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
+  //     exit(0);
+  //   }
+  // int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
+  // cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
+
+  // int* TmpSigma1 = TmpInteractionFile.GetAsIntegerArray(0);
+  // int* TmpSigma2 = TmpInteractionFile.GetAsIntegerArray(3);
+  // int* TmpSigma3 = TmpInteractionFile.GetAsIntegerArray(6);
+  // int* TmpSigma4 = TmpInteractionFile.GetAsIntegerArray(9);
+  // int* TmpKx1 = TmpInteractionFile.GetAsIntegerArray(1);
+  // int* TmpKx2 = TmpInteractionFile.GetAsIntegerArray(4);
+  // int* TmpKx3 = TmpInteractionFile.GetAsIntegerArray(7);
+  // int* TmpKx4 = TmpInteractionFile.GetAsIntegerArray(10);
+  // int* TmpKy1 = TmpInteractionFile.GetAsIntegerArray(2);
+  // int* TmpKy2 = TmpInteractionFile.GetAsIntegerArray(5);
+  // int* TmpKy3 = TmpInteractionFile.GetAsIntegerArray(8);
+  // int* TmpKy4 = TmpInteractionFile.GetAsIntegerArray(11);
+  // Complex* TmpMatrixElements = TmpInteractionFile.GetAsComplexArray(12);
+  // if (TmpMatrixElements == 0)
+  //   {
+  //     TmpInteractionFile.DumpErrors(cout) << endl;
+  //     exit(0);
+  //   }
   
   int* TmpLinearizedSumK = new int[TmpNbrTwoBodyMatrixElements];
   int* TmpLinearizedK1 = new int[TmpNbrTwoBodyMatrixElements];
@@ -837,6 +853,66 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateOneBodyFact
 	    }
 	}
     }
+}
+
+// process the matrix elements from the ascii file
+//
+// arraySigma1 = reference on the array containing the indices of the internal degree freedom for the operator 1
+// arraySigma2 = reference on the array containing the indices of the internal degree freedom for the operator 2
+// arraySigma3 = reference on the array containing the indices of the internal degree freedom for the operator 3
+// arraySigma4 = reference on the array containing the indices of the internal degree freedom for the operator 4
+// arrayKx1 = reference on the array containing the momentum along x for the operator 1
+// arrayKy1 = reference on the array containing the momentum along y for the operator 1
+// arrayKx2 = reference on the array containing the momentum along x for the operator 2
+// arrayKy2 = reference on the array containing the momentum along y for the operator 2
+// arrayKx3 = reference on the array containing the momentum along x for the operator 3
+// arrayKy3 = reference on the array containing the momentum along y for the operator 3
+// arrayKx4 = reference on the array containing the momentum along x for the operator 4
+// arrayKy4 = reference on the array containing the momentum along y for the operator 4
+// arrayMatrixElements = reference on the array containing the matrix elements
+// return value = number of entries
+
+int ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ProcessTwoBodyMatrixElements(int*& arraySigma1, int*& arraySigma2, int*& arraySigma3, int*& arraySigma4, int*& arrayKx1, int*& arrayKy1, int*& arrayKx2, int*& arrayKy2, int*& arrayKx3, int*& arrayKy3, int*& arrayKx4, int*& arrayKy4, Complex*& arrayMatrixElements)
+{
+  MultiColumnASCIIFile TmpInteractionFile;
+  if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
+    {
+      TmpInteractionFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  if (TmpInteractionFile.GetNbrLines() == 0)
+    {
+      cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
+      exit(0);
+    }
+  if (TmpInteractionFile.GetNbrColumns() < 13)
+    {
+      cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
+	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
+      exit(0);
+    }
+  int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
+  cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
+
+  arraySigma1 = TmpInteractionFile.GetAsIntegerArray(0);
+  arraySigma2 = TmpInteractionFile.GetAsIntegerArray(3);
+  arraySigma3 = TmpInteractionFile.GetAsIntegerArray(6);
+  arraySigma4 = TmpInteractionFile.GetAsIntegerArray(9);
+  arrayKx1 = TmpInteractionFile.GetAsIntegerArray(1);
+  arrayKx2 = TmpInteractionFile.GetAsIntegerArray(4);
+  arrayKx3 = TmpInteractionFile.GetAsIntegerArray(7);
+  arrayKx4 = TmpInteractionFile.GetAsIntegerArray(10);
+  arrayKy1 = TmpInteractionFile.GetAsIntegerArray(2);
+  arrayKy2 = TmpInteractionFile.GetAsIntegerArray(5);
+  arrayKy3 = TmpInteractionFile.GetAsIntegerArray(8);
+  arrayKy4 = TmpInteractionFile.GetAsIntegerArray(11);
+  arrayMatrixElements = TmpInteractionFile.GetAsComplexArray(12);
+  if (arrayMatrixElements == 0)
+    {
+      TmpInteractionFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  return TmpNbrTwoBodyMatrixElements;
 }
 
 // test which internal degrees of freedom are conserved in the matrix elements

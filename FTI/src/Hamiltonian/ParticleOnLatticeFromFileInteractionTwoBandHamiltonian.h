@@ -109,6 +109,24 @@ class ParticleOnLatticeFromFileInteractionTwoBandHamiltonian : public ParticleOn
   //   
   virtual void EvaluateInteractionFactors();
   
+  // process the matrix elements from the ascii file
+  //
+  // arraySigma1 = reference on the array containing the indices of the internal degree freedom for the operator 1
+  // arraySigma2 = reference on the array containing the indices of the internal degree freedom for the operator 2
+  // arraySigma3 = reference on the array containing the indices of the internal degree freedom for the operator 3
+  // arraySigma4 = reference on the array containing the indices of the internal degree freedom for the operator 4
+  // arrayKx1 = reference on the array containing the momentum along x for the operator 1
+  // arrayKy1 = reference on the array containing the momentum along y for the operator 1
+  // arrayKx2 = reference on the array containing the momentum along x for the operator 2
+  // arrayKy2 = reference on the array containing the momentum along y for the operator 2
+  // arrayKx3 = reference on the array containing the momentum along x for the operator 3
+  // arrayKy3 = reference on the array containing the momentum along y for the operator 3
+  // arrayKx4 = reference on the array containing the momentum along x for the operator 4
+  // arrayKy4 = reference on the array containing the momentum along y for the operator 4
+  // arrayMatrixElements = reference on the array containing the matrix elements
+  // return value = number of entries
+  virtual int ProcessTwoBodyMatrixElements(int*& arraySigma1, int*& arraySigma2, int*& arraySigma3, int*& arraySigma4, int*& arrayKx1, int*& arrayKy1, int*& arrayKx2, int*& arrayKy2, int*& arrayKx3, int*& arrayKy3, int*& arrayKx4, int*& arrayKy4, Complex*& arrayMatrixElements);
+
   // evaluate all one-body factors
   //     
   virtual void EvaluateOneBodyFactors();

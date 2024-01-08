@@ -2227,6 +2227,7 @@ void FermionOnSphereWithSpin::GenerateLookUpTable(unsigned long memory)
 		}
 	      CurrentLargestBit--;
 	    }
+	  
 	  TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
 	  if (CurrentLargestBit < this->MaximumLookUpShift)
 	    this->LookUpTableShift[CurrentLargestBit] = 0;

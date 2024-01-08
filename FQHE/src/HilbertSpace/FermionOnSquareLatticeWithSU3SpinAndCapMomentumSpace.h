@@ -53,6 +53,10 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace : public FermionOnSqu
 
  public:
 
+  // default constructor
+  //
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace();
+  
   // basic constructor
   // 
   // nbrFermions = number of fermions

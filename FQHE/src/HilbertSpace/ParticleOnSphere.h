@@ -39,6 +39,11 @@
 #include "Matrix/RealMatrix.h"
 #include "Matrix/HermitianMatrix.h"
 
+#include <iostream>
+
+using std::cout;
+using std::endl;
+
 
 class LongRationalVector;
 class LongRational;
@@ -187,6 +192,16 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // return value = index of the destination state 
   virtual int AA (int index, int n1, int n2, double& coefficient);
 
+  // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
+  //
+  // index = index of the state on which the operator has to be applied
+  // n1 = first index for annihilation operator
+  // n2 = second index for annihilation operator
+  // sigma1 = SU(2) index for the first annihilation operator
+  // sigma2 = SU(2) index for the second annihilation operator
+  // return value =  multiplicative factor 
+  virtual double AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2);
+
   // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be kept in cache until next ProdA call
   //
   // index = index of the state on which the operator has to be applied
@@ -229,6 +244,16 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AdAd (int index, int m1, int m2, double& coefficient);
+
+  // apply a^+_m1_sigma1 a^+_m2_sigma2 operator to the state produced using A*A* method (without destroying it). Sigma is is 0 for up and 1 for down
+  //
+  // m1 = first index for creation operator
+  // m2 = second index for creation operator
+  // sigma1 = SU(2) index for the first creation operator
+  // sigma2 = SU(2) index for the second creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual int AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient);
 
   // apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
   //
@@ -309,6 +334,25 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AdA (int index, int m, int n, double& coefficient);
+
+  // apply a^+_m_s a_m_s operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index of the creation and annihilation operator
+  // sigma = internal degree of freedom label of the creation and annihilation operator
+  // return value = coefficient obtained when applying a^+_m a_m
+  virtual double AdsigmaAsigma (int index, int m, int sigma);
+
+  // apply a^+_m1_s1 a_m2_s2 operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m1 = index of the creation operator
+  // sigma1 = internal degree of freedom label of the creation operator
+  // m2 = index of the annihilation operator
+  // sigma2 = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual int AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient);
 
   // apply a^+_m a_m operator to a given state 
   //
@@ -1300,6 +1344,61 @@ inline int ParticleOnSphere::GetNbrOrbitals()
 inline int ParticleOnSphere::GetNbrParticles()
 {
   return -1;
+}
+
+// apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
+//
+// index = index of the state on which the operator has to be applied
+// n1 = first index for annihilation operator
+// n2 = second index for annihilation operator
+// sigma1 = SU(2) index for the first annihilation operator
+// sigma2 = SU(2) index for the second annihilation operator
+// return value =  multiplicative factor 
+
+inline double ParticleOnSphere::AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2)
+{
+  return this->AA(index, n1, n2);
+}
+
+// apply a^+_m1_sigma1 a^+_m2_sigma2 operator to the state produced using A*A* method (without destroying it). Sigma is is 0 for up and 1 for down
+//
+// m1 = first index for creation operator
+// m2 = second index for creation operator
+// sigma1 = SU(2) index for the first creation operator
+// sigma2 = SU(2) index for the second creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline int ParticleOnSphere::AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient)
+{
+  return this->AdAd(m1, m2, coefficient);
+}
+
+// apply a^+_m_s a_m_s operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m = index of the creation and annihilation operator
+// sigma = internal degree of freedom label of the creation and annihilation operator
+// return value = coefficient obtained when applying a^+_m a_m
+
+inline double ParticleOnSphere::AdsigmaAsigma (int index, int m, int sigma)
+{
+  return this->AdA(index, m);
+}
+
+// apply a^+_m1_s1 a_m2_s2 operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m1 = index of the creation operator
+// sigma1 = internal degree of freedom label of the creation operator
+// m2 = index of the annihilation operator
+// sigma2 = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline int ParticleOnSphere::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
+{
+  return this->AdA(index, m1, m2, coefficient);
 }
 
 #endif

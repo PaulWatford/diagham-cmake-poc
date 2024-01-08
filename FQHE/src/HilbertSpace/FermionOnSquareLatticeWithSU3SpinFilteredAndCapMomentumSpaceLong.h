@@ -8,9 +8,10 @@
 //                                                                            //
 //              class of fermions on a square lattice with SU(3) spin         //
 //                  for more than 21 orbitals in momentum space               //
+//                          in a filtered momentum space                      //
 //                 with a cap on the number of particles per band             //
 //                                                                            //
-//                        last modification : 03/12/2023                      //
+//                        last modification : 02/01/2024                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -30,61 +31,54 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef FERMIONONSQUARELATTICEWITHSU3SPINANDCAPMOMENTUMSPACELONG_H
-#define FERMIONONSQUARELATTICEWITHSU3SPINANDCAPMOMENTUMSPACELONG_H
+#ifndef FERMIONONSQUARELATTICEWITHSU3SPINFILTEREDANDCAPMOMENTUMSPACELONG_H
+#define FERMIONONSQUARELATTICEWITHSU3SPINFILTEREDANDCAPMOMENTUMSPACELONG_H
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
 
 #include <iostream>
 
 
 
-class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong
+class FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong : public FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong
 {
 
  protected:
 
-  // maximum number of particles in band 0
-  int MaxNbrParticlesBand0;
-  // maximum number of particles in band 1
-  int MaxNbrParticlesBand1;
-  // maximum number of particles in band 2
-  int MaxNbrParticlesBand2;
-
+  // orbital filering mask (i.e. state should be 0 once the mask is applied)
+  ULONGLONG OrbitalFilteringMask;
+  
  public:
 
-  // default constructor
-  //
-  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong();
-  
   // basic constructor
   // 
   // nbrFermions = number of fermions
   // nbrSiteX = number of sites in the x direction
   // nbrSiteY = number of sites in the y direction
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
   // maxNbrParticlesBand0 = maximum number of particles in band 0
   // maxNbrParticlesBand1 = maximum number of particles in band 1
   // maxNbrParticlesBand2 = maximum number of particles in band 2
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, char* allowedOrbitalsFileName, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
-  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong(const FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& fermions);
+  FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong(const FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong& fermions);
 
   // destructor
   //
-  ~FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong ();
+  ~FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong ();
 
   // assignement (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy
   // return value = reference on current hilbert space
-  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& operator = (const FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& fermions);
+  FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong& operator = (const FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong& fermions);
 
   // clone Hilbert space (without duplicating datas)
   //
@@ -104,7 +98,7 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   // maxNbrParticlesBand1 = current maximum number of particles in band 1
   // maxNbrParticlesBand2 = current maximum number of particles in band 2
   // return value = Hilbert space dimension
-  virtual long EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2);
+  virtual long EvaluateFilteredHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2);
 
   // generate all states corresponding to the constraints
   // 
@@ -118,8 +112,17 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   // maxNbrParticlesBand2 = current maximum number of particles in band 2
   // pos = position in StateDescription array where to store states
   // return value = position from which new states have to be stored
-  virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, long pos);
+  virtual long GenerateFilteredStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, long pos);
 
+  // parse the ascii file providing the orbitals that are allowed
+  //
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  virtual void ParseOrbitalFile(char* allowedOrbitalsFileName);
+
+  // filter Hilbert to remove forbidden orbitals
+  //
+  // allowedOrbitalsFileName = ascii file providing the orbitals that are allowed
+  virtual void FilterHilbertSpace(char* allowedOrbitalsFileName);
 
 };
 

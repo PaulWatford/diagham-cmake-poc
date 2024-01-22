@@ -121,6 +121,15 @@ bool FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(char* filename,
 // return value = true if no error occured
 bool FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(char* filename, int& nbrParticles, int& nbrSiteX, int& nbrSiteY, int& momentumX, int& momentumY, double& mass, bool& statistics);
 
+// get the maximum band occupation from file name  
+//
+// maxBand0 = reference on the maximum occupation for band 0 
+// maxBand1 = reference on the maximum occupation for band 1 
+// maxBand2 = reference on the maximum occupation for band 2 
+// maxBand3 = reference on the maximum occupation for band 3 
+// return value = true if no error occured
+bool FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(char* filename, int& maxBand0, int& maxBand1, int& maxBand2, int& maxBand3);
+
 // try to guess system information from file name for a cubic lattice
 //
 // filename = vector file name

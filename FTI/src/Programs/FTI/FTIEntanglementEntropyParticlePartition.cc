@@ -100,6 +100,9 @@ int main(int argc, char** argv)
   int NbrSiteX = 0;
   int NbrSiteY = 0;
   int NbrSiteZ = 0;
+  int MaxBand1 = -1;
+  int MaxBand2 = -1;
+  int MaxBand3 = -1;
   bool Statistics = true;
   double* Coefficients = 0;
   bool ShowTimeFlag = Manager.GetBoolean("show-time");

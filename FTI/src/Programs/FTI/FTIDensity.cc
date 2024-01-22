@@ -24,6 +24,8 @@
 
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong.h"
 
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
@@ -107,6 +109,10 @@ int main(int argc, char** argv)
   int NbrSiteX = 0;
   int NbrSiteY = 0;
   int NbrSiteZ = 0;
+  int MaxBand0 = -1;
+  int MaxBand1 = -1;
+  int MaxBand2 = -1;
+  int MaxBand3 = -1;
   bool Statistics = true;
   double* Coefficients = 0;
   bool ShowTimeFlag = Manager.GetBoolean("show-time");
@@ -236,6 +242,7 @@ int main(int argc, char** argv)
 		  cout << GroundStateFiles[i] << " N=" << NbrParticles << " Nx=" << NbrSiteX << " Ny=" << NbrSiteY << " kx=" << TotalKx[i] << " ky=" << TotalKy[i] << " Pz=" << TotalSpin << endl;
 		}
 	    }
+	  FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(GroundStateFiles[i], MaxBand0, MaxBand1, MaxBand2, MaxBand3);
 	}
     }
   else
@@ -514,13 +521,35 @@ int main(int argc, char** argv)
 		{
 		  if (Statistics == true)
 		    {
-		      if ((NbrSiteX * NbrSiteY) <= 16)
+		      if ((MaxBand0 < 0) && (MaxBand1 < 0))
 			{
-			  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			  if ((NbrSiteX * NbrSiteY) <= 16)
+			    {
+			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			    }
+			  else
+			    {
+			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			    }
 			}
 		      else
 			{
-			  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSiteX, NbrSiteY, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			  if (MaxBand0 < 0)
+			    {
+			      MaxBand0 = 2 * NbrSiteX * NbrSiteY;
+			    }
+			  if (MaxBand1 < 0)
+			    {
+			      MaxBand1 = 2 * NbrSiteX * NbrSiteY;
+			    }
+			  if ((NbrSiteX * NbrSiteY) <= 16)
+			    {
+			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, MaxBand0, MaxBand1, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			    }
+			  else
+			    {
+			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSiteX, NbrSiteY, MaxBand0, MaxBand1, TotalKx[i], TotalKy[i], TotalSpin, 10000000ul);
+			    }
 			}
 		    }
 		  sprintf (FileHeader, "# kx ky spin sigma sigma' <c^+ c>");

@@ -538,6 +538,107 @@ bool FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(char* filename, int& nb
   return true;
 }
 
+// get the maximum band occupation from file name  
+//
+// maxBand0 = reference on the maximum occupation for band 0 
+// maxBand1 = reference on the maximum occupation for band 1 
+// maxBand2 = reference on the maximum occupation for band 2 
+// maxBand3 = reference on the maximum occupation for band 3 
+// return value = true if no error occured
+
+bool FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(char* filename, int& maxBand0, int& maxBand1, int& maxBand2, int& maxBand3)
+{
+  maxBand0 = -1;
+  maxBand1 = -1;
+  maxBand2 = -1;
+  maxBand3 = -1;
+  char* StrNbrParticles = strstr(filename, "_maxband0_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  maxBand0 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  StrNbrParticles = strstr(filename, "_maxband1_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  maxBand1 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  StrNbrParticles = strstr(filename, "_maxband2_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  maxBand2 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  StrNbrParticles = strstr(filename, "_maxband3_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  maxBand3 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  return true;
+}
+
 // try to guess system information from file name for a cubic lattice
 //
 // filename = vector file name

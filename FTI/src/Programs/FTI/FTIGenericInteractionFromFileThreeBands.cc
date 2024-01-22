@@ -324,6 +324,8 @@ int main(int argc, char** argv)
   else
     {
       char* BandCapPrefix0 = new char [256];
+      char* BandCapPrefix1 = new char [256];
+      char* BandCapPrefix2 = new char [256];
       if (Manager.GetInteger("max-band0") < 0) 
 	{
 	  sprintf (BandCapPrefix0, "");
@@ -332,7 +334,6 @@ int main(int argc, char** argv)
 	{
 	  sprintf (BandCapPrefix0, "_maxband0_%d", Manager.GetInteger("max-band0"));
 	}
-      char* BandCapPrefix1 = new char [256];
       if (Manager.GetInteger("max-band1") < 0) 
 	{
 	  sprintf (BandCapPrefix1, "");
@@ -341,7 +342,6 @@ int main(int argc, char** argv)
 	{
 	  sprintf (BandCapPrefix1, "_maxband1_%d", Manager.GetInteger("max-band1"));
 	}
-      char* BandCapPrefix2 = new char [256];
       if (Manager.GetInteger("max-band2") < 0) 
 	{
 	  sprintf (BandCapPrefix2, "");
@@ -351,7 +351,14 @@ int main(int argc, char** argv)
 	  sprintf (BandCapPrefix2, "_maxband2_%d", Manager.GetInteger("max-band2"));
 	}
       BandCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1) + strlen(BandCapPrefix2)];
-      sprintf (BandCapPrefix, "%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
+      if (Manager.GetString("allowed-orbitals") == 0)
+	{
+	  sprintf (BandCapPrefix, "%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
+	}
+      else
+	{
+	  sprintf (BandCapPrefix, "_allowed_orbs%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
+	}
     }
   char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix)];
   if (Manager.GetBoolean("flat-band"))
@@ -1747,13 +1754,27 @@ int main(int argc, char** argv)
 			    {
 			      MaxBand2 = 2 * NbrSitesX * NbrSitesY;
 			    }
-			  if ((NbrSitesX * NbrSitesY) <= 21)
+			  if (Manager.GetString("allowed-orbitals") == 0)
 			    {
-			      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			      if ((NbrSitesX * NbrSitesY) <= 21)
+				{
+				  Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
 			    }
 			  else
 			    {
-			      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			      if ((NbrSitesX * NbrSitesY) <= 21)
+				{
+				  Space = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
 			    }
 			}
 		    }

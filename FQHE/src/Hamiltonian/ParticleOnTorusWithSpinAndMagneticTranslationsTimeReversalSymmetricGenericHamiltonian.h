@@ -86,20 +86,15 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneric
   //
   ~ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian();
 
-  // clone hamiltonian without duplicating datas
-  //
-  // return value = pointer to cloned hamiltonian
-  AbstractHamiltonian* Clone ();
-
   // set Hilbert space
   //
   // hilbertSpace = pointer to Hilbert space to use
-  void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
+  virtual void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
 
   // shift Hamiltonian from a given energy
   //
   // shift = shift value
-  void ShiftHamiltonian (double shift);
+  virtual void ShiftHamiltonian (double shift);
   
   protected:
   
@@ -107,12 +102,9 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneric
   //
   virtual void GetIndices();
   
-
- private:
- 
   // evaluate all interaction factors
   //   
-  void EvaluateInteractionFactors();
+  virtual void EvaluateInteractionFactors();
 
   // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
   //
@@ -127,8 +119,8 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneric
   // spinFluxM3 = additional inserted flux for m3
   // spinFluxM4 = additional inserted flux for m4
   // return value = numerical coefficient
-  double EvaluateInteractionCoefficientUpUp(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
-					double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4);
+  virtual double EvaluateInteractionCoefficientUpUp(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
+						    double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4);
   
   // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
   //
@@ -143,8 +135,8 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneric
   // spinFluxM3 = additional inserted flux for m3
   // spinFluxM4 = additional inserted flux for m4
   // return value = numerical coefficient
-  double EvaluateInteractionCoefficientDownDown(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
-					double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4);
+  virtual double EvaluateInteractionCoefficientDownDown(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
+							double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4);
   
   // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
   //
@@ -159,8 +151,8 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneric
   // spinFluxM3 = additional inserted flux for m3
   // spinFluxM4 = additional inserted flux for m4
   // return value = numerical coefficient
-  double EvaluateInteractionCoefficientUpDown(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
-					double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4); 
+  virtual double EvaluateInteractionCoefficientUpDown(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
+						      double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4); 
 
 };
 

@@ -6,10 +6,10 @@
 //                  Copyright (C) 2001-2002 Nicolas Regnault                  //
 //                                                                            //
 //                                                                            //
-//       class of hamiltonian associated to particles on a torus with         //
-//      two body pseudopotential interaction and magnetic translations        //
+//   class of hamiltonian associated to spinful particles on a torus with     //
+//         double gated coulomb interaction and magnetic translations         //
 //                                                                            //
-//                        last modification : 07/03/2014                      //
+//                        last modification : 29/01/2024                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,14 +29,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef PARTICLEONTORUSWITHSPINANDMAGNETICTRANSLATIONSGENERICHAMILTONIAN_H
-#define PARTICLEONTORUSWITHSPINANDMAGNETICTRANSLATIONSGENERICHAMILTONIAN_H
+#ifndef PARTICLEONTORUSWITHSPINANDMAGNETICTRANSLATIONSDOUBLEGATEDCOULOMBHAMILTONIAN_H
+#define PARTICLEONTORUSWITHSPINANDMAGNETICTRANSLATIONSDOUBLEGATEDCOULOMBHAMILTONIAN_H
 
 
 #include "config.h"
 #include "HilbertSpace/ParticleOnTorusWithSpinAndMagneticTranslations.h"
 #include "Hamiltonian/AbstractHamiltonian.h"
-#include "Hamiltonian/AbstractQHEOnTorusWithSpinAndMagneticTranslationsHamiltonian.h"
+#include "Hamiltonian/ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian.h"
 
 #include <iostream>
 
@@ -48,46 +48,19 @@ class MathematicaOutput;
 class Polynomial;
 
 
-class ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian : public AbstractQHEOnTorusWithSpinAndMagneticTranslationsHamiltonian
+class ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian : public ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian
 {
 
  protected:
 
-  // Number of Pseudopotential for up-up interaction
-  int NbrPseudopotentialsUpUp;
-  // pseudopotential coefficients for up-up interaction
-  double* PseudopotentialsUpUp;
-  // Number of Pseudopotential for down-down interaction
-  int NbrPseudopotentialsDownDown;
-  // pseudopotential coefficients for down-down interaction
-  double* PseudopotentialsDownDown;
-  // Number of Pseudopotential for up-down interaction
-  int NbrPseudopotentialsUpDown;
-  // pseudopotential coefficients for up-down interaction
-  double* PseudopotentialsUpDown;
-  // maximum number of pseudopotentials
-  int MaxNbrPseudopotentials;
-  // Laguerre polynomial for the pseudopotentials
-  Polynomial* LaguerrePolynomials;
-
-  // global rescaling factor for any non-pseudopotential interaction in the up-up sector
-  double ScalingFactorUpUp;
-  // global rescaling factor for any non-pseudopotential interaction in the down-down sector
-  double ScalingFactorDownDown;
-  // global rescaling factor for any non-pseudopotential interaction in the up-down sector
-  double ScalingFactorUpDown;
-
-  // additional inserted flux for spin up
-  double SpinFluxUp;
-  // additional inserted flux for spin down
-  double SpinFluxDown;
-
+  // screening length (half the distance between the two screening gates)
+  double ScreeningLength;
 
  public:
    
-   // default constructor
+  // default constructor
   // 
-  ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian();
+  ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian();
 
 
   // constructor from pseudopotentials
@@ -97,6 +70,10 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian : public 
   // maxMomentum = maximum Lz value reached by a particle in the state
   // xMomentum = momentum in the x direction (modulo GCD of nbrBosons and maxMomentum)
   // ratio = ratio between the width in the x direction and the width in the y direction
+  // screeningLength = screening length (half the distance between the two screening gates)
+  // scalingFactorUpUp = global rescaling factor for the up-up interaction
+  // scalingFactorDownDown = global rescaling factor for the down-down interaction
+  // scalingFactorUpDown = global rescaling factor for the up-down interaction
   // nbrPseudopotentialsUpUp = number of pseudopotentials for up-up interaction
   // pseudopotentialsUpUp = pseudopotential coefficients for up-up interaction
   // nbrPseudopotentialsDownDown = number of pseudopotentials for down-down interaction
@@ -108,40 +85,27 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian : public 
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
-  ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
-								   double ratio, 
-								   int nbrPseudopotentialsUpUp, double* pseudopotentialsUpUp,
-								   int nbrPseudopotentialsDownDown, double* pseudopotentialsDownDown,
-								   int nbrPseudopotentialsUpDown, double* pseudopotentialsUpDown,
-								   double spinFluxUp, double spinFluxDown, 
-								   AbstractArchitecture* architecture, long memory, char* precalculationFileName, 
-								   double* oneBodyPotentielUpUp = 0, double* oneBodyPotentielDownDown = 0, double* oneBodyPotentielUpDown = 0);
+  ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
+									      double ratio,
+									      double screeningLength, double scalingFactorUpUp, double scalingFactorDownDown, double scalingFactorUpDown,
+									      int nbrPseudopotentialsUpUp, double* pseudopotentialsUpUp,
+									      int nbrPseudopotentialsDownDown, double* pseudopotentialsDownDown,
+									      int nbrPseudopotentialsUpDown, double* pseudopotentialsUpDown,
+									      double spinFluxUp, double spinFluxDown, 
+									      AbstractArchitecture* architecture, long memory, char* precalculationFileName, 
+									      double* oneBodyPotentielUpUp = 0, double* oneBodyPotentielDownDown = 0, double* oneBodyPotentielUpDown = 0);
   
   // destructor
   //
-  ~ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian();
+  ~ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian();
 
   // clone hamiltonian without duplicating datas
   //
   // return value = pointer to cloned hamiltonian
   AbstractHamiltonian* Clone ();
 
-  // set Hilbert space
-  //
-  // hilbertSpace = pointer to Hilbert space to use
-  virtual void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
-
-  // shift Hamiltonian from a given energy
-  //
-  // shift = shift value
-  virtual void ShiftHamiltonian (double shift);
-
  protected:
  
-  // evaluate all interaction factors
-  //   
-  virtual void EvaluateInteractionFactors();
-
   // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
   //
   // m1 = first index
@@ -159,6 +123,11 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian : public 
   virtual double EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
 						double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4, double nonpseudoScaling);
 
+
+  // get fourier transform of interaction
+  //
+  // Q2_half = one half of q² value
+  virtual double GetVofQ(double Q2_half);
 
 };
 

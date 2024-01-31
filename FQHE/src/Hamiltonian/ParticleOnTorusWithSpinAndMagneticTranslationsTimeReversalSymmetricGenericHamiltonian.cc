@@ -132,6 +132,10 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamilt
   for (int i = 0; i < this->MaxNbrPseudopotentials; ++i)
     this->LaguerrePolynomials[i] = LaguerrePolynomial(i);
 
+  this->ScalingFactorUpUp = 1.0;
+  this->ScalingFactorDownDown = 1.0;
+  this->ScalingFactorUpDown = 1.0;
+
   this->OneBodyInteractionFactorsupup = 0;
   if(oneBodyPotentielUpUp != 0)
     {
@@ -612,12 +616,13 @@ void ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericH
 // spinFluxM2 = additional inserted flux for m2
 // spinFluxM3 = additional inserted flux for m3
 // spinFluxM4 = additional inserted flux for m4
+// nonpseudoScaling = rescaling factor for any non-pseudopotential interaction
 // return value = numerical coefficient
 
 double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian::EvaluateInteractionCoefficientUpUp(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
-													double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4)
+																 double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4)
 {
-  return this->EvaluateInteractionCoefficient (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4);
+  return this->EvaluateInteractionCoefficient (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorUpUp);
 }
 
 
@@ -637,13 +642,14 @@ double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneri
 // return value = numerical coefficient
 
 double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian::EvaluateInteractionCoefficientDownDown(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
-													double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4)
+																     double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4)
 {
   m1 = (this->NbrLzValue - m1) % this->NbrLzValue;
   m2 = (this->NbrLzValue - m2) % this->NbrLzValue;
   m3 = (this->NbrLzValue - m3) % this->NbrLzValue;
   m4 = (this->NbrLzValue - m4) % this->NbrLzValue;
-  return this->EvaluateInteractionCoefficientUpUp (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4);
+  return this->EvaluateInteractionCoefficient (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorDownDown);
+  //  return this->EvaluateInteractionCoefficientUpUp (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorDownDown);
 }
 
 // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 updown coupling term
@@ -661,7 +667,7 @@ double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGeneri
 // return value = numerical coefficient
 
 double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian::EvaluateInteractionCoefficientUpDown(int m1, int m2, int m3, int m4, int nbrPseudopotentials, double* pseudopotentials,
-													double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4)
+																   double spinFluxM1, double spinFluxM2, double spinFluxM3, double spinFluxM4)
 {
 //   m4 = (this->NbrLzValue - m4) % this->NbrLzValue;
   double Coefficient = 1.0;

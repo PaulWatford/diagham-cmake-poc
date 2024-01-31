@@ -888,7 +888,7 @@ double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::Evaluat
 
 double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::GetVofQ(double Q2_half, double layerSeparation)
 {
-  double Q=sqrt(2.0*Q2_half);
+  double Q = sqrt(2.0*Q2_half);
   return exp(-Q*layerSeparation)/Q;
 }
 

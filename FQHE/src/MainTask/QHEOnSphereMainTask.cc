@@ -38,6 +38,7 @@
 #include "Matrix/RealSymmetricMatrix.h"
 #include "Matrix/RealMatrix.h"
 #include "Matrix/RealDiagonalMatrix.h"
+#include "Matrix/SparseRealMatrix.h"
 
 #include "HilbertSpace/AbstractHilbertSpace.h"
 #include "Hamiltonian/AbstractQHEHamiltonian.h"

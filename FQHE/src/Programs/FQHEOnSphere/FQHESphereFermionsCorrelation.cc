@@ -531,6 +531,7 @@ int main(int argc, char** argv)
 
    if (PairAmplitudeFlag == true)
    {
+     int TmpNbrPseudoPotentials;
      cout<<"Evaluating the pair amplitudes <xi_{J,M}^+ xi_{J,M}>" << endl;
      cout<<"assuming M can be set to zero"<<endl;
      cout<<"xi_{J,M}=\\sum_{m1,m2} C_{m2m1M}^{SSJ} c_m1 c_m2 "<<endl;
@@ -562,21 +563,23 @@ int main(int argc, char** argv)
           ConfigurationParser InteractionDefinition;
           if (InteractionDefinition.Parse(Manager.GetString("interaction-file")) == false)
  	   {
+         cout << "Need an interaction file!" << endl;
 	     InteractionDefinition.DumpErrors(cout) << endl;
  	     return -1;
  	   }
-          int TmpNbrPseudoPotentials;
+         
           if (InteractionDefinition.GetAsDoubleArray("Pseudopotentials", ' ', PseudoPotentials, TmpNbrPseudoPotentials) == false)
  	   {
 	     cout << "Weights is not defined or has a wrong value in " << Manager.GetString("interaction-file") << endl;
 	     return -1;
 	   }
           cout << "LzMax= " << TmpNbrPseudoPotentials << " " << LzMax << endl;
-          if (TmpNbrPseudoPotentials != (LzMax +1))
- 	   {
-	     cout << "Invalid number of pseudo-potentials" << endl;
-	     return -1;	  
-	   }
+       
+       //if (TmpNbrPseudoPotentials != (LzMax +1))
+ 	   //{
+	   //  cout << "Invalid number of pseudo-potentials" << endl;
+	   //  return -1;	  
+	   //}
          }
 
        OperatorMatrixElementOperation* Operation;
@@ -603,8 +606,8 @@ int main(int argc, char** argv)
            }     
          cout << L <<" "<< PairAmpL.Re << " " << PairAmpL.Im <<endl;
          File << L <<" "<< PairAmpL.Re << " " << PairAmpL.Im <<endl;
-         if (EnergyExpectationFlag)
-   	   TotalEnergy += (2*(LzMax-L)+1) * PairAmpL * PseudoPotentials[L];
+         if ((EnergyExpectationFlag) && (L < TmpNbrPseudoPotentials))
+     	   TotalEnergy += (2*(LzMax-L)+1) * PairAmpL * PseudoPotentials[L];
         }
 
       if (EnergyExpectationFlag)

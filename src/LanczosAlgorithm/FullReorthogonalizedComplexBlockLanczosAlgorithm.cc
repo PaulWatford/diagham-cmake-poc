@@ -52,6 +52,9 @@ using std::endl;
 
 FullReorthogonalizedComplexBlockLanczosAlgorithm::FullReorthogonalizedComplexBlockLanczosAlgorithm()
 {
+  this->LanczosVectors = 0;
+  this->TemporaryCoefficients = 0;
+  this->PreviousWantedEigenvalues = 0;
 }
 
 // basic constructor
@@ -148,8 +151,14 @@ FullReorthogonalizedComplexBlockLanczosAlgorithm::~FullReorthogonalizedComplexBl
 {
   if ((this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
-      delete[] this->LanczosVectors;
-      delete[] this->TemporaryCoefficients;
+      if (this->LanczosVectors != 0)
+	{
+	  delete[] this->LanczosVectors;
+	}
+      if (this->TemporaryCoefficients != 0)
+	{
+	  delete[] this->TemporaryCoefficients;
+	}
     }
   delete[] this->PreviousWantedEigenvalues;
 }

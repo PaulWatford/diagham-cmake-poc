@@ -87,6 +87,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('y', "y-momentum", "constraint on the total momentum in the y direction (negative if none)", -1);
   (*SystemGroup) += new SingleDoubleOption   ('r', "ratio", 
 					      "ratio between lengths along the x and y directions (-1 if has to be taken equal to nbr-particles/4)", 1.0);
+  (*SystemGroup) += new SingleDoubleOption   ('\n', "angle", "angle between the two fundamental cycles of the torus in pi units (0 if rectangular)", 0);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "landau-level", "landau level index", 0);
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-file", "file describing the 2-body interaction in terms of the pseudo-potential");
   (*SystemGroup) += new SingleDoubleOption   ('d', "layerSeparation", 
@@ -94,6 +95,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "all-points", "calculate all points", false);
   (*SystemGroup) += new BooleanOption  ('\n', "full-reducedbz", "calculate all points within the reduced Brillouin zone", false);
   (*SystemGroup) += new SingleStringOption ('\n', "selected-points", "provide a two column ascii file that indicates which momentum sectors have to be computed");
+  (*SystemGroup) += new BooleanOption ('\n', "variable-nbreigenvalues", "when using the --selected-points option, use the last column of the momentum file to fix the number of eigenvalues to compute (overriding the command line options)", false);
   (*SystemGroup) += new SingleDoubleOption ('\n', "spinup-flux", "inserted flux for particles with spin up (in 2pi / N_phi unit)", 0.0);
   (*SystemGroup) += new SingleDoubleOption ('\n', "spindown-flux", "inserted flux for particles with spin down (in 2pi / N_phi unit)", 0.0);
   (*SystemGroup) += new  BooleanOption  ('\n', "time-reversal", "Use model with time reversal symmetry", false);
@@ -130,11 +132,12 @@ int main(int argc, char** argv)
   int MaxMomentum = Manager.GetInteger("max-momentum");
   int XMomentum = Manager.GetInteger("x-momentum");
   int YMomentum = Manager.GetInteger("y-momentum");
-  double XRatio = NbrFermions / 4.0;
+  double XRatio = 1.0;
   if (Manager.GetDouble("ratio") > 0)
     {
        XRatio = Manager.GetDouble("ratio");
     }
+  double Angle = Manager.GetDouble("angle");
   double LayerSeparation = Manager.GetDouble("layerSeparation");
   char* LoadPrecalculationFileName = Manager.GetString("load-precalculation");
   char* SavePrecalculationFileName = Manager.GetString("save-precalculation");
@@ -270,27 +273,44 @@ int main(int argc, char** argv)
     }
 
 
-  char* OutputName = new char [512];
+  char* TorusGeometryName = new char [512];
+  if (Angle == 0.0)    
+    {
+      sprintf(TorusGeometryName, "ratio_%.6f", XRatio);
+    }
+  else
+    {
+     sprintf(TorusGeometryName, "ratio_%.6f_angle_%.6f", XRatio, Angle);
+    }
+  char* OutputName = new char [512 + strlen(InteractionName) + strlen(TorusGeometryName)];
   if (OneBodyPseudoPotentials[2] == 0)
     {
-        if (LayerSeparation == 0.0)
+      if (LayerSeparation == 0.0)
         {
             if (Manager.GetBoolean("time-reversal") == false)
-                sprintf (OutputName, "fermions_torus_su2_%s_n_%d_2s_%d_sz_%d_ratio_%f.dat", InteractionName, NbrFermions, MaxMomentum, TotalSpin, XRatio);
+	      {
+		sprintf (OutputName, "fermions_torus_su2_%s_n_%d_2s_%d_sz_%d_%s.dat", InteractionName, NbrFermions, MaxMomentum, TotalSpin, TorusGeometryName);
+	      }
             else
-                sprintf (OutputName, "fermions_torus_timereversal_%s_n_%d_2s_%d_sz_%d_ratio_%f.dat", InteractionName, NbrFermions, MaxMomentum, TotalSpin, XRatio);
+	      {
+		sprintf (OutputName, "fermions_torus_timereversal_%s_n_%d_2s_%d_sz_%d_%s.dat", InteractionName, NbrFermions, MaxMomentum, TotalSpin, TorusGeometryName);
+	      }
         }
         else
          {
             if (Manager.GetBoolean("time-reversal") == false)
-                sprintf (OutputName, "fermions_torus_su2_%s_n_%d_2s_%d_d_%f_sz_%d_ratio_%f.dat", InteractionName, NbrFermions, MaxMomentum, LayerSeparation, TotalSpin, XRatio);
+	      {
+                sprintf (OutputName, "fermions_torus_su2_%s_n_%d_2s_%d_d_%f_sz_%d_%s.dat", InteractionName, NbrFermions, MaxMomentum, LayerSeparation, TotalSpin, TorusGeometryName);
+	      }
             else
-                sprintf (OutputName, "fermions_torus_timereversal_%s_n_%d_2s_%d_d_%f_sz_%d_ratio_%f.dat", InteractionName, NbrFermions, MaxMomentum, LayerSeparation, TotalSpin, XRatio);
+	      {
+                sprintf (OutputName, "fermions_torus_timereversal_%s_n_%d_2s_%d_d_%f_sz_%d_%s.dat", InteractionName, NbrFermions, MaxMomentum, LayerSeparation, TotalSpin, TorusGeometryName);
+	      }
         }   
     }
   else
     {
-      sprintf (OutputName, "fermions_torus_su2_%s_n_%d_2s_%d_ratio_%f.dat", InteractionName, NbrFermions, MaxMomentum, XRatio);
+      sprintf (OutputName, "fermions_torus_su2_%s_n_%d_2s_%d_%s.dat", InteractionName, NbrFermions, MaxMomentum, XRatio);
     }
 
   ofstream File;
@@ -310,8 +330,9 @@ int main(int argc, char** argv)
 
   int YMaxMomentum = (MomentumModulo - 1);
   int NbrMomenta;
-  int* XMomenta;
-  int* YMomenta;
+  int* XMomenta = 0;
+  int* YMomenta = 0;
+  int* NbrRequestedEigenstates = 0;
   bool GenerateMomenta = false;
   if ((XMomentum >= 0) && (YMomentum >= 0))
     {
@@ -406,9 +427,24 @@ int main(int argc, char** argv)
 	  NbrMomenta = MomentumFile.GetNbrLines();
 	  XMomenta = MomentumFile.GetAsIntegerArray(0);
 	  YMomenta = MomentumFile.GetAsIntegerArray(1);
+	  if (Manager.GetBoolean("variable-nbreigenvalues") == true)
+	    {
+	      if (MomentumFile.GetNbrColumns() < 2)
+		{
+		  cout << "--variable-nbreigenvalues requires an additional column in " << Manager.GetString("selected-points") << endl;
+		  return 0;
+		}
+	      NbrRequestedEigenstates = MomentumFile.GetAsIntegerArray(2);
+	    }
 	}
     }
 
+  if (Angle != 0.0)
+    {
+      cout << "twisted torus is not yet supported" << endl;
+      return 0.0;
+    }
+  
   bool FirstRun=true;
   for (int Pos = 0;Pos < NbrMomenta; ++Pos)
     {
@@ -453,6 +489,8 @@ int main(int argc, char** argv)
       cout << " Total Hilbert space dimension = " << TotalSpace->GetHilbertSpaceDimension() << endl;
       cout << "momentum = (" << XMomentum << "," << YMomentum << ")" << endl;
       Architecture.GetArchitecture()->SetDimension(TotalSpace->GetHilbertSpaceDimension());	
+
+
       AbstractQHEHamiltonian* Hamiltonian = 0;
       if (HaveCoulomb == true)
 	{
@@ -562,6 +600,10 @@ int main(int argc, char** argv)
 	Hamiltonian->ShiftHamiltonian(Shift);      
 	FQHEOnTorusMainTask Task (&Manager, TotalSpace, &Lanczos, Hamiltonian, YMomentum, Shift, OutputName, FirstRun, EigenvectorName, XMomentum);
 	Task.SetKxValue(XMomentum);
+	if (NbrRequestedEigenstates != 0)
+	  {
+	    Task.SetNbrEigenvalues(NbrRequestedEigenstates[Pos]);
+	  }
 	MainTaskOperation TaskOperation (&Task);
 	TaskOperation.ApplyOperation(Architecture.GetArchitecture());
 	if (EigenvectorName != 0)

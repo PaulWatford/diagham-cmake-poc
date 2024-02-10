@@ -54,6 +54,9 @@ class LanczosManager
   // use complex Lanczos algorithms if true
   bool ComplexFlag;
 
+  // number of eigenvalues to compute (0 if it should be inferred from the command line)
+  int NbrEigenvalues;
+  
  public:
 
   // default constructor
@@ -90,6 +93,11 @@ class LanczosManager
   // set Lanczos to real algorithms
   //
   void SetRealAlgorithms();
+
+  // set the number of eigenvalues to compute, overriding the one provided through the command line options
+  //
+  // nbrEigenvalues =  number of eigenvalues to compute
+  void SetNbrEigenvalues(int nbrEigenvalues);
 
 };
 

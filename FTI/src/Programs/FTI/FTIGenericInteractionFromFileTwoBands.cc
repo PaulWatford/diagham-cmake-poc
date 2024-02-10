@@ -97,6 +97,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band1", "maximum number of particles in band 1 (negative if this number should be equal to the number of orbitals)", -1);
   (*SystemGroup) += new SingleStringOption ('\n', "allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed");
   (*SystemGroup) += new SingleStringOption ('\n', "selected-sectors", "provide an ascii file that indicates which symmetry sectors have to be computed");
+  (*SystemGroup) += new BooleanOption ('\n', "variable-nbreigenvalues", "when using the --selected-points option, use the last column of the momentum file to fix the number of eigenvalues to compute (overriding the command line options)", false);
+  (*SystemGroup) += new SingleDoubleOption ('\n', "spinup-flux", "inserted flux for particles with spin up (in 2pi / N_phi unit)", 0.0);
   (*SystemGroup) += new BooleanOption  ('\n', "disable-pzsymmetry", "disable the valley Pz<->-Pz symmetry");
   (*SystemGroup) += new BooleanOption  ('\n', "disable-szsymmetry", "disable the valley Sz<->-Sz symmetry");
   (*SystemGroup) += new BooleanOption  ('\n', "singleparticle-spectrum", "only compute the one body spectrum");
@@ -692,6 +694,7 @@ int main(int argc, char** argv)
   int* PzParityValues1 = 0;
   int* PzParityValues2 = 0;
   int NbrSymmetrySectors = NbrMomentumSectors;
+  int* NbrRequestedEigenstates = 0;
   if (Manager.GetString("selected-sectors") == 0)
     {
       if (Manager.GetBoolean("conserve-bandoccuption") == false)
@@ -1269,7 +1272,9 @@ int main(int argc, char** argv)
     }
   else
     {
+      // quantum number selection from an external file       
       MultiColumnASCIIFile SymmetrySectorsFile;
+      int MininumNumberColumns = 0;
       if (SymmetrySectorsFile.Parse(Manager.GetString("selected-sectors")) == false)
 	{
 	  SymmetrySectorsFile.DumpErrors(cout) << endl;
@@ -1286,6 +1291,7 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
+		  MininumNumberColumns = 2;
 		  if (SymmetrySectorsFile.GetNbrColumns() < 2)
 		    {
 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least two)" << endl;
@@ -1330,6 +1336,7 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
+		  MininumNumberColumns = 3;
 		  if (SymmetrySectorsFile.GetNbrColumns() < 3)
 		    {
 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least three when using --add-valley)" << endl;
@@ -1376,6 +1383,7 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
+		  MininumNumberColumns = 3;
 		  if (SymmetrySectorsFile.GetNbrColumns() < 3)
 		    {
 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least three when using --add-spin)" << endl;
@@ -1419,6 +1427,7 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
+		  MininumNumberColumns = 5;
 		  if (SymmetrySectorsFile.GetNbrColumns() < 5)
 		    {
 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least five when using --add-spin and --add-valley)" << endl;
@@ -1466,6 +1475,7 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
+		  MininumNumberColumns = 4;
 		  if (SymmetrySectorsFile.GetNbrColumns() < 4)
 		    {
 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least four when using --conserve-bandoccuption without spin and valley)" << endl;
@@ -1516,6 +1526,7 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
+		  MininumNumberColumns = 10;
 		  if (SymmetrySectorsFile.GetNbrColumns() < 10)
 		    {
 		      cout << Manager.GetString("selected-sectors") << " has a wrong number of columns (should be at least ten when using --conserve-bandoccuption)" << endl;
@@ -1560,6 +1571,15 @@ int main(int argc, char** argv)
 		    }
 		}
 	    }
+	}
+      if (Manager.GetBoolean("variable-nbreigenvalues") == true)
+	{
+	  if (SymmetrySectorsFile.GetNbrColumns() < (MininumNumberColumns + 1))
+	    {
+	      cout << "--variable-nbreigenvalues requires at least " << (MininumNumberColumns + 1) << " columns in " << Manager.GetString("selected-sectors") << " (has only " << SymmetrySectorsFile.GetNbrColumns() << " columns)" << endl;
+	      return 0;
+	    }
+	  NbrRequestedEigenstates = SymmetrySectorsFile.GetAsIntegerArray(MininumNumberColumns);
 	}
     }
   
@@ -2096,6 +2116,10 @@ int main(int argc, char** argv)
 	    {
 	      GenericRealMainTask Task(&Manager, Hamiltonian->GetHilbertSpace(), &Lanczos, Hamiltonian, ContentPrefix,
 				       CommentLine, EnergyShift,  EigenvalueOutputFile, FirstRunFlag, EigenstateOutputFile);
+	      if (NbrRequestedEigenstates != 0)
+		{
+		  Task.SetNbrEigenvalues(NbrRequestedEigenstates[SymmetrySectorIndex]);
+		}
 	      MainTaskOperation TaskOperation (&Task);
 	      TaskOperation.ApplyOperation(Architecture.GetArchitecture());
 	    }
@@ -2103,6 +2127,10 @@ int main(int argc, char** argv)
 	    {
 	      GenericComplexMainTask Task(&Manager, Hamiltonian->GetHilbertSpace(), &Lanczos, Hamiltonian, ContentPrefix,
 					  CommentLine, EnergyShift,  EigenvalueOutputFile, FirstRunFlag, EigenstateOutputFile);
+	      if (NbrRequestedEigenstates != 0)
+		{
+		  Task.SetNbrEigenvalues(NbrRequestedEigenstates[SymmetrySectorIndex]);
+		}
 	      MainTaskOperation TaskOperation (&Task);
 	      TaskOperation.ApplyOperation(Architecture.GetArchitecture());
 	    }

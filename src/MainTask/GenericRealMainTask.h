@@ -191,7 +191,12 @@ class GenericRealMainTask: public AbstractMainTask
   // return value = matrix where the eigenvalues are stored
   virtual RealDiagonalMatrix GetEigenvalues();
   
- protected:
+  // set the number of eigenvalues to obtain, overriding the one provided through the command line options
+  //
+  // nbrEigenvalues =  number of eigenvalues to compute
+  virtual void SetNbrEigenvalues(int nbrEigenvalues);
+
+protected:
 
   // write a line of output to the results file
   //
@@ -218,4 +223,17 @@ inline RealDiagonalMatrix GenericRealMainTask::GetEigenvalues()
   return this->EigenvalueMatrix;
 }
   
+// set the number of eigenvalues to obtain, overriding the one provided through the command line options
+//
+// nbrEigenvalues =  number of eigenvalues to compute
+
+inline void GenericRealMainTask::SetNbrEigenvalues(int nbrEigenvalues)
+{
+  this->NbrEigenvalue = nbrEigenvalues;
+  if (this->AlgorithmManager != 0)
+    {
+      this->AlgorithmManager->SetNbrEigenvalues(this->NbrEigenvalue);
+    }
+}
+
 #endif

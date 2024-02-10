@@ -124,6 +124,11 @@ class FQHEOnTorusMainTask: public QHEOnDiskMainTask
   // enforce a complex calculation
   void ForceComplex(){ this->RealFlag=false;}
 
+  // set the number of eigenvalues to obtain, overriding the one provided through the command line options
+  //
+  // nbrEigenvalues =  number of eigenvalues to compute
+  virtual void SetNbrEigenvalues(int nbrEigenvalues);
+
  protected:
   
   // write a line of output to the results file
@@ -147,5 +152,18 @@ class FQHEOnTorusMainTask: public QHEOnDiskMainTask
   void ComplexDiagonalizeInHilbertSubspace(char* subspaceDescription, ofstream& file);
 
 };
+
+// set the number of eigenvalues to obtain, overriding the one provided through the command line options
+//
+// nbrEigenvalues =  number of eigenvalues to compute
+
+inline void FQHEOnTorusMainTask::SetNbrEigenvalues(int nbrEigenvalues)
+{
+  this->NbrEigenvalue = nbrEigenvalues;
+  if (this->AlgorithmManager != 0)
+    {
+      this->AlgorithmManager->SetNbrEigenvalues(this->NbrEigenvalue);
+    }
+}
 
 #endif

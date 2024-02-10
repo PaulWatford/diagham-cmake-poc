@@ -83,6 +83,7 @@ LanczosManager::LanczosManager(bool complexFlag)
   this->LanczosAlgorithm = 0;
   this->Options = 0;
   this->ComplexFlag = complexFlag;
+  this->NbrEigenvalues = 0;
 }
 
 // destructor
@@ -160,9 +161,17 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
       bool DiskFlag = this->Options->GetBoolean("disk");
       int MaxNbrIterLanczos = this->Options->GetInteger("iter-max");
       int NbrIterLanczos = this->Options->GetInteger("nbr-iter");
-      int NbrEigenvalue = this->Options->GetInteger("nbr-eigen");
       bool BlockLanczosFlag = this->Options->GetBoolean("block-lanczos");
       int SizeBlockLanczos = this->Options->GetInteger("block-size");
+      int LocalNbrEigenvalues = this->Options->GetInteger("nbr-eigen");
+      if (this->NbrEigenvalues > 0)
+	{
+	  LocalNbrEigenvalues = this->NbrEigenvalues;
+	  if ((BlockLanczosFlag == true) && (this->NbrEigenvalues < SizeBlockLanczos))
+	    {
+	      SizeBlockLanczos = this->NbrEigenvalues;
+	    }
+	}
       int VectorMemory = this->Options->GetInteger("nbr-vector");
       bool EvaluateEigenvectors = this->Options->GetBoolean("eigenstate");
       //char* InitialVectorFileName = ((SingleStringOption*) (*(this->Options))["initial-vector"])->GetString();
@@ -175,14 +184,14 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
       bool LapackFlag = false;
       if (((*(this->Options))["use-lapack"])!=NULL)
 	LapackFlag = this->Options->GetBoolean("use-lapack");
-//       if ((NbrEigenvalue > 1) || (EvaluateEigenvectors == false))
+//       if ((LocalNbrEigenvalues > 1) || (EvaluateEigenvectors == false))
 // 	{
 // 	  FastDiskFlag = false;
 // 	  ResumeFastDiskFlag = false;
 // 	}
       if (this->ComplexFlag == false)
 	{
-	  if ((NbrEigenvalue == 1) && (FullReorthogonalizationFlag == false))
+	  if ((LocalNbrEigenvalues == 1) && (FullReorthogonalizationFlag == false))
 	    {
 	      if (DiskFlag == false)
 		{
@@ -194,7 +203,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		  else
 		    {
 		      cout << "Using BasicLanczosAlgorithm" << endl;      
-		      this->LanczosAlgorithm = new BasicLanczosAlgorithm(architecture, NbrEigenvalue, MaxNbrIterLanczos);
+		      this->LanczosAlgorithm = new BasicLanczosAlgorithm(architecture, LocalNbrEigenvalues, MaxNbrIterLanczos);
 		    }
 		}
 	      else
@@ -207,7 +216,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		  else
 		    {
 		      cout << "Using BasicLanczosAlgorithmWithDiskStorage" << endl;      
-		      this->LanczosAlgorithm = new BasicLanczosAlgorithmWithDiskStorage(architecture, NbrEigenvalue, MaxNbrIterLanczos);
+		      this->LanczosAlgorithm = new BasicLanczosAlgorithmWithDiskStorage(architecture, LocalNbrEigenvalues, MaxNbrIterLanczos);
 		    }
 		}
 	    }
@@ -217,34 +226,34 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		{
 		  if (BlockLanczosFlag == true)
 		    {
-		      if ((FullReorthogonalizationFlag == true) || (NbrEigenvalue > SizeBlockLanczos))
+		      if ((FullReorthogonalizationFlag == true) || (LocalNbrEigenvalues > SizeBlockLanczos))
 			{
 			  cout << "Using FullReorthogonalizedBlockLanczosAlgorithm"<<endl;
-			  this->LanczosAlgorithm = new FullReorthogonalizedBlockLanczosAlgorithm (architecture, NbrEigenvalue, SizeBlockLanczos, MaxNbrIterLanczos);
+			  this->LanczosAlgorithm = new FullReorthogonalizedBlockLanczosAlgorithm (architecture, LocalNbrEigenvalues, SizeBlockLanczos, MaxNbrIterLanczos);
 			}
 		      else
 			{
 			  cout << "Using BasicBlockLanczosAlgorithm"<<endl;
-			  this->LanczosAlgorithm = new BasicBlockLanczosAlgorithm (architecture, NbrEigenvalue, SizeBlockLanczos, MaxNbrIterLanczos, 
+			  this->LanczosAlgorithm = new BasicBlockLanczosAlgorithm (architecture, LocalNbrEigenvalues, SizeBlockLanczos, MaxNbrIterLanczos, 
 										   FastDiskFlag, ResumeFastDiskFlag, false, useLapack);
 			}
 		    }
 		  else
 		    {
 		      cout << "Using FullReorthogonalizedLanczosAlgorithm" << endl;
-		      this->LanczosAlgorithm = new FullReorthogonalizedLanczosAlgorithm (architecture, NbrEigenvalue, MaxNbrIterLanczos);
+		      this->LanczosAlgorithm = new FullReorthogonalizedLanczosAlgorithm (architecture, LocalNbrEigenvalues, MaxNbrIterLanczos);
 		    }
 		}
 	      else
 		{
 		  cout << "Using FullReorthogonalizedLanczosAlgorithmWithDiskStorage" << endl;
-		  this->LanczosAlgorithm = new FullReorthogonalizedLanczosAlgorithmWithDiskStorage (architecture, NbrEigenvalue, VectorMemory, MaxNbrIterLanczos);
+		  this->LanczosAlgorithm = new FullReorthogonalizedLanczosAlgorithmWithDiskStorage (architecture, LocalNbrEigenvalues, VectorMemory, MaxNbrIterLanczos);
 		}
 	    }
 	}
       else
 	{
-	  if ((NbrEigenvalue == 1) && (FullReorthogonalizationFlag == false))
+	  if ((LocalNbrEigenvalues == 1) && (FullReorthogonalizationFlag == false))
 	    {
 	      if (DiskFlag == false)
 		{
@@ -287,7 +296,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		      if (this->Options->GetString("add-projector") == 0)
 			{
 			  cout << "Using ComplexBasicLanczosAlgorithm" << endl;
-			  this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithm(architecture, NbrEigenvalue, MaxNbrIterLanczos);
+			  this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithm(architecture, LocalNbrEigenvalues, MaxNbrIterLanczos);
 			}
 		      else
 			{
@@ -312,7 +321,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 												 this->Options->GetDouble("addprojector-factor"), 
 												 !(this->Options->GetBoolean("addprojector-noshift")),
 												 architecture, 
-												 NbrEigenvalue, MaxNbrIterLanczos);
+												 LocalNbrEigenvalues, MaxNbrIterLanczos);
 			  delete[] States;
 			}
 		    }
@@ -328,7 +337,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		  else
 		    {
 		      cout << "Using ComplexBasicLanczosAlgorithmWithDiskStorage" << endl;
-		      this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithmWithDiskStorage(architecture, NbrEigenvalue, MaxNbrIterLanczos);
+		      this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithmWithDiskStorage(architecture, LocalNbrEigenvalues, MaxNbrIterLanczos);
 		    }
 		}
 	    }
@@ -341,13 +350,13 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		      if (FullReorthogonalizationFlag == true)
 			{
 			  cout << "using FullReorthogonalizedComplexBlockLanczosAlgorithm"<<endl;
-			  this->LanczosAlgorithm = new FullReorthogonalizedComplexBlockLanczosAlgorithm (architecture, NbrEigenvalue, SizeBlockLanczos, MaxNbrIterLanczos, 
+			  this->LanczosAlgorithm = new FullReorthogonalizedComplexBlockLanczosAlgorithm (architecture, LocalNbrEigenvalues, SizeBlockLanczos, MaxNbrIterLanczos, 
 													 false, useLapack);
 			}
 		      else
 			{
 			  cout << "Using ComplexBasicBlockLanczosAlgorithm. Beware, this algorithm may have some issues, please use FullReorthogonalizedComplexBlockLanczosAlgorithm" << endl;
-			  this->LanczosAlgorithm = new ComplexBasicBlockLanczosAlgorithm (architecture, NbrEigenvalue, SizeBlockLanczos, MaxNbrIterLanczos, 
+			  this->LanczosAlgorithm = new ComplexBasicBlockLanczosAlgorithm (architecture, LocalNbrEigenvalues, SizeBlockLanczos, MaxNbrIterLanczos, 
 											  FastDiskFlag, ResumeFastDiskFlag, false, useLapack);
 			}
 		    }
@@ -356,14 +365,14 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		      if (this->Options->GetBoolean("auto-addprojector") == false) 
 			{
 			  cout << "Using FullReorthogonalizedComplexLanczosAlgorithm" << endl;
-			  this->LanczosAlgorithm = new FullReorthogonalizedComplexLanczosAlgorithm (architecture, NbrEigenvalue, MaxNbrIterLanczos);
+			  this->LanczosAlgorithm = new FullReorthogonalizedComplexLanczosAlgorithm (architecture, LocalNbrEigenvalues, MaxNbrIterLanczos);
 			}
 		      else
 			{
 			  if (this->Options->GetString("add-projector") == 0)
 			    {
 			      cout << "Using ComplexBasicLanczosAlgorithmWithGroundStateAndProjectorFastDisk" << endl;
-			      this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithmWithGroundStateAndProjectorFastDisk(NbrEigenvalue, 
+			      this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithmWithGroundStateAndProjectorFastDisk(LocalNbrEigenvalues, 
 															   this->Options->GetDouble("addprojector-factor"), 
 															   architecture, 
 															   MaxNbrIterLanczos , FastDiskFlag, ResumeFastDiskFlag, NoReplayFlag);
@@ -387,7 +396,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 				      exit (0);      
 				    }			    
 				}
-			      this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithmWithGroundStateAndProjectorFastDisk(NbrEigenvalue, 
+			      this->LanczosAlgorithm = new ComplexBasicLanczosAlgorithmWithGroundStateAndProjectorFastDisk(LocalNbrEigenvalues, 
 															   NbrStates, States, 
 															   this->Options->GetDouble("addprojector-factor"), 
 															   !(this->Options->GetBoolean("addprojector-noshift")),
@@ -404,7 +413,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		      if (FullReorthogonalizationFlag == true)
 			{
 			  cout << "using FullReorthogonalizedComplexBlockLanczosAlgorithmWithDiskStorage"<<endl;
-			  this->LanczosAlgorithm = new FullReorthogonalizedComplexBlockLanczosAlgorithmWithDiskStorage (architecture, NbrEigenvalue, SizeBlockLanczos, 
+			  this->LanczosAlgorithm = new FullReorthogonalizedComplexBlockLanczosAlgorithmWithDiskStorage (architecture, LocalNbrEigenvalues, SizeBlockLanczos, 
 															MaxNbrIterLanczos, false, useLapack);
 			}
 		      else
@@ -416,7 +425,7 @@ AbstractLanczosAlgorithm* LanczosManager::GetLanczosAlgorithm(AbstractArchitectu
 		  else
 		    {
 		      cout << "Using FullReorthogonalizedComplexLanczosAlgorithmWithDiskStorage" << endl;
-		      this->LanczosAlgorithm = new FullReorthogonalizedComplexLanczosAlgorithmWithDiskStorage (architecture, NbrEigenvalue, VectorMemory, MaxNbrIterLanczos);
+		      this->LanczosAlgorithm = new FullReorthogonalizedComplexLanczosAlgorithmWithDiskStorage (architecture, LocalNbrEigenvalues, VectorMemory, MaxNbrIterLanczos);
 		    }
 		}
 	    }
@@ -451,15 +460,29 @@ void LanczosManager::SetRealAlgorithms()
     }
 }
 
+// set the number of eigenvalues to compute, overriding the one provided through the command line options
+//
+// nbrEigenvalues =  number of eigenvalues to compute
+
+void LanczosManager::SetNbrEigenvalues(int nbrEigenvalues)
+{
+  if (this->NbrEigenvalues != nbrEigenvalues)
+    {
+      this->FreeLanczosAlgorithm();
+    }
+  this->NbrEigenvalues = nbrEigenvalues;
+}
+
 // delete last created Lanczos object
 //
 // return = true if object deleted
+
 bool LanczosManager::FreeLanczosAlgorithm()
 {
   if (this->LanczosAlgorithm != NULL)
     {
       delete this->LanczosAlgorithm;
-      this->LanczosAlgorithm=NULL;
+      this->LanczosAlgorithm = NULL;
       return true;
     }
   else

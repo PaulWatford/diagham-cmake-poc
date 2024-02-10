@@ -329,7 +329,7 @@ int main(int argc, char** argv)
 		      CenterY=0;
 		    }
 		}
-	      if ((XRatio == 1.0) && (Manager.GetBoolean("mass-anisotropy") == false))
+	      if ((XRatio == 1.0) && (Manager.GetBoolean("mass-anisotropy") == false) && (Manager.GetDouble("angle") == 0.0))
 		{
 		  NbrMomenta=0;
 		  for (int Kx = CenterX; Kx<=CenterX+MomentumModulo/2; ++Kx)

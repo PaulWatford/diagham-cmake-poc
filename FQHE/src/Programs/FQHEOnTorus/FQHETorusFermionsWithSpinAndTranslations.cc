@@ -19,6 +19,8 @@
 #include "Hamiltonian/ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedRytovaKeldyshHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCoulombHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian.h"
+#include "Hamiltonian/ParticleOnTwistedTorusWithSpinAndMagneticTranslationsGenericHamiltonian.h"
+#include "Hamiltonian/ParticleOnTwistedTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian.h"
 
 #include "LanczosAlgorithm/ComplexBasicLanczosAlgorithm.h"
 #include "LanczosAlgorithm/FullReorthogonalizedComplexLanczosAlgorithm.h"
@@ -439,11 +441,11 @@ int main(int argc, char** argv)
 	}
     }
 
-  if (Angle != 0.0)
-    {
-      cout << "twisted torus is not yet supported" << endl;
-      return 0.0;
-    }
+  // if (Angle != 0.0)
+  //   {
+  //     cout << "twisted torus is not yet supported" << endl;
+  //     return 0.0;
+  //   }
   
   bool FirstRun=true;
   for (int Pos = 0;Pos < NbrMomenta; ++Pos)
@@ -515,14 +517,28 @@ int main(int argc, char** argv)
 		{
 		  if (RytovaKeldyshInterlayerDistance == 0.0)
 		    {
-		      Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian (TotalSpace, NbrFermions, 
-														     MaxMomentum, XMomentum, XRatio,
-														     DoubleGatedCoulombScreeningLength, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
-														     NbrPseudoPotentials[0], PseudoPotentials[0],
-														     NbrPseudoPotentials[1], PseudoPotentials[1],
-														     NbrPseudoPotentials[2], PseudoPotentials[2], 
-														     Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
-														     Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+		      if (Angle == 0.0)    
+			{
+			  Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian (TotalSpace, NbrFermions, 
+															 MaxMomentum, XMomentum, XRatio,
+															 DoubleGatedCoulombScreeningLength, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
+															 NbrPseudoPotentials[0], PseudoPotentials[0],
+															 NbrPseudoPotentials[1], PseudoPotentials[1],
+															 NbrPseudoPotentials[2], PseudoPotentials[2], 
+															 Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
+															 Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+			}
+		      else
+			{
+			  Hamiltonian = new ParticleOnTwistedTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian (TotalSpace, NbrFermions, 
+																MaxMomentum, XMomentum, XRatio, Angle,
+																DoubleGatedCoulombScreeningLength, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
+																NbrPseudoPotentials[0], PseudoPotentials[0],
+																NbrPseudoPotentials[1], PseudoPotentials[1],
+																NbrPseudoPotentials[2], PseudoPotentials[2], 
+																Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
+																Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+			}
 		    }
 		  else
 		    {
@@ -568,13 +584,27 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("time-reversal") == false)
 		{
-		  Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian (TotalSpace, NbrFermions, 
-												      MaxMomentum, XMomentum, XRatio,
-												      NbrPseudoPotentials[0], PseudoPotentials[0],
-												      NbrPseudoPotentials[1], PseudoPotentials[1],
-												      NbrPseudoPotentials[2], PseudoPotentials[2],
-												      Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
-												      Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+		  if (Angle == 0.0)    
+		    {
+		      Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsGenericHamiltonian (TotalSpace, NbrFermions, 
+													  MaxMomentum, XMomentum, XRatio,
+													  NbrPseudoPotentials[0], PseudoPotentials[0],
+													  NbrPseudoPotentials[1], PseudoPotentials[1],
+													  NbrPseudoPotentials[2], PseudoPotentials[2],
+													  Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
+													  Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+		    }
+		  else
+		    {
+		      Hamiltonian = new ParticleOnTwistedTorusWithSpinAndMagneticTranslationsGenericHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, XRatio, Angle,
+														NbrPseudoPotentials[0], PseudoPotentials[0],
+														NbrPseudoPotentials[1], PseudoPotentials[1],
+														NbrPseudoPotentials[2], PseudoPotentials[2],
+														Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
+														Architecture.GetArchitecture(), Memory, 0,
+														OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], 
+														OneBodyPseudoPotentials[2]);
+		    }
 		}
 	      else
 		{

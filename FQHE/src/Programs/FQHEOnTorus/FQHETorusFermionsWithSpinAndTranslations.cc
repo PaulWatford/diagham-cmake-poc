@@ -21,6 +21,7 @@
 #include "Hamiltonian/ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian.h"
 #include "Hamiltonian/ParticleOnTwistedTorusWithSpinAndMagneticTranslationsGenericHamiltonian.h"
 #include "Hamiltonian/ParticleOnTwistedTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian.h"
+#include "Hamiltonian/ParticleOnTwistedTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian.h"
 
 #include "LanczosAlgorithm/ComplexBasicLanczosAlgorithm.h"
 #include "LanczosAlgorithm/FullReorthogonalizedComplexLanczosAlgorithm.h"
@@ -608,13 +609,26 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian (TotalSpace, NbrFermions, 
-															   MaxMomentum, XMomentum, XRatio,
-															   NbrPseudoPotentials[0], PseudoPotentials[0],
-															   NbrPseudoPotentials[1], PseudoPotentials[1],
-															   NbrPseudoPotentials[2], PseudoPotentials[2],
-															   Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
-															   Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+		  if (Angle == 0.0)    
+		    {
+		      Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian (TotalSpace, NbrFermions, 
+															       MaxMomentum, XMomentum, XRatio,
+															       NbrPseudoPotentials[0], PseudoPotentials[0],
+															       NbrPseudoPotentials[1], PseudoPotentials[1],
+															       NbrPseudoPotentials[2], PseudoPotentials[2],
+															       Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
+															       Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+		    }
+		  else
+		    {
+		      Hamiltonian = new ParticleOnTwistedTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricGenericHamiltonian (TotalSpace, NbrFermions, 
+																      MaxMomentum, XMomentum, XRatio, Angle,
+																      NbrPseudoPotentials[0], PseudoPotentials[0],
+																      NbrPseudoPotentials[1], PseudoPotentials[1],
+																      NbrPseudoPotentials[2], PseudoPotentials[2],
+																      Manager.GetDouble("spinup-flux"), Manager.GetDouble("spindown-flux"),
+																      Architecture.GetArchitecture(), Memory, 0, OneBodyPseudoPotentials[0], OneBodyPseudoPotentials[1], OneBodyPseudoPotentials[2]);
+		    }
 		}
 	    }
 	}

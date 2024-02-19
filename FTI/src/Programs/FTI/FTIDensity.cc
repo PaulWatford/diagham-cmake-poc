@@ -43,6 +43,7 @@
 #include "HilbertSpace/BosonOnSquareLatticeWannierSpace.h"
 
 #include "Operator/ParticleOnSquareLatticeWithGenericSpinBandDensityOperator.h"
+#include "Operator/ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator.h"
 
 #include <iostream>
 #include <cstring>
@@ -79,6 +80,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption ('\n', "decoupled", "assume that the FTI states are made of two decoupled FCI copies");
   (*SystemGroup) += new BooleanOption  ('\n', "3d", "consider a 3d model instead of a 2d model");
   (*SystemGroup) += new BooleanOption  ('\n', "Wannier", "Wannier basis");
+  (*SystemGroup) += new BooleanOption  ('\n', "rhorho", "also compute the density-density expectation values");
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name instead of the one that can be deduced from the input file name (replacing the vec extension with rho.dat extension");
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
@@ -735,5 +737,490 @@ int main(int argc, char** argv)
     }
   File.close();
 
+  if (Manager.GetBoolean("rhorho") == true)
+    {
+      int NbrDensityDensityIndices = 0;
+      int* CreationMomentumIndices1 = 0;
+      int* CreationSigmaIndices1 = 0;
+      int* CreationMomentumIndices2 = 0;
+      int* CreationSigmaIndices2 = 0;
+      int* AnnihilationMomentumIndices1 = 0;
+      int* AnnihilationSigmaIndices1 = 0;
+      int* AnnihilationMomentumIndices2 = 0;
+      int* AnnihilationSigmaIndices2 = 0;
+      char** DensityDensityIndexLabels = 0;
+      char* DensityDensityFileHeader = new char[512];
+
+      if (Flag3d == false)
+	{
+	  if (NbrBands == 1)
+	    {
+	    }
+	  if (NbrBands == 2)
+	    {
+	      if (FlagDecoupled == false)
+		{
+		  sprintf (FileHeader, "# kx1 ky1 sigma1 kx2 ky2 sigma2 kx3 ky3 sigma3 kx4 ky4 sigma4 <c^+ c^+ c c>");
+		  NbrDensityIndices = 16 * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY);
+		  CreationMomentumIndices1 = new int[NbrDensityIndices];
+		  CreationSigmaIndices1 = new int[NbrDensityIndices];
+		  CreationMomentumIndices2 = new int[NbrDensityIndices];
+		  CreationSigmaIndices2 = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices1 = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices1 = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices2 = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices2 = new int[NbrDensityIndices];
+		  IndexLabels = new char*[NbrDensityIndices];
+		  NbrDensityIndices = 0;
+		  for (int kx1 = 0; kx1 < NbrSiteX; ++kx1)
+		    {	
+		      for (int ky1 = 0; ky1 < NbrSiteY; ++ky1)
+			{
+			  for (int kx2 = 0; kx2 < NbrSiteX; ++kx2)
+			    {	
+			      for (int ky2 = 0; ky2 < NbrSiteY; ++ky2)
+				{
+				  for (int kx3 = 0; kx3 < NbrSiteX; ++kx3)
+				    {	
+				      for (int ky3 = 0; ky3 < NbrSiteY; ++ky3)
+					{
+					  int kx4 = kx1 + kx2 - kx3;
+					  if (kx4 < 0)
+					    {
+					      kx4 += NbrSiteX;
+					    }
+					  kx4 %= NbrSiteX;
+					  int ky4 = ky1 + ky2 - ky3;
+					  if (ky4 < 0)
+					    {
+					      ky4 += NbrSiteY;
+					    }
+					  ky4 %= NbrSiteY;
+					  for (int i = 0; i <= 1; ++i)
+					    {
+					      for (int j = 0; j <= 1; ++j)
+						{
+						  for (int k = 0; k <= 1; ++k)
+						    {
+						      for (int l = 0; l <= 1; ++l)
+							{
+							  CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+							  CreationSigmaIndices1[NbrDensityIndices] = i;
+							  CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+							  CreationSigmaIndices2[NbrDensityIndices] = j;
+							  AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+							  AnnihilationSigmaIndices1[NbrDensityIndices] = k;
+							  AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+							  AnnihilationSigmaIndices2[NbrDensityIndices] = l;
+							  IndexLabels[NbrDensityIndices] = new char[512];
+							  sprintf(IndexLabels[NbrDensityIndices], "%d %d %d %d %d %d %d %d %d %d %d %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+							  ++NbrDensityIndices;
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	      else
+		{
+		  sprintf (FileHeader, "# kx1 ky1 sigma1 kx2 ky2 sigma2 kx3 ky3 sigma3 kx4 ky4 sigma4 <c^+ c^+ c c>");
+		  NbrDensityIndices = 3 * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY);
+		  CreationMomentumIndices1 = new int[NbrDensityIndices];
+		  CreationSigmaIndices1 = new int[NbrDensityIndices];
+		  CreationMomentumIndices2 = new int[NbrDensityIndices];
+		  CreationSigmaIndices2 = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices1 = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices1 = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices2 = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices2 = new int[NbrDensityIndices];
+		  IndexLabels = new char*[NbrDensityIndices];
+		  NbrDensityIndices = 0;
+		  for (int kx1 = 0; kx1 < NbrSiteX; ++kx1)
+		    {	
+		      for (int ky1 = 0; ky1 < NbrSiteY; ++ky1)
+			{
+			  for (int kx2 = 0; kx2 < NbrSiteX; ++kx2)
+			    {	
+			      for (int ky2 = 0; ky2 < NbrSiteY; ++ky2)
+				{
+				  for (int kx3 = 0; kx3 < NbrSiteX; ++kx3)
+				    {	
+				      for (int ky3 = 0; ky3 < NbrSiteY; ++ky3)
+					{
+					  int kx4 = kx1 + kx2 - kx3;
+					  if (kx4 < 0)
+					    {
+					      kx4 += NbrSiteX;
+					    }
+					  kx4 %= NbrSiteX;
+					  int ky4 = ky1 + ky2 - ky3;
+					  if (ky4 < 0)
+					    {
+					      ky4 += NbrSiteY;
+					    }
+					  ky4 %= NbrSiteY;
+					  
+					  CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+					  CreationSigmaIndices1[NbrDensityIndices] = 0;
+					  CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+					  CreationSigmaIndices2[NbrDensityIndices] = 0;
+					  AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+					  AnnihilationSigmaIndices1[NbrDensityIndices] = 0;
+					  AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+					  AnnihilationSigmaIndices2[NbrDensityIndices] = 0;
+					  IndexLabels[NbrDensityIndices] = new char[512];
+					  sprintf(IndexLabels[NbrDensityIndices], "%d %d %d %d %d %d %d %d %d %d %d %d", kx1, ky1, 0, kx2, ky2, 0, kx3, ky3, 0, kx4, ky4, 0);
+					  ++NbrDensityIndices;
+
+					  CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+					  CreationSigmaIndices1[NbrDensityIndices] = 1;
+					  CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+					  CreationSigmaIndices2[NbrDensityIndices] = 1;
+					  AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+					  AnnihilationSigmaIndices1[NbrDensityIndices] = 1;
+					  AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+					  AnnihilationSigmaIndices2[NbrDensityIndices] = 1;
+					  IndexLabels[NbrDensityIndices] = new char[512];
+					  sprintf(IndexLabels[NbrDensityIndices], "%d %d %d %d %d %d %d %d %d %d %d %d", kx1, ky1, 1, kx2, ky2, 1, kx3, ky3, 1, kx4, ky4, 1);
+					  ++NbrDensityIndices;
+
+					  CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+					  CreationSigmaIndices1[NbrDensityIndices] = 0;
+					  CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+					  CreationSigmaIndices2[NbrDensityIndices] = 1;
+					  AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+					  AnnihilationSigmaIndices1[NbrDensityIndices] = 0;
+					  AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+					  AnnihilationSigmaIndices2[NbrDensityIndices] = 1;
+					  IndexLabels[NbrDensityIndices] = new char[512];
+					  sprintf(IndexLabels[NbrDensityIndices], "%d %d %d %d %d %d %d %d %d %d %d %d", kx1, ky1, 0, kx2, ky2, 1, kx3, ky3, 0, kx4, ky4, 1);
+					  ++NbrDensityIndices;
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	  if (NbrBands == 3)
+	    {
+	      if (FlagDecoupled == false)
+		{
+		  sprintf (FileHeader, "# kx1 ky1 sigma1 kx2 ky2 sigma2 kx3 ky3 sigma3 kx4 ky4 sigma4 <c^+ c^+ c c>");
+		  NbrDensityIndices = 81 * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY);
+		  CreationMomentumIndices1 = new int[NbrDensityIndices];
+		  CreationSigmaIndices1 = new int[NbrDensityIndices];
+		  CreationMomentumIndices2 = new int[NbrDensityIndices];
+		  CreationSigmaIndices2 = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices1 = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices1 = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices2 = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices2 = new int[NbrDensityIndices];
+		  IndexLabels = new char*[NbrDensityIndices];
+		  NbrDensityIndices = 0;
+		  for (int kx1 = 0; kx1 < NbrSiteX; ++kx1)
+		    {	
+		      for (int ky1 = 0; ky1 < NbrSiteY; ++ky1)
+			{
+			  for (int kx2 = 0; kx2 < NbrSiteX; ++kx2)
+			    {	
+			      for (int ky2 = 0; ky2 < NbrSiteY; ++ky2)
+				{
+				  for (int kx3 = 0; kx3 < NbrSiteX; ++kx3)
+				    {	
+				      for (int ky3 = 0; ky3 < NbrSiteY; ++ky3)
+					{
+					  int kx4 = kx1 + kx2 - kx3;
+					  if (kx4 < 0)
+					    {
+					      kx4 += NbrSiteX;
+					    }
+					  kx4 %= NbrSiteX;
+					  int ky4 = ky1 + ky2 - ky3;
+					  if (ky4 < 0)
+					    {
+					      ky4 += NbrSiteY;
+					    }
+					  ky4 %= NbrSiteY;
+					  for (int i = 0; i <= 2; ++i)
+					    {
+					      for (int j = 0; j <= 2; ++j)
+						{
+						  for (int k = 0; k <= 2; ++k)
+						    {
+						      for (int l = 0; l <= 2; ++l)
+							{
+							  CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+							  CreationSigmaIndices1[NbrDensityIndices] = i;
+							  CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+							  CreationSigmaIndices2[NbrDensityIndices] = j;
+							  AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+							  AnnihilationSigmaIndices1[NbrDensityIndices] = k;
+							  AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+							  AnnihilationSigmaIndices2[NbrDensityIndices] = l;
+							  IndexLabels[NbrDensityIndices] = new char[512];
+							  sprintf(IndexLabels[NbrDensityIndices], "%d %d %d %d %d %d %d %d %d %d %d %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+							  ++NbrDensityIndices;
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	  if (NbrBands == 4)
+	    {
+	      sprintf (FileHeader, "# kx1 ky1 spin1 sigma1 kx2 ky2 spin2 sigma2 kx3 ky3 spin3 sigma3 kx4 ky4 spin4 sigma4 <c^+ c^+ c c>");
+	      NbrDensityIndices = 48* (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY);
+	      CreationMomentumIndices1 = new int[NbrDensityIndices];
+	      CreationSigmaIndices1 = new int[NbrDensityIndices];
+	      CreationMomentumIndices2 = new int[NbrDensityIndices];
+	      CreationSigmaIndices2 = new int[NbrDensityIndices];
+	      AnnihilationMomentumIndices1 = new int[NbrDensityIndices];
+	      AnnihilationSigmaIndices1 = new int[NbrDensityIndices];
+	      AnnihilationMomentumIndices2 = new int[NbrDensityIndices];
+	      AnnihilationSigmaIndices2 = new int[NbrDensityIndices];
+	      IndexLabels = new char*[NbrDensityIndices];
+	      NbrDensityIndices = 0;
+	      
+	      for (int kx1 = 0; kx1 < NbrSiteX; ++kx1)
+		{	
+		  for (int ky1 = 0; ky1 < NbrSiteY; ++ky1)
+		    {
+		      for (int kx2 = 0; kx2 < NbrSiteX; ++kx2)
+			{	
+			  for (int ky2 = 0; ky2 < NbrSiteY; ++ky2)
+			    {
+			      for (int kx3 = 0; kx3 < NbrSiteX; ++kx3)
+				{	
+				  for (int ky3 = 0; ky3 < NbrSiteY; ++ky3)
+				    {
+				      int kx4 = kx1 + kx2 - kx3;
+				      if (kx4 < 0)
+					{
+					  kx4 += NbrSiteX;
+					}
+				      kx4 %= NbrSiteX;
+				      int ky4 = ky1 + ky2 - ky3;
+				      if (ky4 < 0)
+					{
+					  ky4 += NbrSiteY;
+					}
+				      ky4 %= NbrSiteY;
+				      for (int i = 0; i <= 1; ++i)
+					{
+					  for (int j = 0; j <= 1; ++j)
+					    {
+					      for (int k = 0; k <= 1; ++k)
+						{
+						  for (int l = 0; l <= 1; ++l)
+						    {						      
+						      CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+						      CreationSigmaIndices1[NbrDensityIndices] = i;
+						      CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+						      CreationSigmaIndices2[NbrDensityIndices] = j;
+						      AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+						      AnnihilationSigmaIndices1[NbrDensityIndices] = k;
+						      AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+						      AnnihilationSigmaIndices2[NbrDensityIndices] = l;
+						      IndexLabels[NbrDensityIndices] = new char[512];
+						      sprintf(IndexLabels[NbrDensityIndices], "%d %d 0 %d %d %d 0 %d %d %d 0 %d %d %d 0 %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+						      ++NbrDensityIndices;
+						      
+						      CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+						      CreationSigmaIndices1[NbrDensityIndices] = 2 + i;
+						      CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+						      CreationSigmaIndices2[NbrDensityIndices] = 2 + j;
+						      AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+						      AnnihilationSigmaIndices1[NbrDensityIndices] = 2 + k;
+						      AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+						      AnnihilationSigmaIndices2[NbrDensityIndices] = 2 + l;
+						      IndexLabels[NbrDensityIndices] = new char[512];
+						      sprintf(IndexLabels[NbrDensityIndices], "%d %d 1 %d %d %d 1 %d %d %d 1 %d %d %d 1 %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+						      ++NbrDensityIndices;
+						      
+						      CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+						      CreationSigmaIndices1[NbrDensityIndices] = i;
+						      CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+						      CreationSigmaIndices2[NbrDensityIndices] = 2 + j;
+						      AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+						      AnnihilationSigmaIndices1[NbrDensityIndices] = k;
+						      AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+						      AnnihilationSigmaIndices2[NbrDensityIndices] = 2 + l;
+						      IndexLabels[NbrDensityIndices] = new char[512];
+						      sprintf(IndexLabels[NbrDensityIndices], "%d %d 0 %d %d %d 1 %d %d %d 0 %d %d %d 1 %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+						      ++NbrDensityIndices;
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}	      
+	    }
+	  if (NbrBands == 6)
+	    {
+	      sprintf (FileHeader, "# kx1 ky1 spin1 sigma1 kx2 ky2 spin2 sigma2 kx3 ky3 spin3 sigma3 kx4 ky4 spin4 sigma4 <c^+ c^+ c c>");
+	      NbrDensityIndices = 243 * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY) * (NbrSiteX * NbrSiteY);
+	      CreationMomentumIndices1 = new int[NbrDensityIndices];
+	      CreationSigmaIndices1 = new int[NbrDensityIndices];
+	      CreationMomentumIndices2 = new int[NbrDensityIndices];
+	      CreationSigmaIndices2 = new int[NbrDensityIndices];
+	      AnnihilationMomentumIndices1 = new int[NbrDensityIndices];
+	      AnnihilationSigmaIndices1 = new int[NbrDensityIndices];
+	      AnnihilationMomentumIndices2 = new int[NbrDensityIndices];
+	      AnnihilationSigmaIndices2 = new int[NbrDensityIndices];
+	      IndexLabels = new char*[NbrDensityIndices];
+	      NbrDensityIndices = 0;
+	      
+	      for (int kx1 = 0; kx1 < NbrSiteX; ++kx1)
+		{	
+		  for (int ky1 = 0; ky1 < NbrSiteY; ++ky1)
+		    {
+		      for (int kx2 = 0; kx2 < NbrSiteX; ++kx2)
+			{	
+			  for (int ky2 = 0; ky2 < NbrSiteY; ++ky2)
+			    {
+			      for (int kx3 = 0; kx3 < NbrSiteX; ++kx3)
+				{	
+				  for (int ky3 = 0; ky3 < NbrSiteY; ++ky3)
+				    {
+				      int kx4 = kx1 + kx2 - kx3;
+				      if (kx4 < 0)
+					{
+					  kx4 += NbrSiteX;
+					}
+				      kx4 %= NbrSiteX;
+				      int ky4 = ky1 + ky2 - ky3;
+				      if (ky4 < 0)
+					{
+					  ky4 += NbrSiteY;
+					}
+				      ky4 %= NbrSiteY;
+				      for (int i = 0; i <= 2; ++i)
+					{
+					  for (int j = 0; j <= 2; ++j)
+					    {
+					      for (int k = 0; k <= 2; ++k)
+						{
+						  for (int l = 0; l <= 2; ++l)
+						    {						      
+						      CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+						      CreationSigmaIndices1[NbrDensityIndices] = i;
+						      CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+						      CreationSigmaIndices2[NbrDensityIndices] = j;
+						      AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+						      AnnihilationSigmaIndices1[NbrDensityIndices] = k;
+						      AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+						      AnnihilationSigmaIndices2[NbrDensityIndices] = l;
+						      IndexLabels[NbrDensityIndices] = new char[512];
+						      sprintf(IndexLabels[NbrDensityIndices], "%d %d 0 %d %d %d 0 %d %d %d 0 %d %d %d 0 %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+						      ++NbrDensityIndices;
+						      
+						      CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+						      CreationSigmaIndices1[NbrDensityIndices] = 3 + i;
+						      CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+						      CreationSigmaIndices2[NbrDensityIndices] = 3 + j;
+						      AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+						      AnnihilationSigmaIndices1[NbrDensityIndices] = 3 + k;
+						      AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+						      AnnihilationSigmaIndices2[NbrDensityIndices] = 3 + l;
+						      IndexLabels[NbrDensityIndices] = new char[512];
+						      sprintf(IndexLabels[NbrDensityIndices], "%d %d 1 %d %d %d 1 %d %d %d 1 %d %d %d 1 %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+						      ++NbrDensityIndices;
+						      
+						      CreationMomentumIndices1[NbrDensityIndices] = ((kx1 * NbrSiteY) + ky1);
+						      CreationSigmaIndices1[NbrDensityIndices] = i;
+						      CreationMomentumIndices2[NbrDensityIndices] = ((kx2 * NbrSiteY) + ky2);
+						      CreationSigmaIndices2[NbrDensityIndices] = 3 + j;
+						      AnnihilationMomentumIndices1[NbrDensityIndices] = ((kx3 * NbrSiteY) + ky3);
+						      AnnihilationSigmaIndices1[NbrDensityIndices] = k;
+						      AnnihilationMomentumIndices2[NbrDensityIndices] = ((kx4 * NbrSiteY) + ky4);
+						      AnnihilationSigmaIndices2[NbrDensityIndices] = 3 + l;
+						      IndexLabels[NbrDensityIndices] = new char[512];
+						      sprintf(IndexLabels[NbrDensityIndices], "%d %d 0 %d %d %d 1 %d %d %d 0 %d %d %d 1 %d", kx1, ky1, i, kx2, ky2, j, kx3, ky3, k, kx4, ky4, l);
+						      ++NbrDensityIndices;
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}	      
+	    }
+	}
+      else
+	{
+	}
+
+      ofstream File2;
+      if (Manager.GetString("output-file") != 0)
+	{
+	  File2.open(Manager.GetString("output-file"), ios::binary | ios::out);
+	}
+      else
+	{
+	  char* TmpFileName = ReplaceExtensionToFileName(GroundStateFiles[0], "vec", "rhorho.dat");
+	  if (TmpFileName == 0)
+	    {
+	      cout << "no vec extension was find in " << GroundStateFiles[0] << " file name" << endl;
+	      return 0;
+	    }
+	  File2.open(TmpFileName, ios::binary | ios::out);
+	  delete[] TmpFileName;
+	}
+      File2.precision(14);
+      cout.precision(14);
+      File2 << FileHeader << endl;
+      
+      if (Flag3d == false)
+	{
+	  if (NbrBands == 1)
+	    {
+	    }
+	  else
+	    {
+	      if (NbrBands >= 2)
+		{
+		  for (int i = 0; i < NbrSpaces; ++i)
+		    {
+		      Complex TmpTotalDensity = 0.0;
+		      Complex* PartialTraces = new Complex[NbrDensityPartialTraces];
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  PartialTraces[j] = 0.0;
+			}
+		      int TmpIndex = (((TotalKx[i] * NbrSiteY) + TotalKy[i]) * NbrSiteZ) + TotalKz[i];
+		      for (int j = 0 ; j < NbrDensityIndices; ++j)
+			{
+			  ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator TmpOperator ((ParticleOnSphereWithSpin*) Spaces[TmpIndex], CreationMomentumIndices1[j], CreationSigmaIndices1[j], CreationMomentumIndices2[j], CreationSigmaIndices2[j], AnnihilationMomentumIndices1[j], AnnihilationSigmaIndices1[j], AnnihilationMomentumIndices2[j], AnnihilationSigmaIndices2[j]);
+			  Complex TmpElement = TmpOperator.MatrixElement(GroundStates[i], GroundStates[i]);
+			  File2 << IndexLabels[j] << " " << TmpElement << endl;
+			}
+		    }
+		}
+	    }
+	}
+      File2.close();
+    }
+
+  
   return 0;
 }

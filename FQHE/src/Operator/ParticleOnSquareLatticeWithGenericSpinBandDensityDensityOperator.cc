@@ -123,10 +123,10 @@ Complex ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator::Partia
   double Element = 0.0;
   for (int i = (int) firstComponent; i < Dim; ++i)
     {
-      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Sigma3, this->Momentum4, this->Sigma4);
+      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Momentum4, this->Sigma3, this->Sigma4);
       if (Coefficient != 0.0)
 	{
-	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Sigma1, this->Momentum2, this->Sigma2, Coefficient);
+	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Momentum2, this->Sigma1, this->Sigma2, Coefficient);
 	  if (Index != FullDim)
 	    {
 	      Element += V1[Index] * V2[i] * Coefficient;
@@ -154,10 +154,10 @@ RealVector& ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator::Lo
   double Coefficient = 0.0;
   for (int i = firstComponent; i < Last; ++i)
     {
-      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Sigma3, this->Momentum4, this->Sigma4);
+      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Momentum4, this->Sigma3, this->Sigma4);
       if (Coefficient != 0.0)
 	{
-	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Sigma1, this->Momentum2, this->Sigma2, Coefficient);
+	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Momentum2, this->Sigma1, this->Sigma2, Coefficient);
 	  if (Index != FullDim)
 	    {
 	      vDestination[Index] += vSource[i] * Coefficient;
@@ -183,10 +183,10 @@ Complex ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator::Partia
   Complex Element = 0.0;
   for (int i = (int) firstComponent; i < Dim; ++i)
     {
-      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Sigma3, this->Momentum4, this->Sigma4);
+      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Momentum4, this->Sigma3, this->Sigma4);
       if (Coefficient != 0.0)
 	{
-	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Sigma1, this->Momentum2, this->Sigma2, Coefficient);
+	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Momentum2, this->Sigma1, this->Sigma2, Coefficient);
 	  if (Index != FullDim)
 	    {
 	      Element += Conj(V1[Index]) * V2[i] * Coefficient;
@@ -214,10 +214,10 @@ ComplexVector& ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator:
   double Coefficient = 0.0;
   for (int i = firstComponent; i < Last; ++i)
     {
-      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Sigma3, this->Momentum4, this->Sigma4);
+      Coefficient = this->Particle->AsigmaAsigma(i, this->Momentum3, this->Momentum4, this->Sigma3, this->Sigma4);
       if (Coefficient != 0.0)
 	{
-	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Sigma1, this->Momentum2, this->Sigma2, Coefficient);
+	  int Index = this->Particle->AdsigmaAdsigma(this->Momentum1, this->Momentum2, this->Sigma1, this->Sigma2, Coefficient);
 	  if (Index != FullDim)
 	    {
 	      vDestination[Index] += vSource[i] * Coefficient;      

@@ -8,10 +8,16 @@
 #include "HilbertSpace/FermionOnCubicLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnCubicLatticeWithSU4SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnHyperCubicLatticeWithSpinMomentumSpace.h"
+
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong.h"
+
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
@@ -84,6 +90,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "min-ky", "minimal y momentum allowed for a single particle", 4);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "min-kz", "minimal z momentum allowed for a single particle", 4);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "min-kt", "minimal t momentum allowed for a single particle", 4);
+  (*SystemGroup) += new SingleStringOption ('\n', "allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed");
   (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics");
   (*SystemGroup) += new BooleanOption  ('\n', "wannier", "use wannier wavefunction basis");
   (*SystemGroup) += new SingleStringOption ('\n', "state", "name of an optional vector state whose component values can be displayed behind each corresponding n-body state");
@@ -120,7 +127,12 @@ int main(int argc, char** argv)
   int TotalKy = Manager.GetInteger("ky");
   int TotalKz = Manager.GetInteger("kz");
   int TotalKt = Manager.GetInteger("kt");
-  int Sz = Manager.GetInteger("sz");
+  int TotalSz = Manager.GetInteger("sz");
+
+  int MaxBand0 = -1;
+  int MaxBand1 = -1;
+  int MaxBand2 = -1;
+  int MaxBand3 = -1;
 
   if ((Manager.GetString("state") != 0) && (Manager.GetBoolean("no-autodetect") == false))
     {
@@ -132,6 +144,16 @@ int main(int argc, char** argv)
 	  cout << "error while retrieving system parameters from file name " << Manager.GetString("state") << endl;
 	  return -1;
 	}	  
+      if (Manager.GetInteger("nbr-subbands") == 2)
+	{
+	  if (FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(Manager.GetString("state"),
+									  NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz, Statistics) == false)
+	    {
+	      cout << "error while retrieving system parameters from file name " << Manager.GetString("state") << endl;
+	      return -1;
+	    }
+	}
+      FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(Manager.GetString("state"), MaxBand0, MaxBand1, MaxBand2, MaxBand3);
     }
  
   AbstractQHEParticle* Space;
@@ -176,7 +198,7 @@ int main(int argc, char** argv)
 			    }
 			  else
 			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace(NbrParticles, (Sz + NbrParticles) / 2, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace(NbrParticles, (TotalSz + NbrParticles) / 2, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 			    }
 			}
 		      else
@@ -221,11 +243,11 @@ int main(int argc, char** argv)
 			    {
 			      if ((NbrSitesX * NbrSitesY) <= 16)
 				{
-				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz);
 				}
 			      else
 				{
-				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz);
+				  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong(NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz);
 				}
 			    }
 			}
@@ -238,13 +260,67 @@ int main(int argc, char** argv)
 			    {
 			      if (Manager.GetBoolean("4d") == false)
 				{
-				  if ((NbrSitesX * NbrSitesY) <= 21)
+				  if ((MaxBand0 < 0) && (MaxBand1 < 0) && (MaxBand2 < 0))
 				    {
-				      Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+				      if (Manager.GetString("allowed-orbitals") == 0)
+					{
+					  if ((NbrSitesX * NbrSitesY) <= 21)
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+					    }
+					  else
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+					    }
+					}
+				      else
+					{
+					  if ((NbrSitesX * NbrSitesY) <= 21)
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx, TotalKy);
+					    }
+					  else
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx, TotalKy);
+					    }
+					}
 				    }
 				  else
 				    {
-				      Space = new FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+				      if (MaxBand0 < 0)
+					{
+					  MaxBand0 = NbrSitesX * NbrSitesY;
+					}
+				      if (MaxBand1 < 0)
+					{
+					  MaxBand1 = NbrSitesX * NbrSitesY;
+					}
+				      if (MaxBand2 < 0)
+					{
+					  MaxBand2 = NbrSitesX * NbrSitesY;
+					}
+				      if (Manager.GetString("allowed-orbitals") == 0)
+					{
+					  if ((NbrSitesX * NbrSitesY) <= 21)
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+					    }
+					  else
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+					    }
+					}
+				      else
+					{
+					  if ((NbrSitesX * NbrSitesY) <= 21)
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+					    }
+					  else
+					    {
+					      Space = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+					    }
+					}
 				    }
 				}
 			    }
@@ -272,11 +348,11 @@ int main(int argc, char** argv)
 					{
 					  if ((NbrSitesX * NbrSitesY) <= 10)
 					    {
-					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz, 10000000ul);
 					    }
 					  else
 					    {
-					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+					      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz, 10000000ul);
 					    }
 					}
 				    }
@@ -305,11 +381,11 @@ int main(int argc, char** argv)
 					    {
 					      if ((NbrSitesX * NbrSitesY) <= 5)
 						{
-						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz, 10000000ul);
 						}
 					      else
 						{
-						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Sz, 10000000ul);
+						  Space = new FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSz, 10000000ul);
 						}
 					    }
 					}
@@ -364,7 +440,7 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
-		      Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (Sz + NbrParticles) / 2, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		      Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (TotalSz + NbrParticles) / 2, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
 		    }
 		}
 	      else

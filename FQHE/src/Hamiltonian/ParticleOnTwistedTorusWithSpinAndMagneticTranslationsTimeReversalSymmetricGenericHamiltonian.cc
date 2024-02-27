@@ -651,8 +651,8 @@ Complex ParticleOnTwistedTorusWithSpinAndMagneticTranslationsTimeReversalSymmetr
   m2 = (this->NbrLzValue - m2) % this->NbrLzValue;
   m3 = (this->NbrLzValue - m3) % this->NbrLzValue;
   m4 = (this->NbrLzValue - m4) % this->NbrLzValue;
-  return Conj(this->ComplexEvaluateInteractionCoefficient (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorDownDown));
-  //  return this->ComplexEvaluateInteractionCoefficientUpUp (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorDownDown);
+  //  return Conj(this->ComplexEvaluateInteractionCoefficient (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorDownDown));
+  return this->ComplexEvaluateInteractionCoefficient (m1, m2, m3, m4, nbrPseudopotentials, pseudopotentials, spinFluxM1, spinFluxM2, spinFluxM3, spinFluxM4, this->ScalingFactorDownDown);
 }
 
 // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 updown coupling term

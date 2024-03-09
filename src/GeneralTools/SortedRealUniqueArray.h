@@ -93,7 +93,7 @@ class SortedRealUniqueArray
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which broadcasts or sends the array
   // broadcast = true if the vector is broadcasted  
-  SortedRealUniqueArray(MPI::Intracomm& communicator, int id, bool broadcast = false);
+  SortedRealUniqueArray(const MPI_Comm& communicator, int id, bool broadcast = false);
 
 #endif
 
@@ -166,7 +166,7 @@ class SortedRealUniqueArray
   // id = id of the destination MPI process
   // return value = reference on the current array
 
-  void SendClone(MPI::Intracomm& communicator, int id);
+  void SendClone(const MPI_Comm& communicator, int id);
 
   // send entries to a given MPI process
   // 
@@ -174,7 +174,7 @@ class SortedRealUniqueArray
   // id = id of the destination MPI process
   // return value = reference on the current vector
 
-  void SendArray(MPI::Intracomm& communicator, int id);
+  void SendArray(const MPI_Comm& communicator, int id);
 
   // broadcast a vector to all MPI processes associated to the same communicator
   // 
@@ -182,14 +182,14 @@ class SortedRealUniqueArray
   // id = id of the MPI process which broadcasts the vector
   // return value = true if operation was successful
 
-  bool BroadcastArray(MPI::Intracomm& communicator,  int id);
+  bool BroadcastArray(const MPI_Comm& communicator,  int id);
     
   // merge all data on master node and broadcast to clones
   // 
   // communicator = reference on the communicator to use 
   // return value = reference on the current vector
   
-  bool MergeAcrossNodes(MPI::Intracomm& communicator);
+  bool MergeAcrossNodes(const MPI_Comm& communicator);
 
 #endif // end MPI interface
 

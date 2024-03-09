@@ -97,13 +97,14 @@ SortedComplexUniqueArray::SortedComplexUniqueArray(SortedComplexUniqueArray &arr
 // id = id of the MPI process which broadcasts or sends the array
 // broadcast = true if the vector is broadcasted
 
-SortedComplexUniqueArray::SortedComplexUniqueArray(MPI::Intracomm& communicator, int id, bool broadcast)
+SortedComplexUniqueArray::SortedComplexUniqueArray(const MPI_Comm& communicator, int id, bool broadcast)
 {
   int TmpArray[6];
+  MPI_Status TmpMPIStatus;
   if (broadcast == true)
-    communicator.Bcast(TmpArray, 6, MPI::INT, id);      
+    MPI_Bcast(TmpArray, 6, MPI_INT, id, communicator);      
   else
-    communicator.Recv(TmpArray, 6, MPI::INT, id, 1);
+    MPI_Recv(TmpArray, 6, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   
   int TmpDimension = TmpArray[0];
   this->NbrElements = (ElementIndexType) TmpDimension;
@@ -121,14 +122,14 @@ SortedComplexUniqueArray::SortedComplexUniqueArray(MPI::Intracomm& communicator,
     if (TmpArray[2] == 2)
       {
 	if (broadcast == true)
-	  communicator.Bcast(this->Elements, 2*TmpDimension, MPI::DOUBLE, id);      
+	  MPI_Bcast(this->Elements, 2*TmpDimension, MPI_DOUBLE, id, communicator);      
 	else
-	  communicator.Recv(this->Elements, 2*TmpDimension, MPI::DOUBLE, id, 1);   
+	  MPI_Recv(this->Elements, 2*TmpDimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
       }
   if (broadcast == true)
-    communicator.Bcast(&this->ToleranceSqr, 1, MPI::DOUBLE, id);      
+    MPI_Bcast(&this->ToleranceSqr, 1, MPI_DOUBLE, id, communicator);      
   else
-    communicator.Recv(&this->ToleranceSqr, 1, MPI::DOUBLE, id, 1);
+    MPI_Recv(&this->ToleranceSqr, 1, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);
   this->Sorted = (ElementIndexType) TmpArray[3];
   this->KeepSorted = (bool) TmpArray[4];
   this->KeepOrder = (bool) TmpArray[5];
@@ -649,7 +650,7 @@ ostream& operator << (ostream& Str, const SortedComplexUniqueArray& A)
 // id = id of the destination MPI process
 // return value = reference on the current array
 
-void SortedComplexUniqueArray::SendClone(MPI::Intracomm& communicator, int id)
+void SortedComplexUniqueArray::SendClone(const MPI_Comm& communicator, int id)
 {
   if (2*this->NbrElements > std::numeric_limits<int>::max())
     {
@@ -662,9 +663,9 @@ void SortedComplexUniqueArray::SendClone(MPI::Intracomm& communicator, int id)
   TmpArray[3] = (int)this->Sorted;
   TmpArray[4] = (int)this->KeepSorted;
   TmpArray[5] = (int)this->KeepOrder;
-  communicator.Send(TmpArray, 6, MPI::INT, id, 1); 
-  communicator.Send(this->Elements, 2*NbrElements, MPI::DOUBLE, id, 1); 
-  communicator.Send(&this->ToleranceSqr, 1, MPI::DOUBLE, id, 1); 
+  MPI_Send(TmpArray, 6, MPI_INT, id, 1, communicator); 
+  MPI_Send(this->Elements, 2*NbrElements, MPI_DOUBLE, id, 1, communicator); 
+  MPI_Send(&this->ToleranceSqr, 1, MPI_DOUBLE, id, 1, communicator); 
 }
 
 // send entries to a given MPI process
@@ -673,15 +674,15 @@ void SortedComplexUniqueArray::SendClone(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-void SortedComplexUniqueArray::SendArray(MPI::Intracomm& communicator, int id)
+void SortedComplexUniqueArray::SendArray(const MPI_Comm& communicator, int id)
 {
   int TmpArray[2] = {(int) this->NbrElements, (int) this->Sorted};
-  communicator.Send(&TmpArray, 2, MPI::INT, id, 1); 
+  MPI_Send(&TmpArray, 2, MPI_INT, id, 1, communicator); 
   // int Acknowledge = 0;
-  // communicator.Recv(&Acknowledge, 1, MPI::INT, id, 1);
+  // MPI_Recv(&Acknowledge, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   // if (Acknowledge != 0)
   //   return;
-  communicator.Send(this->Elements, 2*this->NbrElements, MPI::DOUBLE, id, 1); 
+  MPI_Send(this->Elements, 2*this->NbrElements, MPI_DOUBLE, id, 1, communicator); 
 }
 
 // broadcast the entries of the array on node "id" to all MPI processes associated to the same communicator
@@ -690,7 +691,7 @@ void SortedComplexUniqueArray::SendArray(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the array
 // return value = true if operation was successful
 
-bool SortedComplexUniqueArray::BroadcastArray(MPI::Intracomm& communicator,  int id)
+bool SortedComplexUniqueArray::BroadcastArray(const MPI_Comm& communicator,  int id)
 {
   if (2*this->NbrElements > std::numeric_limits<int>::max())
     {
@@ -698,14 +699,14 @@ bool SortedComplexUniqueArray::BroadcastArray(MPI::Intracomm& communicator,  int
       return false;
     }
   int TmpArray[2] = {(int) this->NbrElements, (int) this->Sorted};
-  communicator.Bcast(&TmpArray, 2, MPI::INT, id);
+  MPI_Bcast(&TmpArray, 2, MPI_INT, id, communicator);
   if (TmpArray[0] > this->InternalSize)
     {
       this->IncreaseInternalSize(TmpArray[0]);
     }
   this->NbrElements = (ElementIndexType) TmpArray[0];
   this->Sorted = (ElementIndexType) TmpArray[1];
-  communicator.Bcast(this->Elements, 2*this->NbrElements, MPI::DOUBLE, id);
+  MPI_Bcast(this->Elements, 2*this->NbrElements, MPI_DOUBLE, id, communicator);
   return true;
 }
 
@@ -714,9 +715,14 @@ bool SortedComplexUniqueArray::BroadcastArray(MPI::Intracomm& communicator,  int
 // communicator = reference on the communicator to use 
 // return = true if successfully merged
 
-bool SortedComplexUniqueArray::MergeAcrossNodes(MPI::Intracomm& communicator)
+bool SortedComplexUniqueArray::MergeAcrossNodes(const MPI_Comm& communicator)
 {
-  if (communicator.Get_size()==1) return true;
+  int NbrMPINodes = 0;
+  MPI_Comm_size(communicator, &NbrMPINodes);
+  if (NbrMPINodes == 1)
+    {
+      return true;
+    }
   if (2*this->NbrElements > std::numeric_limits<int>::max())
     {
       cout << "Error: cannot merge unique arrays larger than max(int)"<<endl;
@@ -732,11 +738,16 @@ bool SortedComplexUniqueArray::MergeAcrossNodes(MPI::Intracomm& communicator)
 #endif
 
   int Acknowledge = 0;
-  if (communicator.Get_rank() != 0)
-    this->SendClone(communicator, 0);
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != 0)
+    {
+      this->SendClone(communicator, 0);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       //cout << "Master="<<*this<<"done Master"<<endl;
       for (int id = 1; id < NbrMPINodes; ++id)
 	{

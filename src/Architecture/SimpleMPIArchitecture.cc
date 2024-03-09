@@ -329,8 +329,8 @@ bool SimpleMPIArchitecture::GetOptimizedTypicalRange (int*& nbrOperationPerIndex
   if (this->AutomaticLoadBalancing == true)
     {
 #ifdef __MPI__      
-      Flag &= realEntries.MergeAcrossNodes(MPI::COMM_WORLD);
-      Flag &= complexEntries.MergeAcrossNodes(MPI::COMM_WORLD);
+      Flag &= realEntries.MergeAcrossNodes(MPI_COMM_WORLD);
+      Flag &= complexEntries.MergeAcrossNodes(MPI_COMM_WORLD);
 #endif
       if (Flag) 
 	{

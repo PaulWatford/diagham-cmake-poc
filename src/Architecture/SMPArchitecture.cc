@@ -247,10 +247,12 @@ void* ThreadExecuteOperation(void* param)
 {
 #ifdef __SMP__
   ThreadMainParameter* LocalThreadParamater = (ThreadMainParameter*) param;
+  cout << "entering thread " << LocalThreadParamater->ThreadID << endl;
   LocalThreadParamater->Operation->RawApplyOperation();
   pthread_mutex_lock(LocalThreadParamater->mut);
   (*(LocalThreadParamater->Flag)) = LocalThreadParamater->ThreadID;
   pthread_mutex_unlock(LocalThreadParamater->mut);
+  cout << "exiting thread " << LocalThreadParamater->ThreadID << endl;
   pthread_exit(0);
 #endif
   return 0;

@@ -94,7 +94,7 @@ class PartialComplexVector : public ComplexVector
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which broadcasts or sends the vector
   // broadcast = true if the vector is broadcasted
-  PartialComplexVector(MPI::Intracomm& communicator, int id, bool broadcast = true);
+  PartialComplexVector(const MPI_Comm& communicator, int id, bool broadcast = true);
 #endif
 
   // destructor
@@ -186,14 +186,14 @@ class PartialComplexVector : public ComplexVector
   // communicator = reference on the communicator to use
   // id = id of the destination MPI process
   // return value = reference on the current vector
-  Vector& SendVector(MPI::Intracomm& communicator, int id);
+  Vector& SendVector(const MPI_Comm& communicator, int id);
 
   // broadcast a vector to all MPI processes associated to the same communicator
   // 
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which broadcasts the vector
   // return value = reference on the current vector
-  Vector& BroadcastVector(MPI::Intracomm& communicator,  int id);
+  Vector& BroadcastVector(const MPI_Comm& communicator,  int id);
 
   // broadcast part of vector to all MPI processes associated to the same communicator
   // 
@@ -202,28 +202,28 @@ class PartialComplexVector : public ComplexVector
   // firstComponent = index of the first component (useless if the method is not called by the MPI process which broadcasts the vector)
   // nbrComponent = number of component (useless if the method is not called by the MPI process which broadcasts the vector)
   // return value = reference on the current vector
-  Vector& BroadcastPartialVector(MPI::Intracomm& communicator, int id, int firstComponent = 0, int nbrComponent = 0);
+  Vector& BroadcastPartialVector(const MPI_Comm& communicator, int id, int firstComponent = 0, int nbrComponent = 0);
 
   // receive a vector from a MPI process
   // 
   // communicator = reference on the communicator to use 
   // id = id of the source MPI process
   // return value = reference on the current vector
-  Vector& ReceiveVector(MPI::Intracomm& communicator, int id);
+  Vector& ReceiveVector(const MPI_Comm& communicator, int id);
 
   // add current vector to the current vector of a given MPI process
   // 
   // communicator = reference on the communicator to use 
   // id = id of the destination MPI process
   // return value = reference on the current vector
-  Vector& SumVector(MPI::Intracomm& communicator, int id);
+  Vector& SumVector(const MPI_Comm& communicator, int id);
 
   // reassemble vector from a scattered one
   // 
   // communicator = reference on the communicator to use 
   // id = id of the destination MPI process
   // return value = reference on the current vector
-  Vector& ReassembleVector(MPI::Intracomm& communicator, int id);
+  Vector& ReassembleVector(const MPI_Comm& communicator, int id);
 
   // create a new vector on each MPI node which is an exact clone of the broadcasted one
   //
@@ -231,7 +231,7 @@ class PartialComplexVector : public ComplexVector
   // id = id of the MPI process which broadcasts the vector
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new vector 
-  Vector* BroadcastClone(MPI::Intracomm& communicator, int id);
+  Vector* BroadcastClone(const MPI_Comm& communicator, int id);
 
   // create a new vector on each MPI node with same size and same type but non-initialized components
   //
@@ -239,7 +239,7 @@ class PartialComplexVector : public ComplexVector
   // id = id of the MPI process which broadcasts the vector
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new vector 
-  Vector* BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag = false);
+  Vector* BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag = false);
 
 #endif
 

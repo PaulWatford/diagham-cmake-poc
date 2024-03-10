@@ -270,14 +270,19 @@ ComplexMatrix::ComplexMatrix(doublecomplex* array, int nbrRow, int nbrColumn, bo
 // id = id of the MPI process which broadcasts or sends the vector
 // broadcast = true if the vector is broadcasted
 
-ComplexMatrix::ComplexMatrix(MPI::Intracomm& communicator, int id, bool broadcast)
+ComplexMatrix::ComplexMatrix(const MPI_Comm& communicator, int id, bool broadcast)
 {
   this->MatrixType = Matrix::ComplexElements;
   int TmpArray[4];
   if (broadcast == true)
-    communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+    {
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
+    }
   else
-    communicator.Recv(TmpArray, 3, MPI::INT, id, 1);   
+    {
+      MPI_Status TmpMPIStatus;
+      MPI_Recv(TmpArray, 3, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+    }
   this->NbrRow = TmpArray[0];
   this->NbrColumn = TmpArray[1];
   this->TrueNbrRow = this->NbrRow;
@@ -3415,13 +3420,14 @@ Complex FrobeniusScalarProduct(ComplexMatrix & matrixA, ComplexMatrix & matrixB)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& ComplexMatrix::SendMatrix(MPI::Intracomm& communicator, int id)
+Matrix& ComplexMatrix::SendMatrix(const MPI_Comm& communicator, int id)
 {
-  communicator.Send(&this->MatrixType, 1, MPI::INT, id, 1);
-  communicator.Send(&this->NbrRow, 1, MPI::INT, id, 1); 
-  communicator.Send(&this->NbrColumn, 1, MPI::INT, id, 1); 
+  MPI_Send(&this->MatrixType, 1, MPI_INT, id, 1, communicator);
+  MPI_Send(&this->NbrRow, 1, MPI_INT, id, 1, communicator); 
+  MPI_Send(&this->NbrColumn, 1, MPI_INT, id, 1, communicator); 
   int Acknowledge = 0;
-  communicator.Recv(&Acknowledge, 1, MPI::INT, id, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&Acknowledge, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   if (Acknowledge != 0)
     return *this;
   for (int i = 0; i < this->NbrColumn; i++)
@@ -3435,36 +3441,44 @@ Matrix& ComplexMatrix::SendMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the matrix
 // return value = reference on the current matrix
 
-Matrix& ComplexMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
+Matrix& ComplexMatrix::BroadcastMatrix(const MPI_Comm& communicator,  int id)
 {
   int TmpMatrixType = this->MatrixType;
   int TmpNbrRow = this->NbrRow;
   int TmpNbrColumn = this->NbrColumn;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpMatrixType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrRow, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrColumn, 1, MPI::INT, id);
+  MPI_Bcast(&TmpMatrixType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrRow, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrColumn, 1, MPI_INT, id, communicator);
   if (this->MatrixType != TmpMatrixType)
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
-      bool Flag = false;
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
+      bool Flag = false;      
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     return *this;
   if ((TmpNbrRow != this->NbrRow) || (TmpNbrColumn != this->NbrColumn))
@@ -3482,18 +3496,19 @@ Matrix& ComplexMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
 // id = id of the source MPI process
 // return value = reference on the current matrix
 
-Matrix& ComplexMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
+Matrix& ComplexMatrix::ReceiveMatrix(const MPI_Comm& communicator, int id)
 {
   int TmpMatrixType = 0;
   int TmpNbrRow = 0;
   int TmpNbrColumn = 0;
-  communicator.Recv(&TmpMatrixType, 1, MPI::INT, id, 1);
-  communicator.Recv(&TmpNbrRow, 1, MPI::INT, id, 1); 
-  communicator.Recv(&TmpNbrColumn, 1, MPI::INT, id, 1); 
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&TmpMatrixType, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+  MPI_Recv(&TmpNbrRow, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
+  MPI_Recv(&TmpNbrColumn, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
   if (TmpMatrixType != this->MatrixType)
     {
       TmpNbrRow = 1;
-      communicator.Send(&TmpNbrRow, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpNbrRow, 1, MPI_INT, id, 1, communicator);
       return *this;
     }
   else
@@ -3503,7 +3518,7 @@ Matrix& ComplexMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 	  this->Resize(TmpNbrRow, TmpNbrColumn);      
 	}
       TmpNbrRow = 0;
-      communicator.Send(&TmpNbrRow, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpNbrRow, 1, MPI_INT, id, 1, communicator);
     }
   for (int i = 0; i < this->NbrColumn; i++)
     this->Columns[i].ReceiveVector(communicator, id);
@@ -3516,36 +3531,44 @@ Matrix& ComplexMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& ComplexMatrix::SumMatrix(MPI::Intracomm& communicator, int id)
+Matrix& ComplexMatrix::SumMatrix(const MPI_Comm& communicator, int id)
 {
   int TmpMatrixType = this->MatrixType;
   int TmpNbrRow = this->NbrRow;
   int TmpNbrColumn = this->NbrColumn;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpMatrixType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrRow, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrColumn, 1, MPI::INT, id);
+  MPI_Bcast(&TmpMatrixType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrRow, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrColumn, 1, MPI_INT, id, communicator);
   if ((this->MatrixType != TmpMatrixType) || (TmpNbrRow != this->NbrRow) || (TmpNbrColumn != this->NbrColumn))
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     {
       return *this;
@@ -3561,29 +3584,35 @@ Matrix& ComplexMatrix::SumMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& ComplexMatrix::ReassembleMatrix(MPI::Intracomm& communicator, int id)
+Matrix& ComplexMatrix::ReassembleMatrix(const MPI_Comm& communicator, int id)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id == TmpMPIRank)
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       int TmpArray[2];
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    TmpArray[0] = 0;
-	    TmpArray[1] = 0;
-	    communicator.Recv(TmpArray, 2, MPI::INT, i, 1); 
-	    int Lim = TmpArray[0] + TmpArray[1];
-	    for (int i = TmpArray[0]; i < Lim; i++)
-	      this->Columns[i].ReceiveVector(communicator, id);
-	  }      
+	{
+	  if (id != i)
+	    {
+	      TmpArray[0] = 0;
+	      TmpArray[1] = 0;
+	      MPI_Recv(TmpArray, 2, MPI_INT, i, 1, communicator, &TmpMPIStatus); 
+	      int Lim = TmpArray[0] + TmpArray[1];
+	      for (int i = TmpArray[0]; i < Lim; i++)
+		this->Columns[i].ReceiveVector(communicator, id);
+	    }
+	}
     }
   else
     {
       int TmpArray[2];
       TmpArray[0] = 0;
       TmpArray[1] = this->NbrColumn;
-      communicator.Send(TmpArray, 2, MPI::INT, id, 1);
+      MPI_Send(TmpArray, 2, MPI_INT, id, 1, communicator);
       int Lim = TmpArray[0] + TmpArray[1];
       for (int i = TmpArray[0]; i < Lim; i++)
 	this->Columns[i].SendVector(communicator, id);
@@ -3598,23 +3627,25 @@ Matrix& ComplexMatrix::ReassembleMatrix(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* ComplexMatrix::BroadcastClone(MPI::Intracomm& communicator, int id)
+Matrix* ComplexMatrix::BroadcastClone(const MPI_Comm& communicator, int id)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id == TmpMPIRank)
     {
-      communicator.Bcast(&this->MatrixType, 1, MPI::INT, id);
+      MPI_Bcast(&this->MatrixType, 1, MPI_INT, id, communicator);
       int TmpArray[3];
       TmpArray[0] = this->NbrRow;
       TmpArray[1] = this->NbrColumn;
       TmpArray[2] = 2;
-      communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
       for (int i = 0; i < this->NbrColumn; i++)
 	this->Columns[i].BroadcastClone(communicator, id);
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new ComplexMatrix(communicator, id);
     }
   return 0;
@@ -3627,11 +3658,13 @@ Matrix* ComplexMatrix::BroadcastClone(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* ComplexMatrix::BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag)
+Matrix* ComplexMatrix::BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id == TmpMPIRank)
     {
-      communicator.Bcast(&this->MatrixType, 1, MPI::INT, id);
+      MPI_Bcast(&this->MatrixType, 1, MPI_INT, id, communicator);
       int TmpArray[3];
       TmpArray[0] = this->NbrRow;
       TmpArray[1] = this->NbrColumn;
@@ -3640,12 +3673,12 @@ Matrix* ComplexMatrix::BroadcastEmptyClone(MPI::Intracomm& communicator, int id,
 	{
 	  TmpArray[2] = 1;
 	}
-      communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new ComplexMatrix(communicator, id);
     }
   return 0;

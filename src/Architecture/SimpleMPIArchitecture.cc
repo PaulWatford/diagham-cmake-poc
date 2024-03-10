@@ -81,9 +81,11 @@ SimpleMPIArchitecture::SimpleMPIArchitecture(char* logFile, bool automaticLoadBa
   this->ArchitectureID = AbstractArchitecture::SimpleMPI;
   this->AutomaticLoadBalancing = automaticLoadBalancing;
 #ifdef __MPI__
-  MPI::Init();
-  this->NbrMPINodes = MPI::COMM_WORLD.Get_size();
-  this->MPIRank = MPI::COMM_WORLD.Get_rank();
+  MPI_Init(0, 0);
+  this->NbrMPINodes = 0;
+  MPI_Comm_size(MPI_COMM_WORLD, &(this->NbrMPINodes));
+  this->MPIRank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &(this->MPIRank));
   this->ClusterPerformanceArray = new double [this->NbrMPINodes];
   this->MinimumIndices = 0;
   this->MaximumIndices = 0;
@@ -97,16 +99,17 @@ SimpleMPIArchitecture::SimpleMPIArchitecture(char* logFile, bool automaticLoadBa
       else
 	this->VerboseModeFlag = false;
       this->LogFile = 0;
-      MPI::COMM_WORLD.Send(&this->PerformanceIndex, 1, MPI::DOUBLE, 0, 1);
+      MPI_Send(&this->PerformanceIndex, 1, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD);
     }
   else
     {
       this->MasterNodeFlag = true;
       this->TotalPerformanceIndex = this->PerformanceIndex;      
       this->ClusterPerformanceArray[0] = this->PerformanceIndex;
+      MPI_Status TmpMPIStatus;
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{
-	  MPI::COMM_WORLD.Recv(&this->ClusterPerformanceArray[i], 1, MPI::DOUBLE, i, 1);	  
+	  MPI_Recv(&this->ClusterPerformanceArray[i], 1, MPI_DOUBLE, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);	  
 	  this->TotalPerformanceIndex += this->ClusterPerformanceArray[i];
 	}
       for (int i = 0; i < this->NbrMPINodes; ++i)
@@ -134,8 +137,8 @@ SimpleMPIArchitecture::SimpleMPIArchitecture(char* logFile, bool automaticLoadBa
 	  this->LogFile = 0;
 	}
     }
-  MPI::COMM_WORLD.Bcast(this->ClusterPerformanceArray, this->NbrMPINodes, MPI::DOUBLE, 0);
-  MPI::COMM_WORLD.Bcast(&this->TotalPerformanceIndex, 1, MPI::DOUBLE, 0);
+  MPI_Bcast(this->ClusterPerformanceArray, this->NbrMPINodes, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&this->TotalPerformanceIndex, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
 #else
   this->MasterNodeFlag = true;
   this->NbrMPINodes = 1;
@@ -156,7 +159,7 @@ SimpleMPIArchitecture::SimpleMPIArchitecture(char* logFile, bool automaticLoadBa
 SimpleMPIArchitecture::~SimpleMPIArchitecture()
 {
 #ifdef __MPI__
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   if (this->MinimumIndices != 0)
     {
@@ -250,8 +253,8 @@ bool SimpleMPIArchitecture::GetOptimizedTypicalRange (int*& nbrOperationPerIndex
       this->MinimumIndices = TmpMinimumIndices;
       this->MaximumIndices = TmpMaximumIndices;
 #ifdef __MPI__      
-      MPI::COMM_WORLD.Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
-      MPI::COMM_WORLD.Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
+      MPI_Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
 #endif
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{
@@ -283,8 +286,8 @@ bool SimpleMPIArchitecture::GetOptimizedTypicalRange (int*& nbrOperationPerIndex
 	  this->OldMaximumIndices[i] = this->MaximumIndices[i];
 	}
 #ifdef __MPI__      
-      MPI::COMM_WORLD.Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
-      MPI::COMM_WORLD.Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
+      MPI_Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
 #endif
       int TmpNbrElements = (int) (this->MaximumIndices[this->MPIRank] - this->MinimumIndices[this->MPIRank] + 1l);
       nbrOperationPerIndex = new int [TmpNbrElements];
@@ -418,8 +421,8 @@ bool SimpleMPIArchitecture::LoadOptimizedTypicalRange (int*& nbrOperationPerInde
       this->MinimumIndices = TmpMinimumIndices;
       this->MaximumIndices = TmpMaximumIndices;
 #ifdef __MPI__      
-      MPI::COMM_WORLD.Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
-      MPI::COMM_WORLD.Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
+      MPI_Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
 #endif
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{
@@ -452,8 +455,8 @@ bool SimpleMPIArchitecture::LoadOptimizedTypicalRange (int*& nbrOperationPerInde
 	  this->OldMaximumIndices[i] = this->MaximumIndices[i];
 	}
 #ifdef __MPI__      
-      MPI::COMM_WORLD.Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
-      MPI::COMM_WORLD.Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
+      MPI_Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
+      MPI_Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
 #endif
       int TmpNbrElements = (int) (this->MaximumIndices[this->MPIRank] - this->MinimumIndices[this->MPIRank] + 1l);
       nbrOperationPerIndex = new int [TmpNbrElements];
@@ -542,23 +545,24 @@ void SimpleMPIArchitecture::SetDimension (long dimension)
       this->MinimumIndices[0] = this->MinimumIndex;
       this->MaximumIndices[0] = this->MaximumIndex;
 #ifdef __MPI__
+      MPI_Status TmpMPIStatus;
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{
-	  MPI::COMM_WORLD.Recv(&(this->MinimumIndices[i]), 2, MPI::INT, i, 1);      
-	  MPI::COMM_WORLD.Recv(&(this->MaximumIndices[i]), 2, MPI::INT, i, 1);      
+	  MPI_Recv(&(this->MinimumIndices[i]), 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);      
+	  MPI_Recv(&(this->MaximumIndices[i]), 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);      
 	}
 #endif 
     }
   else
     {
 #ifdef __MPI__      
-      MPI::COMM_WORLD.Send(&this->MinimumIndex, 2, MPI::INT, 0, 1); 
-      MPI::COMM_WORLD.Send(&this->MaximumIndex, 2, MPI::INT, 0, 1);
+      MPI_Send(&this->MinimumIndex, 2, MPI_INT, 0, 1, MPI_COMM_WORLD); 
+      MPI_Send(&this->MaximumIndex, 2, MPI_INT, 0, 1, MPI_COMM_WORLD);
 #endif
     }
 #ifdef __MPI__      
-  MPI::COMM_WORLD.Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
-  MPI::COMM_WORLD.Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI::INT, 0);
+  MPI_Bcast(this->MinimumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(this->MaximumIndices, 2 * this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
 #endif
 }
 
@@ -572,13 +576,15 @@ bool SimpleMPIArchitecture::RequestOperation (int operationType)
 #ifdef __MPI__
   if (this->MasterNodeFlag)
     {
-      MPI::COMM_WORLD.Bcast(&operationType, 1, MPI::INT, 0);
-      int NbrMPINodes = MPI::COMM_WORLD.Get_size();
+      MPI_Bcast(&operationType, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      int NbrMPINodes = 0;
+      MPI_Comm_size(MPI_COMM_WORLD, &NbrMPINodes);
       bool Flag = true;
       int Acknowledge = 0;
+      MPI_Status TmpMPIStatus;
       for (int i = 1; i < NbrMPINodes; ++i)
 	{
-	  MPI::COMM_WORLD.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
+	  MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);      
 	  if ((Flag == true) && (Acknowledge == 0))
 	    Flag = false;
 	}
@@ -598,7 +604,7 @@ bool SimpleMPIArchitecture::WaitOperation (int& operationType)
 #ifdef __MPI__
   if (this->MasterNodeFlag == false)
     {
-      MPI::COMM_WORLD.Bcast(&operationType, 1, MPI::INT, 0);
+      MPI_Bcast(&operationType, 1, MPI_INT, 0, MPI_COMM_WORLD);
       if (operationType == SimpleMPIArchitecture::FreeSlaveSignal)
 	{
 	  return false;
@@ -626,7 +632,7 @@ bool SimpleMPIArchitecture::SendAcknowledge (bool acknowledge)
       int Acknowledge = 0;
       if (acknowledge == true)
 	 Acknowledge = 1;
-      MPI::COMM_WORLD.Send(&Acknowledge, 1, MPI::INT, 0, 1); 
+      MPI_Send(&Acknowledge, 1, MPI_INT, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -658,7 +664,7 @@ bool SimpleMPIArchitecture::SendDone ()
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(&Acknowledge, 1, MPI::INT, 0, 1); 
+      MPI_Send(&Acknowledge, 1, MPI_INT, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -673,7 +679,7 @@ bool SimpleMPIArchitecture::SendDone ()
 bool SimpleMPIArchitecture::BroadcastToSlaves(int& value)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Bcast(&value, 1, MPI::INT, 0); 
+  MPI_Bcast(&value, 1, MPI_INT, 0, MPI_COMM_WORLD); 
   return true;
 #else
   return false;
@@ -689,9 +695,9 @@ bool SimpleMPIArchitecture::BroadcastToSlaves(long& value)
 {
 #ifdef __MPI__
 #ifdef __64_BITS__
-  MPI::COMM_WORLD.Bcast(&value, 2, MPI::INT, 0); 
+  MPI_Bcast(&value, 2, MPI_INT, 0, MPI_COMM_WORLD); 
 #else
-  MPI::COMM_WORLD.Bcast(&value, 1, MPI::INT, 0); 
+  MPI_Bcast(&value, 1, MPI_INT, 0, MPI_COMM_WORLD); 
 #endif
   return true;
 #else
@@ -708,7 +714,7 @@ bool SimpleMPIArchitecture::BroadcastToSlaves(long& value)
 bool SimpleMPIArchitecture::BroadcastToSlaves(int* values, int nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Bcast(values, nbrValues, MPI::INT, 0); 
+  MPI_Bcast(values, nbrValues, MPI_INT, 0, MPI_COMM_WORLD); 
   return true;
 #else
   return false;
@@ -725,9 +731,9 @@ bool SimpleMPIArchitecture::BroadcastToSlaves(long* values, int nbrValues)
 {
 #ifdef __MPI__
 #ifdef __64_BITS__
-  MPI::COMM_WORLD.Bcast(values, 2 * nbrValues, MPI::INT, 0); 
+  MPI_Bcast(values, 2 * nbrValues, MPI_INT, 0, MPI_COMM_WORLD); 
 #else
-  MPI::COMM_WORLD.Bcast(values, nbrValues, MPI::INT, 0); 
+  MPI_Bcast(values, nbrValues, MPI_INT, 0, MPI_COMM_WORLD); 
 #endif
   return true;
 #else
@@ -745,7 +751,7 @@ bool SimpleMPIArchitecture::BroadcastToSlaves(long* values, int nbrValues)
 bool SimpleMPIArchitecture::SendToSlaves(int slaveID, int* values, int nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Send(values, nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Send(values, nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD);
   return true;
 #else
   return false;
@@ -763,9 +769,9 @@ bool SimpleMPIArchitecture::SendToSlaves(int slaveID, long* values, int nbrValue
 {
 #ifdef __MPI__
 #ifdef __64_BITS__
-  MPI::COMM_WORLD.Send(values, 2 * nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Send(values, 2 * nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD);
 #else
-  MPI::COMM_WORLD.Send(values, nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Send(values, nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD);
 #endif  
   return true;
 #else
@@ -782,7 +788,8 @@ bool SimpleMPIArchitecture::SendToSlaves(int slaveID, long* values, int nbrValue
 bool SimpleMPIArchitecture::ReceiveFromMaster(int* values, int& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::INT, 0, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -798,10 +805,11 @@ bool SimpleMPIArchitecture::ReceiveFromMaster(int* values, int& nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromMaster(long* values, int& nbrValues)
 {
 #ifdef __MPI__
+  MPI_Status TmpMPIStatus;
 #ifdef __64_BITS__
-  MPI::COMM_WORLD.Recv(values, 2 * nbrValues, MPI::INT, 0, 1);
+  MPI_Recv(values, 2 * nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD, &TmpMPIStatus);
 #else
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::INT, 0, 1);
+  MPI_Recv(values, nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD, &TmpMPIStatus);
 #endif  
   return true;
 #else
@@ -818,7 +826,8 @@ bool SimpleMPIArchitecture::ReceiveFromMaster(long* values, int& nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromMaster(int* values, long& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::INT, 0, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -837,7 +846,7 @@ bool SimpleMPIArchitecture::SendToMaster(int* values, int nbrValues)
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::INT, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -857,9 +866,9 @@ bool SimpleMPIArchitecture::SendToMaster(long* values, int nbrValues)
     {
       int Acknowledge = 1;
 #ifdef __64_BITS__
-      MPI::COMM_WORLD.Send(values, 2 * nbrValues, MPI::INT, 0, 1); 
+      MPI_Send(values, 2 * nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD); 
 #else
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::INT, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD); 
 #endif
       return true;
     }
@@ -879,7 +888,7 @@ bool SimpleMPIArchitecture::SendToMaster(int* values, long nbrValues)
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::INT, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_INT, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -896,7 +905,8 @@ bool SimpleMPIArchitecture::SendToMaster(int* values, long nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, int* values, int& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -913,10 +923,11 @@ bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, int* values, int& nbrV
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, long* values, int& nbrValues)
 {
 #ifdef __MPI__
+  MPI_Status TmpMPIStatus;
 #ifdef __64_BITS__
-  MPI::COMM_WORLD.Recv(values,  2 * nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Recv(values,  2 * nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
 #else
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Recv(values, nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
 #endif
   return true;
 #else
@@ -934,7 +945,8 @@ bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, long* values, int& nbr
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, int* values, long& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::INT, slaveID + 1, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_INT, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -953,7 +965,7 @@ bool SimpleMPIArchitecture::SendToMaster(double* values, int nbrValues)
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::DOUBLE, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -970,7 +982,8 @@ bool SimpleMPIArchitecture::SendToMaster(double* values, int nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, double* values, int& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::DOUBLE, slaveID + 1, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_DOUBLE, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -989,7 +1002,7 @@ bool SimpleMPIArchitecture::SendToMaster(double* values, long nbrValues)
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::DOUBLE, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_DOUBLE, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -1006,7 +1019,8 @@ bool SimpleMPIArchitecture::SendToMaster(double* values, long nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, double* values, long& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::DOUBLE, slaveID + 1, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_DOUBLE, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -1027,7 +1041,7 @@ bool SimpleMPIArchitecture::SendToMaster(doublecomplex* values, int nbrValues)
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::DOUBLE_COMPLEX, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_DOUBLE_COMPLEX, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -1044,7 +1058,8 @@ bool SimpleMPIArchitecture::SendToMaster(doublecomplex* values, int nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, doublecomplex* values, int& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::DOUBLE_COMPLEX, slaveID + 1, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_DOUBLE_COMPLEX, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -1063,7 +1078,7 @@ bool SimpleMPIArchitecture::SendToMaster(doublecomplex* values, long nbrValues)
   if (!this->MasterNodeFlag)
     {
       int Acknowledge = 1;
-      MPI::COMM_WORLD.Send(values, nbrValues, MPI::DOUBLE_COMPLEX, 0, 1); 
+      MPI_Send(values, nbrValues, MPI_DOUBLE_COMPLEX, 0, 1, MPI_COMM_WORLD); 
       return true;
     }
 #endif
@@ -1080,7 +1095,8 @@ bool SimpleMPIArchitecture::SendToMaster(doublecomplex* values, long nbrValues)
 bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, doublecomplex* values, long& nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Recv(values, nbrValues, MPI::DOUBLE_COMPLEX, slaveID + 1, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(values, nbrValues, MPI_DOUBLE_COMPLEX, slaveID + 1, 1, MPI_COMM_WORLD, &TmpMPIStatus);
   return true;
 #else
   return false;
@@ -1097,7 +1113,7 @@ bool SimpleMPIArchitecture::ReceiveFromSlave(int slaveID, doublecomplex* values,
 bool SimpleMPIArchitecture::BroadcastToSlaves(double& value)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Bcast(&value, 1, MPI::DOUBLE, 0); 
+  MPI_Bcast(&value, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
   return true;
 #else
   return false;
@@ -1113,7 +1129,7 @@ bool SimpleMPIArchitecture::BroadcastToSlaves(double& value)
 bool SimpleMPIArchitecture::BroadcastToSlaves(double* values, int nbrValues)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Bcast(values, nbrValues, MPI::DOUBLE, 0); 
+  MPI_Bcast(values, nbrValues, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
   return true;
 #else
   return false;
@@ -1130,14 +1146,14 @@ Vector* SimpleMPIArchitecture::BroadcastVector(Vector* vector)
 #ifdef __MPI__
   if ((this->MasterNodeFlag) && (vector != 0))
     {
-      vector->BroadcastClone(MPI::COMM_WORLD, this->MPIRank);
+      vector->BroadcastClone(MPI_COMM_WORLD, this->MPIRank);
       return vector;
     }
   else
     if (this->MasterNodeFlag == false)
       {
 	Vector TmpVector;
-	return TmpVector.BroadcastClone(MPI::COMM_WORLD, 0);
+	return TmpVector.BroadcastClone(MPI_COMM_WORLD, 0);
       }
 #endif  
   return 0;
@@ -1151,7 +1167,7 @@ Vector* SimpleMPIArchitecture::BroadcastVector(Vector* vector)
 void SimpleMPIArchitecture::BroadcastVector(int nodeID, Vector& vector)
 {
 #ifdef __MPI__
-  vector.BroadcastVector(MPI::COMM_WORLD, nodeID);
+  vector.BroadcastVector(MPI_COMM_WORLD, nodeID);
 #endif  
   return;
 }
@@ -1165,24 +1181,27 @@ Vector* SimpleMPIArchitecture::ScatterVector(Vector* vector)
 {
 #ifdef __MPI__
   int TmpIndices[2];
+  MPI_Status TmpMPIStatus;
   if ((this->MasterNodeFlag) && (vector != 0))
     {
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{
-	  MPI::COMM_WORLD.Recv(TmpIndices, 2, MPI::INT, i, 1); 	      
-	  vector->SendPartialClone(MPI::COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
+	  MPI_Recv(TmpIndices, 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus); 	      
+	  vector->SendPartialClone(MPI_COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
 	}
       return vector;
     }
   else
-    if (this->MasterNodeFlag == false)
-      {
-	TmpIndices[0] = (int) this->MinimumIndex;
-	TmpIndices[1] = ((int) this->MaximumIndex) - TmpIndices[0] + 1;
-	MPI::COMM_WORLD.Send(TmpIndices, 2, MPI::INT, 0, 1); 	      
-	Vector TmpVector;
-	return TmpVector.ReceivePartialClone(MPI::COMM_WORLD, 0);
-      }
+    {
+      if (this->MasterNodeFlag == false)
+	{
+	  TmpIndices[0] = (int) this->MinimumIndex;
+	  TmpIndices[1] = ((int) this->MaximumIndex) - TmpIndices[0] + 1;
+	  MPI_Send(TmpIndices, 2, MPI_INT, 0, 1, MPI_COMM_WORLD); 	      
+	  Vector TmpVector;
+	  return TmpVector.ReceivePartialClone(MPI_COMM_WORLD, 0);
+	}
+    }
 #endif  
   return 0;
 }
@@ -1199,14 +1218,14 @@ Vector* SimpleMPIArchitecture::ScatterVectorNew(Vector* vector)
   int TmpIndices[2];
   if ((this->MasterNodeFlag) && (vector != 0))    
     {
-      vector->ScatterPartialClones(MPI::COMM_WORLD, this->MinimumIndices, this->MaximumIndices, 0);
+      vector->ScatterPartialClones(MPI_COMM_WORLD, this->MinimumIndices, this->MaximumIndices, 0);
       return vector;
     }
   else
     if (this->MasterNodeFlag == false)
       {
 	Vector TmpVector;
-	return TmpVector.ReceiveScatteredClone(MPI::COMM_WORLD, 0);
+	return TmpVector.ReceiveScatteredClone(MPI_COMM_WORLD, 0);
       }
 #endif  
   return 0;
@@ -1222,14 +1241,14 @@ Vector* SimpleMPIArchitecture::BroadcastVectorType(Vector* vector)
 #ifdef __MPI__
   if ((this->MasterNodeFlag) && (vector != 0))
     {
-      vector->BroadcastEmptyClone(MPI::COMM_WORLD, this->MPIRank);
+      vector->BroadcastEmptyClone(MPI_COMM_WORLD, this->MPIRank);
       return vector;
     }
   else
     if (this->MasterNodeFlag == false)
       {
 	Vector TmpVector;
-	return TmpVector.BroadcastEmptyClone(MPI::COMM_WORLD, 0);
+	return TmpVector.BroadcastEmptyClone(MPI_COMM_WORLD, 0);
       }
 #endif  
   return 0;
@@ -1244,18 +1263,18 @@ Vector* SimpleMPIArchitecture::BroadcastVectorType(Vector* vector)
 Vector** SimpleMPIArchitecture::BroadcastVectorArray(int& nbrVectors, Vector* vector)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Bcast(&nbrVectors, 1, MPI::INT, 0); 
+  MPI_Bcast(&nbrVectors, 1, MPI_INT, 0, MPI_COMM_WORLD); 
   if ((this->MasterNodeFlag) && (vector != 0))
     {
       switch (vector->GetVectorType())
 	{
 	case Vector::RealDatas:
 	  for (int i = 0; i < nbrVectors; ++i)
-	    ((RealVector*) vector)[i].BroadcastClone(MPI::COMM_WORLD, this->MPIRank);
+	    ((RealVector*) vector)[i].BroadcastClone(MPI_COMM_WORLD, this->MPIRank);
 	  break;
 	case Vector::ComplexDatas:	    
 	  for (int i = 0; i < nbrVectors; ++i)
-	    ((ComplexVector*) vector)[i].BroadcastClone(MPI::COMM_WORLD, this->MPIRank);
+	    ((ComplexVector*) vector)[i].BroadcastClone(MPI_COMM_WORLD, this->MPIRank);
 	  break;
 	default :
 	  {
@@ -1272,7 +1291,7 @@ Vector** SimpleMPIArchitecture::BroadcastVectorArray(int& nbrVectors, Vector* ve
 	Vector** TmpVectorArray = new Vector*[nbrVectors];
 	Vector TmpVector;
 	for (int i = 0; i < nbrVectors; ++i)
-	  TmpVectorArray[i] = TmpVector.BroadcastClone(MPI::COMM_WORLD, 0);
+	  TmpVectorArray[i] = TmpVector.BroadcastClone(MPI_COMM_WORLD, 0);
 	return TmpVectorArray;
       }
 #endif  
@@ -1288,10 +1307,10 @@ Vector** SimpleMPIArchitecture::BroadcastVectorArray(int& nbrVectors, Vector* ve
 Vector** SimpleMPIArchitecture::BroadcastVectorTypeArray(int& nbrVectors, Vector* vector)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Bcast(&nbrVectors, 1, MPI::INT, 0); 
+  MPI_Bcast(&nbrVectors, 1, MPI_INT, 0, MPI_COMM_WORLD); 
   if ((this->MasterNodeFlag) && (vector != 0))
     {
-      vector[0].BroadcastEmptyClone(MPI::COMM_WORLD, this->MPIRank);
+      vector[0].BroadcastEmptyClone(MPI_COMM_WORLD, this->MPIRank);
       return 0;
     }
   else
@@ -1299,7 +1318,7 @@ Vector** SimpleMPIArchitecture::BroadcastVectorTypeArray(int& nbrVectors, Vector
       {
 	Vector** TmpVectorArray = new Vector*[nbrVectors];
 	Vector TmpVector;
-	TmpVectorArray[0] = TmpVector.BroadcastEmptyClone(MPI::COMM_WORLD, 0);
+	TmpVectorArray[0] = TmpVector.BroadcastEmptyClone(MPI_COMM_WORLD, 0);
 	for (int i = 1; i < nbrVectors; ++i)
 	  TmpVectorArray[i] = TmpVectorArray[0]->EmptyClone();
 	return TmpVectorArray;
@@ -1318,28 +1337,30 @@ Vector** SimpleMPIArchitecture::ScatterVectorArray(int& nbrVectors, Vector* vect
 {
 #ifdef __MPI__
   int TmpIndices[2];
-  MPI::COMM_WORLD.Bcast(&nbrVectors, 1, MPI::INT, 0); 
+  MPI_Bcast(&nbrVectors, 1, MPI_INT, 0, MPI_COMM_WORLD); 
   if ((this->MasterNodeFlag) && (vector != 0))
     {
       switch (vector->GetVectorType() & Vector::DataTypeMask)
 	{
 	case Vector::RealDatas:
 	  {
+	    MPI_Status TmpMPIStatus;
 	    for (int i = 1; i < this->NbrMPINodes; ++i)
 	      {
-		MPI::COMM_WORLD.Recv(TmpIndices, 2, MPI::INT, i, 1); 	      
+		MPI_Recv(TmpIndices, 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus); 	      
 		for (int j = 0; j < nbrVectors; ++j)		 
-		  ((RealVector*) vector)[j].SendPartialClone(MPI::COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
+		  ((RealVector*) vector)[j].SendPartialClone(MPI_COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
 	      }
 	  }
 	  break;
 	case Vector::ComplexDatas:
 	  {
+	    MPI_Status TmpMPIStatus;
 	    for (int i = 1; i < this->NbrMPINodes; ++i)
 	      {
-		MPI::COMM_WORLD.Recv(TmpIndices, 2, MPI::INT, i, 1); 	      
+		MPI_Recv(TmpIndices, 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus); 	      
 		for (int j = 0; j < nbrVectors; ++j)		 
-		  ((ComplexVector*) vector)[j].SendPartialClone(MPI::COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
+		  ((ComplexVector*) vector)[j].SendPartialClone(MPI_COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
 	      }
 	  }
 	  break;
@@ -1357,12 +1378,12 @@ Vector** SimpleMPIArchitecture::ScatterVectorArray(int& nbrVectors, Vector* vect
 	{
 	  TmpIndices[0] = (int) this->MinimumIndex;
 	  TmpIndices[1] = ((int) this->MaximumIndex) - TmpIndices[0] + 1;
-	  MPI::COMM_WORLD.Send(TmpIndices, 2, MPI::INT, 0, 1); 	      
+	  MPI_Send(TmpIndices, 2, MPI_INT, 0, 1, MPI_COMM_WORLD); 	      
 	  Vector** TmpVectorArray = new Vector*[nbrVectors];
 	  for (int j = 0; j < nbrVectors; ++j)		 
 	    {	    
 	      Vector TmpVector;
-	      TmpVectorArray[j] = TmpVector.ReceivePartialClone(MPI::COMM_WORLD, 0);
+	      TmpVectorArray[j] = TmpVector.ReceivePartialClone(MPI_COMM_WORLD, 0);
 	    }
 	  return TmpVectorArray;
 	}
@@ -1382,7 +1403,7 @@ Vector** SimpleMPIArchitecture::ScatterVectorArray(int& nbrVectors, Vector* vect
 void SimpleMPIArchitecture::BroadcastMatrix(Matrix& matrix)
 {
 #ifdef __MPI__
-  matrix.BroadcastMatrix(MPI::COMM_WORLD, 0);
+  matrix.BroadcastMatrix(MPI_COMM_WORLD, 0);
 #endif  
 }
 
@@ -1396,14 +1417,14 @@ Matrix* SimpleMPIArchitecture::BroadcastMatrix(Matrix* matrix)
 #ifdef __MPI__
   if ((this->MasterNodeFlag) && (matrix != 0))
     {
-      matrix->BroadcastClone(MPI::COMM_WORLD, this->MPIRank);
+      matrix->BroadcastClone(MPI_COMM_WORLD, this->MPIRank);
       return matrix;
     }
   else
     if (this->MasterNodeFlag == false)
       {
 	Matrix TmpMatrix;
-	return TmpMatrix.BroadcastClone(MPI::COMM_WORLD, 0);
+	return TmpMatrix.BroadcastClone(MPI_COMM_WORLD, 0);
       }
 #endif  
   return 0;
@@ -1417,7 +1438,7 @@ Matrix* SimpleMPIArchitecture::BroadcastMatrix(Matrix* matrix)
 void SimpleMPIArchitecture::BroadcastMatrix(int nodeID, Matrix& matrix)
 {
 #ifdef __MPI__
-  matrix.BroadcastMatrix(MPI::COMM_WORLD, nodeID);
+  matrix.BroadcastMatrix(MPI_COMM_WORLD, nodeID);
 #endif  
 }
 
@@ -1431,28 +1452,30 @@ Matrix** SimpleMPIArchitecture::BroadcastMatrixArray(int& nbrMatrices, Matrix* m
 {
 #ifdef __MPI__
   int TmpIndices[2];
-  MPI::COMM_WORLD.Bcast(&nbrMatrices, 1, MPI::INT, 0); 
+  MPI_Bcast(&nbrMatrices, 1, MPI_INT, 0, MPI_COMM_WORLD); 
   if ((this->MasterNodeFlag) && (matrix != 0))
     {
       switch (matrix->GetMatrixType())
 	{
 	case Matrix::RealElements:
 	  {
+	    MPI_Status TmpMPIStatus;
 	    for (int i = 1; i < this->NbrMPINodes; ++i)
 	      {
-		MPI::COMM_WORLD.Recv(TmpIndices, 2, MPI::INT, i, 1); 	      
+		MPI_Recv(TmpIndices, 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus); 	      
 		for (int j = 0; j < nbrMatrices; ++j)		 
-		  ((RealMatrix*) matrix)[j].SendPartialClone(MPI::COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
+		  ((RealMatrix*) matrix)[j].SendPartialClone(MPI_COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
 	      }
 	  }
 	  break;
 	case Matrix::ComplexElements:
 	  {
+	    MPI_Status TmpMPIStatus;
 	    for (int i = 1; i < this->NbrMPINodes; ++i)
 	      {
-		MPI::COMM_WORLD.Recv(TmpIndices, 2, MPI::INT, i, 1); 	      
+		MPI_Recv(TmpIndices, 2, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus); 	      
 		for (int j = 0; j < nbrMatrices; ++j)		 
-		  ((ComplexMatrix*) matrix)[j].SendPartialClone(MPI::COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
+		  ((ComplexMatrix*) matrix)[j].SendPartialClone(MPI_COMM_WORLD, i, TmpIndices[0], TmpIndices[1]);
 	      }
 	  }
 	  break;
@@ -1470,12 +1493,12 @@ Matrix** SimpleMPIArchitecture::BroadcastMatrixArray(int& nbrMatrices, Matrix* m
 	{
 	  TmpIndices[0] = (int) this->MinimumIndex;
 	  TmpIndices[1] = ((int) this->MaximumIndex) - TmpIndices[0] + 1;
-	  MPI::COMM_WORLD.Send(TmpIndices, 2, MPI::INT, 0, 1); 	      
+	  MPI_Send(TmpIndices, 2, MPI_INT, 0, 1, MPI_COMM_WORLD); 	      
 	  Matrix** TmpMatrixArray = new Matrix*[nbrMatrices];
 	  for (int j = 0; j < nbrMatrices; ++j)		 
 	    {	    
 	      Matrix TmpMatrix;
-	      TmpMatrixArray[j] = TmpMatrix.ReceivePartialClone(MPI::COMM_WORLD, 0);
+	      TmpMatrixArray[j] = TmpMatrix.ReceivePartialClone(MPI_COMM_WORLD, 0);
 	    }
 	  return TmpMatrixArray;
 	}
@@ -1515,8 +1538,8 @@ bool SimpleMPIArchitecture::AddToLog(const char * message, bool masterFlag)
       if (masterFlag == false)
 	{
 	  int TmpMessageLength = strlen(message);
-	  MPI::COMM_WORLD.Send(&TmpMessageLength, 1, MPI::INT, 0, 1);
-	  MPI::COMM_WORLD.Send(message, TmpMessageLength, MPI::CHAR, 0, 1);
+	  MPI_Send(&TmpMessageLength, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);
+	  MPI_Send(message, TmpMessageLength, MPI_CHAR, 0, 1, MPI_COMM_WORLD);
 	  return true;
 	}
       else
@@ -1535,17 +1558,20 @@ bool SimpleMPIArchitecture::AddToLog(const char * message, bool masterFlag)
       File << TmpMessage << endl;
       delete [] TmpMessage;
       if (masterFlag == false)
-	for (int i = 1; i < NbrMPINodes; ++i)
-	  {
-	    MPI::COMM_WORLD.Recv(&TmpMessageLength, 1, MPI::INT, i, 1);      
-	    TmpMessage = new char[TmpMessageLength + 256];
-	    sprintf (TmpMessage, "node %d: ", i);
-	    TmpInc = strlen(TmpMessage);
-	    TmpMessage[TmpInc + TmpMessageLength] = '\0';
-	    MPI::COMM_WORLD.Recv(TmpMessage + strlen(TmpMessage), TmpMessageLength, MPI::CHAR, i, 1);  
-	    File << TmpMessage << endl;
-	    delete [] TmpMessage;
-	  }
+	{
+	  MPI_Status TmpMPIStatus;
+	  for (int i = 1; i < NbrMPINodes; ++i)
+	    {
+	      MPI_Recv(&TmpMessageLength, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);      
+	      TmpMessage = new char[TmpMessageLength + 256];
+	      sprintf (TmpMessage, "node %d: ", i);
+	      TmpInc = strlen(TmpMessage);
+	      TmpMessage[TmpInc + TmpMessageLength] = '\0';
+	      MPI_Recv(TmpMessage + strlen(TmpMessage), TmpMessageLength, MPI_CHAR, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);  
+	      File << TmpMessage << endl;
+	      delete [] TmpMessage;
+	    }
+	}
       File.close();
     }
   return true;
@@ -1577,7 +1603,7 @@ char* SimpleMPIArchitecture::DumpLog(const char* header, const char* footer)
 bool SimpleMPIArchitecture::WriteVector(RealVector& vector, const char* fileName)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   if ( this->IsMasterNode() )
     {
       return vector.WriteVector(fileName);
@@ -1601,7 +1627,7 @@ bool SimpleMPIArchitecture::WriteVector(RealVector& vector, const char* fileName
 bool SimpleMPIArchitecture::ReadVector(RealVector& vector, const char* fileName)
 {
 #ifdef __MPI__
-  MPI::COMM_WORLD.Barrier();
+  MPI_Barrier(MPI_COMM_WORLD);
   int Value = 0;
   if ( this->IsMasterNode() )
     {

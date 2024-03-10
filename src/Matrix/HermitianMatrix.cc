@@ -167,13 +167,18 @@ HermitianMatrix::HermitianMatrix(double* diagonal, double* realOffDiagonal, doub
 // id = id of the MPI process which broadcasts or sends the vector
 // broadcast = true if the vector is broadcasted
 
-HermitianMatrix::HermitianMatrix(MPI::Intracomm& communicator, int id, bool broadcast)
+HermitianMatrix::HermitianMatrix(const MPI_Comm& communicator, int id, bool broadcast)
 {
   int TmpArray[4];
   if (broadcast == true)
-    communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+    {
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
+    }
   else
-    communicator.Recv(TmpArray, 3, MPI::INT, id, 1);   
+    {
+      MPI_Status TmpMPIStatus;
+      MPI_Recv(TmpArray, 3, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+    }
   this->NbrRow = TmpArray[0];
   this->NbrColumn = TmpArray[1];
   this->TrueNbrRow = this->NbrRow;
@@ -205,55 +210,60 @@ HermitianMatrix::HermitianMatrix(MPI::Intracomm& communicator, int id, bool broa
 	  long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1l)) / 2l;
 	  if (broadcast == true)
 	    {
-	      communicator.Bcast(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id);    
-// 	      communicator.Bcast(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id); 
-// 	      communicator.Bcast(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);  
+	      MPI_Bcast(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, communicator);    
+// 	      MPI_Bcast(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator); 
+// 	      MPI_Bcast(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);  
 	      long Tmp = NbrOffDiagonalElements;
 	      long Index = 0l;
 	      while (Tmp >= (1l << 30))
 		{
-		  communicator.Bcast(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id);      
+		  MPI_Bcast(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, communicator);      
 		  Tmp -= (1l << 30);
 		  Index += (1l << 30);
 		}
 	      if (Tmp > 0l)
-		communicator.Bcast(&(this->RealOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id);      
+		MPI_Bcast(&(this->RealOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, communicator);      
 	      Tmp = NbrOffDiagonalElements;
 	      Index = 0l;
 	      while (Tmp >= (1l << 30))
 		{
-		  communicator.Bcast(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id);     
+		  MPI_Bcast(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, communicator);     
 		  Tmp -= (1l << 30);
 		  Index += (1l << 30);
 		}
 	      if (Tmp > 0l)
-		communicator.Bcast(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id);     
+		MPI_Bcast(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, communicator);     
 	    }
 	  else
 	    {
-	      communicator.Recv(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id, 1);  
-// 	      communicator.Recv(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);   
-// 	      communicator.Recv(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);   
+	      MPI_Status TmpMPIStatus;
+	      MPI_Recv(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);  
+// 	      MPI_Recv(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
+// 	      MPI_Recv(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
 	      long Tmp = NbrOffDiagonalElements;
 	      long Index = 0l;
 	      while (Tmp >= (1l << 30))
 		{
-		  communicator.Recv(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id, 1);   
+		  MPI_Recv(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
 		  Tmp -= (1l << 30);
 		  Index += (1l << 30);
 		}
 	      if (Tmp > 0l)
-		communicator.Recv(&(this->RealOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id, 1);   
+		{
+		  MPI_Recv(&(this->RealOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);
+		}
 	      Tmp = NbrOffDiagonalElements;
 	      Index = 0l;
 	      while (Tmp >= (1l << 30))
 		{
-		  communicator.Recv(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id, 1);   
+		  MPI_Recv(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
 		  Tmp -= (1l << 30);
 		  Index += (1l << 30);
 		}
 	      if (Tmp > 0l)
-		communicator.Recv(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id, 1);   
+		{
+		  MPI_Recv(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);
+		}
 	    }
 	}
     }
@@ -2477,39 +2487,40 @@ RealDiagonalMatrix& HermitianMatrix::LapackPartialDiagonalize (RealDiagonalMatri
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& HermitianMatrix::SendMatrix(MPI::Intracomm& communicator, int id)
+Matrix& HermitianMatrix::SendMatrix(const MPI_Comm& communicator, int id)
 {
-  communicator.Send(&this->MatrixType, 1, MPI::INT, id, 1);
-  communicator.Send(&this->NbrRow, 1, MPI::INT, id, 1); 
-  communicator.Send(&this->NbrColumn, 1, MPI::INT, id, 1); 
+  MPI_Send(&this->MatrixType, 1, MPI_INT, id, 1, communicator);
+  MPI_Send(&this->NbrRow, 1, MPI_INT, id, 1, communicator); 
+  MPI_Send(&this->NbrColumn, 1, MPI_INT, id, 1, communicator); 
   int Acknowledge = 0;
-  communicator.Recv(&Acknowledge, 1, MPI::INT, id, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&Acknowledge, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   if (Acknowledge != 0)
     return *this;
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1l)) / 2l;
-  communicator.Send(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id, 1);    
-//   communicator.Send(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);
-//   communicator.Send(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);  
+  MPI_Send(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, 1, communicator);    
+//   MPI_Send(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator);
+//   MPI_Send(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator);  
   long Tmp = NbrOffDiagonalElements;
   long Index = 0l;
   while (Tmp >= (1l << 30))
     {
-      communicator.Send(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id, 1);    
+      MPI_Send(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, 1, communicator);    
       Tmp -= (1l << 30);
       Index += (1l << 30);
     }
   if (Tmp > 0l)
-    communicator.Send(&(this->RealOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id, 1);    
+    MPI_Send(&(this->RealOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, 1, communicator);    
   Tmp = NbrOffDiagonalElements;
   Index = 0l;
   while (Tmp >= (1l << 30))
     {
-      communicator.Send(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id, 1);    
+      MPI_Send(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, 1, communicator);    
       Tmp -= (1l << 30);
       Index += (1l << 30);
     }
   if (Tmp > 0l)
-    communicator.Send(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id, 1);    
+    MPI_Send(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, 1, communicator);    
   return *this;
 }
 
@@ -2519,36 +2530,44 @@ Matrix& HermitianMatrix::SendMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the matrix
 // return value = reference on the current matrix
 
-Matrix& HermitianMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
+Matrix& HermitianMatrix::BroadcastMatrix(const MPI_Comm& communicator,  int id)
 {
   int TmpMatrixType = this->MatrixType;
   int TmpNbrRow = this->NbrRow;
   int TmpNbrColumn = this->NbrColumn;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpMatrixType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrRow, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrColumn, 1, MPI::INT, id);
+  MPI_Bcast(&TmpMatrixType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrRow, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrColumn, 1, MPI_INT, id, communicator);
   if (this->MatrixType != TmpMatrixType)
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     return *this;
   if ((TmpNbrRow != this->NbrRow) || (TmpNbrColumn != this->NbrColumn))
@@ -2556,29 +2575,29 @@ Matrix& HermitianMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
       this->Resize(TmpNbrRow, TmpNbrColumn);      
     }
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1l)) / 2l;
-  communicator.Bcast(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id);    
-//   communicator.Bcast(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id); 
-//   communicator.Bcast(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);  
+  MPI_Bcast(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, communicator);    
+//   MPI_Bcast(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator); 
+//   MPI_Bcast(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);  
   long Tmp = NbrOffDiagonalElements;
   long Index = 0l;
   while (Tmp >= (1l << 30))
     {
-      communicator.Bcast(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id);    
+      MPI_Bcast(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, communicator);    
       Tmp -= (1l << 30);
       Index += (1l << 30);
     }
   if (Tmp > 0l)
-    communicator.Bcast(&(this->RealOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id);    
+    MPI_Bcast(&(this->RealOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, communicator);    
   Tmp = NbrOffDiagonalElements;
   Index = 0l;
   while (Tmp >= (1l << 30))
     {
-      communicator.Bcast(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id);    
+      MPI_Bcast(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, communicator);    
       Tmp -= (1l << 30);
       Index += (1l << 30);
     }
   if (Tmp > 0l)
-    communicator.Bcast(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id);    
+    MPI_Bcast(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, communicator);    
   return *this;
 }
 
@@ -2588,18 +2607,19 @@ Matrix& HermitianMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
 // id = id of the source MPI process
 // return value = reference on the current matrix
 
-Matrix& HermitianMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
+Matrix& HermitianMatrix::ReceiveMatrix(const MPI_Comm& communicator, int id)
 {
   int TmpMatrixType = 0;
   int TmpNbrRow = 0;
   int TmpNbrColumn = 0;
-  communicator.Recv(&TmpMatrixType, 1, MPI::INT, id, 1);
-  communicator.Recv(&TmpNbrRow, 1, MPI::INT, id, 1); 
-  communicator.Recv(&TmpNbrColumn, 1, MPI::INT, id, 1); 
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&TmpMatrixType, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+  MPI_Recv(&TmpNbrRow, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
+  MPI_Recv(&TmpNbrColumn, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
   if (TmpMatrixType != this->MatrixType)
     {
       TmpNbrRow = 1;
-      communicator.Send(&TmpNbrRow, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpNbrRow, 1, MPI_INT, id, 1, communicator);
       return *this;
     }
   else
@@ -2609,32 +2629,32 @@ Matrix& HermitianMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 	  this->Resize(TmpNbrRow, TmpNbrColumn);      
 	}
       TmpNbrRow = 0;
-      communicator.Send(&TmpNbrRow, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpNbrRow, 1, MPI_INT, id, 1, communicator);
     }
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1l)) / 2l;
-  communicator.Recv(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id, 1);    
-//   communicator.Recv(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);
-//   communicator.Recv(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);
+  MPI_Recv(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
+//   MPI_Recv(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);
+//   MPI_Recv(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);
   long Tmp = NbrOffDiagonalElements;
   long Index = 0l;
   while (Tmp >= (1l << 30))
     {
-      communicator.Recv(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id, 1);    
+      MPI_Recv(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
       Tmp -= (1l << 30);
       Index += (1l << 30);
     }
   if (Tmp > 0l)
-    communicator.Recv(&(this->RealOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id, 1);    
+    MPI_Recv(&(this->RealOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
   Tmp = NbrOffDiagonalElements;
   Index = 0l;
   while (Tmp >= (1l << 30))
     {
-      communicator.Recv(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id, 1);    
+      MPI_Recv(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
       Tmp -= (1l << 30);
       Index += (1l << 30);
     }
   if (Tmp > 0l)
-    communicator.Recv(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id, 1);    
+    MPI_Recv(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
   return *this;
 }
 
@@ -2644,104 +2664,110 @@ Matrix& HermitianMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& HermitianMatrix::SumMatrix(MPI::Intracomm& communicator, int id)
+Matrix& HermitianMatrix::SumMatrix(const MPI_Comm& communicator, int id)
 {
   int TmpMatrixType = this->MatrixType;
   int TmpNbrRow = this->NbrRow;
   int TmpNbrColumn = this->NbrColumn;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpMatrixType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrRow, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrColumn, 1, MPI::INT, id);
+  MPI_Bcast(&TmpMatrixType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrRow, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrColumn, 1, MPI_INT, id, communicator);
   if ((this->MatrixType != TmpMatrixType) || (TmpNbrRow != this->NbrRow) || (TmpNbrColumn != this->NbrColumn))
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     {
       return *this;
     }
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1l)) / 2l;
   double* TmpComponents = 0;
-  if (id == communicator.Get_rank())
+  if (TmpMPIRank == id)
     {
       if (NbrOffDiagonalElements > 1l)
 	TmpComponents = new double [NbrOffDiagonalElements];
       else
 	TmpComponents = new double [1l];
     }
-  try
-    {
-      communicator.Reduce(this->DiagonalElements, TmpComponents, this->NbrRow, MPI::DOUBLE, MPI::SUM, id);
-    } 
-  catch ( MPI::Exception e)
-    {
-      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
-    }  
-  if (id == communicator.Get_rank())
+  //  try
+  //    {
+      MPI_Reduce(this->DiagonalElements, TmpComponents, this->NbrRow, MPI_DOUBLE, MPI_SUM, id, communicator);
+      //    } 
+  //  catch ( MPI_Exception e)
+      //    {
+      //      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
+      //    }  
+  if (TmpMPIRank == id)
     {
       for (int i = 0; i < this->NbrRow; ++i)
 	this->DiagonalElements[i] = TmpComponents[i];
     }
-  try
-    {
-//      communicator.Reduce(this->RealOffDiagonalElements, TmpComponents, NbrOffDiagonalElements, MPI::DOUBLE, MPI::SUM, id);
+  //  try
+  {
      long Tmp = NbrOffDiagonalElements;
      long Index = 0l;
      while (Tmp >= (1l << 30))
 	{
-	  communicator.Reduce(&(this->RealOffDiagonalElements[Index]), TmpComponents, (1l << 30), MPI::DOUBLE, MPI::SUM, id);	  
+	  MPI_Reduce(&(this->RealOffDiagonalElements[Index]), TmpComponents, (1l << 30), MPI_DOUBLE, MPI_SUM, id, communicator);	  
 	  Tmp -= (1l << 30);
 	  Index += (1l << 30);
 	}
       if (Tmp > 0l)
-	communicator.Reduce(&(this->RealOffDiagonalElements[Index]), TmpComponents, Tmp, MPI::DOUBLE, MPI::SUM, id);
-    } 
-  catch ( MPI::Exception e)
-    {
-      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
-    }  
-  if (id == communicator.Get_rank())
+	MPI_Reduce(&(this->RealOffDiagonalElements[Index]), TmpComponents, Tmp, MPI_DOUBLE, MPI_SUM, id, communicator);
+  } 
+      //  catch ( MPI_Exception e)
+      //    {
+      //      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
+      //    }  
+  if (TmpMPIRank == id)
     {
       for (long i = 0l; i < NbrOffDiagonalElements; ++i)
 	this->RealOffDiagonalElements[i] = TmpComponents[i];
     }
-  try
-    {
-//      communicator.Reduce(this->ImaginaryOffDiagonalElements, TmpComponents, NbrOffDiagonalElements, MPI::DOUBLE, MPI::SUM, id);
+  //  try
+  {
       long Tmp = NbrOffDiagonalElements;
       long Index = 0l;
       while (Tmp >= (1l << 30))
 	{
-	  communicator.Reduce(&(this->ImaginaryOffDiagonalElements[Index]), TmpComponents, (1l << 30), MPI::DOUBLE, MPI::SUM, id);	  
+	  MPI_Reduce(&(this->ImaginaryOffDiagonalElements[Index]), TmpComponents, (1l << 30), MPI_DOUBLE, MPI_SUM, id, communicator);	  
 	  Tmp -= (1l << 30);
 	  Index += (1l << 30);
 	}
       if (Tmp > 0l)
-	communicator.Reduce(&(this->ImaginaryOffDiagonalElements[Index]), TmpComponents, Tmp, MPI::DOUBLE, MPI::SUM, id);
-    } 
-  catch ( MPI::Exception e)
-    {
-      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
-    }  
-  if (id == communicator.Get_rank())
+	MPI_Reduce(&(this->ImaginaryOffDiagonalElements[Index]), TmpComponents, Tmp, MPI_DOUBLE, MPI_SUM, id, communicator);
+  } 
+      //  catch ( MPI_Exception e)
+      //    {
+      //      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
+      //    }  
+  if (TmpMPIRank == id)
     {
       for (long i = 0l; i < NbrOffDiagonalElements; ++i)
 	this->ImaginaryOffDiagonalElements[i] = TmpComponents[i];
@@ -2757,45 +2783,47 @@ Matrix& HermitianMatrix::SumMatrix(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* HermitianMatrix::BroadcastClone(MPI::Intracomm& communicator, int id)
+Matrix* HermitianMatrix::BroadcastClone(const MPI_Comm& communicator, int id)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank == id)
     {
-      communicator.Bcast(&this->MatrixType, 1, MPI::INT, id);
+      MPI_Bcast(&this->MatrixType, 1, MPI_INT, id, communicator);
       int TmpArray[3];
       TmpArray[0] = this->NbrRow;
       TmpArray[1] = this->NbrColumn;
       TmpArray[2] = 2;
-      communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
       long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1l)) / 2l;
-      communicator.Bcast(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id);    
-//       communicator.Bcast(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);
-//       communicator.Bcast(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);
+      MPI_Bcast(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, communicator);    
+//       MPI_Bcast(this->RealOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);
+//       MPI_Bcast(this->ImaginaryOffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);
       long Tmp = NbrOffDiagonalElements;
       long Index = 0l;
       while (Tmp >= (1l << 30))
 	{
-	  communicator.Bcast(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id);    
+	  MPI_Bcast(&(this->RealOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, communicator);    
 	  Tmp -= (1l << 30);
 	  Index += (1l << 30);
 	}
       if (Tmp > 0l)
-	communicator.Bcast(&(this->RealOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id);    
+	MPI_Bcast(&(this->RealOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, communicator);    
       Tmp = NbrOffDiagonalElements;
       Index = 0l;
       while (Tmp >= (1l << 30))
 	{
-	  communicator.Bcast(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI::DOUBLE, id);    
+	  MPI_Bcast(&(this->ImaginaryOffDiagonalElements[Index]), (1l << 30), MPI_DOUBLE, id, communicator);    
 	  Tmp -= (1l << 30);
 	  Index += (1l << 30);
 	}
       if (Tmp > 0l)
-	communicator.Bcast(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI::DOUBLE, id);    
+	MPI_Bcast(&(this->ImaginaryOffDiagonalElements[Index]), Tmp, MPI_DOUBLE, id, communicator);    
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new HermitianMatrix(communicator, id);
     }
   return 0;
@@ -2808,11 +2836,13 @@ Matrix* HermitianMatrix::BroadcastClone(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* HermitianMatrix::BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag)
+Matrix* HermitianMatrix::BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank == id)
     {
-      communicator.Bcast(&this->MatrixType, 1, MPI::INT, id);
+      MPI_Bcast(&this->MatrixType, 1, MPI_INT, id, communicator);
       int TmpArray[3];
       TmpArray[0] = this->NbrRow;
       TmpArray[1] = this->NbrColumn;
@@ -2821,12 +2851,12 @@ Matrix* HermitianMatrix::BroadcastEmptyClone(MPI::Intracomm& communicator, int i
 	{
 	  TmpArray[2] = 1;
 	}
-      communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new HermitianMatrix(communicator, id);
     }
   return 0;

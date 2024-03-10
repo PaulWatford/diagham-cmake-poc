@@ -252,14 +252,14 @@ class Vector
   // communicator = reference on the communicator to use
   // id = id of the destination MPI process
   // return value = reference on the current vector
-  virtual Vector& SendVector(MPI::Intracomm& communicator, int id);
+  virtual Vector& SendVector(const MPI_Comm& communicator, int id);
 
   // broadcast a vector to all MPI processes associated to the same communicator
   // 
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which broadcasts the vector
   // return value = reference on the current vector
-  virtual Vector& BroadcastVector(MPI::Intracomm& communicator,  int id);
+  virtual Vector& BroadcastVector(const MPI_Comm& communicator,  int id);
 
   // broadcast part of vector to all MPI processes associated to the same communicator
   // 
@@ -268,28 +268,28 @@ class Vector
   // firstComponent = index of the first component (useless if the method is not called by the MPI process which broadcasts the vector)
   // nbrComponent = number of component (useless if the method is not called by the MPI process which broadcasts the vector)
   // return value = reference on the current vector
-  virtual Vector& BroadcastPartialVector(MPI::Intracomm& communicator, int id, int firstComponent = 0, int nbrComponent = 0);
+  virtual Vector& BroadcastPartialVector(const MPI_Comm& communicator, int id, int firstComponent = 0, int nbrComponent = 0);
 
   // receive a vector from a MPI process
   // 
   // communicator = reference on the communicator to use 
   // id = id of the source MPI process
   // return value = reference on the current vector
-  virtual Vector& ReceiveVector(MPI::Intracomm& communicator, int id);
+  virtual Vector& ReceiveVector(const MPI_Comm& communicator, int id);
 
   // add current vector to the current vector of a given MPI process
   // 
   // communicator = reference on the communicator to use 
   // id = id of the destination MPI process
   // return value = reference on the current vector
-  virtual Vector& SumVector(MPI::Intracomm& communicator, int id);
+  virtual Vector& SumVector(const MPI_Comm& communicator, int id);
 
   // reassemble vector from a scattered one
   // 
   // communicator = reference on the communicator to use 
   // id = id of the destination MPI process
   // return value = reference on the current vector
-  virtual Vector& ReassembleVector(MPI::Intracomm& communicator, int id);
+  virtual Vector& ReassembleVector(const MPI_Comm& communicator, int id);
 
   // create a new vector on each MPI node which is an exact clone of the broadcasted one
   //
@@ -297,7 +297,7 @@ class Vector
   // id = id of the MPI process which broadcasts the vector
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new vector 
-  virtual Vector* BroadcastClone(MPI::Intracomm& communicator, int id);
+  virtual Vector* BroadcastClone(const MPI_Comm& communicator, int id);
 
   // create a new vector on given MPI node which is an exact clone of the sent one but with only part of the data
   // 
@@ -306,7 +306,7 @@ class Vector
   // firstComponent = index of the first component 
   // nbrComponent = number of component to send
   // return value = reference on the current vector
-  virtual Vector& SendPartialClone(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent);
+  virtual Vector& SendPartialClone(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent);
 
   // create a new vector on given MPI node which is an exact clone of the sent one but with only part of the data
   //
@@ -314,7 +314,7 @@ class Vector
   // id = id of the MPI process which broadcasts the vector
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new vector 
-  virtual Vector* ReceivePartialClone(MPI::Intracomm& communicator, int id);
+  virtual Vector* ReceivePartialClone(const MPI_Comm& communicator, int id);
 
   // scatter this vector across all MPI nodes with the given load balancing information
   // 
@@ -323,7 +323,7 @@ class Vector
   // maximumIndices = largest index for each thread
   // id = id of the process to send the vector
   // return value = reference on the current vector
-  Vector& ScatterPartialClones(MPI::Intracomm& communicator, long *minimumIndices, long *maximumIndices, int id);
+  Vector& ScatterPartialClones(const MPI_Comm& communicator, long *minimumIndices, long *maximumIndices, int id);
 
   // create a new vector on given MPI node which is an exact clone of the sent one but with only part of the data
   // using efficient implementation with Scatterv
@@ -331,7 +331,7 @@ class Vector
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which scatters the vector
   // return value = pointer to new vector 
-  Vector* ReceiveScatteredClone(MPI::Intracomm& communicator, int id);
+  Vector* ReceiveScatteredClone(const MPI_Comm& communicator, int id);
 
 
   // create a new vector on each MPI node with same size and same type but non-initialized components
@@ -340,7 +340,7 @@ class Vector
   // id = id of the MPI process which broadcasts the vector
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new vector 
-  virtual Vector* BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag = false);
+  virtual Vector* BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag = false);
 
 #endif
 

@@ -309,7 +309,7 @@ ostream& Vector::PrintNonZero(ostream& str, char** componentLabels, double error
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-Vector& Vector::SendVector(MPI::Intracomm& communicator, int id)
+Vector& Vector::SendVector(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -320,7 +320,7 @@ Vector& Vector::SendVector(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the vector
 // return value = reference on the current vector
 
-Vector& Vector::BroadcastVector(MPI::Intracomm& communicator,  int id)
+Vector& Vector::BroadcastVector(const MPI_Comm& communicator,  int id)
 {
   return *this;
 }
@@ -333,7 +333,7 @@ Vector& Vector::BroadcastVector(MPI::Intracomm& communicator,  int id)
 // nbrComponent = number of component (useless if the method is not called by the MPI process which broadcasts the vector)
 // return value = reference on the current vector
 
-Vector& Vector::BroadcastPartialVector(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent)
+Vector& Vector::BroadcastPartialVector(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent)
 {
   return *this;
 }
@@ -344,7 +344,7 @@ Vector& Vector::BroadcastPartialVector(MPI::Intracomm& communicator, int id, int
 // id = id of the source MPI process
 // return value = reference on the current vector
 
-Vector& Vector::ReceiveVector(MPI::Intracomm& communicator, int id)
+Vector& Vector::ReceiveVector(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -355,7 +355,7 @@ Vector& Vector::ReceiveVector(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-Vector& Vector::SumVector(MPI::Intracomm& communicator, int id)
+Vector& Vector::SumVector(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -366,7 +366,7 @@ Vector& Vector::SumVector(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-Vector& Vector::ReassembleVector(MPI::Intracomm& communicator, int id)
+Vector& Vector::ReassembleVector(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -378,12 +378,14 @@ Vector& Vector::ReassembleVector(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new vector 
 
-Vector* Vector::BroadcastClone(MPI::Intracomm& communicator, int id)
+Vector* Vector::BroadcastClone(const MPI_Comm& communicator, int id)
 {
   int Type = this->VectorType;
-  if (id != communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
     {
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       switch (Type & Vector::DataTypeMask)
 	{
 	case (Vector::RealDatas):
@@ -407,7 +409,7 @@ Vector* Vector::BroadcastClone(MPI::Intracomm& communicator, int id)
 // nbrComponent = number of component to send
 // return value = reference on the current vector
 
-Vector& Vector::SendPartialClone(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent)
+Vector& Vector::SendPartialClone(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent)
 {
   /// @todo can convert this method to virtual method with automatic type cast?
   switch (this->VectorType & Vector::DataTypeMask)
@@ -431,12 +433,15 @@ Vector& Vector::SendPartialClone(MPI::Intracomm& communicator, int id, int first
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new vector 
 
-Vector* Vector::ReceivePartialClone(MPI::Intracomm& communicator, int id)
+Vector* Vector::ReceivePartialClone(const MPI_Comm& communicator, int id)
 {
   int Type = this->VectorType;
-  if (id != communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
     {
-      communicator.Recv(&Type, 1, MPI::INT, id, 1);  
+      MPI_Status TmpMPIStatus;
+      MPI_Recv(&Type, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);  
       switch (Type & Vector::DataTypeMask)
 	{
 	case (Vector::RealDatas):
@@ -460,7 +465,7 @@ Vector* Vector::ReceivePartialClone(MPI::Intracomm& communicator, int id)
 // maximumIndices = largest index for each thread
 // id = id of the process to send the vector
 // return value = reference on the current vector
-Vector& Vector::ScatterPartialClones(MPI::Intracomm& communicator, long *minimumIndices, long *maximumIndices, int id)
+Vector& Vector::ScatterPartialClones(const MPI_Comm& communicator, long *minimumIndices, long *maximumIndices, int id)
 {
   switch (this->VectorType & Vector::DataTypeMask)
     {
@@ -483,12 +488,15 @@ Vector& Vector::ScatterPartialClones(MPI::Intracomm& communicator, long *minimum
 // communicator = reference on the communicator to use 
 // id = id of the MPI process which scatters the vector
 // return value = pointer to new vector 
-Vector* Vector::ReceiveScatteredClone(MPI::Intracomm& communicator, int id)
+Vector* Vector::ReceiveScatteredClone(const MPI_Comm& communicator, int id)
 {
   int Type = this->VectorType;
-  if (id != communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
     {
-      communicator.Recv(&Type, 1, MPI::INT, id, 1);  
+      MPI_Status TmpMPIStatus;
+      MPI_Recv(&Type, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);  
       switch (Type & Vector::DataTypeMask)
 	{
 	case (Vector::RealDatas):
@@ -511,11 +519,13 @@ Vector* Vector::ReceiveScatteredClone(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new vector 
 
-Vector* Vector::BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag)
+Vector* Vector::BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag)
 {
   int Type = this->VectorType;
-  communicator.Bcast(&Type, 1, MPI::INT, id);  
-  if (id != communicator.Get_rank())
+  MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
     {
       switch (Type & Vector::DataTypeMask)
 	{

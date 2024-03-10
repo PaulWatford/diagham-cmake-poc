@@ -905,7 +905,7 @@ ostream& Matrix::PrintNonZero (ostream& str, char** rowLabels, char** columnLabe
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& Matrix::SendMatrix(MPI::Intracomm& communicator, int id)
+Matrix& Matrix::SendMatrix(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -916,7 +916,7 @@ Matrix& Matrix::SendMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the matrix
 // return value = reference on the current matrix
 
-Matrix& Matrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
+Matrix& Matrix::BroadcastMatrix(const MPI_Comm& communicator,  int id)
 {
   return *this;
 }
@@ -928,7 +928,7 @@ Matrix& Matrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
 // firstComponent = index of the column (or row) component (useless if the method is not called by the MPI process which broadcasts the matrix)
 // nbrComponent = number of column (or row) (useless if the method is not called by the MPI process which broadcasts the matrix)
 // return value = reference on the current matrix
-Matrix& Matrix::BroadcastPartialMatrix(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent)
+Matrix& Matrix::BroadcastPartialMatrix(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent)
 {
   return *this;
 }
@@ -939,7 +939,7 @@ Matrix& Matrix::BroadcastPartialMatrix(MPI::Intracomm& communicator, int id, int
 // id = id of the source MPI process
 // return value = reference on the current matrix
 
-Matrix& Matrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
+Matrix& Matrix::ReceiveMatrix(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -950,7 +950,7 @@ Matrix& Matrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& Matrix::SumMatrix(MPI::Intracomm& communicator, int id)
+Matrix& Matrix::SumMatrix(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -961,7 +961,7 @@ Matrix& Matrix::SumMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& Matrix::ReassembleMatrix(MPI::Intracomm& communicator, int id)
+Matrix& Matrix::ReassembleMatrix(const MPI_Comm& communicator, int id)
 {
   return *this;
 }
@@ -973,12 +973,14 @@ Matrix& Matrix::ReassembleMatrix(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* Matrix::BroadcastClone(MPI::Intracomm& communicator, int id)
+Matrix* Matrix::BroadcastClone(const MPI_Comm& communicator, int id)
 {
   int Type = this->MatrixType;
-  if (id != communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
     {
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       switch (Type)
 	{
 	case (Matrix::RealElements):
@@ -1003,7 +1005,7 @@ Matrix* Matrix::BroadcastClone(MPI::Intracomm& communicator, int id)
 // nbrComponent = number of column (or row) to send
 // return value = reference on the current matrix
 
-Matrix& Matrix::SendPartialClone(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent)
+Matrix& Matrix::SendPartialClone(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent)
 {
   cout << "Matrix::SendPartialClone is not supported" << endl;
   return *this;
@@ -1016,7 +1018,7 @@ Matrix& Matrix::SendPartialClone(MPI::Intracomm& communicator, int id, int first
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* Matrix::ReceivePartialClone(MPI::Intracomm& communicator, int id)
+Matrix* Matrix::ReceivePartialClone(const MPI_Comm& communicator, int id)
 {
   cout << "Matrix::ReceivePartialClone is not supported" << endl;
   return 0;
@@ -1029,11 +1031,13 @@ Matrix* Matrix::ReceivePartialClone(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* Matrix::BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag)
+Matrix* Matrix::BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag)
 {
   int Type = this->MatrixType;
-  communicator.Bcast(&Type, 1, MPI::INT, id);  
-  if (id != communicator.Get_rank())
+  MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
     {
       switch (Type)
 	{

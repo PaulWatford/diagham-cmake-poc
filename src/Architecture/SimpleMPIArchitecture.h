@@ -632,7 +632,7 @@ inline bool SimpleMPIArchitecture::VerboseMode()
 inline Vector& SimpleMPIArchitecture::SumVector(Vector& vector)
 {
 #ifdef __MPI__
-  return vector.SumVector(MPI::COMM_WORLD, 0);
+  return vector.SumVector(MPI_COMM_WORLD, 0);
 #else
   return vector;
 #endif
@@ -646,7 +646,7 @@ inline Vector& SimpleMPIArchitecture::SumVector(Vector& vector)
 inline Matrix& SimpleMPIArchitecture::SumMatrix(Matrix& matrix)
 {
 #ifdef __MPI__
-  return matrix.SumMatrix(MPI::COMM_WORLD, 0);
+  return matrix.SumMatrix(MPI_COMM_WORLD, 0);
 #else
   return matrix;
 #endif
@@ -660,7 +660,7 @@ inline Matrix& SimpleMPIArchitecture::SumMatrix(Matrix& matrix)
 inline Vector& SimpleMPIArchitecture::ReassembleVector(Vector& vector)
 {
 #ifdef __MPI__
-  return vector.ReassembleVector(MPI::COMM_WORLD, 0);
+  return vector.ReassembleVector(MPI_COMM_WORLD, 0);
 #else
   return vector;
 #endif

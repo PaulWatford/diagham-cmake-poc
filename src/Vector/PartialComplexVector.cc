@@ -163,14 +163,19 @@ PartialComplexVector::PartialComplexVector(const PartialComplexVector& vector, b
 // id = id of the MPI process which broadcasts or sends the vector
 // broadcast = true if the vector is broadcasted
 
-PartialComplexVector::PartialComplexVector(MPI::Intracomm& communicator, int id, bool broadcast)
+PartialComplexVector::PartialComplexVector(const MPI_Comm& communicator, int id, bool broadcast)
 {
   this->VectorType = Vector::ComplexDatas | Vector::PartialData;
   int TmpArray[5];
   if (broadcast == true)
-    communicator.Bcast(TmpArray, 5, MPI::INT, id);
+    {
+      MPI_Bcast(TmpArray, 5, MPI_INT, id, communicator);
+    }
   else
-    communicator.Recv(TmpArray, 5, MPI::INT, id, 1);   
+    {
+      MPI_Status TmpMPIStatus;
+      MPI_Recv(TmpArray, 5, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+    }
   this->Dimension = TmpArray[0];
   this->VectorId = TmpArray[1];
   this->IndexShift = TmpArray[3];
@@ -187,17 +192,18 @@ PartialComplexVector::PartialComplexVector(MPI::Intracomm& communicator, int id,
 	{
 	  if (broadcast == true)
 	    {
-	      communicator.Bcast(this->Components, 2*this->Dimension, MPI::DOUBLE, id);      
+	      MPI_Bcast(this->Components, 2*this->Dimension, MPI_DOUBLE, id, communicator);      
 	    }
 	  else
 	    {
-	      communicator.Recv(this->Components, 2*this->Dimension, MPI::DOUBLE, id, 1);   
+	      MPI_Status TmpMPIStatus;
+	      MPI_Recv(this->Components, 2*this->Dimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
 	    }
 	}
       else
 	{
 	  if (TmpArray[2] == 3) // using Scatterv
-	    communicator.Scatterv(/*sendbuf*/ NULL, /* *sendcounts */NULL, /* *displs */ NULL, /*sendtype*/ 0, this->Components, 2*this->Dimension, MPI::DOUBLE, id);
+	    MPI_Scatterv(/*sendbuf*/ NULL, /* *sendcounts */NULL, /* *displs */ NULL, /*sendtype*/ 0, this->Components, 2*this->Dimension, MPI_DOUBLE, id, communicator);
 	  else
 	    {
 	      cout << "Unknown mode for creating scattered data"<<endl;
@@ -391,17 +397,18 @@ bool PartialComplexVector::ReadVector (char* fileName)
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-Vector& PartialComplexVector::SendVector(MPI::Intracomm& communicator, int id)
+Vector& PartialComplexVector::SendVector(const MPI_Comm& communicator, int id)
 {
-  communicator.Send(&this->VectorType, 1, MPI::INT, id, 1);
-  communicator.Send(&this->Dimension, 1, MPI::INT, id, 1); 
+  MPI_Send(&this->VectorType, 1, MPI_INT, id, 1, communicator);
+  MPI_Send(&this->Dimension, 1, MPI_INT, id, 1, communicator); 
   int Acknowledge = 0;
-  communicator.Recv(&Acknowledge, 1, MPI::INT, id, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&Acknowledge, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   if (Acknowledge != 0)
     return *this;
-  communicator.Send(&this->IndexShift, 1, MPI::INT, id, 1);
-  communicator.Send(&this->RealDimension, 1, MPI::INT, id, 1); 
-  communicator.Send(this->Components, 2*this->Dimension, MPI::DOUBLE, id, 1); 
+  MPI_Send(&this->IndexShift, 1, MPI_INT, id, 1, communicator);
+  MPI_Send(&this->RealDimension, 1, MPI_INT, id, 1, communicator); 
+  MPI_Send(this->Components, 2*this->Dimension, MPI_DOUBLE, id, 1, communicator); 
   return *this;
 }
 
@@ -411,43 +418,51 @@ Vector& PartialComplexVector::SendVector(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the vector
 // return value = reference on the current vector
 
-Vector& PartialComplexVector::BroadcastVector(MPI::Intracomm& communicator,  int id)
+Vector& PartialComplexVector::BroadcastVector(const MPI_Comm& communicator,  int id)
 {
   int TmpVectorType = this->VectorType;
   int TmpDimension = this->Dimension;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpVectorType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpDimension, 1, MPI::INT, id);
-  communicator.Bcast(&this->IndexShift, 1, MPI::INT, id);
-  communicator.Bcast(&this->RealDimension, 1, MPI::INT, id); 
+  MPI_Bcast(&TmpVectorType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpDimension, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&this->IndexShift, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&this->RealDimension, 1, MPI_INT, id, communicator); 
   if (this->VectorType != TmpVectorType)
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     return *this;
   if (TmpDimension != this->Dimension)
     {
       this->Resize(TmpDimension);      
     }
-  communicator.Bcast(this->Components, 2*this->Dimension, MPI::DOUBLE, id); 
+  MPI_Bcast(this->Components, 2*this->Dimension, MPI_DOUBLE, id, communicator); 
   return *this;
 }
 
@@ -459,45 +474,53 @@ Vector& PartialComplexVector::BroadcastVector(MPI::Intracomm& communicator,  int
 // nbrComponent = number of component (useless if the method is not called by the MPI process which broadcasts the vector)
 // return value = reference on the current vector
 
-Vector& PartialComplexVector::BroadcastPartialVector(MPI::Intracomm& communicator, int id, int firstComponent, int nbrComponent)
+Vector& PartialComplexVector::BroadcastPartialVector(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent)
 {
   int TmpVectorType = this->VectorType;
   int TmpDimension = this->Dimension;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpVectorType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpDimension, 1, MPI::INT, id);
-  communicator.Bcast(&firstComponent, 1, MPI::INT, id);
-  communicator.Bcast(&nbrComponent, 1, MPI::INT, id);
-  communicator.Bcast(&this->IndexShift, 1, MPI::INT, id);
-  communicator.Bcast(&this->RealDimension, 1, MPI::INT, id); 
+  MPI_Bcast(&TmpVectorType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpDimension, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&firstComponent, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&nbrComponent, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&this->IndexShift, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&this->RealDimension, 1, MPI_INT, id, communicator); 
   if (this->VectorType != TmpVectorType)
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     return *this;
   if (TmpDimension != this->Dimension)
     {
       this->Resize(TmpDimension);      
     }
-  communicator.Bcast(this->Components + firstComponent, 2*nbrComponent, MPI::DOUBLE, id);
+  MPI_Bcast(this->Components + firstComponent, 2*nbrComponent, MPI_DOUBLE, id, communicator);
   return *this;
 }
 
@@ -507,17 +530,18 @@ Vector& PartialComplexVector::BroadcastPartialVector(MPI::Intracomm& communicato
 // id = id of the source MPI process
 // return value = reference on the current vector
 
-Vector& PartialComplexVector::ReceiveVector(MPI::Intracomm& communicator, int id)
+Vector& PartialComplexVector::ReceiveVector(const MPI_Comm& communicator, int id)
 {
   int TmpVectorType = 0;
   int TmpDimension = 0;
   int TmpRealDimension = 0;
-  communicator.Recv(&TmpVectorType, 1, MPI::INT, id, 1);
-  communicator.Recv(&TmpDimension, 1, MPI::INT, id, 1); 
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&TmpVectorType, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+  MPI_Recv(&TmpDimension, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
   if (TmpVectorType != this->VectorType)
     {
       TmpDimension = 1;
-      communicator.Send(&TmpDimension, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpDimension, 1, MPI_INT, id, 1, communicator);
       return *this;
     }
   else
@@ -527,11 +551,11 @@ Vector& PartialComplexVector::ReceiveVector(MPI::Intracomm& communicator, int id
 	  this->Resize(TmpDimension);      
 	}
       TmpDimension = 0;
-      communicator.Send(&TmpDimension, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpDimension, 1, MPI_INT, id, 1, communicator);
     }
-  communicator.Recv(&this->IndexShift, 1, MPI::INT, id, 1);
-  communicator.Recv(&this->RealDimension, 1, MPI::INT, id, 1); 
-  communicator.Recv(this->Components, 2*this->Dimension, MPI::DOUBLE, id, 1); 
+  MPI_Recv(&this->IndexShift, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+  MPI_Recv(&this->RealDimension, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
+  MPI_Recv(this->Components, 2*this->Dimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus); 
   return *this;
 }
 
@@ -541,47 +565,55 @@ Vector& PartialComplexVector::ReceiveVector(MPI::Intracomm& communicator, int id
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-Vector& PartialComplexVector::SumVector(MPI::Intracomm& communicator, int id)
+Vector& PartialComplexVector::SumVector(const MPI_Comm& communicator, int id)
 {
   int TmpVectorType = this->VectorType;
   int TmpDimension = this->Dimension;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpVectorType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpDimension, 1, MPI::INT, id);
+  MPI_Bcast(&TmpVectorType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpDimension, 1, MPI_INT, id, communicator);
   if ((this->VectorType != TmpVectorType) || (this->Dimension != TmpDimension))
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id != TmpMPIRank)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     {
       return *this;
     }
   Complex* TmpComponents = 0;
-  if (id == communicator.Get_rank())
+  if (id == TmpMPIRank)
     {
       TmpComponents = new Complex [this->Dimension];
     }
-  communicator.Bcast(&this->IndexShift, 1, MPI::INT, id);
-  communicator.Bcast(&this->RealDimension, 1, MPI::INT, id); 
-  communicator.Reduce(this->Components, TmpComponents, 2*this->Dimension, MPI::DOUBLE, MPI::SUM, id); 
-  if (id == communicator.Get_rank())
+  MPI_Bcast(&this->IndexShift, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&this->RealDimension, 1, MPI_INT, id, communicator); 
+  MPI_Reduce(this->Components, TmpComponents, 2*this->Dimension, MPI_DOUBLE, MPI_SUM, id, communicator); 
+  if (id == TmpMPIRank)
     {
       for (int i = 0; i < this->Dimension; ++i)
 	this->Components[i] = TmpComponents[i];
@@ -596,29 +628,35 @@ Vector& PartialComplexVector::SumVector(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current vector
 
-Vector& PartialComplexVector::ReassembleVector(MPI::Intracomm& communicator, int id)
+Vector& PartialComplexVector::ReassembleVector(const MPI_Comm& communicator, int id)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id == TmpMPIRank)
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       int TmpArray[2];
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    TmpArray[0] = 0;
-	    TmpArray[1] = 0;
-	    communicator.Recv(TmpArray, 2, MPI::INT, i, 1); 
-	    TmpArray[0] -= this->IndexShift;
-	    communicator.Recv(this->Components + TmpArray[0], 2 * TmpArray[1], MPI::DOUBLE, id, 1);   	    
-	  }      
+	{
+	  if (id != i)
+	    {
+	      TmpArray[0] = 0;
+	      TmpArray[1] = 0;
+	      MPI_Recv(TmpArray, 2, MPI_INT, i, 1, communicator, &TmpMPIStatus); 
+	      TmpArray[0] -= this->IndexShift;
+	      MPI_Recv(this->Components + TmpArray[0], 2 * TmpArray[1], MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   	    
+	    }
+	}
     }
   else
     {
       int TmpArray[2];
       TmpArray[0] = this->IndexShift;
       TmpArray[1] = this->Dimension;
-      communicator.Send(TmpArray, 2, MPI::INT, id, 1);
-      communicator.Send(this->Components, 2 * this->Dimension, MPI::DOUBLE, id, 1);  
+      MPI_Send(TmpArray, 2, MPI_INT, id, 1, communicator);
+      MPI_Send(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator);  
     }
   return *this;
 }
@@ -630,24 +668,26 @@ Vector& PartialComplexVector::ReassembleVector(MPI::Intracomm& communicator, int
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new vector 
 
-Vector* PartialComplexVector::BroadcastClone(MPI::Intracomm& communicator, int id)
+Vector* PartialComplexVector::BroadcastClone(const MPI_Comm& communicator, int id)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id == TmpMPIRank)
     {
-      communicator.Bcast(&this->VectorType, 1, MPI::INT, id);
+      MPI_Bcast(&this->VectorType, 1, MPI_INT, id, communicator);
       int TmpArray[5];
       TmpArray[0] = this->Dimension;
       TmpArray[1] = this->VectorId;
       TmpArray[2] = 2;
       TmpArray[3] = this->IndexShift;
       TmpArray[4] = this->RealDimension;
-      communicator.Bcast(TmpArray, 5, MPI::INT, id);      
-      communicator.Bcast(this->Components, 2*this->Dimension, MPI::DOUBLE, id);      
+      MPI_Bcast(TmpArray, 5, MPI_INT, id, communicator);      
+      MPI_Bcast(this->Components, 2*this->Dimension, MPI_DOUBLE, id, communicator);      
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new PartialComplexVector(communicator, id);
     }
   return 0;
@@ -660,11 +700,13 @@ Vector* PartialComplexVector::BroadcastClone(MPI::Intracomm& communicator, int i
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new vector 
 
-Vector* PartialComplexVector::BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag)
+Vector* PartialComplexVector::BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (id == TmpMPIRank)
     {
-      communicator.Bcast(&this->VectorType, 1, MPI::INT, id);
+      MPI_Bcast(&this->VectorType, 1, MPI_INT, id, communicator);
       int TmpArray[5];
       TmpArray[0] = this->Dimension;
       TmpArray[1] = this->VectorId;
@@ -675,12 +717,12 @@ Vector* PartialComplexVector::BroadcastEmptyClone(MPI::Intracomm& communicator, 
 	{
 	  TmpArray[2] = 1;
 	}
-      communicator.Bcast(TmpArray, 5, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 5, MPI_INT, id, communicator);      
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new PartialComplexVector(communicator, id);
     }
   return 0;

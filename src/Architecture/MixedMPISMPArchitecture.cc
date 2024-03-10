@@ -67,9 +67,11 @@ MixedMPISMPArchitecture::MixedMPISMPArchitecture(char* clusterFileName, char* lo
   this->ArchitectureID = AbstractArchitecture::MixedMPISMP;
   this->AutomaticLoadBalancing = automaticLoadBalancing;
 #ifdef __MPI__
-  MPI::Init();
-  this->NbrMPINodes = MPI::COMM_WORLD.Get_size();
-  this->MPIRank = MPI::COMM_WORLD.Get_rank();
+  MPI_Init(0, 0);
+  this->NbrMPINodes = 0;
+  MPI_Comm_size(MPI_COMM_WORLD, &(this->NbrMPINodes));
+  this->MPIRank = 0;
+  MPI_Comm_rank(MPI_COMM_WORLD, &(this->MPIRank));
   this->NbrCPUPerNode = new int [this->NbrMPINodes];
   this->ClusterMemoryArray = new long [this->NbrMPINodes];
   this->ClusterPerformanceArray = new double [this->NbrMPINodes];
@@ -81,8 +83,8 @@ MixedMPISMPArchitecture::MixedMPISMPArchitecture(char* clusterFileName, char* lo
     {
       this->NodeHostnames = 0;
       int HostnameStringSize = strlen(TmpLocalHostname) + 1;
-      MPI::COMM_WORLD.Send(&HostnameStringSize, 1, MPI::INT, 0, 1);      
-      MPI::COMM_WORLD.Send(TmpLocalHostname, HostnameStringSize, MPI::CHAR, 0, 1);      
+      MPI_Send(&HostnameStringSize, 1, MPI_INT, 0, 1, MPI_COMM_WORLD);      
+      MPI_Send(TmpLocalHostname, HostnameStringSize, MPI_CHAR, 0, 1, MPI_COMM_WORLD);      
     }
   else
     {
@@ -90,11 +92,12 @@ MixedMPISMPArchitecture::MixedMPISMPArchitecture(char* clusterFileName, char* lo
       int HostnameStringSize = strlen(TmpLocalHostname) + 1;
       this->NodeHostnames[0] = new char[HostnameStringSize];
       strncpy (this->NodeHostnames[0], TmpLocalHostname, HostnameStringSize);
+      MPI_Status TmpMPIStatus;
       for (int i = 1; i < this->NbrMPINodes; ++i)
 	{
-	  MPI::COMM_WORLD.Recv(&HostnameStringSize, 1, MPI::INT, i, 1);
+	  MPI_Recv(&HostnameStringSize, 1, MPI_INT, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);
 	  this->NodeHostnames[i] = new char[HostnameStringSize];
-	  MPI::COMM_WORLD.Recv(this->NodeHostnames[i], HostnameStringSize, MPI::CHAR, i, 1);	  
+	  MPI_Recv(this->NodeHostnames[i], HostnameStringSize, MPI_CHAR, i, 1, MPI_COMM_WORLD, &TmpMPIStatus);	  
 	}
     }
   delete[] TmpLocalHostname;
@@ -269,10 +272,10 @@ MixedMPISMPArchitecture::MixedMPISMPArchitecture(char* clusterFileName, char* lo
 	this->VerboseModeFlag = false;
       this->LogFile = 0;
     }
-  MPI::COMM_WORLD.Bcast(this->NbrCPUPerNode, this->NbrMPINodes, MPI::INT, 0);
-  MPI::COMM_WORLD.Bcast(this->ClusterPerformanceArray, this->NbrMPINodes, MPI::DOUBLE, 0);
-  MPI::COMM_WORLD.Bcast(&this->TotalPerformanceIndex, 1, MPI::DOUBLE, 0);
-  MPI::COMM_WORLD.Bcast(this->ClusterMemoryArray, this->NbrMPINodes, MPI::LONG, 0);
+  MPI_Bcast(this->NbrCPUPerNode, this->NbrMPINodes, MPI_INT, 0, MPI_COMM_WORLD);
+  MPI_Bcast(this->ClusterPerformanceArray, this->NbrMPINodes, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&this->TotalPerformanceIndex, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+  MPI_Bcast(this->ClusterMemoryArray, this->NbrMPINodes, MPI_LONG, 0, MPI_COMM_WORLD);
 #else
   this->MasterNodeFlag = true;
   this->NbrMPINodes = 1;

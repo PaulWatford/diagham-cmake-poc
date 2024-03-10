@@ -60,7 +60,7 @@ DelocalizedVectorMPIArchitecture::DelocalizedVectorMPIArchitecture()
 DelocalizedVectorMPIArchitecture::~DelocalizedVectorMPIArchitecture()
 {
 #ifdef __MPI__
-  MPI::Finalize();
+  MPI_Finalize();
 #endif
   delete this->LocalArchitecture;
   if (this->ClusterPerformanceArray != 0)

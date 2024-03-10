@@ -242,13 +242,18 @@ RealSymmetricMatrix::RealSymmetricMatrix(RealMatrix& Q, AbstractArchitecture* ar
 // id = id of the MPI process which broadcasts or sends the vector
 // broadcast = true if the vector is broadcasted
 
-RealSymmetricMatrix::RealSymmetricMatrix(MPI::Intracomm& communicator, int id, bool broadcast)
+RealSymmetricMatrix::RealSymmetricMatrix(const MPI_Comm& communicator, int id, bool broadcast)
 {
   int TmpArray[4];
   if (broadcast == true)
-    communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+    {
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
+    }
   else
-    communicator.Recv(TmpArray, 3, MPI::INT, id, 1);   
+    {
+      MPI_Status TmpMPIStatus;
+      MPI_Recv(TmpArray, 3, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+    }
   this->NbrRow = TmpArray[0];
   this->NbrColumn = TmpArray[1];
   this->TrueNbrRow = this->NbrRow;
@@ -281,13 +286,14 @@ RealSymmetricMatrix::RealSymmetricMatrix(MPI::Intracomm& communicator, int id, b
 	  long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1)) / 2l;
 	  if (broadcast == true)
 	    {
-	      communicator.Bcast(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id);    
-	      communicator.Bcast(this->OffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);      
+	      MPI_Bcast(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, communicator);    
+	      MPI_Bcast(this->OffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);      
 	    }
 	  else
 	    {
-	      communicator.Recv(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id, 1);   
-	      communicator.Recv(this->OffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);   
+	      MPI_Status TmpMPIStatus;
+	      MPI_Recv(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
+	      MPI_Recv(this->OffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
 	    }
 	}
     }
@@ -2294,18 +2300,19 @@ RealSymmetricMatrix& RealSymmetricMatrix::AddAAAtAt(RealMatrix& m1, RealMatrix& 
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& RealSymmetricMatrix::SendMatrix(MPI::Intracomm& communicator, int id)
+Matrix& RealSymmetricMatrix::SendMatrix(const MPI_Comm& communicator, int id)
 {
-  communicator.Send(&this->MatrixType, 1, MPI::INT, id, 1);
-  communicator.Send(&this->NbrRow, 1, MPI::INT, id, 1); 
-  communicator.Send(&this->NbrColumn, 1, MPI::INT, id, 1); 
+  MPI_Send(&this->MatrixType, 1, MPI_INT, id, 1, communicator);
+  MPI_Send(&this->NbrRow, 1, MPI_INT, id, 1, communicator); 
+  MPI_Send(&this->NbrColumn, 1, MPI_INT, id, 1, communicator); 
   int Acknowledge = 0;
-  communicator.Recv(&Acknowledge, 1, MPI::INT, id, 1);
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&Acknowledge, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   if (Acknowledge != 0)
     return *this;
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1)) / 2l;
-  communicator.Send(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id, 1);    
-  communicator.Send(this->OffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);    
+  MPI_Send(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, 1, communicator);    
+  MPI_Send(this->OffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator);    
   return *this;
 }
 
@@ -2315,36 +2322,44 @@ Matrix& RealSymmetricMatrix::SendMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the MPI process which broadcasts the matrix
 // return value = reference on the current matrix
 
-Matrix& RealSymmetricMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int id)
+Matrix& RealSymmetricMatrix::BroadcastMatrix(const MPI_Comm& communicator,  int id)
 {
   int TmpMatrixType = this->MatrixType;
   int TmpNbrRow = this->NbrRow;
   int TmpNbrColumn = this->NbrColumn;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpMatrixType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrRow, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrColumn, 1, MPI::INT, id);
+  MPI_Bcast(&TmpMatrixType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrRow, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrColumn, 1, MPI_INT, id, communicator);
   if (this->MatrixType != TmpMatrixType)
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     return *this;
   if ((TmpNbrRow != this->NbrRow) || (TmpNbrColumn != this->NbrColumn))
@@ -2352,8 +2367,8 @@ Matrix& RealSymmetricMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int 
       this->Resize(TmpNbrRow, TmpNbrColumn);      
     }
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1)) / 2l;
-  communicator.Bcast(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id);    
-  communicator.Bcast(this->OffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);    
+  MPI_Bcast(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, communicator);    
+  MPI_Bcast(this->OffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);    
   return *this;
 }
 
@@ -2363,18 +2378,19 @@ Matrix& RealSymmetricMatrix::BroadcastMatrix(MPI::Intracomm& communicator,  int 
 // id = id of the source MPI process
 // return value = reference on the current matrix
 
-Matrix& RealSymmetricMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
+Matrix& RealSymmetricMatrix::ReceiveMatrix(const MPI_Comm& communicator, int id)
 {
   int TmpMatrixType = 0;
   int TmpNbrRow = 0;
   int TmpNbrColumn = 0;
-  communicator.Recv(&TmpMatrixType, 1, MPI::INT, id, 1);
-  communicator.Recv(&TmpNbrRow, 1, MPI::INT, id, 1); 
-  communicator.Recv(&TmpNbrColumn, 1, MPI::INT, id, 1); 
+  MPI_Status TmpMPIStatus;
+  MPI_Recv(&TmpMatrixType, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
+  MPI_Recv(&TmpNbrRow, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
+  MPI_Recv(&TmpNbrColumn, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus); 
   if (TmpMatrixType != this->MatrixType)
     {
       TmpNbrRow = 1;
-      communicator.Send(&TmpNbrRow, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpNbrRow, 1, MPI_INT, id, 1, communicator);
       return *this;
     }
   else
@@ -2384,11 +2400,11 @@ Matrix& RealSymmetricMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 	  this->Resize(TmpNbrRow, TmpNbrColumn);      
 	}
       TmpNbrRow = 0;
-      communicator.Send(&TmpNbrRow, 1, MPI::INT, id, 1);
+      MPI_Send(&TmpNbrRow, 1, MPI_INT, id, 1, communicator);
     }
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1)) / 2l;
-  communicator.Recv(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id, 1);    
-  communicator.Recv(this->OffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id, 1);    
+  MPI_Recv(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
+  MPI_Recv(this->OffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);    
   return *this;
 }
 
@@ -2398,71 +2414,79 @@ Matrix& RealSymmetricMatrix::ReceiveMatrix(MPI::Intracomm& communicator, int id)
 // id = id of the destination MPI process
 // return value = reference on the current matrix
 
-Matrix& RealSymmetricMatrix::SumMatrix(MPI::Intracomm& communicator, int id)
+Matrix& RealSymmetricMatrix::SumMatrix(const MPI_Comm& communicator, int id)
 {
   int TmpMatrixType = this->MatrixType;
   int TmpNbrRow = this->NbrRow;
   int TmpNbrColumn = this->NbrColumn;
   int Acknowledge = 0;
-  communicator.Bcast(&TmpMatrixType, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrRow, 1, MPI::INT, id);
-  communicator.Bcast(&TmpNbrColumn, 1, MPI::INT, id);
+  MPI_Bcast(&TmpMatrixType, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrRow, 1, MPI_INT, id, communicator);
+  MPI_Bcast(&TmpNbrColumn, 1, MPI_INT, id, communicator);
   if ((this->MatrixType != TmpMatrixType) || (TmpNbrRow != this->NbrRow) || (TmpNbrColumn != this->NbrColumn))
     {
       Acknowledge = 1;
     }
-  if (id != communicator.Get_rank())
-    communicator.Send(&Acknowledge, 1, MPI::INT, id, 1);      
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank != id)
+    {
+      MPI_Send(&Acknowledge, 1, MPI_INT, id, 1, communicator);
+    }
   else
     {
-      int NbrMPINodes = communicator.Get_size();
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
       bool Flag = false;
+      MPI_Status TmpMPIStatus;
       for (int i = 0; i < NbrMPINodes; ++i)
-	if (id != i)
-	  {
-	    communicator.Recv(&Acknowledge, 1, MPI::INT, i, 1);      
-	    if (Acknowledge == 1)
-	      Flag = true;
-	  }
+	{
+	  if (id != i)
+	    {
+	      MPI_Recv(&Acknowledge, 1, MPI_INT, i, 1, communicator, &TmpMPIStatus);      
+	      if (Acknowledge == 1)
+		Flag = true;
+	    }
+	}
       if (Flag == true)
 	Acknowledge = 1;
     }
-  communicator.Bcast(&Acknowledge, 1, MPI::INT, id);
+  MPI_Bcast(&Acknowledge, 1, MPI_INT, id, communicator);
   if (Acknowledge != 0)
     {
       return *this;
     }
   long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1)) / 2l;
   double* TmpComponents = 0;
-  if (id == communicator.Get_rank())
+  if (TmpMPIRank == id)
     {
       if (NbrOffDiagonalElements > 1l)
 	TmpComponents = new double [NbrOffDiagonalElements];
       else
 	TmpComponents = new double [1l];
     }
-  try
-    {
-      communicator.Reduce(this->DiagonalElements, TmpComponents, this->NbrRow, MPI::DOUBLE, MPI::SUM, id);
-    } 
-  catch ( MPI::Exception e)
-    {
-      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
-    }  
-  if (id == communicator.Get_rank())
+  // try
+  //   {
+      MPI_Reduce(this->DiagonalElements, TmpComponents, this->NbrRow, MPI_DOUBLE, MPI_SUM, id, communicator);
+  //   } 
+  // catch ( MPI_Exception e)
+  //   {
+  //     cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
+  //   }  
+  if (TmpMPIRank == id)
     {
       for (int i = 0; i < this->NbrRow; ++i)
 	this->DiagonalElements[i] = TmpComponents[i];
     }
-  try
-    {
-      communicator.Reduce(this->OffDiagonalElements, TmpComponents, NbrOffDiagonalElements, MPI::DOUBLE, MPI::SUM, id);
-    } 
-  catch ( MPI::Exception e)
-    {
-      cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
-    }  
-  if (id == communicator.Get_rank())
+  // try
+  //   {
+      MPI_Reduce(this->OffDiagonalElements, TmpComponents, NbrOffDiagonalElements, MPI_DOUBLE, MPI_SUM, id, communicator);
+  //   } 
+  // catch ( MPI_Exception e)
+  //   {
+  //     cout << "MPI ERROR: " << e.Get_error_code() << " -" << e.Get_error_string()  << endl;
+  //   }  
+  if (TmpMPIRank == id)
     {
       for (long i = 0l; i < NbrOffDiagonalElements; ++i)
 	this->OffDiagonalElements[i] = TmpComponents[i];
@@ -2478,24 +2502,26 @@ Matrix& RealSymmetricMatrix::SumMatrix(MPI::Intracomm& communicator, int id)
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* RealSymmetricMatrix::BroadcastClone(MPI::Intracomm& communicator, int id)
+Matrix* RealSymmetricMatrix::BroadcastClone(const MPI_Comm& communicator, int id)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank == id)
     {
-      communicator.Bcast(&this->MatrixType, 1, MPI::INT, id);
+      MPI_Bcast(&this->MatrixType, 1, MPI_INT, id, communicator);
       int TmpArray[3];
       TmpArray[0] = this->NbrRow;
       TmpArray[1] = this->NbrColumn;
       TmpArray[2] = 2;
-      communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
       long NbrOffDiagonalElements = (((long) this->NbrRow) * (((long) this->NbrRow) - 1)) / 2l;
-      communicator.Bcast(this->DiagonalElements, this->NbrRow, MPI::DOUBLE, id);    
-      communicator.Bcast(this->OffDiagonalElements, NbrOffDiagonalElements, MPI::DOUBLE, id);    
+      MPI_Bcast(this->DiagonalElements, this->NbrRow, MPI_DOUBLE, id, communicator);    
+      MPI_Bcast(this->OffDiagonalElements, NbrOffDiagonalElements, MPI_DOUBLE, id, communicator);    
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new RealSymmetricMatrix(communicator, id);
     }
   return 0;
@@ -2508,11 +2534,13 @@ Matrix* RealSymmetricMatrix::BroadcastClone(MPI::Intracomm& communicator, int id
 // zeroFlag = true if all coordinates have to be set to zero
 // return value = pointer to new matrix 
 
-Matrix* RealSymmetricMatrix::BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag)
+Matrix* RealSymmetricMatrix::BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag)
 {
-  if (id == communicator.Get_rank())
+  int TmpMPIRank = 0;
+  MPI_Comm_rank(communicator, &TmpMPIRank);
+  if (TmpMPIRank == id)
     {
-      communicator.Bcast(&this->MatrixType, 1, MPI::INT, id);
+      MPI_Bcast(&this->MatrixType, 1, MPI_INT, id, communicator);
       int TmpArray[3];
       TmpArray[0] = this->NbrRow;
       TmpArray[1] = this->NbrColumn;
@@ -2521,12 +2549,12 @@ Matrix* RealSymmetricMatrix::BroadcastEmptyClone(MPI::Intracomm& communicator, i
 	{
 	  TmpArray[2] = 1;
 	}
-      communicator.Bcast(TmpArray, 3, MPI::INT, id);      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
     }
   else
     {
       int Type = 0;
-      communicator.Bcast(&Type, 1, MPI::INT, id);  
+      MPI_Bcast(&Type, 1, MPI_INT, id, communicator);  
       return new RealSymmetricMatrix(communicator, id);
     }
   return 0;

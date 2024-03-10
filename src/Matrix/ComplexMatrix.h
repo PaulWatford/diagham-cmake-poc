@@ -105,7 +105,7 @@ class ComplexMatrix : public Matrix
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which broadcasts or sends the vector
   // broadcast = true if the vector is broadcasted
-  ComplexMatrix(MPI::Intracomm& communicator, int id, bool broadcast = true);
+  ComplexMatrix(const MPI_Comm& communicator, int id, bool broadcast = true);
 #endif
 
   // copy constructor (without duplicating datas)
@@ -640,35 +640,35 @@ class ComplexMatrix : public Matrix
   // communicator = reference on the communicator to use
   // id = id of the destination MPI process
   // return value = reference on the current matrix
-  virtual Matrix& SendMatrix(MPI::Intracomm& communicator, int id);
+  virtual Matrix& SendMatrix(const MPI_Comm& communicator, int id);
 
   // broadcast a matrix to all MPI processes associated to the same communicator
   // 
   // communicator = reference on the communicator to use 
   // id = id of the MPI process which broadcasts the matrix
   // return value = reference on the current matrix
-  virtual Matrix& BroadcastMatrix(MPI::Intracomm& communicator,  int id);
+  virtual Matrix& BroadcastMatrix(const MPI_Comm& communicator,  int id);
 
   // receive a matrix from a MPI process
   // 
   // communicator = reference on the communicator to use 
   // id = id of the source MPI process
   // return value = reference on the current matrix
-  virtual Matrix& ReceiveMatrix(MPI::Intracomm& communicator, int id);
+  virtual Matrix& ReceiveMatrix(const MPI_Comm& communicator, int id);
 
   // add current matrix to the current matrix of a given MPI process
   // 
   // communicator = reference on the communicator to use 
   // id = id of the destination MPI process
   // return value = reference on the current matrix
-  virtual Matrix& SumMatrix(MPI::Intracomm& communicator, int id);
+  virtual Matrix& SumMatrix(const MPI_Comm& communicator, int id);
 
   // reassemble matrix from a scattered one
   // 
   // communicator = reference on the communicator to use 
   // id = id of the destination MPI process
   // return value = reference on the current matrix
-  virtual Matrix& ReassembleMatrix(MPI::Intracomm& communicator, int id);
+  virtual Matrix& ReassembleMatrix(const MPI_Comm& communicator, int id);
 
   // create a new matrix on each MPI node which is an exact clone of the broadcasted one
   //
@@ -676,7 +676,7 @@ class ComplexMatrix : public Matrix
   // id = id of the MPI process which broadcasts the matrix
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new matrix 
-  virtual Matrix* BroadcastClone(MPI::Intracomm& communicator, int id);
+  virtual Matrix* BroadcastClone(const MPI_Comm& communicator, int id);
 
   // create a new matrix on each MPI node with same size and same type but non-initialized components
   //
@@ -684,7 +684,7 @@ class ComplexMatrix : public Matrix
   // id = id of the MPI process which broadcasts the matrix
   // zeroFlag = true if all coordinates have to be set to zero
   // return value = pointer to new matrix 
-  virtual Matrix* BroadcastEmptyClone(MPI::Intracomm& communicator, int id, bool zeroFlag = false);
+  virtual Matrix* BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag = false);
 
 #endif
 

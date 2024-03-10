@@ -162,6 +162,10 @@ void SMPArchitecture::SendJobs (int nbrJobs)
 #endif
 
 #ifdef __SMP__
+  char* TmpString = new char[256];
+  sprintf (TmpString, "starting %d threads", nbrJobs);
+  this->AddToLog(TmpString);
+  delete[] TmpString;
   pthread_t* Threads2 = new pthread_t [nbrJobs];
   for (int i = 0; i < nbrJobs; ++i)
     {

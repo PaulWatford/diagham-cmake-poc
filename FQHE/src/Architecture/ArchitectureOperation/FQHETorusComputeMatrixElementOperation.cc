@@ -448,7 +448,7 @@ bool FQHETorusComputeMatrixElementOperation::ArchitectureDependentApplyOperation
 //       this->RawApplyOperation();
 //       break;
 //     }		
-//   MPI::COMM_WORLD.Barrier();
+//   MPI_Barrier(MPI_COMM_WORLD);
 //   if (this->OutputState != 0)
 //     architecture->SumVector(*(this->OutputState));	
 //   else

@@ -473,7 +473,7 @@ bool FQHESphereBosonicStateTimesPolarizedSlaterProjectionOperation::Architecture
 	    sprintf (TmpString, "FQHESphereBosonicStateTimesPolarizedSlaterProjectionOperation process operation stage %d on MPI id %d done in %.3f seconds", Stage, this->MPINodeNbr, this->ExecutionTime);
 	    architecture->AddToLog(TmpString);
 	  }
-	MPI::COMM_WORLD.Barrier();
+	MPI_Barrier(MPI_COMM_WORLD);
 	architecture->SumVector(*(this->OutputVector));	
 	char SaveFileName[200];	
 	sprintf(SaveFileName, "fermions_su2_slater_sym_tmp_stage_%d_element_%d.vec", Stage, StageStart + StageDimension);  

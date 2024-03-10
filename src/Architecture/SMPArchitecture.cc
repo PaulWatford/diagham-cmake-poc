@@ -84,6 +84,10 @@ SMPArchitecture::SMPArchitecture(int nbrThreads, char* logFile)
 	  cout << "ERROR : cannot write log file " << this->LogFile << endl;
 	  this->VerboseModeFlag = false;
 	}
+      else
+	{
+	  File << "nbr of threads = " << this->NbrThreads << endl;
+	}
       File.close();
     }
   else

@@ -273,7 +273,15 @@ bool BasicLanczosAlgorithmWithDiskStorage::TestConvergence ()
 
 bool BasicLanczosAlgorithmWithDiskStorage::WriteState()
 {
+  if (this->Index > 1)
+    {
+      char* TmpCommand = new char[256 + 2 * strlen(this->LanczosFileName)];
+      sprintf (TmpCommand, "mv %s %s_%d", this->LanczosFileName, this->LanczosFileName, this->Index);
+      system(TmpCommand);
+      delete[] TmpCommand;
+    }
   ofstream File;
+  
   File.open(this->LanczosFileName, ios::binary | ios::out);
   WriteLittleEndian(File, this->Index);
   WriteLittleEndian(File, this->PreviousLastWantedEigenvalue);

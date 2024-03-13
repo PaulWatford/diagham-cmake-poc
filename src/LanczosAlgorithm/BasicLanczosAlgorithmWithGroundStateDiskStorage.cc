@@ -398,6 +398,13 @@ bool BasicLanczosAlgorithmWithGroundStateDiskStorage::TestConvergence ()
 
 bool BasicLanczosAlgorithmWithGroundStateDiskStorage::WriteState()
 {
+  if (this->Index > 1)
+    {
+      char* TmpCommand = new char[256];
+      sprintf (TmpCommand, "mv lanczos.dat lanczos_%d.dat", this->Index);
+      system(TmpCommand);
+      delete[] TmpCommand;
+    }
   ofstream File;
   File.open("lanczos.dat", ios::binary | ios::out);
   WriteLittleEndian(File, this->Index);

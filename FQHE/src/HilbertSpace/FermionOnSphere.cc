@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "HilbertSpace/FermionOnSphere.h"
+#include "HilbertSpace/FermionOnSphereFull.h"
 #include "HilbertSpace/BosonOnSphereShort.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "QuantumNumber/SzQuantumNumber.h"
@@ -6058,6 +6059,7 @@ ComplexMatrix& FermionOnSphere::EvaluateEntanglementMatrixRealSpacePartitionFrom
 // xcut = x-coordinate of the cut 
 // entanglementMatrix = reference on the entanglement matrix (will be overwritten)
 // return value = reference on the entanglement matrix
+
 RealMatrix& FermionOnSphere::EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder (int nbrFermionSector, int lzSector, double perimeter, double height, double xcut, RealMatrix& entanglementMatrix)
 {
   if ((xcut < -0.5 * height) || (xcut > 0.5 * height))
@@ -6404,6 +6406,107 @@ ComplexMatrix* FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartit
   return entanglementMatrix;
 }
 
+
+// evaluate a entanglement matrix of a subsystem of the whole system described by a given ground state, using a generic real space partition breaking the momentum conservation. 
+// The entanglement matrix is computed from precalculated particle entanglement matrices in each momentum sector
+// 
+// nbrParticleSector = number of particles that belong to the subsytem 
+// nbrOrbitalA = number of orbitals that have to be kept for the A part
+// nbrConnectedOrbitalA = number of orbitals connected to a given one by the A part real space cut 
+// connectedOrbital = orbitals taht connected to a given one by the A part real space cut
+// weightOrbitalA = weight of each orbital in the A part (starting from the leftmost orbital)
+// nbrOrbitalB = number of orbitals that have to be kept for the B part
+// nbrConnectedOrbitalB = number of orbitals connected to a given one by the B part real space cut
+// connectedOrbitalB = orbitals taht connected to a given one by the B part real space cut
+// weightOrbitalB = weight of each orbital in the B part (starting from the leftmost orbital)
+// nbrEntanglementMatrices = number of available entanglement matrices with a fixed momentum
+// entanglementMatrixLzSectors = momentum sector of each entanglement matrix
+// entanglementMatrices = array containing the entanglement matrices with a fixed momentum
+// return value = real space entanglement matrix
+
+RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix (int nbrParticleSector, 
+														int nbrOrbitalA, int* nbrConnectedOrbitalA,
+														int** connectedOrbitalA, double** weightOrbitalA, 
+														int nbrOrbitalB, int* nbrConnectedOrbitalB,
+														int** connectedOrbitalB, double** weightOrbitalB,
+														int nbrEntanglementMatrices, int* entanglementMatrixLzSectors,
+														RealMatrix* entanglementMatrices)
+{
+  int TotalNbrRow = 0;
+  int TotalNbrColumn = 0;
+
+  int ComplementaryNbrParticles = this->NbrFermions - nbrParticleSector;
+  FermionOnSphereFull* TotalSubsystemSpace = new FermionOnSphereFull(nbrParticleSector, nbrOrbitalA - 1);
+  FermionOnSphereFull* TotalComplementarySubsystemSpace = new FermionOnSphereFull(ComplementaryNbrParticles, nbrOrbitalB - 1);
+
+  cout << "size of the full entanglement matrix " << TotalSubsystemSpace->GetHilbertSpaceDimension() << " x " << TotalComplementarySubsystemSpace->GetHilbertSpaceDimension()
+       << " (requiring  " << (((double) TotalSubsystemSpace->GetHilbertSpaceDimension()) * ((double) TotalComplementarySubsystemSpace->GetHilbertSpaceDimension())/ 131072.0) << " Mb )" << endl;
+
+  FermionOnSphere** SubsystemSpaces = new FermionOnSphere* [nbrEntanglementMatrices];
+  FermionOnSphere** ComplementarySubsystemSpaces = new FermionOnSphere* [nbrEntanglementMatrices];
+  int TotalLzDisk = ConvertLzFromSphereToDisk(this->TotalLz, this->NbrFermions, this->LzMax);  
+
+  for (int i = 0; i < nbrEntanglementMatrices; ++i)
+    {
+      int LzADisk = ConvertLzFromSphereToDisk(entanglementMatrixLzSectors[i], nbrParticleSector, nbrOrbitalA - 1);
+      int LzBDisk = (TotalLzDisk - LzADisk) - ComplementaryNbrParticles * (this->LzMax + 1 - nbrOrbitalB);
+      int ComplementaryLzSector = ConvertLzFromDiskToSphere(LzBDisk, ComplementaryNbrParticles, nbrOrbitalB - 1);
+      SubsystemSpaces[i] = new FermionOnSphere(nbrParticleSector, entanglementMatrixLzSectors[i], nbrOrbitalA - 1);
+      ComplementarySubsystemSpaces[i] = new FermionOnSphere(ComplementaryNbrParticles, ComplementaryLzSector, nbrOrbitalB - 1);
+    }
+
+  RealMatrix TmpEntanglementMatrix (TotalSubsystemSpace->GetHilbertSpaceDimension(), TotalComplementarySubsystemSpace->GetHilbertSpaceDimension(), true);
+  RealMatrix TmpSubsystemDeterminantMatrix (nbrParticleSector, nbrParticleSector);
+  RealMatrix TmpComplementarySubsystemDeterminantMatrix (ComplementaryNbrParticles, ComplementaryNbrParticles);
+
+  for (int i = 0; i < nbrEntanglementMatrices; ++i)
+    {
+
+      // transformation matrix for the region B
+      cout << "size of the B tranformation matrix " << ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension() << " x " << TotalComplementarySubsystemSpace->GetHilbertSpaceDimension()
+	   << " (requiring  " << (((double) ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension()) * ((double) TotalComplementarySubsystemSpace->GetHilbertSpaceDimension())/ 131072.0) << " Mb )" << endl;
+      RealMatrix TmpComplementaryTransformationMatrix (ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension(), TotalComplementarySubsystemSpace->GetHilbertSpaceDimension(), true);
+      for (int TmpComplementarySubsystemIndex = 0; TmpComplementarySubsystemIndex <  ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension(); ++TmpComplementarySubsystemIndex)
+	{
+	  for (int TmpTotalComplementarySubsystemIndex = 0; TmpTotalComplementarySubsystemIndex <  TotalComplementarySubsystemSpace->GetHilbertSpaceDimension(); ++TmpTotalComplementarySubsystemIndex)
+	    {
+	      TmpComplementarySubsystemDeterminantMatrix.ClearMatrix();
+	      double Tmp = TmpComplementarySubsystemDeterminantMatrix.Determinant();
+	      TmpComplementaryTransformationMatrix.SetMatrixElement(TmpComplementarySubsystemIndex, TmpTotalComplementarySubsystemIndex, Tmp);
+	    }
+	}
+      
+      // transformation matrix for the region A
+      cout << "size of the A tranformation matrix " << SubsystemSpaces[i]->GetHilbertSpaceDimension() << " x " << TotalSubsystemSpace->GetHilbertSpaceDimension()
+	   << " (requiring  " << (((double) SubsystemSpaces[i]->GetHilbertSpaceDimension()) * ((double) TotalSubsystemSpace->GetHilbertSpaceDimension())/ 131072.0) << " Mb )" << endl;
+      RealMatrix TmpTransformationMatrix (TotalSubsystemSpace->GetHilbertSpaceDimension(), SubsystemSpaces[i]->GetHilbertSpaceDimension(), true);
+      for (int TmpSubsystemIndex = 0; TmpSubsystemIndex <  SubsystemSpaces[i]->GetHilbertSpaceDimension(); ++TmpSubsystemIndex)
+	{
+	  for (int TmpTotalSubsystemIndex = 0; TmpTotalSubsystemIndex <  TotalSubsystemSpace->GetHilbertSpaceDimension(); ++TmpTotalSubsystemIndex)
+	    {
+	      TmpSubsystemDeterminantMatrix.ClearMatrix();
+	      double Tmp = TmpSubsystemDeterminantMatrix.Determinant();
+	      TmpTransformationMatrix.SetMatrixElement(TmpTotalSubsystemIndex, TmpSubsystemIndex, Tmp);
+	    }
+	}
+      
+      // RSES entanglement matrix
+      RealMatrix TmpMatrix = entanglementMatrices[i] * TmpComplementaryTransformationMatrix;
+      TmpEntanglementMatrix.AddMultiply (TmpTransformationMatrix, TmpMatrix);
+    }
+
+for (int i = 0; i < nbrEntanglementMatrices; ++i)
+    {
+      delete SubsystemSpaces[i];
+      delete ComplementarySubsystemSpaces[i];
+      // delete[] TotalAllSubsystemOccupationFactors[i];
+      // delete[] TotalAllComplementarySubsystemOccupationFactors[i];
+    }
+  delete[] SubsystemSpaces;
+  delete[] ComplementarySubsystemSpaces;
+
+  return TmpEntanglementMatrix;
+}
 
 // compute particule-hole symmetric state from a given state
 //

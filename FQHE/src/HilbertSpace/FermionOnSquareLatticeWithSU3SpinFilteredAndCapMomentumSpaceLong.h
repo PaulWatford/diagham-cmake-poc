@@ -48,6 +48,14 @@ class FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong : public 
 
   // orbital filering mask (i.e. state should be 0 once the mask is applied)
   ULONGLONG OrbitalFilteringMask;
+
+  // total number of allowed orbitals
+  int TotalNbrOrbitals;
+
+  // maximum total momentum along x that can be reached using the allowed orbitals
+  int MaxTotalMomentumX;
+  // maximum total momentum along y that can be reached using the allowed orbitals
+  int MaxTotalMomentumY;
   
  public:
 

@@ -70,6 +70,7 @@ int main(int argc, char** argv)
   Manager += OutputGroup;
   Manager += MiscGroup;
   (*SystemGroup) += new SingleIntegerOption  ('p', "nbr-particles", "number of particles", 4);
+  (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics");
   (*SystemGroup) += new SingleIntegerOption  ('x', "nbr-sitex", "number of sites along the x direction", 3);
   (*SystemGroup) += new SingleIntegerOption  ('y', "nbr-sitey", "number of sites along the y direction", 3);
   (*SystemGroup) += new SingleIntegerOption  ('z', "nbr-sitez", "number of sites along the z direction", 3);
@@ -91,7 +92,10 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "min-kz", "minimal z momentum allowed for a single particle", 4);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "min-kt", "minimal t momentum allowed for a single particle", 4);
   (*SystemGroup) += new SingleStringOption ('\n', "allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed");
-  (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics");
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band0", "maximum number of particles in band 0 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band1", "maximum number of particles in band 1 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band2", "maximum number of particles in band 2 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band3", "maximum number of particles in band 3 (negative if this number should be equal to the number of orbitals)", -1);
   (*SystemGroup) += new BooleanOption  ('\n', "wannier", "use wannier wavefunction basis");
   (*SystemGroup) += new SingleStringOption ('\n', "state", "name of an optional vector state whose component values can be displayed behind each corresponding n-body state");
   (*SystemGroup) += new SingleDoubleOption  ('\n', "hide-component", "hide state components (and thus the corresponding n-body state) whose absolute value is lower than a given error (0 if all components have to be shown", 0.0);
@@ -129,10 +133,10 @@ int main(int argc, char** argv)
   int TotalKt = Manager.GetInteger("kt");
   int TotalSz = Manager.GetInteger("sz");
 
-  int MaxBand0 = -1;
-  int MaxBand1 = -1;
-  int MaxBand2 = -1;
-  int MaxBand3 = -1;
+  int MaxBand0 = Manager.GetInteger("max-band0");
+  int MaxBand1 = Manager.GetInteger("max-band1");
+  int MaxBand2 = Manager.GetInteger("max-band2");
+  int MaxBand3 = Manager.GetInteger("max-band3");
 
   if ((Manager.GetString("state") != 0) && (Manager.GetBoolean("no-autodetect") == false))
     {

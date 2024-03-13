@@ -93,6 +93,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption ('\n', "realspace-cylindercut", "x coordinate of the cut on the cylinder", 0);
   (*SystemGroup) += new SingleDoubleOption  ('r', "ratio", "aspect ratio of the cylinder", 1.0);
   (*SystemGroup) += new SingleStringOption  ('\n', "realspace-generic", "use a generic real space partition instead of particle partition (geometrical weight has to be provided through this external file)");
+  (*SystemGroup) += new BooleanOption  ('\n', "symbreak-patch", "when using real space partition, assume a patch that breaks all spatial symmetries");
   (*SystemGroup) += new BooleanOption  ('\n', "show-time", "show time required for each operation");
 
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name instead of the one that can be deduced from the input file name (replacing the vec extension with partent extension)");
@@ -159,6 +160,23 @@ int main(int argc, char** argv)
   bool LargestLSector = Manager.GetBoolean("largest-lz");
   bool PositiveLzSectors = Manager.GetBoolean("positive-lz");
   bool RealSpaceCut = Manager.GetBoolean("realspace-cut");
+  bool SymmetryBreakingPatch = false;
+  if (Manager.GetString("realspace-generic") != 0)
+    {
+      RealSpaceCut = true;
+      if (Manager.GetBoolean("symbreak-patch"))
+	{
+	  SymmetryBreakingPatch = true;
+	}
+    }
+  else
+    {
+      if (Manager.GetBoolean("symbreak-patch"))
+	{
+	  cout << "error, --symbreak-patch should be used with --realspace-generic" << endl;
+	  return -1;
+	}
+    }
   bool RealSpaceCutCylinder = Manager.GetBoolean("realspace-cylinder");
   int FilterLza = Manager.GetInteger("lza-eigenstate");
   int NbrEigenstates = Manager.GetInteger("nbr-eigenstates");
@@ -427,7 +445,7 @@ int main(int argc, char** argv)
   int NbrAOrbitals = LzMax + 1;
   int NbrBOrbitals = LzMax + 1;
   char* CutName = 0;
-  if (Manager.GetString("realspace-generic") != 0)
+  if ((Manager.GetString("realspace-generic") != 0) && (SymmetryBreakingPatch == false))
     {
       ConfigurationParser RealSpaceWeights;
       if (RealSpaceWeights.Parse(Manager.GetString("realspace-generic")) == false)
@@ -603,11 +621,12 @@ int main(int argc, char** argv)
       if (RealSpaceCut == true)
 	MaxSubsystemNbrParticles = NbrParticles;
     }
-  int SubsystemNbrParticles = Manager.GetInteger("min-na");
-  if ((RealSpaceCut == true) && (SubsystemNbrParticles == 1))
+  int MinSubsystemNbrParticles = Manager.GetInteger("min-na");
+  if ((RealSpaceCut == true) && (MinSubsystemNbrParticles == 1))
     {
-      SubsystemNbrParticles = 0;
+      MinSubsystemNbrParticles = 0;
     }
+  int SubsystemNbrParticles = MinSubsystemNbrParticles;
 
   double Ratio, Perimeter, Height;
   if (RealSpaceCutCylinder)
@@ -629,6 +648,218 @@ int main(int argc, char** argv)
     TotalEntanglementEntropy[i] = 0.0;
   }
   
+  if (SymmetryBreakingPatch == true)
+    {
+      int* NbrConnectedOrbitalA = new int[NbrAOrbitals];
+      int** ConnectedOrbitalA = new int*[NbrAOrbitals];
+      double** FullWeightAOrbitals = new double*[NbrAOrbitals]; 
+      int* NbrConnectedOrbitalB = new int[NbrBOrbitals];
+      int** ConnectedOrbitalB = new int*[NbrBOrbitals];
+      double** FullWeightBOrbitals = new double*[NbrBOrbitals]; 
+
+      MultiColumnASCIIFile RealSpaceWeightFile;
+      if (RealSpaceWeightFile.Parse(Manager.GetString("realspace-cut")) == false)
+        {
+          RealSpaceWeightFile.DumpErrors(cout);
+          return -1;
+        }
+      if (RealSpaceWeightFile.GetNbrColumns() != 4)
+        {
+          cout << "error, wrong number of columns in " << Manager.GetString("realspace-cut") << endl;
+          return -1;
+        }
+      int TmpNbrWeigths = RealSpaceWeightFile.GetNbrLines();
+      int* TmpIndices1 = RealSpaceWeightFile.GetAsIntegerArray(0);
+      if (TmpIndices1 == 0)
+        {
+          RealSpaceWeightFile.DumpErrors(cout);
+          return -1;      
+        }
+      int* TmpIndices2 = RealSpaceWeightFile.GetAsIntegerArray(1);
+      if (TmpIndices1 == 0)
+        {
+          RealSpaceWeightFile.DumpErrors(cout);
+          return -1;      
+        }
+      double* TmpAWeights = RealSpaceWeightFile.GetAsDoubleArray(2);
+      if (TmpAWeights == 0)
+        {
+          RealSpaceWeightFile.DumpErrors(cout);
+          return -1;      
+        }
+      double* TmpBWeights = RealSpaceWeightFile.GetAsDoubleArray(3);
+      if (TmpBWeights == 0)
+        {
+          RealSpaceWeightFile.DumpErrors(cout);
+          return -1;      
+        }
+      for (int i = 0; i < NbrAOrbitals; ++i)
+	{
+  	  NbrConnectedOrbitalA[i] = 0;
+	}
+      
+      for (int i = 0; i < TmpNbrWeigths; ++i)
+	{
+  	  NbrConnectedOrbitalA[TmpIndices1[i]]++;
+	}
+      for (int i = 0; i < NbrAOrbitals; ++i)
+	{
+	  if (NbrConnectedOrbitalA[i] > 0)
+	    {
+	      ConnectedOrbitalA[i] = new int [NbrConnectedOrbitalA[i]];
+	      FullWeightAOrbitals[i] = new double [NbrConnectedOrbitalA[i]];
+	      NbrConnectedOrbitalA[i] = 0;
+	    }
+	  else
+	    {
+	      ConnectedOrbitalA[i] = 0;
+	      FullWeightAOrbitals[i] = 0;
+	    }
+	}
+      for (int i = 0; i < TmpNbrWeigths; ++i)
+	{
+	  ConnectedOrbitalA[TmpIndices1[i]][NbrConnectedOrbitalA[TmpIndices1[i]]] = TmpIndices2[i];
+	  FullWeightAOrbitals[TmpIndices1[i]][NbrConnectedOrbitalA[TmpIndices1[i]]] = TmpAWeights[i];
+	  NbrConnectedOrbitalA[TmpIndices1[i]]++;
+	}
+      for (int i = 0; i < NbrBOrbitals; ++i)
+	{
+	  NbrConnectedOrbitalB[i] = 0;
+	}
+      
+      for (int i = 0; i < TmpNbrWeigths; ++i)
+	{
+	  NbrConnectedOrbitalB[TmpIndices1[i]]++;
+	}
+      for (int i = 0; i < NbrBOrbitals; ++i)
+	{
+	  if (NbrConnectedOrbitalB[i] > 0)
+	    {
+	      ConnectedOrbitalB[i] = new int [NbrConnectedOrbitalB[i]];
+	      FullWeightBOrbitals[i] = new double [NbrConnectedOrbitalB[i]];
+	      NbrConnectedOrbitalB[i] = 0;
+	    }
+	  else
+	    {
+	      ConnectedOrbitalB[i] = 0;
+	      FullWeightBOrbitals[i] = 0;
+	    }
+	}
+      for (int i = 0; i < TmpNbrWeigths; ++i)
+	{
+	  ConnectedOrbitalB[TmpIndices1[i]][NbrConnectedOrbitalB[TmpIndices1[i]]] = TmpIndices2[i];
+	  FullWeightBOrbitals[TmpIndices1[i]][NbrConnectedOrbitalB[TmpIndices1[i]]] = TmpBWeights[i];
+  	  NbrConnectedOrbitalB[TmpIndices1[i]]++;
+	}
+
+      for (SubsystemNbrParticles = MinSubsystemNbrParticles; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
+	{
+	  int ComplementarySubsystemNbrParticles = NbrParticles - SubsystemNbrParticles;
+	  int SubsystemMaxTotalLz = SubsystemNbrParticles * (NbrAOrbitals - 1) - (SubsystemNbrParticles * (SubsystemNbrParticles - 1));
+	  int SubsystemTotalLz = -SubsystemMaxTotalLz; 
+	  int ComplementaryMaxTotalLz = ComplementarySubsystemNbrParticles * (NbrBOrbitals - 1) - (ComplementarySubsystemNbrParticles * (ComplementarySubsystemNbrParticles - 1));
+	  while ((SubsystemMaxTotalLz - ComplementaryMaxTotalLz) > TotalLz[0])
+	    SubsystemMaxTotalLz -= 2;
+	  while ((SubsystemTotalLz + ComplementaryMaxTotalLz) < TotalLz[0])
+	    SubsystemTotalLz += 2;
+	  RealMatrix* TmpEntanglementMatrices = new RealMatrix[SubsystemMaxTotalLz + 1];
+	  int TmpIndex = 0;
+	  int TmpNbrNonZeroEntanglementMatrices = 0;
+	  for (; SubsystemTotalLz <= SubsystemMaxTotalLz; SubsystemTotalLz += 2)
+	    {
+	      cout << "computing PES entanglement matrix for NA=" << SubsystemNbrParticles << " 2LzA=" << SubsystemTotalLz  << endl;
+	      timeval SVDTotalStartingTime;
+	      timeval SVDTotalEndingTime;
+	      if (ShowTimeFlag == true)
+		{
+		  gettimeofday (&(SVDTotalStartingTime), 0);
+		}
+	      TmpEntanglementMatrices[TmpIndex] = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, 
+														GroundStates[0], true);
+	      if (ShowTimeFlag == true)
+		{
+		  gettimeofday (&(SVDTotalEndingTime), 0);
+		  double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+					((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
+		  cout << "particle entanglement matrix evaluated in " << Dt << "s" << endl;
+		}
+	      if (TmpEntanglementMatrices[TmpIndex].GetNbrRow() > 0)
+		{
+		  ++TmpNbrNonZeroEntanglementMatrices;
+		}
+	      ++TmpIndex;
+	    }
+	  RealMatrix* TmpEntanglementMatrices2 = new RealMatrix[TmpNbrNonZeroEntanglementMatrices];
+	  int* TmpEntanglementMatrixLzSectors = new int [TmpNbrNonZeroEntanglementMatrices];
+	  TmpNbrNonZeroEntanglementMatrices = 0;
+	  TmpIndex = 0;
+	  SubsystemTotalLz = -SubsystemMaxTotalLz; 
+	  for (; SubsystemTotalLz <= SubsystemMaxTotalLz; SubsystemTotalLz += 2)
+	    {
+	      if (TmpEntanglementMatrices[TmpIndex].GetNbrRow() > 0)
+		{
+		  TmpEntanglementMatrices2[TmpNbrNonZeroEntanglementMatrices] = TmpEntanglementMatrices[TmpIndex];
+		  TmpEntanglementMatrixLzSectors[TmpNbrNonZeroEntanglementMatrices] = SubsystemTotalLz;
+		  ++TmpNbrNonZeroEntanglementMatrices;
+		}
+	      ++TmpIndex;		      
+	    }
+	  delete[] TmpEntanglementMatrices;
+	  TmpEntanglementMatrices = TmpEntanglementMatrices2;
+	  cout << "computing RSES entanglement matrix for NA=" << SubsystemNbrParticles << endl;
+	  RealMatrix PartialEntanglementMatrix = Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles,  
+																	      NbrAOrbitals, NbrConnectedOrbitalA, ConnectedOrbitalA, FullWeightAOrbitals, 
+																	      NbrBOrbitals, NbrConnectedOrbitalB, ConnectedOrbitalB, FullWeightBOrbitals, 
+																	      TmpNbrNonZeroEntanglementMatrices, TmpEntanglementMatrixLzSectors, TmpEntanglementMatrices);
+	  timeval TotalStartingTime;
+	  timeval TotalEndingTime;
+	  timeval SVDTotalStartingTime;
+	  timeval SVDTotalEndingTime;
+	  if (ShowTimeFlag == true)
+	    {
+	      gettimeofday (&(SVDTotalStartingTime), 0);
+	    }
+	  //		  cout << PartialEntanglementMatrix << endl;
+	  double* TmpValues = PartialEntanglementMatrix.SingularValueDecomposition();
+	  if (ShowTimeFlag == true)
+	    {
+	      gettimeofday (&(TotalEndingTime), 0);
+	      double Dt = (double) ((SVDTotalEndingTime.tv_sec - SVDTotalStartingTime.tv_sec) + 
+				    ((SVDTotalEndingTime.tv_usec - SVDTotalStartingTime.tv_usec) / 1000000.0));		      
+	      cout << "singular value decomposition done in " << Dt << "s" << endl;
+	    }
+	  int TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
+	  if (TmpDimension > PartialEntanglementMatrix.GetNbrRow())
+	    {
+	      TmpDimension = PartialEntanglementMatrix.GetNbrRow();
+	    }
+	  for (int i = 0; i < TmpDimension; ++i)
+	    {
+	      TmpValues[i] *= TmpValues[i];
+	    }
+	  RealDiagonalMatrix TmpDiag = RealDiagonalMatrix(TmpValues, TmpDimension);  
+	  
+	  TmpDiag.SortMatrixDownOrder();
+	  if ((DensityMatrixFileName != 0) && (Architecture.GetArchitecture()->CanWriteOnDisk()))
+	    {
+	      ofstream DensityMatrixFile;
+	      DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
+	      DensityMatrixFile.precision(14);
+	      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+		DensityMatrixFile << SubsystemNbrParticles << " " << TmpDiag[i] << endl;
+	      DensityMatrixFile.close();
+	    }
+	  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
+	    {
+	      if (TmpDiag[i] > 1e-14)
+		{
+		  EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles] += TmpDiag[i] * log(TmpDiag[i]);
+		  DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] +=TmpDiag[i];
+		}
+	    }
+	}
+      return 0;
+    }
   bool FirstRun = true;
   for (; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
     {

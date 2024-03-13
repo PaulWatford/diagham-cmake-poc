@@ -963,6 +963,7 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
 													 int nbrOrbitalA, double* weightOrbitalAUp, double* weightOrbitalADown, 
 													 int nbrOrbitalB, double* weightOrbitalBUp, double* weightOrbitalBDown, 
 													 RealMatrix& entanglementMatrix);
+
   // evaluate a entanglement matrix of a subsystem of the whole system described by a given ground state, using a generic real space partition breaking the momentum conservation. 
   // The entanglement matrix is computed from precalculated particle entanglement matrices in each momentum sector
   // 
@@ -982,9 +983,9 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
   // connectedOrbitalBDown = orbitals taht connected to a given one by the B part real space cut (for the spin down)
   // weightOrbitalBUp = weight of each orbital in the B part with spin up (starting from the leftmost orbital)
   // weightOrbitalBDown = weight of each orbital in the B part with spin down (starting from the leftmost orbital)
-  // nbrEntanglementMatrices = number of available entanglement matrices with a fixed moementum
+  // nbrEntanglementMatrices = number of available entanglement matrices with a fixed momentum
   // entanglementMatrixLzSectors = momentum sector of each entanglement matrix
-  // entanglementMatrices = array containing the entanglement matrices with a fixed moementum
+  // entanglementMatrices = array containing the entanglement matrices with a fixed momentum
   // return value = real space entanglement matrix
   virtual RealMatrix EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix (int nbrParticleSector, int szSector,
 													int nbrOrbitalA, int* nbrConnectedOrbitalAUp, int* nbrConnectedOrbitalADown,

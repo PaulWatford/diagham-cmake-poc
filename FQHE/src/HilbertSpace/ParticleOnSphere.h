@@ -887,6 +887,30 @@ class ParticleOnSphere :  public AbstractQHEParticle
 													 int nbrOrbitalA, double* weightOrbitalA, 
 													 int nbrOrbitalB, double* weightOrbitalB, ComplexMatrix* entanglementMatrix, int nbrEntanglementMatrices);
 
+  // evaluate a entanglement matrix of a subsystem of the whole system described by a given ground state, using a generic real space partition breaking the momentum conservation. 
+  // The entanglement matrix is computed from precalculated particle entanglement matrices in each momentum sector
+  // 
+  // nbrParticleSector = number of particles that belong to the subsytem 
+  // nbrOrbitalA = number of orbitals that have to be kept for the A part
+  // nbrConnectedOrbitalA = number of orbitals connected to a given one by the A part real space cut 
+  // connectedOrbital = orbitals taht connected to a given one by the A part real space cut
+  // weightOrbitalA = weight of each orbital in the A part (starting from the leftmost orbital)
+  // nbrOrbitalB = number of orbitals that have to be kept for the B part
+  // nbrConnectedOrbitalB = number of orbitals connected to a given one by the B part real space cut
+  // connectedOrbitalB = orbitals taht connected to a given one by the B part real space cut
+  // weightOrbitalB = weight of each orbital in the B part (starting from the leftmost orbital)
+  // nbrEntanglementMatrices = number of available entanglement matrices with a fixed momentum
+  // entanglementMatrixLzSectors = momentum sector of each entanglement matrix
+  // entanglementMatrices = array containing the entanglement matrices with a fixed momentum
+  // return value = real space entanglement matrix
+  virtual RealMatrix EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix (int nbrParticleSector, 
+													int nbrOrbitalA, int* nbrConnectedOrbitalA,
+													int** connectedOrbitalA, double** weightOrbitalA, 
+													int nbrOrbitalB, int* nbrConnectedOrbitalB,
+													int** connectedOrbitalB, double** weightOrbitalB,
+													int nbrEntanglementMatrices, int* entanglementMatrixLzSectors,
+													RealMatrix* entanglementMatrices);
+
   // evaluate a density matrix of a subsystem of the whole system described by a given ground state, using particle partition. The density matrix is only evaluated in a given Lz sector
   // and computed from precalculated entanglement matrix
   // 

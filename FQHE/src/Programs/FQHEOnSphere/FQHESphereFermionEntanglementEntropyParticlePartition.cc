@@ -658,14 +658,14 @@ int main(int argc, char** argv)
       double** FullWeightBOrbitals = new double*[NbrBOrbitals]; 
 
       MultiColumnASCIIFile RealSpaceWeightFile;
-      if (RealSpaceWeightFile.Parse(Manager.GetString("realspace-cut")) == false)
+      if (RealSpaceWeightFile.Parse(Manager.GetString("realspace-generic")) == false)
         {
           RealSpaceWeightFile.DumpErrors(cout);
           return -1;
         }
       if (RealSpaceWeightFile.GetNbrColumns() != 4)
         {
-          cout << "error, wrong number of columns in " << Manager.GetString("realspace-cut") << endl;
+          cout << "error, wrong number of columns in " << Manager.GetString("realspace-generic") << endl;
           return -1;
         }
       int TmpNbrWeigths = RealSpaceWeightFile.GetNbrLines();
@@ -857,501 +857,318 @@ int main(int argc, char** argv)
 		  DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] +=TmpDiag[i];
 		}
 	    }
+	  delete[] TmpEntanglementMatrices2;
+	  delete[] TmpEntanglementMatrixLzSectors;
 	}
-      return 0;
     }
-  bool FirstRun = true;
-  for (; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
+  else
     {
-	for (int i = 0; i < TmpNbrEntanglementMatrices; ++i)
+      bool FirstRun = true;
+      for (; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
 	{
-	  EntanglementEntropy[i] = 0.0;
-	  DensitySum[i] = 0.0;	 
-	}
-      
-      int ComplementarySubsystemNbrParticles = NbrParticles - SubsystemNbrParticles;
-      int SubsystemMaxTotalLz = SubsystemNbrParticles * (NbrAOrbitals - 1) - (SubsystemNbrParticles * (SubsystemNbrParticles - 1));
-      int ComplementaryMaxTotalLz = ComplementarySubsystemNbrParticles * (NbrBOrbitals - 1) - (ComplementarySubsystemNbrParticles * (ComplementarySubsystemNbrParticles - 1));
-      cout << "SubsystemMaxTotalLz = " << SubsystemMaxTotalLz << "    ComplementaryMaxTotalLz = " << ComplementaryMaxTotalLz << endl;
-      int SubsystemTotalLz = -SubsystemMaxTotalLz;
-      while ((SubsystemMaxTotalLz - ComplementaryMaxTotalLz) > TotalLz[0])
-	SubsystemMaxTotalLz -= 2;
-      while ((SubsystemTotalLz + ComplementaryMaxTotalLz) < TotalLz[0])
-	SubsystemTotalLz += 2;
-	
-      if ((MinLzA != -1) && (MinLzA > SubsystemTotalLz))
-	SubsystemTotalLz = MinLzA;
-      if ((MaxLzA != -1) && (MaxLzA < SubsystemMaxTotalLz))
-	SubsystemMaxTotalLz = MaxLzA;
-      
-      if ((LargestLSector == true) && (RealSpaceCut == false))
-	{
-	  if (((LzMax * NbrParticles) & 1) == 0)
+	  for (int i = 0; i < TmpNbrEntanglementMatrices; ++i)
 	    {
-	      SubsystemTotalLz = 0;
-	      SubsystemMaxTotalLz = 0;
-	    }
-	  else
-	    {
-	      SubsystemTotalLz = 1;
-	      SubsystemMaxTotalLz = 1;
-	    }
-	}
-      if (PositiveLzSectors == true)
-	{
-	  if (((LzMax * NbrParticles) & 1) == 0)
-	    {
-	      SubsystemTotalLz = 0;
-	    }
-	  else
-	    {
-	      SubsystemTotalLz = 1;
-	    }
-	}
-      cout << "SubsystemMaxTotalLz = " << SubsystemMaxTotalLz << "    ComplementaryMaxTotalLz = " << ComplementaryMaxTotalLz << endl;
-      for (; SubsystemTotalLz <= SubsystemMaxTotalLz; SubsystemTotalLz += 2)
-	{
-	  cout << "processing subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTotalLz << endl;
-	  timeval TotalStartingTime;
-	  timeval TotalEndingTime;
-	  if (ShowTimeFlag == true)
-	    {
-	      gettimeofday (&(TotalStartingTime), 0);
+	      EntanglementEntropy[i] = 0.0;
+	      DensitySum[i] = 0.0;	 
 	    }
 	  
-	  RealSymmetricMatrix PartialDensityMatrix;
-	  RealMatrix PartialEntanglementMatrix;
-	  ComplexMatrix ComplexPartialEntanglementMatrix;
-	  RealMatrix* MultiplePartialEntanglementMatrix = 0;
-	  ComplexMatrix* MultipleComplexPartialEntanglementMatrix = 0;
+	  int ComplementarySubsystemNbrParticles = NbrParticles - SubsystemNbrParticles;
+	  int SubsystemMaxTotalLz = SubsystemNbrParticles * (NbrAOrbitals - 1) - (SubsystemNbrParticles * (SubsystemNbrParticles - 1));
+	  int ComplementaryMaxTotalLz = ComplementarySubsystemNbrParticles * (NbrBOrbitals - 1) - (ComplementarySubsystemNbrParticles * (ComplementarySubsystemNbrParticles - 1));
+	  cout << "SubsystemMaxTotalLz = " << SubsystemMaxTotalLz << "    ComplementaryMaxTotalLz = " << ComplementaryMaxTotalLz << endl;
+	  int SubsystemTotalLz = -SubsystemMaxTotalLz;
+	  while ((SubsystemMaxTotalLz - ComplementaryMaxTotalLz) > TotalLz[0])
+	    SubsystemMaxTotalLz -= 2;
+	  while ((SubsystemTotalLz + ComplementaryMaxTotalLz) < TotalLz[0])
+	    SubsystemTotalLz += 2;
 	  
-	  if (RealSpaceCut == false)
+	  if ((MinLzA != -1) && (MinLzA > SubsystemTotalLz))
+	    SubsystemTotalLz = MinLzA;
+	  if ((MaxLzA != -1) && (MaxLzA < SubsystemMaxTotalLz))
+	    SubsystemMaxTotalLz = MaxLzA;
+	  
+	  if ((LargestLSector == true) && (RealSpaceCut == false))
 	    {
-	      if (SVDFlag == false)
+	      if (((LzMax * NbrParticles) & 1) == 0)
 		{
-		  PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0]);
+		  SubsystemTotalLz = 0;
+		  SubsystemMaxTotalLz = 0;
 		}
 	      else
 		{
-		  if (Manager.GetBoolean("complex") == false)
+		  SubsystemTotalLz = 1;
+		  SubsystemMaxTotalLz = 1;
+		}
+	    }
+	  if (PositiveLzSectors == true)
+	    {
+	      if (((LzMax * NbrParticles) & 1) == 0)
+		{
+		  SubsystemTotalLz = 0;
+		}
+	      else
+		{
+		  SubsystemTotalLz = 1;
+		}
+	    }
+	  cout << "SubsystemMaxTotalLz = " << SubsystemMaxTotalLz << "    ComplementaryMaxTotalLz = " << ComplementaryMaxTotalLz << endl;
+	  for (; SubsystemTotalLz <= SubsystemMaxTotalLz; SubsystemTotalLz += 2)
+	    {
+	      cout << "processing subsystem nbr of particles=" << SubsystemNbrParticles << " subsystem total Lz=" << SubsystemTotalLz << endl;
+	      timeval TotalStartingTime;
+	      timeval TotalEndingTime;
+	      if (ShowTimeFlag == true)
+		{
+		  gettimeofday (&(TotalStartingTime), 0);
+		}
+	      
+	      RealSymmetricMatrix PartialDensityMatrix;
+	      RealMatrix PartialEntanglementMatrix;
+	      ComplexMatrix ComplexPartialEntanglementMatrix;
+	      RealMatrix* MultiplePartialEntanglementMatrix = 0;
+	      ComplexMatrix* MultipleComplexPartialEntanglementMatrix = 0;
+	      
+	      if (RealSpaceCut == false)
+		{
+		  if (SVDFlag == false)
 		    {
-		      PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0],false);
+		      PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0]);
 		    }
 		  else
 		    {
-		      ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[0],false);
-		    }
-		}
-	    }
-	  else //real space
-	    {
-	      if (SVDFlag == false)
-		{
-                  if (RealSpaceCutCylinder == false)
-		    {
-		      if (WeightAOrbitals == 0)
+		      if (Manager.GetBoolean("complex") == false)
 			{
-			  PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixRealSpacePartition(SubsystemNbrParticles, SubsystemTotalLz, 
-													   Manager.GetDouble("realspace-theta-top"), 
-													   Manager.GetDouble("realspace-theta-bot"), 
-													   Manager.GetDouble("realspace-phi-range"), GroundStates[0]);
+			  PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0],false);
 			}
 		      else
 			{
-			  PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixGenericRealSpacePartition(SubsystemNbrParticles, SubsystemTotalLz, 
-														  NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
-														  GroundStates[0]);
+			  ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[0],false);
 			}
 		    }
-                  else //cylinder
-		    PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixRealSpacePartitionCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, 
-													     Manager.GetDouble("realspace-cylindercut"), GroundStates[0]);
 		}
-	      else
+	      else //real space
 		{
-                  if (RealSpaceCutCylinder == false)
-                    {
-		      if (WeightAOrbitals == 0)
+		  if (SVDFlag == false)
+		    {
+		      if (RealSpaceCutCylinder == false)
+			{
+			  if (WeightAOrbitals == 0)
+			    {
+			      PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixRealSpacePartition(SubsystemNbrParticles, SubsystemTotalLz, 
+													       Manager.GetDouble("realspace-theta-top"), 
+													       Manager.GetDouble("realspace-theta-bot"), 
+													       Manager.GetDouble("realspace-phi-range"), GroundStates[0]);
+			    }
+			  else
+			    {
+			      PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixGenericRealSpacePartition(SubsystemNbrParticles, SubsystemTotalLz, 
+														      NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
+														      GroundStates[0]);
+			    }
+			}
+		      else //cylinder
+			PartialDensityMatrix = Spaces[0]->EvaluatePartialDensityMatrixRealSpacePartitionCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, 
+														 Manager.GetDouble("realspace-cylindercut"), GroundStates[0]);
+		    }
+		  else
+		    {
+		      if (RealSpaceCutCylinder == false)
+			{
+			  if (WeightAOrbitals == 0)
+			    {
+			      if (Manager.GetBoolean("complex") == false)
+				{
+				  PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0],true);
+				  if(PartialEntanglementMatrix.GetNbrRow() != 0)
+				    {
+				      Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), PartialEntanglementMatrix);
+				    }
+				}
+			      else
+				{
+				  ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[0],true);
+				  if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
+				    {
+				      Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), ComplexPartialEntanglementMatrix);
+				    }
+				}			    
+			    }
+			  else
+			    {
+			      if (Manager.GetBoolean("complex") == false)
+				{
+				  if (TmpNbrEntanglementMatrices == 1)
+				    {
+				      PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,     NbrAOrbitals, NbrBOrbitals, GroundStates[0], true);
+				      // 			    cout << PartialEntanglementMatrix << endl;
+				      if(PartialEntanglementMatrix.GetNbrRow() != 0)
+					{
+					  Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, 
+																       NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
+																       PartialEntanglementMatrix);
+					  // 				cout << PartialEntanglementMatrix << endl;
+					}
+				    }
+				  else
+				    {
+				      MultiplePartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,     NbrAOrbitals, NbrBOrbitals, GroundStates, TmpNbrEntanglementMatrices, true);
+				      // 			      cout << MultiplePartialEntanglementMatrix[0] << endl;
+				      if(MultiplePartialEntanglementMatrix[0].GetNbrRow() != 0)
+					{
+					  MultiplePartialEntanglementMatrix = Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, 
+																					   NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
+																					   MultiplePartialEntanglementMatrix, TmpNbrEntanglementMatrices);
+					  // 				cout << MultiplePartialEntanglementMatrix[0] << endl;
+					}
+				    }
+				}
+			      else
+				{
+				  if (TmpNbrEntanglementMatrices == 1)
+				    {
+				      ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, 	    NbrAOrbitals, NbrBOrbitals, ComplexGroundStates[0], true);
+				      // 			    cout << ComplexPartialEntanglementMatrix << endl;
+				      if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
+					{
+					  Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, ComplexPartialEntanglementMatrix);
+					  // 				cout << ComplexPartialEntanglementMatrix << endl;
+					}
+				    }
+				  else
+				    {
+				      MultipleComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,     NbrAOrbitals, NbrBOrbitals, ComplexGroundStates, TmpNbrEntanglementMatrices, true);
+				      // 			      cout << MultiplePartialEntanglementMatrix[0] << endl;
+				      if(MultipleComplexPartialEntanglementMatrix[0].GetNbrRow() != 0)
+					{
+					  MultipleComplexPartialEntanglementMatrix = Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, 
+																						  NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
+																						  MultipleComplexPartialEntanglementMatrix, TmpNbrEntanglementMatrices);
+					  // 				cout << MultiplePartialEntanglementMatrix[0] << endl;
+					}
+				    }
+				}
+			    }
+			}
+		      else //cylinder
 			{
 			  if (Manager.GetBoolean("complex") == false)
 			    {
 			      PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0],true);
 			      if(PartialEntanglementMatrix.GetNbrRow() != 0)
 				{
-				  Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), PartialEntanglementMatrix);
+				  Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), PartialEntanglementMatrix);
 				}
 			    }
 			  else
 			    {
-			      ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[0],true);
-			      if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
-				{
-				  Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), ComplexPartialEntanglementMatrix);
-				}
-			    }			    
+			      cout << "Warning, cylinder not implemented for complex vectors" << endl;
+			      // 			ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[0],true);
+			      // 			if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
+			      // 			  {
+			      // 			    Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), ComplexPartialEntanglementMatrix);
+			      // 		      }
+			    }
+			}
+		    }
+		}
+	      
+	      for (int i = 1; i < NbrSpaces; ++i)
+		{
+		  RealSymmetricMatrix TmpMatrix;
+		  RealMatrix TmpEntanglementMatrix;
+		  ComplexMatrix ComplexTmpEntanglementMatrix;
+		  if (RealSpaceCut == false)
+		    {
+		      if (SVDFlag == false)
+			{
+			  TmpMatrix = Spaces[i]->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i]);
 			}
 		      else
 			{
 			  if (Manager.GetBoolean("complex") == false)
+			    TmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i]);
+			  else
+			    ComplexTmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[i]);
+			}
+		    }
+		  else //real space cut
+		    {
+		      if (SVDFlag == false)
+			{
+			  if (RealSpaceCutCylinder == false)		      
+			    TmpMatrix = Spaces[i]->EvaluatePartialDensityMatrixRealSpacePartition(SubsystemNbrParticles, SubsystemTotalLz, Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), GroundStates[i]);
+			  else //cylinder
+			    TmpMatrix = Spaces[i]->EvaluatePartialDensityMatrixRealSpacePartitionCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), GroundStates[i]);
+			}
+		      else
+			{
+			  if (RealSpaceCutCylinder == false)
 			    {
-			      if (TmpNbrEntanglementMatrices == 1)
+			      if (Manager.GetBoolean("complex") == false)
 				{
-				  PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,     NbrAOrbitals, NbrBOrbitals, GroundStates[0], true);
-				  // 			    cout << PartialEntanglementMatrix << endl;
+				  TmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i],true);
 				  if(PartialEntanglementMatrix.GetNbrRow() != 0)
 				    {
-				      Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, 
-																   NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
-																   PartialEntanglementMatrix);
-				      // 				cout << PartialEntanglementMatrix << endl;
+				      Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), TmpEntanglementMatrix);
 				    }
 				}
 			      else
 				{
-				  MultiplePartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,     NbrAOrbitals, NbrBOrbitals, GroundStates, TmpNbrEntanglementMatrices, true);
-				  // 			      cout << MultiplePartialEntanglementMatrix[0] << endl;
-				  if(MultiplePartialEntanglementMatrix[0].GetNbrRow() != 0)
-				    {
-				      MultiplePartialEntanglementMatrix = Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, 
-																				       NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
-																				       MultiplePartialEntanglementMatrix, TmpNbrEntanglementMatrices);
-				      // 				cout << MultiplePartialEntanglementMatrix[0] << endl;
-				    }
-				}
-			    }
-			  else
-			    {
-			      if (TmpNbrEntanglementMatrices == 1)
-				{
-				  ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, 	    NbrAOrbitals, NbrBOrbitals, ComplexGroundStates[0], true);
-				  // 			    cout << ComplexPartialEntanglementMatrix << endl;
+				  ComplexTmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[i],true);
 				  if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
 				    {
-				      Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, ComplexPartialEntanglementMatrix);
-				      // 				cout << ComplexPartialEntanglementMatrix << endl;
+				      Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), ComplexTmpEntanglementMatrix);
+				    }
+				}
+			    }
+			  else //cylinder
+			    {
+			      if (Manager.GetBoolean("complex") == false) 
+				{
+				  TmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i],true);
+				  if(PartialEntanglementMatrix.GetNbrRow() != 0)
+				    {
+				      Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), TmpEntanglementMatrix);
 				    }
 				}
 			      else
 				{
-				  MultipleComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz,     NbrAOrbitals, NbrBOrbitals, ComplexGroundStates, TmpNbrEntanglementMatrices, true);
-				  // 			      cout << MultiplePartialEntanglementMatrix[0] << endl;
-				  if(MultipleComplexPartialEntanglementMatrix[0].GetNbrRow() != 0)
-				    {
-				      MultipleComplexPartialEntanglementMatrix = Spaces[0]->EvaluateEntanglementMatrixGenericRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz, 
-																					      NbrAOrbitals, WeightAOrbitals, NbrBOrbitals, WeightBOrbitals, 
-																					      MultipleComplexPartialEntanglementMatrix, TmpNbrEntanglementMatrices);
-				      // 				cout << MultiplePartialEntanglementMatrix[0] << endl;
-				    }
+				  cout << "Waning, cylinder not implemented for complex vectors" << endl;
+				  // 			     ComplexTmpEntanglementMatrix = Spaces[0]-	>EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[i],true);
+				  // 			    if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
+				  // 			      {
+				  // 				Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), ComplexTmpEntanglementMatrix);
+				  // 			      }
 				}
-			    }
+			    }  
 			}
 		    }
-                  else //cylinder
-                    {
-		      if (Manager.GetBoolean("complex") == false)
-			{
-			PartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[0],true);
-			if(PartialEntanglementMatrix.GetNbrRow() != 0)
-			  {
-			    Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), PartialEntanglementMatrix);
-			  }
-		      }
-		      else
-		      {
-			cout << "Warning, cylinder not implemented for complex vectors" << endl;
-// 			ComplexPartialEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[0],true);
-// 			if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
-// 			  {
-// 			    Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), ComplexPartialEntanglementMatrix);
-// 		      }
-                     }
-		    }
-		}
-	    }
-	  
-	  for (int i = 1; i < NbrSpaces; ++i)
-	    {
-	      RealSymmetricMatrix TmpMatrix;
-	      RealMatrix TmpEntanglementMatrix;
-	      ComplexMatrix ComplexTmpEntanglementMatrix;
-	      if (RealSpaceCut == false)
-		{
+		  
 		  if (SVDFlag == false)
 		    {
-		      TmpMatrix = Spaces[i]->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i]);
+		      PartialDensityMatrix += TmpMatrix;
 		    }
 		  else
 		    {
 		      if (Manager.GetBoolean("complex") == false)
-			TmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i]);
+			PartialEntanglementMatrix += TmpEntanglementMatrix;
 		      else
-			ComplexTmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[i]);
-		    }
-		}
-	      else //real space cut
-		{
-		  if (SVDFlag == false)
-		    {
-                       if (RealSpaceCutCylinder == false)		      
-                           TmpMatrix = Spaces[i]->EvaluatePartialDensityMatrixRealSpacePartition(SubsystemNbrParticles, SubsystemTotalLz, Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), GroundStates[i]);
-                       else //cylinder
-                           TmpMatrix = Spaces[i]->EvaluatePartialDensityMatrixRealSpacePartitionCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), GroundStates[i]);
-		    }
-		  else
-		    {
-                      if (RealSpaceCutCylinder == false)
-                        {
-			  if (Manager.GetBoolean("complex") == false)
-			  {
-			    TmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i],true);
-			    if(PartialEntanglementMatrix.GetNbrRow() != 0)
-			      {
-				Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), TmpEntanglementMatrix);
-			      }
-			  }
-			  else
-			  {
-			    ComplexTmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[i],true);
-			    if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
-			      {
-				Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrix(SubsystemNbrParticles, SubsystemTotalLz,Manager.GetDouble("realspace-theta-top"), Manager.GetDouble("realspace-theta-bot"), Manager.GetDouble("realspace-phi-range"), ComplexTmpEntanglementMatrix);
-			      }
-			  }
-			}
-                      else //cylinder
-                       {
-			   if (Manager.GetBoolean("complex") == false) 
-			   {
-			    TmpEntanglementMatrix = Spaces[0]->EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, GroundStates[i],true);
-			    if(PartialEntanglementMatrix.GetNbrRow() != 0)
-			      {
-				Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), TmpEntanglementMatrix);
-			      }
-			   }
-			   else
-			   {
-			     cout << "Waning, cylinder not implemented for complex vectors" << endl;
-// 			     ComplexTmpEntanglementMatrix = Spaces[0]-	>EvaluatePartialEntanglementMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalLz, ComplexGroundStates[i],true);
-// 			    if(ComplexPartialEntanglementMatrix.GetNbrRow() != 0)
-// 			      {
-// 				Spaces[0]->EvaluateEntanglementMatrixRealSpacePartitionFromParticleEntanglementMatrixCylinder(SubsystemNbrParticles, SubsystemTotalLz, Perimeter, Height, Manager.GetDouble("realspace-cylindercut"), ComplexTmpEntanglementMatrix);
-// 			      }
-			   }
-                       }  
-		    }
-		}
-	      
-	      if (SVDFlag == false)
-		{
-		  PartialDensityMatrix += TmpMatrix;
-		}
-	      else
-		{
-		  if (Manager.GetBoolean("complex") == false)
-		    PartialEntanglementMatrix += TmpEntanglementMatrix;
-		  else
 		    ComplexPartialEntanglementMatrix += ComplexTmpEntanglementMatrix;
-		}
-	    }
-	  
-	  if (NbrSpaces > 1)
-	    {
-	      if (SVDFlag == false)
-		{
-		  PartialDensityMatrix /= ((double) NbrSpaces);
-		}
-	      else
-		{
-		  if (Manager.GetBoolean("complex") == false)
-		    PartialEntanglementMatrix /= sqrt((double) NbrSpaces);
-		  else
-		    ComplexPartialEntanglementMatrix /= sqrt((double) NbrSpaces);
-		}
-	    }
-	  if (ShowTimeFlag == true)
-	    {
-	      gettimeofday (&(TotalEndingTime), 0);
-	      double Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
-				    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));		      
-	      cout << "reduced density matrix evaluated in " << Dt << "s" << endl;
-	    }
-	  if ((PartialDensityMatrix.GetNbrRow() > 1) || 
-	      ((SVDFlag == true) && (PartialEntanglementMatrix.GetNbrColumn() >= 1) && (PartialEntanglementMatrix.GetNbrRow() >= 1)) || 
-	      ((SVDFlag == true) && (Manager.GetBoolean("complex")) && (ComplexPartialEntanglementMatrix.GetNbrColumn() >= 1) && (ComplexPartialEntanglementMatrix.GetNbrRow() >= 1)) || (SVDFlag == true && (MultiplePartialEntanglementMatrix != 0) && (MultiplePartialEntanglementMatrix[0].GetNbrColumn() >= 1) && (MultiplePartialEntanglementMatrix[0].GetNbrRow() >= 1)) || (SVDFlag == true && (MultipleComplexPartialEntanglementMatrix != 0) && (MultipleComplexPartialEntanglementMatrix[0].GetNbrColumn() >= 1) && (MultipleComplexPartialEntanglementMatrix[0].GetNbrRow() >= 1)))
-	    {
-	      if (Manager.GetString("save-matrix") != 0)
-		{	
-		  ofstream OutputDensityMatrixFile;
-		  OutputDensityMatrixFile.open(Manager.GetString("save-matrix"), ios::binary | ios::out); 
-		  OutputDensityMatrixFile.precision(14);
-		  if (SVDFlag == false)
-		    {
-		      OutputDensityMatrixFile << PartialDensityMatrix;
 		    }
-		  else
-		    {
-		      if (Manager.GetBoolean("complex"))
-			OutputDensityMatrixFile << ComplexPartialEntanglementMatrix;
-		      else
-			OutputDensityMatrixFile << PartialEntanglementMatrix;
-		    }
-		  OutputDensityMatrixFile.close();
 		}
-	      if (ShowTimeFlag == true)
-		{
-		  gettimeofday (&(TotalStartingTime), 0);
-		}
-	     RealDiagonalMatrix* TmpDiag;
-	     TmpDiag = new RealDiagonalMatrix[TmpNbrEntanglementMatrices];
-	     for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
-		  TmpDiag[l] = RealDiagonalMatrix(PartialDensityMatrix.GetNbrRow());
 	      
-	      if (ComputeLValueFlag == false)
+	      if (NbrSpaces > 1)
 		{
 		  if (SVDFlag == false)
 		    {
-#ifdef __LAPACK__
-		      if (LapackFlag == true)
-			PartialDensityMatrix.LapackDiagonalize(TmpDiag[0]);
+		      PartialDensityMatrix /= ((double) NbrSpaces);
+		    }
+		  else
+		    {
+		      if (Manager.GetBoolean("complex") == false)
+			PartialEntanglementMatrix /= sqrt((double) NbrSpaces);
 		      else
-			PartialDensityMatrix.Diagonalize(TmpDiag[0]);
-#else
-		      PartialDensityMatrix.Diagonalize(TmpDiag[0]);
-#endif		  
-		    }
-		  else
-		    {
-// 		      RealMatrix TmpMat;
-// 		      RealMatrix TmpMat2;
-// 		      TmpMat2.Copy(PartialEntanglementMatrix);
-// 		      TmpMat = PartialEntanglementMatrix.DuplicateAndTranspose();
-// 		      TmpMat2.Multiply(TmpMat);
-// 		      RealSymmetricMatrix TmpMat3 ((Matrix&) TmpMat2);
-// 		      RealDiagonalMatrix TmpDiag2(TmpMat3.GetNbrRow());
-// 		      TmpMat3.LapackDiagonalize(TmpDiag2);
-// 		      TmpDiag2.SortMatrixDownOrder();
-
-		      for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
-		      {
-			double* TmpValues = 0;
-			int TmpDimension;
-			if (Manager.GetBoolean("complex") == false)
-			{
-			  if (TmpNbrEntanglementMatrices == 1)
-			  {
-			    TmpValues = PartialEntanglementMatrix.SingularValueDecomposition();
-			    TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
-			    if (TmpDimension > PartialEntanglementMatrix.GetNbrRow())
-			    {
-			    TmpDimension = PartialEntanglementMatrix.GetNbrRow();
-			    }
-			  }
-			  else
-			  {
-			    TmpValues = MultiplePartialEntanglementMatrix[l].SingularValueDecomposition();
-			    TmpDimension = MultiplePartialEntanglementMatrix[0].GetNbrColumn();
-			    if (TmpDimension > MultiplePartialEntanglementMatrix[0].GetNbrRow())
-			    {
-			      TmpDimension = MultiplePartialEntanglementMatrix[0].GetNbrRow();
-			    }
-			  }
-			}
-			else
-			{
-			  if (TmpNbrEntanglementMatrices == 1)
-			  {
-			    TmpValues = ComplexPartialEntanglementMatrix.SingularValueDecomposition();
-			    TmpDimension = ComplexPartialEntanglementMatrix.GetNbrColumn();
-			    if (TmpDimension > ComplexPartialEntanglementMatrix.GetNbrRow())
-			    {
-			      TmpDimension = ComplexPartialEntanglementMatrix.GetNbrRow();
-			    }
-			  }
-			  else
-			  {
-			    TmpValues = MultipleComplexPartialEntanglementMatrix[l].SingularValueDecomposition();
-			    TmpDimension = MultipleComplexPartialEntanglementMatrix[0].GetNbrColumn();
-			    if (TmpDimension > MultipleComplexPartialEntanglementMatrix[0].GetNbrRow())
-			    {
-			      TmpDimension = MultipleComplexPartialEntanglementMatrix[0].GetNbrRow();
-			    }
-			      
-			  }
-			}
-			for (int i = 0; i < TmpDimension; ++i)
-			{
-			  TmpValues[i] *= TmpValues[i];
-			}
-			TmpDiag[l] = RealDiagonalMatrix(TmpValues, TmpDimension);
-		      }
-		    }
-		    for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
-		      {
-			TmpDiag[l].SortMatrixDownOrder();
-		    
-			if (DensityMatrixFileName != 0)
-			{
-			  ofstream DensityMatrixFile;
-			  DensityMatrixFile.open(DensityMatrixFileName[l], ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(14);
-			
-			  for (int i = 0; i < TmpDiag[l].GetNbrRow(); ++i)
-			    DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[l][i] << endl;
-			  DensityMatrixFile.close();
-			}
-		      }
-		  }
-	      else
-		{
-		  if (Manager.GetBoolean("complex"))
-		    cout << "Warning, not implemented for complex vectors" << endl;
-		  RealMatrix TmpEigenstates(PartialDensityMatrix.GetNbrRow(),
-					    PartialDensityMatrix.GetNbrRow(), true);
-		  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
-		    TmpEigenstates[i][i] = 1.0;
-#ifdef __LAPACK__
-		  if (LapackFlag == true)
-		    PartialDensityMatrix.LapackDiagonalize(TmpDiag[0], TmpEigenstates);
-		  else
-		    PartialDensityMatrix.Diagonalize(TmpDiag[0], TmpEigenstates);
-#else
-		  PartialDensityMatrix.Diagonalize(TmpDiag[0], TmpEigenstates);
-#endif
-		  TmpDiag[0].SortMatrixDownOrder(TmpEigenstates);
-		  FermionOnSphere TmpDestinationHilbertSpace(SubsystemNbrParticles, SubsystemTotalLz, LzMax);
-		  ParticleOnSphereSquareTotalMomentumOperator OperMomentum (&TmpDestinationHilbertSpace, LzMax);
-		  ofstream DensityMatrixFile;
-		  DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
-		  DensityMatrixFile.precision(14);
-		  char* TmpEigenstateName = new char[512];
-		  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
-		    {
-		      double TmpSqrMomentum = (OperMomentum.MatrixElement(TmpEigenstates[i], TmpEigenstates[i])).Re;
-		      double TmpMomentum = 0.0;
-		      if (TmpSqrMomentum > 0.0)
-			TmpMomentum = (0.5 * (sqrt ((4.0 * TmpSqrMomentum) + 1.0) - 1.0));
-		      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[0][i] << " " << TmpSqrMomentum << " " << TmpMomentum << endl;
-		      if ((EigenstateFlag == true) && (FilterLza == SubsystemTotalLz) && ((NbrEigenstates == 0) || (NbrEigenstates > i)))
-			{
-			  sprintf (TmpEigenstateName,
-				   "fermions_particlereduceddensity_na_%d_n_%d_2s_%d_lz_%d.%d.vec",
-				   SubsystemNbrParticles, NbrParticles, LzMax, SubsystemTotalLz, i);
-			  TmpEigenstates[i].WriteVector(TmpEigenstateName);
-			}
-		    }
-		  delete[] TmpEigenstateName;
-		  DensityMatrixFile.close();
-		}
-		
-		for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
-		{
-		  for (int i = 0; i < TmpDiag[l].GetNbrRow(); ++i)
-		    {
-		      if (TmpDiag[l][i] > 1e-14)
-			{
-			  EntanglementEntropy[l] += TmpDiag[l][i] * log(TmpDiag[l][i]);
-			  DensitySum[l] +=TmpDiag[l][i];
-			}
+			ComplexPartialEntanglementMatrix /= sqrt((double) NbrSpaces);
 		    }
 		}
 	      if (ShowTimeFlag == true)
@@ -1359,72 +1176,259 @@ int main(int argc, char** argv)
 		  gettimeofday (&(TotalEndingTime), 0);
 		  double Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
 					((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));		      
-		  cout << "diagonalization done in " << Dt << "s" << endl;
+		  cout << "reduced density matrix evaluated in " << Dt << "s" << endl;
 		}
-	    }
-	  else
-	    {
-	      if ((SVDFlag == false) && (PartialDensityMatrix.GetNbrRow() == 1))
+	      if ((PartialDensityMatrix.GetNbrRow() > 1) || 
+		  ((SVDFlag == true) && (PartialEntanglementMatrix.GetNbrColumn() >= 1) && (PartialEntanglementMatrix.GetNbrRow() >= 1)) || 
+		  ((SVDFlag == true) && (Manager.GetBoolean("complex")) && (ComplexPartialEntanglementMatrix.GetNbrColumn() >= 1) && (ComplexPartialEntanglementMatrix.GetNbrRow() >= 1)) || (SVDFlag == true && (MultiplePartialEntanglementMatrix != 0) && (MultiplePartialEntanglementMatrix[0].GetNbrColumn() >= 1) && (MultiplePartialEntanglementMatrix[0].GetNbrRow() >= 1)) || (SVDFlag == true && (MultipleComplexPartialEntanglementMatrix != 0) && (MultipleComplexPartialEntanglementMatrix[0].GetNbrColumn() >= 1) && (MultipleComplexPartialEntanglementMatrix[0].GetNbrRow() >= 1)))
 		{
-		  double TmpValue = PartialDensityMatrix(0,0);
-		  if (DensityMatrixFileName != 0)
+		  if (Manager.GetString("save-matrix") != 0)
+		    {	
+		      ofstream OutputDensityMatrixFile;
+		      OutputDensityMatrixFile.open(Manager.GetString("save-matrix"), ios::binary | ios::out); 
+		      OutputDensityMatrixFile.precision(14);
+		      if (SVDFlag == false)
+			{
+			  OutputDensityMatrixFile << PartialDensityMatrix;
+			}
+		      else
+			{
+			  if (Manager.GetBoolean("complex"))
+			    OutputDensityMatrixFile << ComplexPartialEntanglementMatrix;
+			  else
+			    OutputDensityMatrixFile << PartialEntanglementMatrix;
+			}
+		      OutputDensityMatrixFile.close();
+		    }
+		  if (ShowTimeFlag == true)
 		    {
+		      gettimeofday (&(TotalStartingTime), 0);
+		    }
+		  RealDiagonalMatrix* TmpDiag;
+		  TmpDiag = new RealDiagonalMatrix[TmpNbrEntanglementMatrices];
+		  for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
+		    TmpDiag[l] = RealDiagonalMatrix(PartialDensityMatrix.GetNbrRow());
+		  
+		  if (ComputeLValueFlag == false)
+		    {
+		      if (SVDFlag == false)
+			{
+#ifdef __LAPACK__
+			  if (LapackFlag == true)
+			    PartialDensityMatrix.LapackDiagonalize(TmpDiag[0]);
+			  else
+			    PartialDensityMatrix.Diagonalize(TmpDiag[0]);
+#else
+			  PartialDensityMatrix.Diagonalize(TmpDiag[0]);
+#endif		  
+			}
+		      else
+			{
+			  // 		      RealMatrix TmpMat;
+			  // 		      RealMatrix TmpMat2;
+			  // 		      TmpMat2.Copy(PartialEntanglementMatrix);
+			  // 		      TmpMat = PartialEntanglementMatrix.DuplicateAndTranspose();
+			  // 		      TmpMat2.Multiply(TmpMat);
+			  // 		      RealSymmetricMatrix TmpMat3 ((Matrix&) TmpMat2);
+			  // 		      RealDiagonalMatrix TmpDiag2(TmpMat3.GetNbrRow());
+			  // 		      TmpMat3.LapackDiagonalize(TmpDiag2);
+			  // 		      TmpDiag2.SortMatrixDownOrder();
+			  
+			  for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
+			    {
+			      double* TmpValues = 0;
+			      int TmpDimension;
+			      if (Manager.GetBoolean("complex") == false)
+				{
+				  if (TmpNbrEntanglementMatrices == 1)
+				    {
+				      TmpValues = PartialEntanglementMatrix.SingularValueDecomposition();
+				      TmpDimension = PartialEntanglementMatrix.GetNbrColumn();
+				      if (TmpDimension > PartialEntanglementMatrix.GetNbrRow())
+					{
+					  TmpDimension = PartialEntanglementMatrix.GetNbrRow();
+					}
+				    }
+				  else
+				    {
+				      TmpValues = MultiplePartialEntanglementMatrix[l].SingularValueDecomposition();
+				      TmpDimension = MultiplePartialEntanglementMatrix[0].GetNbrColumn();
+				      if (TmpDimension > MultiplePartialEntanglementMatrix[0].GetNbrRow())
+					{
+					  TmpDimension = MultiplePartialEntanglementMatrix[0].GetNbrRow();
+					}
+				    }
+				}
+			      else
+				{
+				  if (TmpNbrEntanglementMatrices == 1)
+				    {
+				      TmpValues = ComplexPartialEntanglementMatrix.SingularValueDecomposition();
+				      TmpDimension = ComplexPartialEntanglementMatrix.GetNbrColumn();
+				      if (TmpDimension > ComplexPartialEntanglementMatrix.GetNbrRow())
+					{
+					  TmpDimension = ComplexPartialEntanglementMatrix.GetNbrRow();
+					}
+				    }
+				  else
+				    {
+				      TmpValues = MultipleComplexPartialEntanglementMatrix[l].SingularValueDecomposition();
+				      TmpDimension = MultipleComplexPartialEntanglementMatrix[0].GetNbrColumn();
+				      if (TmpDimension > MultipleComplexPartialEntanglementMatrix[0].GetNbrRow())
+					{
+					  TmpDimension = MultipleComplexPartialEntanglementMatrix[0].GetNbrRow();
+					}
+				      
+				    }
+				}
+			      for (int i = 0; i < TmpDimension; ++i)
+				{
+				  TmpValues[i] *= TmpValues[i];
+				}
+			      TmpDiag[l] = RealDiagonalMatrix(TmpValues, TmpDimension);
+			    }
+			}
+		      for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
+			{
+			  TmpDiag[l].SortMatrixDownOrder();
+			  
+			  if (DensityMatrixFileName != 0)
+			    {
+			      ofstream DensityMatrixFile;
+			      DensityMatrixFile.open(DensityMatrixFileName[l], ios::binary | ios::out | ios::app); 
+			      DensityMatrixFile.precision(14);
+			      
+			      for (int i = 0; i < TmpDiag[l].GetNbrRow(); ++i)
+				DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[l][i] << endl;
+			      DensityMatrixFile.close();
+			    }
+			}
+		    }
+		  else
+		    {
+		      if (Manager.GetBoolean("complex"))
+			cout << "Warning, not implemented for complex vectors" << endl;
+		      RealMatrix TmpEigenstates(PartialDensityMatrix.GetNbrRow(),
+						PartialDensityMatrix.GetNbrRow(), true);
+		      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
+			TmpEigenstates[i][i] = 1.0;
+#ifdef __LAPACK__
+		      if (LapackFlag == true)
+			PartialDensityMatrix.LapackDiagonalize(TmpDiag[0], TmpEigenstates);
+		      else
+			PartialDensityMatrix.Diagonalize(TmpDiag[0], TmpEigenstates);
+#else
+		      PartialDensityMatrix.Diagonalize(TmpDiag[0], TmpEigenstates);
+#endif
+		      TmpDiag[0].SortMatrixDownOrder(TmpEigenstates);
+		      FermionOnSphere TmpDestinationHilbertSpace(SubsystemNbrParticles, SubsystemTotalLz, LzMax);
+		      ParticleOnSphereSquareTotalMomentumOperator OperMomentum (&TmpDestinationHilbertSpace, LzMax);
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
 		      DensityMatrixFile.precision(14);
-		      if (ComputeLValueFlag == false)
+		      char* TmpEigenstateName = new char[512];
+		      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			{
-			  DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
-			}
-		      else		      
-			{
-			  if (SubsystemNbrParticles == 1)
-			    DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << " " << ((LzMax * (LzMax + 2)) / 4.0) << " " << (LzMax / 2.0) << endl;
-			  else
+			  double TmpSqrMomentum = (OperMomentum.MatrixElement(TmpEigenstates[i], TmpEigenstates[i])).Re;
+			  double TmpMomentum = 0.0;
+			  if (TmpSqrMomentum > 0.0)
+			    TmpMomentum = (0.5 * (sqrt ((4.0 * TmpSqrMomentum) + 1.0) - 1.0));
+			  DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[0][i] << " " << TmpSqrMomentum << " " << TmpMomentum << endl;
+			  if ((EigenstateFlag == true) && (FilterLza == SubsystemTotalLz) && ((NbrEigenstates == 0) || (NbrEigenstates > i)))
 			    {
-			      FermionOnSphere TmpDestinationHilbertSpace(SubsystemNbrParticles, SubsystemTotalLz, LzMax);
-			      ParticleOnSphereSquareTotalMomentumOperator OperMomentum (&TmpDestinationHilbertSpace, LzMax);
-			      RealVector TmpEigenstate(1);
-			      TmpEigenstate[0] = 1.0;
-			      double TmpSqrMomentum = (OperMomentum.MatrixElement(TmpEigenstate, TmpEigenstate)).Re;
-			      double TmpMomentum = 0.0;
-			      if (TmpSqrMomentum > 0.0)
-				TmpMomentum = (0.5 * (sqrt ((4.0 * TmpSqrMomentum) + 1.0) - 1.0));
-			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << " " << TmpSqrMomentum << " " << TmpMomentum << endl;
+			      sprintf (TmpEigenstateName,
+				       "fermions_particlereduceddensity_na_%d_n_%d_2s_%d_lz_%d.%d.vec",
+				       SubsystemNbrParticles, NbrParticles, LzMax, SubsystemTotalLz, i);
+			      TmpEigenstates[i].WriteVector(TmpEigenstateName);
 			    }
 			}
+		      delete[] TmpEigenstateName;
 		      DensityMatrixFile.close();
-		    }		  
-		  if (TmpValue > 1e-14)
+		    }
+		  
+		  for (int l = 0; l < TmpNbrEntanglementMatrices; ++l)
 		    {
-		      EntanglementEntropy[0] += TmpValue * log(TmpValue);
-		      DensitySum[0] += TmpValue;
+		      for (int i = 0; i < TmpDiag[l].GetNbrRow(); ++i)
+			{
+			  if (TmpDiag[l][i] > 1e-14)
+			    {
+			      EntanglementEntropy[l] += TmpDiag[l][i] * log(TmpDiag[l][i]);
+			      DensitySum[l] +=TmpDiag[l][i];
+			    }
+			}
+		    }
+		  if (ShowTimeFlag == true)
+		    {
+		      gettimeofday (&(TotalEndingTime), 0);
+		      double Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+					    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));		      
+		      cout << "diagonalization done in " << Dt << "s" << endl;
 		    }
 		}
+	      else
+		{
+		  if ((SVDFlag == false) && (PartialDensityMatrix.GetNbrRow() == 1))
+		    {
+		      double TmpValue = PartialDensityMatrix(0,0);
+		      if (DensityMatrixFileName != 0)
+			{
+			  ofstream DensityMatrixFile;
+			  DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
+			  DensityMatrixFile.precision(14);
+			  if (ComputeLValueFlag == false)
+			    {
+			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
+			    }
+			  else		      
+			    {
+			      if (SubsystemNbrParticles == 1)
+				DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << " " << ((LzMax * (LzMax + 2)) / 4.0) << " " << (LzMax / 2.0) << endl;
+			      else
+				{
+				  FermionOnSphere TmpDestinationHilbertSpace(SubsystemNbrParticles, SubsystemTotalLz, LzMax);
+				  ParticleOnSphereSquareTotalMomentumOperator OperMomentum (&TmpDestinationHilbertSpace, LzMax);
+				  RealVector TmpEigenstate(1);
+				  TmpEigenstate[0] = 1.0;
+				  double TmpSqrMomentum = (OperMomentum.MatrixElement(TmpEigenstate, TmpEigenstate)).Re;
+				  double TmpMomentum = 0.0;
+				  if (TmpSqrMomentum > 0.0)
+				    TmpMomentum = (0.5 * (sqrt ((4.0 * TmpSqrMomentum) + 1.0) - 1.0));
+				  DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << " " << TmpSqrMomentum << " " << TmpMomentum << endl;
+				}
+			    }
+			  DensityMatrixFile.close();
+			}		  
+		      if (TmpValue > 1e-14)
+			{
+			  EntanglementEntropy[0] += TmpValue * log(TmpValue);
+			  DensitySum[0] += TmpValue;
+			}
+		    }
+		}
+	      if (MultiplePartialEntanglementMatrix != 0)
+		delete[] MultiplePartialEntanglementMatrix;
+	      if (MultipleComplexPartialEntanglementMatrix != 0)
+		delete[] MultipleComplexPartialEntanglementMatrix;
+	      if (TmpNbrEntanglementMatrices == 1)
+		cout << "DensitySum = " << DensitySum[0] << endl;
 	    }
-	  if (MultiplePartialEntanglementMatrix != 0)
-	    delete[] MultiplePartialEntanglementMatrix;
-	  if (MultipleComplexPartialEntanglementMatrix != 0)
-	    delete[] MultipleComplexPartialEntanglementMatrix;
-	  if (TmpNbrEntanglementMatrices == 1)
-	    cout << "DensitySum = " << DensitySum[0] << endl;
+	  for (int i = 0; i < TmpNbrEntanglementMatrices; ++i)
+	    {
+	      if (Manager.GetString("output-file") == 0)
+		if (FirstRun)
+		  File.open(TmpFileName[i], ios::binary | ios::out);
+		else
+		  File.open(TmpFileName[i], ios::binary | ios::out | ios::app);
+	      
+	      File.precision(14);
+	      File << SubsystemNbrParticles << " " << (-EntanglementEntropy[i]) << " " << DensitySum[i] << " " << (1.0 - DensitySum[i]) << endl;
+	      File.close();
+	      // 	cout << "trace = " << DensitySum[i] << endl;
+	      TotalEntanglementEntropy[i] += (-EntanglementEntropy[i]);
+	      TotalTrace[i] += DensitySum[i];
+	    }
+	  FirstRun = false;
 	}
-      for (int i = 0; i < TmpNbrEntanglementMatrices; ++i)
-      {
-	if (Manager.GetString("output-file") == 0)
-	  if (FirstRun)
-	    File.open(TmpFileName[i], ios::binary | ios::out);
-	  else
-	    File.open(TmpFileName[i], ios::binary | ios::out | ios::app);
-	  
-	File.precision(14);
-	File << SubsystemNbrParticles << " " << (-EntanglementEntropy[i]) << " " << DensitySum[i] << " " << (1.0 - DensitySum[i]) << endl;
-	File.close();
-// 	cout << "trace = " << DensitySum[i] << endl;
-	TotalEntanglementEntropy[i] += (-EntanglementEntropy[i]);
-	TotalTrace[i] += DensitySum[i];
-      }
-      FirstRun = false;
     }
   if (RealSpaceCut == true)
     {
@@ -1444,10 +1448,19 @@ int main(int argc, char** argv)
     delete[] GroundStates;
   if (ComplexGroundStates != 0)
     delete[] ComplexGroundStates;
+  for (int i = 0; i < NbrSpaces; ++i)
+    {
+      delete Spaces[i];
+    }
   delete[] Spaces;
+  delete[] TotalLz;
   delete[] TmpFileName;
   if (DensityMatrixFileName != 0)
     delete[] DensityMatrixFileName;
+  delete[] TotalTrace;
+  delete[] TotalEntanglementEntropy;
+  delete[] EntanglementEntropy;
+  delete[] DensitySum;  
   if (ShowTimeFlag == true)
    {
       gettimeofday (&(AllSectorsEndingTime), 0);

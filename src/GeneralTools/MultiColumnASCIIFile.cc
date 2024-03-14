@@ -71,10 +71,13 @@ MultiColumnASCIIFile::~MultiColumnASCIIFile()
       for (int i = 0; i < this->NbrColumns; ++i)
 	{
 	  for (int j = 0; j < this->NbrLines; ++j)
-	    delete[] this->Data[i][j];
+	    {
+	      delete[] this->Data[i][j];
+	    }
 	  delete[] this->Data[i];
 	}
       delete[] this->Data;
+      this->Data = 0;
     }
 }
 

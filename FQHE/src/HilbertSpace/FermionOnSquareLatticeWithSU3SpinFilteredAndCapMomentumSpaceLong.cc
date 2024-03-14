@@ -136,7 +136,6 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::FermionOnSquar
 	  this->KxMomentum = HoleMomentumX;
 	  this->KyMomentum = HoleMomentumY;
 	  TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->TotalNbrOrbitals - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
-	  cout << "test  = " << TmpLargeHilbertSpaceDimension << endl;
 	  this->KxMomentum = TmpKx;
 	  this->KyMomentum = TmpKy;
 	  ULONGLONG TmpMask = ~this->OrbitalFilteringMask;

@@ -6459,6 +6459,11 @@ RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionF
   RealMatrix TmpSubsystemDeterminantMatrix (nbrParticleSector, nbrParticleSector);
   RealMatrix TmpComplementarySubsystemDeterminantMatrix (ComplementaryNbrParticles, ComplementaryNbrParticles);
 
+  unsigned long* TmpComplementaryMonomial1 = new unsigned long [ComplementaryNbrParticles];
+  unsigned long* TmpComplementaryMonomial2 = new unsigned long [ComplementaryNbrParticles];
+  unsigned long* TmpMonomial1 = new unsigned long [nbrParticleSector];
+  unsigned long* TmpMonomial2 = new unsigned long [nbrParticleSector];
+
   for (int i = 0; i < nbrEntanglementMatrices; ++i)
     {
 
@@ -6466,12 +6471,30 @@ RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionF
       cout << "size of the B tranformation matrix " << ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension() << " x " << TotalComplementarySubsystemSpace->GetHilbertSpaceDimension()
 	   << " (requiring  " << (((double) ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension()) * ((double) TotalComplementarySubsystemSpace->GetHilbertSpaceDimension())/ 131072.0) << " Mb )" << endl;
       RealMatrix TmpComplementaryTransformationMatrix (ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension(), TotalComplementarySubsystemSpace->GetHilbertSpaceDimension(), true);
-      for (int TmpComplementarySubsystemIndex = 0; TmpComplementarySubsystemIndex <  ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension(); ++TmpComplementarySubsystemIndex)
+      for (int TmpTotalComplementarySubsystemIndex = 0; TmpTotalComplementarySubsystemIndex <  TotalComplementarySubsystemSpace->GetHilbertSpaceDimension(); ++TmpTotalComplementarySubsystemIndex)
 	{
-	  for (int TmpTotalComplementarySubsystemIndex = 0; TmpTotalComplementarySubsystemIndex <  TotalComplementarySubsystemSpace->GetHilbertSpaceDimension(); ++TmpTotalComplementarySubsystemIndex)
+	  TotalComplementarySubsystemSpace->ConvertToMonomial(TotalComplementarySubsystemSpace->StateDescription[TmpTotalComplementarySubsystemIndex], TmpComplementaryMonomial1);
+	  for (int TmpComplementarySubsystemIndex = 0; TmpComplementarySubsystemIndex <  ComplementarySubsystemSpaces[i]->GetHilbertSpaceDimension(); ++TmpComplementarySubsystemIndex)
 	    {
-	      TmpComplementarySubsystemDeterminantMatrix.ClearMatrix();
-	      double Tmp = TmpComplementarySubsystemDeterminantMatrix.Determinant();
+	      double Tmp = 1.0;
+	      if (ComplementaryNbrParticles > 0)
+		{
+		  ComplementarySubsystemSpaces[i]->ConvertToMonomial(ComplementarySubsystemSpaces[i]->StateDescription[TmpComplementarySubsystemIndex], TmpComplementaryMonomial2);
+		  TmpComplementarySubsystemDeterminantMatrix.ClearMatrix();
+		  for (int j = 0; j < ComplementaryNbrParticles; ++j)
+		    {
+		      for (int k = 0; k < ComplementaryNbrParticles; ++k)
+			{
+			  int TmpIndex = SearchInArray<int>(TmpComplementaryMonomial2[k], connectedOrbitalB[TmpComplementaryMonomial1[j]], 
+							    nbrConnectedOrbitalB[TmpComplementaryMonomial1[j]]);
+			  if (TmpIndex >= 0)
+			    {
+			      TmpComplementarySubsystemDeterminantMatrix.SetMatrixElement(j, k, ((double) (1 - ((TmpIndex & 1) << 1))) * weightOrbitalB[TmpComplementaryMonomial1[j]][TmpIndex]);
+			    }
+			}
+		    }
+		  Tmp = TmpComplementarySubsystemDeterminantMatrix.Determinant();
+		}
 	      TmpComplementaryTransformationMatrix.SetMatrixElement(TmpComplementarySubsystemIndex, TmpTotalComplementarySubsystemIndex, Tmp);
 	    }
 	}
@@ -6480,12 +6503,30 @@ RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionF
       cout << "size of the A tranformation matrix " << SubsystemSpaces[i]->GetHilbertSpaceDimension() << " x " << TotalSubsystemSpace->GetHilbertSpaceDimension()
 	   << " (requiring  " << (((double) SubsystemSpaces[i]->GetHilbertSpaceDimension()) * ((double) TotalSubsystemSpace->GetHilbertSpaceDimension())/ 131072.0) << " Mb )" << endl;
       RealMatrix TmpTransformationMatrix (TotalSubsystemSpace->GetHilbertSpaceDimension(), SubsystemSpaces[i]->GetHilbertSpaceDimension(), true);
-      for (int TmpSubsystemIndex = 0; TmpSubsystemIndex <  SubsystemSpaces[i]->GetHilbertSpaceDimension(); ++TmpSubsystemIndex)
+      for (int TmpTotalSubsystemIndex = 0; TmpTotalSubsystemIndex <  TotalSubsystemSpace->GetHilbertSpaceDimension(); ++TmpTotalSubsystemIndex)
 	{
-	  for (int TmpTotalSubsystemIndex = 0; TmpTotalSubsystemIndex <  TotalSubsystemSpace->GetHilbertSpaceDimension(); ++TmpTotalSubsystemIndex)
+	  TotalSubsystemSpace->ConvertToMonomial(TotalSubsystemSpace->StateDescription[TmpTotalSubsystemIndex], TmpMonomial2);
+	  for (int TmpSubsystemIndex = 0; TmpSubsystemIndex <  SubsystemSpaces[i]->GetHilbertSpaceDimension(); ++TmpSubsystemIndex)
 	    {
-	      TmpSubsystemDeterminantMatrix.ClearMatrix();
-	      double Tmp = TmpSubsystemDeterminantMatrix.Determinant();
+	      double Tmp = 1.0;
+	      if (nbrParticleSector > 0)
+		{
+		  SubsystemSpaces[i]->ConvertToMonomial(SubsystemSpaces[i]->StateDescription[TmpSubsystemIndex], TmpMonomial1);
+		  TmpSubsystemDeterminantMatrix.ClearMatrix();
+		  for (int j = 0; j < nbrParticleSector; ++j)
+		    {
+		      for (int k = 0; k < nbrParticleSector; ++k)
+			{
+			  int TmpIndex = SearchInArray<int>(TmpMonomial2[k], connectedOrbitalA[TmpMonomial1[j]], 
+							    nbrConnectedOrbitalA[TmpMonomial1[j]]);
+			  if (TmpIndex >= 0)
+			    {
+			      TmpSubsystemDeterminantMatrix.SetMatrixElement(j, k, ((double) (1 - ((TmpIndex & 1) << 1))) * weightOrbitalA[TmpMonomial1[j]][TmpIndex]);
+			    }
+			}
+		    }
+		  Tmp = TmpSubsystemDeterminantMatrix.Determinant();
+		}
 	      TmpTransformationMatrix.SetMatrixElement(TmpTotalSubsystemIndex, TmpSubsystemIndex, Tmp);
 	    }
 	}
@@ -6495,7 +6536,9 @@ RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionF
       TmpEntanglementMatrix.AddMultiply (TmpTransformationMatrix, TmpMatrix);
     }
 
-for (int i = 0; i < nbrEntanglementMatrices; ++i)
+  delete TotalComplementarySubsystemSpace;
+  delete TotalSubsystemSpace;
+  for (int i = 0; i < nbrEntanglementMatrices; ++i)
     {
       delete SubsystemSpaces[i];
       delete ComplementarySubsystemSpaces[i];
@@ -6504,6 +6547,10 @@ for (int i = 0; i < nbrEntanglementMatrices; ++i)
     }
   delete[] SubsystemSpaces;
   delete[] ComplementarySubsystemSpaces;
+  delete[] TmpComplementaryMonomial1;
+  delete[] TmpComplementaryMonomial2;
+  delete[] TmpMonomial1;
+  delete[] TmpMonomial2;
 
   return TmpEntanglementMatrix;
 }

@@ -4067,6 +4067,14 @@ RealMatrix BosonOnSphereWithSU2Spin::EvaluateEntanglementMatrixGenericRealSpaceP
   delete[] TotalAllSubsystemOccupationFactors;
   delete[] TotalAllComplementarySubsystemOccupationFactors;
   delete[] LogFactorials;
+  delete[] TmpComplementaryMonomialUp1;
+  delete[] TmpComplementaryMonomialDown1;
+  delete[] TmpComplementaryMonomialUp2;
+  delete[] TmpComplementaryMonomialDown2;
+  delete[] TmpMonomialUp1;
+  delete[] TmpMonomialDown1;
+  delete[] TmpMonomialUp2;
+  delete[] TmpMonomialDown2;
 
   return TmpEntanglementMatrix;
 }

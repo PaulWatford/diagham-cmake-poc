@@ -546,6 +546,7 @@ int main(int argc, char** argv)
 		  cout << "no vec extension was find in " << GroundStateFiles[l] << " file name" << endl;
 		  return 0;
 		}
+        delete[] TmpExtension;
 	    }
 	}
     }
@@ -640,16 +641,25 @@ int main(int argc, char** argv)
 
   double* TotalTrace = new double[TmpNbrEntanglementMatrices];
   double* TotalEntanglementEntropy = new double[TmpNbrEntanglementMatrices];
-  double* EntanglementEntropy = new double[TmpNbrEntanglementMatrices];
-  double* DensitySum = new double[TmpNbrEntanglementMatrices];  
   for (int i = 0; i < TmpNbrEntanglementMatrices; ++i)
   {
     TotalTrace[i] = 0.0;
     TotalEntanglementEntropy[i] = 0.0;
   }
+
+  //double* EntanglementEntropy = new double[TmpNbrEntanglementMatrices];
+  //double* DensitySum = new double[TmpNbrEntanglementMatrices];
+  double* EntanglementEntropy = new double[MaxSubsystemNbrParticles - MinSubsystemNbrParticles + 1];
+  double* DensitySum = new double[MaxSubsystemNbrParticles - MinSubsystemNbrParticles + 1];
+  for (int SubsystemNbrParticles = MinSubsystemNbrParticles; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
+    {
+       EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles] = 0.0;
+       DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] = 0.0;      
+    }  
   
   if (SymmetryBreakingPatch == true)
     {
+      bool FirstRun = true;
       int* NbrConnectedOrbitalA = new int[NbrAOrbitals];
       int** ConnectedOrbitalA = new int*[NbrAOrbitals];
       double** FullWeightAOrbitals = new double*[NbrAOrbitals]; 
@@ -854,12 +864,60 @@ int main(int argc, char** argv)
 	      if (TmpDiag[i] > 1e-14)
 		{
 		  EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles] += TmpDiag[i] * log(TmpDiag[i]);
-		  DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] +=TmpDiag[i];
+		  DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] += TmpDiag[i];
 		}
 	    }
+
 	  delete[] TmpEntanglementMatrices2;
 	  delete[] TmpEntanglementMatrixLzSectors;
 	}
+
+    for (int i = 0; i < TmpNbrEntanglementMatrices; ++i)
+	 {
+	   if (Manager.GetString("output-file") == 0)
+		if (FirstRun)
+		  File.open(TmpFileName[i], ios::binary | ios::out);
+		else
+		  File.open(TmpFileName[i], ios::binary | ios::out | ios::app);
+	      
+	      File.precision(14);
+          for (SubsystemNbrParticles = MinSubsystemNbrParticles; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
+	        {
+	           File << SubsystemNbrParticles << " " << (-EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles]) << " " << DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] << " " << (1.0 - DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles]) << endl;
+	           cout << "NA = " << SubsystemNbrParticles << " Entanglement entropy= " << (-EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles]) << " Trace= " << DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] << " 1-Trace= " << (1.0 - DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles]) << endl;
+  	           TotalEntanglementEntropy[i] += (-EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles]);
+	           TotalTrace[i] += DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles];
+            }
+	      File.close();
+	 }
+    FirstRun = false; 
+      
+    //Clean up
+
+    for (int i = 0; i < NbrAOrbitals; ++i)
+	 if (NbrConnectedOrbitalA[i] > 0)
+       {
+		 delete[] ConnectedOrbitalA[i];
+         delete[] FullWeightAOrbitals[i];
+       }
+	delete[] ConnectedOrbitalA;
+    delete[] FullWeightAOrbitals;
+    delete[] NbrConnectedOrbitalA;
+
+    for (int i = 0; i < NbrBOrbitals; ++i)
+	 if (NbrConnectedOrbitalB[i] > 0)
+       {
+		 delete[] ConnectedOrbitalB[i];
+         delete[] FullWeightBOrbitals[i];
+       } 
+	delete[] ConnectedOrbitalB;
+    delete[] FullWeightBOrbitals;
+    delete[] NbrConnectedOrbitalB;
+
+    delete[] TmpIndices1;
+    delete[] TmpIndices2;
+    delete[] TmpAWeights; 
+    delete[] TmpBWeights;
     }
   else
     {

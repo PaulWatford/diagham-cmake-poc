@@ -187,6 +187,8 @@ FermionOnSphereFull::FermionOnSphereFull(const FermionOnSphereFull& fermions)
 
 FermionOnSphereFull::~FermionOnSphereFull ()
 {
+  if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
+   delete[] this->TotalLzValues;
 }
 
 
@@ -201,6 +203,7 @@ FermionOnSphereFull& FermionOnSphereFull::operator = (const FermionOnSphereFull&
     {
       delete[] this->StateDescription;
       delete[] this->StateLzMax;
+      delete[] this->TotalLzValues;
       delete[] this->SignLookUpTable;
       delete[] this->SignLookUpTableMask;
       delete[] this->LookUpTableShift;

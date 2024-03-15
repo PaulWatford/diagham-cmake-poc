@@ -130,6 +130,7 @@ int main(int argc, char** argv)
 #endif 	  
       for (int i = 0; i <= NbrFluxQuanta; ++i)
 	{
+	  //	  cout << TmpDiag1[i] << endl;
 	  TmpDiag2[i] = sqrt(1.0 - TmpDiag1[i]);	      
 	  TmpDiag1[i] = sqrt(TmpDiag1[i]);
 	}
@@ -189,11 +190,15 @@ double FQHESphereComputeSharpRealSpaceCutCoefficient (int orbitalIndex1, int orb
 #ifdef __GSL__
   if (orbitalIndex1 == orbitalIndex2)
     {
-      return (gsl_sf_beta_inc((double) (orbitalIndex1 + 1), (double) (nbrFluxQuanta - orbitalIndex1 + 1), sin(theta * M_PI * 0.5) * sin(theta * M_PI * 0.5)));
+      return (gsl_sf_beta_inc((double) (orbitalIndex1 + 1), (double) (nbrFluxQuanta - orbitalIndex1 + 1), sin(theta * M_PI * 0.5) * sin(theta * M_PI * 0.5)) * phi);
     }
   else
     {
-      return (gsl_sf_beta_inc((double) (orbitalIndex1 + 1), (double) (nbrFluxQuanta - orbitalIndex1 + 1), sin(theta * M_PI * 0.5) * sin(theta * M_PI * 0.5)) * (sin(((double) (orbitalIndex1 - orbitalIndex2)) * M_PI * phi)) / (M_PI * ((double) (orbitalIndex1 - orbitalIndex2))));
+      return ((gsl_sf_beta_inc((0.5 * ((double) (orbitalIndex1 + orbitalIndex2))) + 1.0,
+			      (0.5 * ((double) ((2 * nbrFluxQuanta) - (orbitalIndex1 + orbitalIndex2)))) + 1.0,
+			      sin(theta * M_PI * 0.5) * sin(theta * M_PI * 0.5)) * (sin(((double) (orbitalIndex1 - orbitalIndex2)) * M_PI * phi)) / (M_PI * ((double) (orbitalIndex1 - orbitalIndex2))))
+	      * (gsl_sf_beta((0.5 * ((double) (orbitalIndex1 + orbitalIndex2))) + 1.0,
+			     (0.5 * ((double) ((2 * nbrFluxQuanta) - (orbitalIndex1 + orbitalIndex2)))) + 1.0) / sqrt(gsl_sf_beta((double) (orbitalIndex1 + 1), (double) (nbrFluxQuanta - orbitalIndex1 + 1)) * gsl_sf_beta((double) (orbitalIndex2 + 1), (double) (nbrFluxQuanta - orbitalIndex2 + 1)))));
     }
 #else
   cout << "gsl is required" << endl;

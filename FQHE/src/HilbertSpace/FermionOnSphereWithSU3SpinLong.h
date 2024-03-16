@@ -238,6 +238,33 @@ class FermionOnSphereWithSU3SpinLong :  public ParticleOnSphereWithSU3Spin
   // return value = index of the destination state 
   virtual int AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient);
 
+  // apply a^+_m_s a_m_s operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index of the creation and annihilation operator
+  // sigma = internal degree of freedom label of the creation and annihilation operator
+  // return value = coefficient obtained when applying a^+_m a_m
+  virtual double AdsigmaAsigma (int index, int m, int sigma);
+
+  // apply a^+_m_s a_m_s operator to a given state)
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index of the creation and annihilation operator
+  // sigma = internal degree of freedom label of the creation and annihilation operator
+  // return value = coefficient obtained when applying a^+_m a_m
+  virtual double AdsigmaAsigma (long index, int m, int sigma);
+  
+  // apply a^+_m1_s1 a_m2_s2 operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m1 = index of the creation operator
+  // sigma1 = internal degree of freedom label of the creation operator
+  // m2 = index of the annihilation operator
+  // sigma2 = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual int AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient);
+
   // apply a^+_m1_1 a^+_m2_1 operator to the state produced using A*A* method (without destroying it)
   //
   // m1 = first index for creation operator
@@ -317,6 +344,15 @@ class FermionOnSphereWithSU3SpinLong :  public ParticleOnSphereWithSU3Spin
   //  virtual RealVector ForgeU1FromSU3(RealVector& state, FermionOnSphere& u1Space);
 
   protected:
+
+   // factorized code for any a^+_m_x a_n_y operator 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = global index of the creation operator
+  // n = global index of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  int GenericAdA(int index, int m, int n, double& coefficient);
 
   // find state index
   //
@@ -484,6 +520,104 @@ inline int FermionOnSphereWithSU3SpinLong::AdsigmaAdsigma (int m1, int m2, int s
     }
   TmpState |= (((ULONGLONG) 0x1ul) << m1);
   return this->FindStateIndex(TmpState, NewLzMax);
+}
+
+// apply a^+_m_s a_m_s operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m = index of the creation and annihilation operator
+// sigma = internal degree of freedom label of the creation and annihilation operator
+// return value = coefficient obtained when applying a^+_m a_m
+
+inline double FermionOnSphereWithSU3SpinLong::AdsigmaAsigma (int index, int m, int sigma)
+{
+  return ((double) ((this->StateDescription[index] >> ((m * 3) + sigma)) & ((ULONGLONG) 0x1ul)));
+}
+
+// apply a^+_m_s a_m_s operator to a given state)
+//
+// index = index of the state on which the operator has to be applied
+// m = index of the creation and annihilation operator
+// sigma = internal degree of freedom label of the creation and annihilation operator
+// return value = coefficient obtained when applying a^+_m a_m
+
+inline double FermionOnSphereWithSU3SpinLong::AdsigmaAsigma (long index, int m, int sigma)
+{
+  return ((double) ((this->StateDescription[index] >> ((m * 3) + sigma)) & ((ULONGLONG) 0x1ul)));
+}
+
+// factorized code for any a^+_m_x a_n_y operator 
+//
+// index = index of the state on which the operator has to be applied
+// m = global index of the creation operator
+// n = global index of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline int FermionOnSphereWithSU3SpinLong::GenericAdA(int index, int m, int n, double& coefficient)
+{
+  int StateHighestBit = this->StateHighestBit[index];
+  ULONGLONG State = this->StateDescription[index];
+  if ((n > StateHighestBit) || ((State & (((ULONGLONG) 0x1ul) << n)) == ((ULONGLONG) 0x0ul)) )
+    {
+      coefficient = 0.0;
+      return this->HilbertSpaceDimension;
+    }
+  int NewLargestBit = StateHighestBit;
+  coefficient = -this->SignLookUpTable[(State >> n) & this->SignLookUpTableMask[n]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 16))  & this->SignLookUpTableMask[n + 16]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
+#ifdef __128_BIT_LONGLONG__
+  coefficient *= this->SignLookUpTable[(State >> (n + 64)) & this->SignLookUpTableMask[n + 64]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 80)) & this->SignLookUpTableMask[n + 80]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 96)) & this->SignLookUpTableMask[n + 96]];
+  coefficient *= this->SignLookUpTable[(State >> (n + 112)) & this->SignLookUpTableMask[n + 112]];
+#endif
+  State &= ~(((ULONGLONG) 0x1ul) << n);
+  if (State != ((ULONGLONG) 0x0ul))
+    while ((State >> NewLargestBit) == ((ULONGLONG) 0x0ul))
+      --NewLargestBit;
+
+  if ((State & (((ULONGLONG) 0x1ul) << m)) != ((ULONGLONG) 0x0ul))
+    {
+      coefficient = 0.0;
+      return this->HilbertSpaceDimension;
+    }
+  if (m > NewLargestBit)
+    {
+      NewLargestBit = m;
+    }
+  else
+    {
+      coefficient *= this->SignLookUpTable[(State >> m) & this->SignLookUpTableMask[m]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 16))  & this->SignLookUpTableMask[m + 16]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 32)) & this->SignLookUpTableMask[m + 32]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
+#ifdef __128_BIT_LONGLONG__
+      coefficient *= this->SignLookUpTable[(State >> (m + 64)) & this->SignLookUpTableMask[m + 64]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 80)) & this->SignLookUpTableMask[m + 80]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 96)) & this->SignLookUpTableMask[m + 96]];
+      coefficient *= this->SignLookUpTable[(State >> (m + 112)) & this->SignLookUpTableMask[m + 112]];
+#endif
+    }
+  State |= ((ULONGLONG) 0x1ul) << m;
+  return this->FindStateIndex(State, NewLargestBit);
+}
+
+// apply a^+_m1_s1 a_m2_s2 operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m1 = index of the creation operator
+// sigma1 = internal degree of freedom label of the creation operator
+// m2 = index of the annihilation operator
+// sigma2 = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline int FermionOnSphereWithSU3SpinLong::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
+{
+  return this->GenericAdA(index, (m1 * 3) + sigma1, (m2 * 3) + sigma2, coefficient);
 }
 
 #endif

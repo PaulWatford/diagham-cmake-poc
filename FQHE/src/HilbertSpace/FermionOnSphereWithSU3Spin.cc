@@ -164,16 +164,27 @@ FermionOnSphereWithSU3Spin::~FermionOnSphereWithSU3Spin ()
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
       unsigned long TmpPosition = this->StateDescription[0];
-      int CurrentHighestBit = (this->LzMax + 1) * 3 - 1;
+#ifdef __64_BITS__
+      int CurrentHighestBit = 63;
+#else
+      int CurrentHighestBit = 31;
+#endif
       while ((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul)
-	--CurrentHighestBit;  
-      delete[] this->StateDescription;
+	--CurrentHighestBit;
+      if (this->StateDescription != 0)
+	delete[] this->StateDescription;
       if (this->StateHighestBit != 0)
 	delete[] this->StateHighestBit;
-      delete[] this->LookUpTableShift;
-      for (int i = 0; i <= CurrentHighestBit; ++i)
-	delete[] this->LookUpTable[i];
-      delete[] this->LookUpTable;
+      if (this->LookUpTableShift != 0)
+	delete[] this->LookUpTableShift;
+      if (this->LookUpTable != 0)
+	{
+	  for (int i = 0; i <= CurrentHighestBit; ++i)
+	    {
+	      delete[] this->LookUpTable[i];
+	    }
+	  delete[] this->LookUpTable;
+	}
     }
 }
 

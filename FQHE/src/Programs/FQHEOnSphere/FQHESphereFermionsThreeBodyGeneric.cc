@@ -15,6 +15,7 @@
 #include "Architecture/AbstractArchitecture.h"
 #include "Architecture/ArchitectureOperation/MainTaskOperation.h"
 #include "Architecture/ArchitectureOperation/VectorHamiltonianMultiplyOperation.h"
+#include "Architecture/ArchitectureOperation/MultipleVectorHamiltonianMultiplyOperation.h"
 
 #include "LanczosAlgorithm/LanczosManager.h"
 
@@ -24,6 +25,7 @@
 
 #include "GeneralTools/ConfigurationParser.h"
 #include "GeneralTools/FilenameTools.h"
+#include "GeneralTools/MultiColumnASCIIFile.h"
 
 #include <iostream>
 #include <cstring>
@@ -98,6 +100,7 @@ int main(int argc, char** argv)
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*MiscGroup) += new SingleStringOption('\n', "energy-expectation", "name of the file containing the state vector, whose energy expectation value shall be calculated");
+  (*MiscGroup) += new SingleStringOption('\n', "multipleenergy-expectations", "name of the file containing a list of the states (single column file), whose energy expectation value shall be calculated");
   (*MiscGroup) += new BooleanOption('\n', "energy-variance", "in addition to energy expectation, also evaluate energy variance sqrt[<H^2>-<H>^2]");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
@@ -391,7 +394,7 @@ int main(int argc, char** argv)
 								    LoadPrecalculationFileName, Normalize3Body);
 
       double Shift = - 0.5 * ((double) (NbrParticles * NbrParticles)) / (0.5 * ((double) LzMax));
-    if ( (Manager.GetString("energy-expectation") != 0 ) || (Manager.GetBoolean("energy-variance") != 0 ) )
+    if (Manager.GetString("energy-expectation") != 0)
 	{
 	  char* StateFileName = Manager.GetString("energy-expectation");
 	  if (IsFile(StateFileName) == false)
@@ -437,20 +440,50 @@ int main(int argc, char** argv)
 	  }
 	  cout << "< shifted energy > = "<<EnergyValue + Shift<<endl;
 
-      if (Manager.GetBoolean("energy-variance") != 0 )
-       {
-   	     RealVector TmpState2(Space->GetHilbertSpaceDimension());
-	     VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
-	     Operation2.ApplyOperation(Architecture.GetArchitecture());
-	     double varH = State * TmpState2 - EnergyValue * EnergyValue;
-	     cout << "(varH)^2 = " << varH << endl;
-       }   
+	  if (Manager.GetBoolean("energy-variance") != 0)
+	    {
+	      double varH = TmpState * TmpState - EnergyValue * EnergyValue;
+	      cout << "(varH)^2 = " << varH << endl;
+	    }   
 	  return 0;
-  	 }
+	}
+    if (Manager.GetString("multipleenergy-expectations") != 0)
+      {
+	MultiColumnASCIIFile DegeneratedFile;
+	if (DegeneratedFile.Parse(Manager.GetString("multipleenergy-expectations")) == false)
+	  {
+	    DegeneratedFile.DumpErrors(cout);
+	    return -1;
+	  }
+	int NbrStates = DegeneratedFile.GetNbrLines();
+	RealVector* States = new RealVector[NbrStates];
+	RealVector* TmpStates = new RealVector[NbrStates];
+	for (int i = 0; i < NbrStates; ++i)
+	  {
+	    if (States[i].ReadVector(DegeneratedFile(0, i)) == false)
+	      {
+		cout << "error while reading " << DegeneratedFile(0, i) << endl;
+		return -1;
+	      }	    
+	    if (States[i].GetVectorDimension() != Space->GetHilbertSpaceDimension())
+	      {
+		cout << "error: vector " << DegeneratedFile(0, i) << " and Hilbert-space have unequal dimensions"<<endl;
+		return -1;
+	      }
+	    TmpStates[i] = RealVector(Space->GetHilbertSpaceDimension(), true);
+	  }
+	MultipleVectorHamiltonianMultiplyOperation Operation (Hamiltonian, States, TmpStates, NbrStates);
+	Operation.ApplyOperation(Architecture.GetArchitecture());
+	cout << "# vector <H> <H^2>-<H>^2" << endl;
+ 	for (int i = 0; i < NbrStates; ++i)
+	  {
+	    double Tmp = (States[i] * TmpStates[i]);
+	    cout << DegeneratedFile(0, i) << " " << Tmp << " " << ((TmpStates[i] * TmpStates[i]) - (Tmp * Tmp)) << endl;
+	  }
+	return 0;
+     }
 
-
-
-      Hamiltonian->ShiftHamiltonian(Shift);
+    Hamiltonian->ShiftHamiltonian(Shift);
 
             // add eventual projectors
       int NbrProjectors = 0;

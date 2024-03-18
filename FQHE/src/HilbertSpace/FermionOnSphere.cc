@@ -763,6 +763,7 @@ double FermionOnSphere::ProdA (int index, int* n, int nbrIndices)
       this->ProdALzMax = 0;
       return Coefficient;      
     }
+  this->ProdALzMax = this->StateLzMax[index];
   while (((this->ProdATemporaryState >> this->ProdALzMax) == 0) && (this->ProdALzMax > 0))
     --this->ProdALzMax;
 

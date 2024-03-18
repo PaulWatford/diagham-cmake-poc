@@ -642,6 +642,7 @@ double FermionOnSphereSymmetricBasis::ProdA (int index, int* n, int nbrIndices)
 #endif
       this->ProdATemporaryState &= ~(0x1l << Index);
     }
+  this->ProdALzMax = this->LzMax;
   while ((this->ProdATemporaryState >> this->ProdALzMax) == 0)
     --this->ProdALzMax;
 

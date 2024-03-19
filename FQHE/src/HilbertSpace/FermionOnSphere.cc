@@ -6490,7 +6490,8 @@ RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionF
 							    nbrConnectedOrbitalB[TmpComplementaryMonomial1[j]]);
 			  if (TmpIndex >= 0)
 			    {
-			      TmpComplementarySubsystemDeterminantMatrix.SetMatrixElement(j, k, ((double) (1 - ((TmpIndex & 1) << 1))) * weightOrbitalB[TmpComplementaryMonomial1[j]][TmpIndex]);
+			      //			      TmpComplementarySubsystemDeterminantMatrix.SetMatrixElement(j, k, ((double) (1 - ((TmpIndex & 1) << 1))) * weightOrbitalB[TmpComplementaryMonomial1[j]][TmpIndex]);
+			      TmpComplementarySubsystemDeterminantMatrix.SetMatrixElement(j, k, weightOrbitalB[TmpComplementaryMonomial1[j]][TmpIndex]);
 			    }
 			}
 		    }
@@ -6522,7 +6523,8 @@ RealMatrix FermionOnSphere::EvaluateEntanglementMatrixGenericRealSpacePartitionF
 							    nbrConnectedOrbitalA[TmpMonomial1[j]]);
 			  if (TmpIndex >= 0)
 			    {
-			      TmpSubsystemDeterminantMatrix.SetMatrixElement(j, k, ((double) (1 - ((TmpIndex & 1) << 1))) * weightOrbitalA[TmpMonomial1[j]][TmpIndex]);
+			      //			      TmpSubsystemDeterminantMatrix.SetMatrixElement(j, k, ((double) (1 - ((TmpIndex & 1) << 1))) * weightOrbitalA[TmpMonomial1[j]][TmpIndex]);
+			      TmpSubsystemDeterminantMatrix.SetMatrixElement(j, k, weightOrbitalA[TmpMonomial1[j]][TmpIndex]);
 			    }
 			}
 		    }

@@ -241,12 +241,10 @@ void ParticleOnDiskGenericHamiltonian::EvaluateInteractionFactors()
 
   if (this->LzMax > 60)
     cout << "Large value of LzMax, possible issues with factorial coefficients in the matrix element! Proceed with caution. " << endl; 
-#ifdef __GSL__
   if (this->UseGSL) 
      cout << "Matrix element will be computed using GSL " << endl;
   else
      cout << "Matrix element will be computed by in-built routine." << endl;
-#endif
 
 
   if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
@@ -750,8 +748,10 @@ double ParticleOnDiskGenericHamiltonian::EvaluateCGCoefficient(int m1, int m2, i
   if ((mCM < 0) || (mCM > 2 * this->LzMax))
    return 0;
 
+
   if (this->UseGSL)
    {
+#ifdef __GSL__
   double FactCoeff = (gsl_sf_fact(m1) * gsl_sf_fact(m2))/(gsl_sf_fact(mRel) * gsl_sf_fact(mCM));
   FactCoeff /= pow(2.0, mCM + mRel);
   FactCoeff = sqrt(FactCoeff);
@@ -765,9 +765,13 @@ double ParticleOnDiskGenericHamiltonian::EvaluateCGCoefficient(int m1, int m2, i
    }
   //cout << "m1= " << m1 << " m2= " << m2 << " m= " << mRel << " M= " << mCM << " : " << FactCoeff * TmpSum << endl; 
   return (FactCoeff * TmpSum);
+#else
+ cout << "GSL required..." << endl;
+#endif
   }
-  else //do not use GSL
-  {
+ else
+ { 
+  //do not use GSL
   FactorialCoefficient Coef;
   Coef.SetToOne();
   Coef.FactorialMultiply(m1);

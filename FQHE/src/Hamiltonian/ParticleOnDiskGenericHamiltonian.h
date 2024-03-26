@@ -53,6 +53,9 @@ class ParticleOnDiskGenericHamiltonian : public AbstractQHEOnSphereHamiltonian
 
   friend class QHEParticlePrecalculationOperation;
 
+  //indicator whether to use GSL for computing matrix elements (default is NO)
+  bool UseGSL;
+
  protected:
 
   // array with the pseudo-potentials (ordered such that the last element corresponds to the delta interaction)
@@ -112,6 +115,15 @@ class ParticleOnDiskGenericHamiltonian : public AbstractQHEOnSphereHamiltonian
   // m4 = fourth index
   // return value = numerical coefficient
   virtual double EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
+
+  // evaluate the CG coefficient <M,m|m1,m2> using the formula B7 in PHYSICAL REVIEW B 95, 245117 (2017)
+  //
+  // m1 = first index
+  // m2 = second index
+  // mRel = relative angular momentum
+  // mCM = CM angular momentum
+  // return value = numerical coefficient
+  virtual double EvaluateCGCoefficient(int m1, int m2, int mRel, int mCM);
 
 };
 

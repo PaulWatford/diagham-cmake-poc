@@ -40,6 +40,7 @@
 #include "MathTools/Complex.h"
 #include "MathTools/ClebschGordanDiskCoefficients.h"
 #include "MathTools/FactorialCoefficient.h"
+#include "MathTools/BinomialCoefficients.h"
 
 #include "Output/MathematicaOutput.h"
 
@@ -48,7 +49,9 @@
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
-
+#ifdef __GSL__
+#include <gsl/gsl_sf.h>
+#endif
 
 using std::cout;
 using std::endl;
@@ -80,6 +83,7 @@ ParticleOnDiskGenericHamiltonian::ParticleOnDiskGenericHamiltonian(ParticleOnSph
   this->PseudoPotential = new double [this->LzMax + this->NbrLzValue];
   for (int i = 0; i <= (2 * this->LzMax); ++i)
     this->PseudoPotential[i] = pseudoPotential[i];
+  this->UseGSL = false;
   this->EvaluateInteractionFactors();
   this->HamiltonianShift = 0.0;
   long MinIndex;
@@ -226,8 +230,8 @@ ParticleOnDiskGenericHamiltonian::~ParticleOnDiskGenericHamiltonian()
 
 void ParticleOnDiskGenericHamiltonian::EvaluateInteractionFactors()
 {
-  int Lim;
-  int Min;
+  //int Lim;
+  //int Min;
   int Pos = 0;
   int m4;
   double* TmpCoefficient = new double [this->NbrLzValue * this->NbrLzValue * this->NbrLzValue];
@@ -235,8 +239,19 @@ void ParticleOnDiskGenericHamiltonian::EvaluateInteractionFactors()
 
   ClebschGordanDiskCoefficients CGCoefficients(this->LzMax);
 
+  if (this->LzMax > 60)
+    cout << "Large value of LzMax, possible issues with factorial coefficients in the matrix element! Proceed with caution. " << endl; 
+#ifdef __GSL__
+  if (this->UseGSL) 
+     cout << "Matrix element will be computed using GSL " << endl;
+  else
+     cout << "Matrix element will be computed by in-built routine." << endl;
+#endif
+
+
   if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
     {
+/* //Old version, not working (ZP, March 2024)
       for (int m1 = 0; m1 <= this->LzMax; ++m1)
 	for (int m2 = 0; m2 < m1; ++m2)
 	  {
@@ -313,10 +328,157 @@ void ParticleOnDiskGenericHamiltonian::EvaluateInteractionFactors()
 	      }
 	    ++TotalIndex;
 	  }
+*/
+
+   for (int m1 = 0; m1 <= this->LzMax; ++m1)
+	for (int m2 = 0; m2 < m1; ++m2)
+     for (int m3 = 0; m3 <= this->LzMax; ++m3)
+	  {
+		m4 = m1 + m2 - m3;
+        if ((m4 >= 0) && (m4 < m3))
+         {
+  		   double TmpCoef = 0.0;
+   		   for (int mRel = 1; mRel <= 2* this->LzMax; mRel +=2)
+		     {
+			   if (this->PseudoPotential[mRel] != 0)
+  		           TmpCoef -= 4.0 * this->PseudoPotential[mRel] * this->EvaluateCGCoefficient(m1, m2, mRel, m1 + m2 - mRel) * this->EvaluateCGCoefficient(m3, m4, mRel, m3 + m4 - mRel);
+		     }
+           //cout << "m1= " << m1 << " m2= " << m2 << " m3= " << m3 << " m4= " << m4 << " " << TmpCoef << endl;
+		   TmpCoefficient[Pos] = TmpCoef;
+		   if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+		     MaxCoefficient = fabs(TmpCoefficient[Pos]);
+		   ++Pos;
+         }
+      }
+
+      this->NbrInteractionFactors = 0;
+      this->M1Value = new int [Pos];
+      this->M2Value = new int [Pos];
+      this->M3Value = new int [Pos];
+
+      this->InteractionFactors = new double [Pos];
+      cout << "nbr interaction = " << Pos << endl;
+      Pos = 0;
+      MaxCoefficient *= MACHINE_PRECISION;
+
+      this->NbrM12Indices = (this->NbrLzValue * (this->NbrLzValue - 1)) / 2;
+      this->M1Value = new int [this->NbrM12Indices];
+      this->M2Value = new int [this->NbrM12Indices];
+      this->NbrM3Values = new int [this->NbrM12Indices];
+      this->M3Values = new int* [this->NbrM12Indices];
+      int TotalIndex = 0;
+      Pos = 0;
+
+     for (int m1 = 0; m1 <= this->LzMax; ++m1)
+	  for (int m2 = 0; m2 < m1; ++m2)
+       {
+         this->M1Value[TotalIndex] = m1;
+         this->M2Value[TotalIndex] = m2;	    
+         this->NbrM3Values[TotalIndex] = 0;
+         for (int m3 = 0; m3 <= this->LzMax; ++m3)
+	      {
+		    m4 = m1 + m2 - m3;
+            if ((m4 >= 0) && (m4 < m3))
+               this->NbrM3Values[TotalIndex]++;
+          }   
+         this->M3Values[TotalIndex] = new int [this->NbrM3Values[TotalIndex]];
+         int TmpIndex = 0;
+         for (int m3 = 0; m3 <= this->LzMax; ++m3)
+	      {
+		    m4 = m1 + m2 - m3;
+            if ((m4 >= 0) && (m4 < m3))
+             {
+  			   this->M3Values[TotalIndex][TmpIndex] = m3;
+			   this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
+ 			   ++this->NbrInteractionFactors;
+			   ++TmpIndex;
+		       ++Pos;
+		      }
+		  }
+	    ++TotalIndex;
+       }
     }
-  else
+  else //bosons
     {
-      for (int m1 = 0; m1 <= this->LzMax; ++m1)
+
+     for (int m1 = 0; m1 <= this->LzMax; ++m1)
+	  for (int m2 = 0; m2 <= m1; ++m2)
+       for (int m3 = 0; m3 <= this->LzMax; ++m3)
+	    {
+		  m4 = m1 + m2 - m3;
+          if ((m4 >= 0) && (m4 <= m3))
+           {
+             int BosonicFactor = 1.0;
+             if ((m1 != m2) && (m3 != m4))
+               BosonicFactor = 4.0;
+             else if (((m1 == m2) && (m3 != m4)) || ((m1 != m2) && (m3 == m4)))
+               BosonicFactor = 2.0; 
+
+  		     double TmpCoef = 0.0;
+   		     for (int mRel = 0; mRel <= 2* this->LzMax; mRel +=2)
+		       {
+			     if (this->PseudoPotential[mRel] != 0)
+  		             TmpCoef += BosonicFactor * this->PseudoPotential[mRel] * this->EvaluateCGCoefficient(m1, m2, mRel, m1 + m2 - mRel) * this->EvaluateCGCoefficient(m3, m4, mRel, m3 + m4 - mRel);
+		       }
+             //cout << "m1= " << m1 << " m2= " << m2 << " m3= " << m3 << " m4= " << m4 << " " << TmpCoef << endl;
+		     TmpCoefficient[Pos] = TmpCoef;
+		     if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+		       MaxCoefficient = fabs(TmpCoefficient[Pos]);
+		     ++Pos;
+           }
+        }
+
+      this->NbrInteractionFactors = 0;
+      this->M1Value = new int [Pos];
+      this->M2Value = new int [Pos];
+      this->M3Value = new int [Pos];
+
+      this->InteractionFactors = new double [Pos];
+      cout << "nbr interaction = " << Pos << endl;
+      Pos = 0;
+      MaxCoefficient *= MACHINE_PRECISION;
+
+      this->NbrM12Indices = (this->NbrLzValue * (this->NbrLzValue + 1)) / 2;
+      this->M1Value = new int [this->NbrM12Indices];
+      this->M2Value = new int [this->NbrM12Indices];
+      this->NbrM3Values = new int [this->NbrM12Indices];
+      this->M3Values = new int* [this->NbrM12Indices];
+      int TotalIndex = 0;
+      Pos = 0;
+
+     for (int m1 = 0; m1 <= this->LzMax; ++m1)
+	  for (int m2 = 0; m2 <= m1; ++m2)
+       {
+         this->M1Value[TotalIndex] = m1;
+         this->M2Value[TotalIndex] = m2;	    
+         this->NbrM3Values[TotalIndex] = 0;
+         for (int m3 = 0; m3 <= this->LzMax; ++m3)
+	      {
+		    m4 = m1 + m2 - m3;
+            if ((m4 >= 0) && (m4 <= m3))
+               this->NbrM3Values[TotalIndex]++;
+          }   
+         this->M3Values[TotalIndex] = new int [this->NbrM3Values[TotalIndex]];
+         int TmpIndex = 0;
+         for (int m3 = 0; m3 <= this->LzMax; ++m3)
+	      {
+		    m4 = m1 + m2 - m3;
+            if ((m4 >= 0) && (m4 <= m3))
+             {
+  			   this->M3Values[TotalIndex][TmpIndex] = m3;
+			   this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
+ 			   ++this->NbrInteractionFactors;
+			   ++TmpIndex;
+		       ++Pos;
+		      }
+		  }
+	    ++TotalIndex;
+       }
+
+
+
+/* //Old version, not working (ZP, March 2024)    
+   for (int m1 = 0; m1 <= this->LzMax; ++m1)
 	for (int m2 = 0; m2 <= m1; ++m2)
 	  {
 	    Lim = m1 + m2;
@@ -475,7 +637,8 @@ void ParticleOnDiskGenericHamiltonian::EvaluateInteractionFactors()
 		}
 	    }
 	  ++TotalIndex;
-	}      
+	}
+*/      
 //      for (int m1 = 0; m1 <= this->LzMax; ++m1)
 // 	for (int m2 = 0; m2 <= m1; ++m2)
 // 	  for (int m3 = 0; m3 <= this->LzMax; ++m3)
@@ -570,5 +733,62 @@ double ParticleOnDiskGenericHamiltonian::EvaluateInteractionCoefficient(int m1, 
     }
   Coef.Power2Divide(2 * (m1 + m2));
   return (sqrt(Coef.GetNumericalValue()) * ((double) ((m2 - m1) * (m3 - m4))) / M_PI);
+}
+
+// evaluate the CG coefficient <M,m|m1,m2> using the formula B7 in PHYSICAL REVIEW B 95, 245117 (2017)
+//
+// m1 = first index
+// m2 = second index
+// mRel = relative angular momentum
+// mCM = CM angular momentum
+// return value = numerical coefficient
+double ParticleOnDiskGenericHamiltonian::EvaluateCGCoefficient(int m1, int m2, int mRel, int mCM)
+{
+  if ((mCM + mRel) != (m1 + m2))
+    return 0;
+
+  if ((mCM < 0) || (mCM > 2 * this->LzMax))
+   return 0;
+
+  if (this->UseGSL)
+   {
+  double FactCoeff = (gsl_sf_fact(m1) * gsl_sf_fact(m2))/(gsl_sf_fact(mRel) * gsl_sf_fact(mCM));
+  FactCoeff /= pow(2.0, mCM + mRel);
+  FactCoeff = sqrt(FactCoeff);
+
+  double TmpSum = 0;
+  for(int KCM = 0; KCM <= mCM; KCM++)
+   {
+     int kRel = m2 - KCM;
+     if ((kRel >= 0) && (kRel <= mRel))   
+        TmpSum += pow(-1.0, kRel) * gsl_sf_choose(mCM, KCM) * gsl_sf_choose(mRel, kRel);
+   }
+  //cout << "m1= " << m1 << " m2= " << m2 << " m= " << mRel << " M= " << mCM << " : " << FactCoeff * TmpSum << endl; 
+  return (FactCoeff * TmpSum);
+  }
+  else //do not use GSL
+  {
+  FactorialCoefficient Coef;
+  Coef.SetToOne();
+  Coef.FactorialMultiply(m1);
+  Coef.FactorialMultiply(m2);
+  Coef.FactorialDivide(mRel);
+  Coef.FactorialDivide(mCM);
+  Coef.Power2Divide(mCM + mRel);
+  double FactCoeff = sqrt(Coef.GetNumericalValue());
+
+  BinomialCoefficients BCoefficientsCM (mCM);
+  BinomialCoefficients BCoefficientsRel (mRel);
+
+  double TmpSum = 0;
+  for(int KCM = 0; KCM <= mCM; KCM++)
+   {
+     int kRel = m2 - KCM;
+     if ((kRel >= 0) && (kRel <= mRel))   
+        TmpSum += pow(-1.0, kRel) * BCoefficientsCM.GetNumericalCoefficient(mCM, KCM) * BCoefficientsRel.GetNumericalCoefficient(mRel, kRel);
+   }
+  //cout << "m1= " << m1 << " m2= " << m2 << " m= " << mRel << " M= " << mCM << " : " << FactCoeff * TmpSum << endl; 
+  return (FactCoeff * TmpSum);
+ }
 }
 

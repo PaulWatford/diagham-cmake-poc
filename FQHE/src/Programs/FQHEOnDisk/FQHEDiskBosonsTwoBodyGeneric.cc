@@ -1,8 +1,6 @@
-#include "HilbertSpace/FermionOnDisk.h"
-#include "HilbertSpace/FermionOnDiskUnlimited.h"
-#include "HilbertSpace/FermionOnDiskHaldaneBasis.h"
-#include "HilbertSpace/FermionOnDiskLong.h"
-
+#include "HilbertSpace/BosonOnDisk.h"
+#include "HilbertSpace/BosonOnDiskShort.h"
+#include "HilbertSpace/BosonOnDiskHaldaneBasisShort.h"
 #include "Hamiltonian/ParticleOnDiskGenericHamiltonian.h"
 
 #include "Architecture/ArchitectureManager.h"
@@ -199,52 +197,37 @@ int main(int argc, char** argv)
 
   char* OutputNameLz = new char [1024 + strlen(Manager.GetString("interaction-name"))];
   if (ForceMaxMomentum >= 0)
-    sprintf (OutputNameLz, "fermions_disk_%s_n_%d_lzmax_%d_lz_%d.dat", Manager.GetString("interaction-name"), NbrParticles, ForceMaxMomentum, MMax);
+    sprintf (OutputNameLz, "bosons_disk_%s_n_%d_lzmax_%d_lz_%d.dat", Manager.GetString("interaction-name"), NbrParticles, ForceMaxMomentum, MMax);
   else
-    sprintf (OutputNameLz, "fermions_disk_%s_n_%d_lz_%d.dat", Manager.GetString("interaction-name"), NbrParticles, MMax);
+    sprintf (OutputNameLz, "bosons_disk_%s_n_%d_lz_%d.dat", Manager.GetString("interaction-name"), NbrParticles, MMax);
   for (int  L = MMin; L <= MMax; ++L)
     {
       ParticleOnSphere* Space = 0;
       int TmpMaxMomentum = (L - (((NbrParticles - 1) * (NbrParticles - 2)) / 2));
       if ((ForceMaxMomentum >= 0) && (ForceMaxMomentum < TmpMaxMomentum))
 	TmpMaxMomentum = ForceMaxMomentum;
+
       if (HaldaneBasisFlag == false)
 	{
-#ifdef __64_BITS__
-	  if (TmpMaxMomentum <= 62)
+#ifdef  __64_BITS__
+	  if ((ForceMaxMomentum + NbrParticles - 1) < 63)
 #else
-	  if (TmpMaxMomentum <= 30)
+	    if ((ForceMaxMomentum + NbrParticles - 1) < 31)	
 #endif
-	    Space = new FermionOnDisk(NbrParticles, L, TmpMaxMomentum, MemorySpace);
-	  else
-#ifdef __128_BIT_LONGLONG__
-	    if (TmpMaxMomentum <= 126)
-#else
-	      if (TmpMaxMomentum <= 62)
-#endif
-		Space = new FermionOnDiskLong(NbrParticles, L, TmpMaxMomentum, MemorySpace);
-	      else
-		Space = new FermionOnDiskUnlimited(NbrParticles, L, TmpMaxMomentum, MemorySpace);
+	      Space = new BosonOnDiskShort (NbrParticles, L, ForceMaxMomentum);	  
+	    else	  
+	      Space = new BosonOnDisk (NbrParticles, L, ForceMaxMomentum);
 	}
       else
 	{
-#ifdef __64_BITS__
-	  if (TmpMaxMomentum <= 62)
+#ifdef  __64_BITS__
+	  if ((ForceMaxMomentum + NbrParticles - 1) < 63)
 #else
-	    if (TmpMaxMomentum <= 30)
+	    if ((ForceMaxMomentum + NbrParticles - 1) < 31)	
 #endif
-	      {
-		if (Manager.GetString("load-hilbert") != 0)
-		  Space = new FermionOnDiskHaldaneBasis(Manager.GetString("load-hilbert"), MemorySpace);
-		else
-		  Space = new FermionOnDiskHaldaneBasis(NbrParticles, L, TmpMaxMomentum, ReferenceState, MemorySpace);
-		if (Manager.GetString("save-hilbert") != 0)
-		  {
-		    ((FermionOnDiskHaldaneBasis*) Space)->WriteHilbertSpace(Manager.GetString("save-hilbert"));
-		    return 0;
-		  }
-	      }
+	      Space = new BosonOnDiskHaldaneBasisShort(NbrParticles, L, TmpMaxMomentum, ReferenceState);
 	}
+
       Architecture.GetArchitecture()->SetDimension(Space->GetHilbertSpaceDimension());
       AbstractQHEOnSphereHamiltonian* Hamiltonian = 0;
       if (Architecture.GetArchitecture()->GetLocalMemory() > 0)
@@ -268,9 +251,9 @@ int main(int argc, char** argv)
 	{
 	  EigenvectorName = new char [256];
 	  if (ForceMaxMomentum >= 0)
-	    sprintf (EigenvectorName, "fermions_disk_%s_n_%d_lzmax_%d_lz_%d", Manager.GetString("interaction-name"), NbrParticles, ForceMaxMomentum, L);
+	    sprintf (EigenvectorName, "bosons_disk_%s_n_%d_lzmax_%d_lz_%d", Manager.GetString("interaction-name"), NbrParticles, ForceMaxMomentum, L);
 	  else
-	    sprintf (EigenvectorName, "fermions_disk_%s_n_%d_lz_%d", Manager.GetString("interaction-name"), NbrParticles, L);
+	    sprintf (EigenvectorName, "bosons_disk_%s_n_%d_lz_%d", Manager.GetString("interaction-name"), NbrParticles, L);
 	}
       
       QHEOnDiskMainTask Task (&Manager, Space, Hamiltonian, L, Shift, OutputNameLz, FirstRun, EigenvectorName);

@@ -492,11 +492,11 @@ int main(int argc, char** argv)
 				{
 				  if ((NbrSitesX * NbrSitesY) <= 21)
 				    {
-				      Spaces[i] = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx[i], TotalKy[i]);
+				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx[i], TotalKy[i]);
 				    }
 				  else
 				    {
-				      Spaces[i] = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx[i], TotalKy[i]);
+				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx[i], TotalKy[i]);
 				    }
 				}
 			    }
@@ -518,22 +518,22 @@ int main(int argc, char** argv)
 				{
 				  if ((NbrSitesX * NbrSitesY) <= 21)
 				    {
-				      Spaces[i] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
 				    }
 				  else
 				    {
-				      Spaces[i] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
 				    }
 				}
 			      else
 				{
 				  if ((NbrSitesX * NbrSitesY) <= 21)
 				    {
-				      Spaces[i] = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
 				    }
 				  else
 				    {
-				      Spaces[i] = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
 				    }
 				}
 			    }

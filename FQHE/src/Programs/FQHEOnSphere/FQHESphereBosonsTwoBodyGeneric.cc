@@ -212,7 +212,7 @@ int main(int argc, char** argv)
 	     VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
 	     Operation2.ApplyOperation(Architecture.GetArchitecture());
 	     double varH = State * TmpState2 - EnergyValue * EnergyValue;
-	     cout << "(varH)^2 = " << varH << endl;
+	     cout << "<H^2>-<H>^2 = " << varH << endl;
        }   
 	  return 0;
   	 }

@@ -301,7 +301,7 @@ int main(int argc, char** argv)
   BandCapPrefix = new char [2];
   sprintf (BandCapPrefix, "");
 
-  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix)];
+  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix)+ strlen(Manager.GetString("interaction-name"))];
   if (Manager.GetBoolean("flat-band"))
     {
       sprintf (FilePrefix, "%s_oneband_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);

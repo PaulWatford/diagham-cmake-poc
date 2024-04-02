@@ -361,7 +361,7 @@ int main(int argc, char** argv)
 	  sprintf (BandCapPrefix, "_allowed_orbs%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
 	}
     }
-  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix)];
+  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix) +  strlen(Manager.GetString("interaction-name"))];
   if (Manager.GetBoolean("flat-band"))
     {
       sprintf (FilePrefix, "%s_threeband_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);

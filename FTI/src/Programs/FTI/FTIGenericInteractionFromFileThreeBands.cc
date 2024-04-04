@@ -2118,6 +2118,11 @@ int main(int argc, char** argv)
 		}
 	    }
 	  EigenstateOutputFile = ReplaceExtensionToFileName(EigenvalueOutputFile, ".dat", TmpExtention);
+	  if (EigenstateOutputFile == 0)
+	    {
+	      cout << "error when defining eigenvector file name" << endl;
+	      return 0;
+	    }
 	  delete[] TmpExtention;
 	  Hamiltonian->ShiftHamiltonian(EnergyShift);
 	  // if (Manager.GetBoolean("real-interaction"))

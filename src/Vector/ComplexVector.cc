@@ -2587,6 +2587,11 @@ bool ComplexVector::ByteWriteVector (const char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "Cannot create file: " << fileName << endl;
+      return false;
+    }
   WriteLittleEndian(File, this->Dimension);
   if (this->Dimension == -1)
     {
@@ -2617,6 +2622,11 @@ bool ComplexVector::WriteVector (const char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "Cannot create file: " << fileName << endl;
+      return false;
+    }
   WriteLittleEndian(File, this->Dimension);
   if (this->Dimension == -1)
     {
@@ -2638,6 +2648,11 @@ bool ComplexVector::WriteAsciiVector (const char* fileName)
 {
   ofstream File;
   File.precision(14);
+  if (!File.is_open())
+    {
+      cout << "Cannot create file: " << fileName << endl;
+      return false;
+    }
   File.open(fileName, ios::binary | ios::out);
   if (this->Dimension == -1)
     {

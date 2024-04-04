@@ -581,12 +581,24 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
 
   if (this->UseConjugateFlag == false)
     {
+      timeval TotalStartingTime2;
+      timeval TotalEndingTime2;
+      gettimeofday (&(TotalStartingTime2), 0);
       for (int i = 1; i < architecture->GetNbrThreads(); ++i)
 	{
 	  if (RealFlag == true)
 	    TmpOperations[i]->SetDestinationVectors((RealVector*) this->RealDestinationVectors[0].EmptyCloneArray(this->NbrVectors, true));
 	  else
 	    TmpOperations[i]->SetDestinationVectors((ComplexVector*) this->ComplexDestinationVectors[0].EmptyCloneArray(this->NbrVectors, true));
+	}
+      gettimeofday (&(TotalEndingTime2), 0);
+      if (architecture->VerboseMode() == true)
+	{
+	  char TmpString[512];
+	  double TmpExecutionTime = ((double) (TotalEndingTime2.tv_sec - TotalStartingTime2.tv_sec) + 
+				     ((TotalEndingTime2.tv_usec - TotalStartingTime2.tv_usec) / 1000000.0));
+	  sprintf (TmpString, "MultipleVectorHamiltonianMultiply memory allocation done in %.3f seconds", TmpExecutionTime);
+	  architecture->AddToLog(TmpString);
 	}
     }
 
@@ -612,6 +624,9 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
       sprintf (TmpString, "MultipleVectorHamiltonianMultiply core operation min time=%.3f sec, max time=%.3f sec", MinTime, MaxTime);
       architecture->AddToLog(TmpString);
    }
+  timeval TotalStartingTime2;
+  timeval TotalEndingTime2;
+  gettimeofday (&(TotalStartingTime2), 0);
   for (int i = 1; i < architecture->GetNbrThreads(); ++i)
     {
       if (this->UseConjugateFlag == false)
@@ -630,6 +645,15 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
 	    }
 	}
       delete TmpOperations[i];
+    }
+  gettimeofday (&(TotalEndingTime2), 0);
+  if ((this->UseConjugateFlag == false) && (architecture->VerboseMode() == true))
+    {
+      char TmpString[512];
+      double TmpExecutionTime = ((double) (TotalEndingTime2.tv_sec - TotalStartingTime2.tv_sec) + 
+				 ((TotalEndingTime2.tv_usec - TotalStartingTime2.tv_usec) / 1000000.0));
+      sprintf (TmpString, "MultipleVectorHamiltonianMultiply memory deallocation done in %.3f seconds", TmpExecutionTime);
+      architecture->AddToLog(TmpString);
     }
   delete TmpOperations[0];
   delete[] TmpOperations;

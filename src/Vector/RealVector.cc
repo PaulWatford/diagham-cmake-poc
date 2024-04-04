@@ -3685,6 +3685,11 @@ bool RealVector::WriteVector (const char* fileName)
   this->Localize();
   ofstream File;
   File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "Cannot create file: " << fileName << endl;
+      return false;
+    }
   WriteLittleEndian(File, this->Dimension);
   if (this->Dimension == -1)
     {
@@ -3708,6 +3713,11 @@ bool RealVector::ByteWriteVector (const char* fileName)
   this->Localize();
   ofstream File;
   File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "Cannot create file: " << fileName << endl;
+      return false;
+    }
   WriteLittleEndian(File, this->Dimension);
   if (this->Dimension == -1)
     {
@@ -3734,6 +3744,11 @@ bool RealVector::WriteAsciiVector (const char* fileName)
   ofstream File;
   File.precision(14);
   File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "Cannot create file: " << fileName << endl;
+      return false;
+    }
   if (this->Dimension == -1)
     {
       long ReducedDimension = this->LargeDimension - 1;

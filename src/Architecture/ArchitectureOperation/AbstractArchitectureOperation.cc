@@ -97,14 +97,14 @@ bool AbstractArchitectureOperation::ArchitectureDependentApplyOperation(SMPArchi
 
 bool AbstractArchitectureOperation::ArchitectureDependentApplyOperation(SimpleMPIArchitecture* architecture)
 {
-  // if (architecture->GetLocalArchitecture() != 0)
-  //   {
-  //     return this->ApplyOperation(architecture->GetLocalArchitecture());
-  //   }
-  // else
-  //   {
+  if (architecture->GetLocalArchitecture() != 0)
+    {
+      return this->ApplyOperation(architecture->GetLocalArchitecture());
+    }
+  else
+    {
       return this->RawApplyOperation();
-      //    }
+    }
 }
 
 // apply an SMP round robin operation 

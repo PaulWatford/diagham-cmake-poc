@@ -38,14 +38,19 @@
 #include "FunctionBasis/AbstractFunctionBasis.h"
 #include "MathTools/BinomialCoefficients.h"
 #include "GeneralTools/UnsignedIntegerTools.h"
+#include "GeneralTools/Endian.h"
 
 #include <math.h>
 #include <cstdlib>
+#include <fstream>
 
 using std::cout;
 using std::endl;
 using std::hex;
 using std::dec;
+using std::ofstream;
+using std::ifstream;
+using std::ios;
 
 
 // default constructor
@@ -260,6 +265,55 @@ AbstractHilbertSpace* FermionOnSphereWithSU3Spin::ExtractSubspace (AbstractQuant
 {
   return 0;
 }
+
+// save Hilbert space description to disk
+//
+// fileName = name of the file where the Hilbert space description has to be saved
+// return value = true if no error occured
+
+bool FermionOnSphereWithSU3Spin::WriteHilbertSpace (char* fileName)
+{
+  ofstream File;
+  File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "can't open the file: " << fileName << endl;
+      return false;
+    }
+  this->WriteHilbertSpace(File);
+  File.close();
+  return true;
+}
+
+// save Hilbert space description to disk
+//
+// outputFile = reference on the output stream file
+// return value = true if no error occured
+
+bool FermionOnSphereWithSU3Spin::WriteHilbertSpace (ofstream& outputFile)
+{
+  WriteLittleEndian(outputFile, this->HilbertSpaceDimension);
+  WriteLittleEndian(outputFile, this->LargeHilbertSpaceDimension);
+  WriteLittleEndian(outputFile, this->NbrFermions);
+  WriteLittleEndian(outputFile, this->IncNbrFermions);
+  WriteLittleEndian(outputFile, this->TotalLz);
+  WriteLittleEndian(outputFile, this->LzMax);
+  WriteLittleEndian(outputFile, this->NbrLzValue);
+  WriteLittleEndian(outputFile, this->TotalY);
+  WriteLittleEndian(outputFile, this->TotalTz);
+  if (this->HilbertSpaceDimension != 0)
+    {
+      for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+	WriteLittleEndian(outputFile, this->StateDescription[i]);
+    }
+  else
+    {
+      for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+	WriteLittleEndian(outputFile, this->StateDescription[i]);
+    }
+  return true;
+}
+
 
 // apply a^+_m_1 a_m_1 operator to a given state (only state 1 Tz=+1/2, Y=+1/3)
 //

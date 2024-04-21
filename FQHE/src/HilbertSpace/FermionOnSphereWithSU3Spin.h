@@ -36,6 +36,9 @@
 #include "HilbertSpace/ParticleOnSphereWithSU3Spin.h"
 
 #include <iostream>
+#include <fstream>
+
+using std::ofstream;
 
 
 class FermionOnSphere;
@@ -150,6 +153,12 @@ class FermionOnSphereWithSU3Spin :  public ParticleOnSphereWithSU3Spin
   // return value = pointer to the new subspace
   virtual AbstractHilbertSpace* ExtractSubspace (AbstractQuantumNumber& q, 
 						 SubspaceSpaceConverter& converter);
+
+  // save Hilbert space description to disk
+  //
+  // fileName = name of the file where the Hilbert space description has to be saved
+  // return value = true if no error occured
+  virtual bool WriteHilbertSpace (char* fileName);
 
   // apply a^+_m_s a_m_s operator to a given state
   //
@@ -348,6 +357,12 @@ class FermionOnSphereWithSU3Spin :  public ParticleOnSphereWithSU3Spin
 
   protected:
 
+  // save Hilbert space description to disk
+  //
+  // outputFile = reference on the output stream file
+  // return value = true if no error occured
+  virtual bool WriteHilbertSpace (ofstream& outputFile);
+  
   // factorized code for any a^+_m_x a_n_y operator 
   //
   // index = index of the state on which the operator has to be applied

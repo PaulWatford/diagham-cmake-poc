@@ -13,6 +13,8 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace.h"
@@ -96,6 +98,10 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band1", "maximum number of particles in band 1 (negative if this number should be equal to the number of orbitals)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band2", "maximum number of particles in band 2 (negative if this number should be equal to the number of orbitals)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band3", "maximum number of particles in band 3 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "min-band0", "minimum number of particles in band 0", 0);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "min-band1", "minimum number of particles in band 1", 0);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "min-band2", "minimum number of particles in band 2", 0);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "min-band3", "minimum number of particles in band 3", 0);
   (*SystemGroup) += new BooleanOption  ('\n', "wannier", "use wannier wavefunction basis");
   (*SystemGroup) += new SingleStringOption ('\n', "state", "name of an optional vector state whose component values can be displayed behind each corresponding n-body state");
   (*SystemGroup) += new SingleDoubleOption  ('\n', "hide-component", "hide state components (and thus the corresponding n-body state) whose absolute value is lower than a given error (0 if all components have to be shown", 0.0);
@@ -133,6 +139,11 @@ int main(int argc, char** argv)
   int TotalKt = Manager.GetInteger("kt");
   int TotalSz = Manager.GetInteger("sz");
 
+  int MinBand0 = Manager.GetInteger("min-band0");
+  int MinBand1 = Manager.GetInteger("min-band1");
+  int MinBand2 = Manager.GetInteger("min-band2");
+  int MinBand3 = Manager.GetInteger("min-band3");
+
   int MaxBand0 = Manager.GetInteger("max-band0");
   int MaxBand1 = Manager.GetInteger("max-band1");
   int MaxBand2 = Manager.GetInteger("max-band2");
@@ -158,6 +169,7 @@ int main(int argc, char** argv)
 	    }
 	}
       FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(Manager.GetString("state"), MaxBand0, MaxBand1, MaxBand2, MaxBand3);
+      FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(Manager.GetString("state"), MinBand0, MinBand1, MinBand2, MinBand3);
     }
  
   AbstractQHEParticle* Space;
@@ -305,13 +317,27 @@ int main(int argc, char** argv)
 					}
 				      if (Manager.GetString("allowed-orbitals") == 0)
 					{
-					  if ((NbrSitesX * NbrSitesY) <= 21)
+					  if ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
 					    {
-					      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+					      if ((NbrSitesX * NbrSitesY) <= 21)
+						{
+						  Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+						}
+					      else
+						{
+						  Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+						}
 					    }
 					  else
 					    {
-					      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+					      if ((NbrSitesX * NbrSitesY) <= 21)
+						{
+						  Space = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+						}
+					      else
+						{
+						  Space = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+						}
 					    }
 					}
 				      else

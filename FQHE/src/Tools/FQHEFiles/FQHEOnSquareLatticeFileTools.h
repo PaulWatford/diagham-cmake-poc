@@ -121,6 +121,15 @@ bool FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(char* filename,
 // return value = true if no error occured
 bool FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(char* filename, int& nbrParticles, int& nbrSiteX, int& nbrSiteY, int& momentumX, int& momentumY, double& mass, bool& statistics);
 
+// get the minimum band occupation from file name  
+//
+// minBand0 = reference on the minimum occupation for band 0 
+// minBand1 = reference on the minimum occupation for band 1 
+// minBand2 = reference on the minimum occupation for band 2 
+// minBand3 = reference on the minimum occupation for band 3 
+// return value = true if no error occured
+bool FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(char* filename, int& minBand0, int& minBand1, int& minBand2, int& minBand3);
+
 // get the maximum band occupation from file name  
 //
 // maxBand0 = reference on the maximum occupation for band 0 

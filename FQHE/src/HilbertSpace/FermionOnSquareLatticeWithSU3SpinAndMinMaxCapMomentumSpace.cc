@@ -7,9 +7,10 @@
 //                                                                            //
 //                                                                            //
 //              class of fermions on a square lattice with SU(3) spin         //
-//                                in momentum space                           //
+//               in momentum space with an upper and lower bounds             //
+//                     on the number of particles per band                    //
 //                                                                            //
-//                        last modification : 08/11/2011                      //
+//                        last modification : 17/04/2024                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -30,7 +31,7 @@
 
 
 #include "config.h"
-#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "QuantumNumber/SzQuantumNumber.h"
 #include "Matrix/ComplexMatrix.h"
@@ -58,12 +59,11 @@ using std::ios;
 // default constructor
 //
 
-FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3SpinMomentumSpace()
+FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace()
 {
-  this->SzFlag = false;
-  this->PzFlag = false;
-  this->TotalTz = 0;
-  this->TotalY = 0;
+  this->MinNbrParticlesBand0 = 0;
+  this->MinNbrParticlesBand1 = 0;
+  this->MinNbrParticlesBand2 = 0;
 }
   
 // basic constructor
@@ -71,11 +71,17 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3Spi
 // nbrFermions = number of fermions
 // nbrSiteX = number of sites in the x direction
 // nbrSiteY = number of sites in the y direction
+// minNbrParticlesBand0 = minimum number of particles in band 0
+// minNbrParticlesBand1 = minimum number of particles in band 1
+// minNbrParticlesBand2 = minimum number of particles in band 2
+// maxNbrParticlesBand0 = maximum number of particles in band 0
+// maxNbrParticlesBand1 = maximum number of particles in band 1
+// maxNbrParticlesBand2 = maximum number of particles in band 2
 // kxMomentum = momentum along the x direction
 // kyMomentum = momentum along the y direction
 // memory = amount of memory granted for precalculations
 
-FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3SpinMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int kxMomentum, int kyMomentum, unsigned long memory)
+FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory)
 {  
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
@@ -86,12 +92,18 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3Spi
   this->TotalY = 0;
   this->NbrSiteX = nbrSiteX;
   this->NbrSiteY = nbrSiteY;
+  this->MinNbrParticlesBand0 = minNbrParticlesBand0;
+  this->MinNbrParticlesBand1 = minNbrParticlesBand1;
+  this->MinNbrParticlesBand2 = minNbrParticlesBand2;
+  this->MaxNbrParticlesBand0 = maxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = maxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = maxNbrParticlesBand2;
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
-  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0);
+  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
@@ -101,14 +113,34 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3Spi
       this->Flag.Initialize();
       this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
       this->StateHighestBit = new int [this->HilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
+      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
       if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
-//       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
+
       this->GenerateLookUpTable(memory);
+
+      // for (int i = 1; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (this->StateDescription[i - 1] < this->StateDescription[i])
+      // 	    {
+      // 	      cout << "sorting error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "start check find index" << endl;
+      // for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+      // 	{
+      // 	  if (i != this->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]))
+      // 	    {
+      // 	      cout << "Error at " << i << endl;
+      // 	    }
+      // 	}
+      // cout << "check find index done" << endl;
+
+      
+      //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
       
 #ifdef __DEBUG__
       long UsedMemory = 0;
@@ -139,7 +171,7 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3Spi
 //
 // fermions = reference on the hilbert space to copy to copy
 
-FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3SpinMomentumSpace(const FermionOnSquareLatticeWithSU3SpinMomentumSpace& fermions)
+FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace(const FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace& fermions)
 {
   this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
   this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
@@ -149,6 +181,12 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3Spi
   this->TotalLz = fermions.TotalLz;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
+  this->MinNbrParticlesBand0 = fermions.MinNbrParticlesBand0;
+  this->MinNbrParticlesBand1 = fermions.MinNbrParticlesBand1;
+  this->MinNbrParticlesBand2 = fermions.MinNbrParticlesBand2;
+  this->MaxNbrParticlesBand0 = fermions.MaxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = fermions.MaxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = fermions.MaxNbrParticlesBand2;
   this->KxMomentum = fermions.KxMomentum;
   this->KyMomentum = fermions.KyMomentum;
   this->LzMax = fermions.LzMax;
@@ -169,7 +207,7 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::FermionOnSquareLatticeWithSU3Spi
 // destructor
 //
 
-FermionOnSquareLatticeWithSU3SpinMomentumSpace::~FermionOnSquareLatticeWithSU3SpinMomentumSpace ()
+FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::~FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace ()
 {
 }
 
@@ -178,7 +216,7 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace::~FermionOnSquareLatticeWithSU3Sp
 // fermions = reference on the hilbert space to copy to copy
 // return value = reference on current hilbert space
 
-FermionOnSquareLatticeWithSU3SpinMomentumSpace& FermionOnSquareLatticeWithSU3SpinMomentumSpace::operator = (const FermionOnSquareLatticeWithSU3SpinMomentumSpace& fermions)
+FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace& FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::operator = (const FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace& fermions)
 {
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
@@ -194,6 +232,12 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace& FermionOnSquareLatticeWithSU3Spi
   this->LzMax = fermions.LzMax;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
+  this->MinNbrParticlesBand0 = fermions.MinNbrParticlesBand0;
+  this->MinNbrParticlesBand1 = fermions.MinNbrParticlesBand1;
+  this->MinNbrParticlesBand2 = fermions.MinNbrParticlesBand2;
+  this->MaxNbrParticlesBand0 = fermions.MaxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = fermions.MaxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = fermions.MaxNbrParticlesBand2;
   this->KxMomentum = fermions.KxMomentum;
   this->KyMomentum = fermions.KyMomentum;
   this->NbrLzValue = fermions.NbrLzValue;
@@ -214,49 +258,10 @@ FermionOnSquareLatticeWithSU3SpinMomentumSpace& FermionOnSquareLatticeWithSU3Spi
 //
 // return value = pointer to cloned Hilbert space
 
-AbstractHilbertSpace* FermionOnSquareLatticeWithSU3SpinMomentumSpace::Clone()
+AbstractHilbertSpace* FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::Clone()
 {
-  return new FermionOnSquareLatticeWithSU3SpinMomentumSpace(*this);
+  return new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace(*this);
 }
-
-// print a given State
-//
-// Str = reference on current output stream 
-// state = ID of the state to print
-// return value = reference on current output stream 
-
-ostream& FermionOnSquareLatticeWithSU3SpinMomentumSpace::PrintState (ostream& Str, int state)
-{
-  unsigned long TmpState = this->StateDescription[state];
-  unsigned long Tmp;
-  Str << "[";
-  for (int i = 0; i < this->NbrLzValue; ++i)
-    {
-      Tmp = (TmpState >> (i * 3));
-      int TmpKx = i / this->NbrSiteY;
-      int TmpKy = i % this->NbrSiteY;
-      if ((Tmp & 0x4ul) != 0ul)
-	Str << "(" << TmpKx << "," << TmpKy << ",A)";
-      if ((Tmp & 0x2ul) != 0ul)
-	Str << "(" << TmpKx << "," << TmpKy << ",B)";
-      if ((Tmp & 0x1ul) != 0ul)
-	Str << "(" << TmpKx << "," << TmpKy << ",C)";
-    }
-  Str << "]";
-  return Str;
-}
-
-// save Hilbert space description to disk
-//
-// outputFile = reference on the output stream file
-// return value = true if no error occured
-
-bool FermionOnSquareLatticeWithSU3SpinMomentumSpace::WriteHilbertSpace (ofstream& outputFile)
-{
-  this->FermionOnSphereWithSU3Spin::WriteHilbertSpace(outputFile);
-  return true;
-}
-
 
 // generate all states corresponding to the constraints
 // 
@@ -265,17 +270,20 @@ bool FermionOnSquareLatticeWithSU3SpinMomentumSpace::WriteHilbertSpace (ofstream
 // currentKy = current momentum along y for a single particle
 // currentTotalKx = current total momentum along x
 // currentTotalKy = current total momentum along y
+// maxNbrParticlesBand0 = current maximum number of particles in band 0
+// maxNbrParticlesBand1 = current maximum number of particles in band 1
+// maxNbrParticlesBand2 = current maximum number of particles in band 2
 // pos = position in StateDescription array where to store states
 // return value = position from which new states have to be stored
 
-long FermionOnSquareLatticeWithSU3SpinMomentumSpace::GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos)
+long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, long pos)
 {
   if (currentKy < 0)
     {
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if (nbrFermions < 0)
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < this->MinNbrParticlesBand0) || (maxNbrParticlesBand1 < this->MinNbrParticlesBand1) || (maxNbrParticlesBand2 < this->MinNbrParticlesBand2))
     return pos;
   if (nbrFermions == 0)
     {
@@ -295,12 +303,21 @@ long FermionOnSquareLatticeWithSU3SpinMomentumSpace::GenerateStates(int nbrFermi
 	{
 	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 	    {
-	      this->StateDescription[pos] = 0x4ul << (((currentKx * this->NbrSiteY) + j) * 3);
-	      ++pos;
-	      this->StateDescription[pos] = 0x2ul << (((currentKx * this->NbrSiteY) + j) * 3);
-	      ++pos;
-	      this->StateDescription[pos] = 0x1ul << (((currentKx * this->NbrSiteY) + j) * 3);
-	      ++pos;
+	      if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+		{
+		  this->StateDescription[pos] = 0x4ul << (((currentKx * this->NbrSiteY) + j) * 3);
+		  ++pos;
+		}
+	      if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+		{
+		  this->StateDescription[pos] = 0x2ul << (((currentKx * this->NbrSiteY) + j) * 3);
+		  ++pos;
+		}
+	      if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+		{
+		  this->StateDescription[pos] = 0x1ul << (((currentKx * this->NbrSiteY) + j) * 3);
+		  ++pos;
+		}
 	    }
 	}
       for (int i = currentKx - 1; i >= 0; --i)
@@ -309,12 +326,21 @@ long FermionOnSquareLatticeWithSU3SpinMomentumSpace::GenerateStates(int nbrFermi
 	    {
 	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 		{
-		  this->StateDescription[pos] = 0x4ul << (((i * this->NbrSiteY) + j) * 3);
-		  ++pos;
-		  this->StateDescription[pos] = 0x2ul << (((i * this->NbrSiteY) + j) * 3);
-		  ++pos;
-		  this->StateDescription[pos] = 0x1ul << (((i * this->NbrSiteY) + j) * 3);
-		  ++pos;
+		  if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+		    {
+		      this->StateDescription[pos] = 0x4ul << (((i * this->NbrSiteY) + j) * 3);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+		    {
+		      this->StateDescription[pos] = 0x2ul << (((i * this->NbrSiteY) + j) * 3);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+		    {
+		      this->StateDescription[pos] = 0x1ul << (((i * this->NbrSiteY) + j) * 3);
+		      ++pos;
+		    }
 		}
 	    }
 	}
@@ -322,43 +348,43 @@ long FermionOnSquareLatticeWithSU3SpinMomentumSpace::GenerateStates(int nbrFermi
     }
 
 
-  long TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos);
+  long TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1, pos);
   unsigned long Mask = 0x7ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
-  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos);
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1, pos);
   Mask = 0x6ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
-  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos);
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1, pos);
   Mask = 0x5ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
-  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos);
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1, pos);
   Mask = 0x4ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
-  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos);
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2, pos);
   Mask = 0x3ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
-  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos);
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2, pos);
   Mask = 0x2ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
-  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos);
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2, pos);
   Mask = 0x1ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
 
 
-  return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, pos);
+  return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2, pos);
 };
 
 
@@ -369,16 +395,19 @@ long FermionOnSquareLatticeWithSU3SpinMomentumSpace::GenerateStates(int nbrFermi
 // currentKy = current momentum along y for a single particle
 // currentTotalKx = current total momentum along x
 // currentTotalKy = current total momentum along y
+// maxNbrParticlesBand0 = current maximum number of particles in band 0
+// maxNbrParticlesBand1 = current maximum number of particles in band 1
+// maxNbrParticlesBand2 = current maximum number of particles in band 2
 // return value = Hilbert space dimension
 
-long FermionOnSquareLatticeWithSU3SpinMomentumSpace::EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy)
+long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2)
 {
   if (currentKy < 0)
     {
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if (nbrFermions < 0)
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < this->MinNbrParticlesBand0) || (maxNbrParticlesBand1 < this->MinNbrParticlesBand1) || (maxNbrParticlesBand2 < this->MinNbrParticlesBand2))
     return 0l;
   if (nbrFermions == 0)
     {
@@ -394,24 +423,44 @@ long FermionOnSquareLatticeWithSU3SpinMomentumSpace::EvaluateHilbertSpaceDimensi
   long Count = 0;
   if (nbrFermions == 1)
     {
+      long TmpIncrement = 0l;
+      if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+	{
+	  TmpIncrement++;
+	}
+      if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+	{
+	  TmpIncrement++;
+	}
+      if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+	{
+	  TmpIncrement++;
+	}
       for (int j = currentKy; j >= 0; --j)
 	{
 	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
-	    Count += 3l;
+	    Count += TmpIncrement;
 	}
       for (int i = currentKx - 1; i >= 0; --i)
 	{
 	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
 	    {
 	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
-		Count += 3l;
+		Count += TmpIncrement;
 	    }
 	}
       return Count;
     }
-  Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy));
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
-  Count += (3 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy));
-  Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy);
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1);
+
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2 - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesBand0 - 1, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2));
+
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2 - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0, maxNbrParticlesBand1 - 1, maxNbrParticlesBand2));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesBand0 - 1, maxNbrParticlesBand1, maxNbrParticlesBand2));
+
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2);
   return Count;
 }

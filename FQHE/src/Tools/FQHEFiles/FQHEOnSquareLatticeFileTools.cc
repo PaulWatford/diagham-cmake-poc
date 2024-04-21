@@ -538,6 +538,108 @@ bool FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(char* filename, int& nb
   return true;
 }
 
+// get the minimum band occupation from file name  
+//
+// minBand0 = reference on the minimum occupation for band 0 
+// minBand1 = reference on the minimum occupation for band 1 
+// minBand2 = reference on the minimum occupation for band 2 
+// minBand3 = reference on the minimum occupation for band 3 
+// return value = true if no error occured
+
+bool FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(char* filename, int& minBand0, int& minBand1, int& minBand2, int& minBand3)
+{
+  minBand0 = -1;
+  minBand1 = -1;
+  minBand2 = -1;
+  minBand3 = -1;
+  char* StrNbrParticles = strstr(filename, "_minband0_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  minBand0 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  StrNbrParticles = strstr(filename, "_minband1_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  minBand1 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  StrNbrParticles = strstr(filename, "_minband2_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  minBand2 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  StrNbrParticles = strstr(filename, "_minband3_");
+  if (StrNbrParticles != 0)
+    {
+      StrNbrParticles += 10;
+      int SizeString = 0;
+      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
+	     && (StrNbrParticles[SizeString] <= '9'))
+	++SizeString;
+      if (((StrNbrParticles[SizeString] == '.') || (StrNbrParticles[SizeString] == '_')) && (SizeString != 0))
+	{
+	  char TmpChar = StrNbrParticles[SizeString];
+	  StrNbrParticles[SizeString] = '\0';
+	  minBand3 = atoi(StrNbrParticles);
+	  StrNbrParticles[SizeString] = TmpChar;
+	  StrNbrParticles += SizeString;
+	}
+      else
+	{
+	  StrNbrParticles = 0;
+	}
+    }
+  return true;
+}
+
+
 // get the maximum band occupation from file name  
 //
 // maxBand0 = reference on the maximum occupation for band 0 

@@ -23,6 +23,7 @@
 #include "MathTools/IntegerAlgebraTools.h"
 #include "GeneralTools/ConfigurationParser.h"
 #include "GeneralTools/FilenameTools.h"
+#include "GeneralTools/MultiColumnASCIIFile.h"
 
 #include "Options/Options.h"
 
@@ -74,6 +75,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "get-hvalue", "compute mean value of the Hamiltonian against each eigenstate");
   (*SystemGroup) += new BooleanOption  ('g', "ground", "restrict to the largest subspace");
   (*SystemGroup) += new SingleStringOption ('\n', "interaction-name", "name of the interaction (for the output files)", "hollowcore");
+  (*SystemGroup) += new  SingleStringOption ('\n', "monomial-file", "column formatted text file that describe the interaction Fourier transform (if not provided, use the many-body hardcore interaction)");
   (*SystemGroup) += new SingleDoubleOption ('\n', "energy-shift", "apply a temporary energy shift used during the diagonalization", -1.0);
 
   (*PrecalculationGroup) += new BooleanOption ('\n', "regenerate-interactionelements", "regenerate the interaction matrix elements, overwriting them", false);
@@ -321,16 +323,46 @@ int main(int argc, char** argv)
     NbrPermutations *= i;
   int** InteractionMonomials = new int* [NbrPermutations * InteractionNbrMonomials];
   double* InteractionMonomialCoefficients = new double [NbrPermutations * InteractionNbrMonomials];
-  InteractionMonomials[0] = new int [NbrNBody];
-  if ((NbrNBody% 2) == 0)
-    InteractionMonomialCoefficients[0] = 1.0;
-  else
-    InteractionMonomialCoefficients[0] = -1.0;
-  for (int i = 0; i < NbrNBody; ++i)
+  if (Manager.GetString("monomial-file") == 0)
     {
-      InteractionMonomials[0][i] = NbrNBody - 1 - i;
+      InteractionNbrMonomials = 1;
+      InteractionMonomials = new int* [NbrPermutations * InteractionNbrMonomials];
+      InteractionMonomialCoefficients = new double [NbrPermutations * InteractionNbrMonomials];
+      InteractionMonomials[0] = new int [NbrNBody];
+      if ((NbrNBody% 2) == 0)
+	InteractionMonomialCoefficients[0] = 1.0;
+      else
+	InteractionMonomialCoefficients[0] = -1.0;
+      for (int i = 0; i < NbrNBody; ++i)
+	{
+	  InteractionMonomials[0][i] = NbrNBody - 1 - i;
+	}
     }
-
+  else
+    {
+      MultiColumnASCIIFile MonomialFile;
+      if (MonomialFile.Parse(Manager.GetString("monomial-file")) == false)
+	{
+	  MonomialFile.DumpErrors(cout);
+	  return -1;
+	}
+      NbrNBody = MonomialFile.GetNbrColumns() - 1;
+      int** TmpColumns = new int*[NbrNBody];
+      for (int i = 0; i < NbrNBody; ++i)
+	{
+	  TmpColumns[i] = MonomialFile.GetAsIntegerArray(i + 1);
+	}
+      InteractionNbrMonomials = MonomialFile.GetNbrLines();
+      InteractionMonomials = new int* [InteractionNbrMonomials];
+      InteractionMonomialCoefficients = MonomialFile.GetAsDoubleArray(0);
+      for (int i = 0; i < InteractionNbrMonomials; ++i)
+	{
+	  InteractionMonomials[i] = new int [NbrNBody];
+	  for (int j = 0; j < NbrNBody; ++j)
+	    InteractionMonomials[i][j] = TmpColumns[j][i];
+	}
+      delete[] TmpColumns;
+    }
 //   int* TmpIndices = new int [NbrNBody];
 //   for (int i = 0; i < NbrNBody; ++i)
 //     {

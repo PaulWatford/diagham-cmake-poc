@@ -31,6 +31,8 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace.h"
@@ -121,6 +123,10 @@ int main(int argc, char** argv)
   int MaxBand1 = -1;
   int MaxBand2 = -1;
   int MaxBand3 = -1;
+  int MinBand0 = -1;
+  int MinBand1 = -1;
+  int MinBand2 = -1;
+  int MinBand3 = -1;
   bool Statistics = true;
   double* Coefficients = 0;
   bool ShowTimeFlag = Manager.GetBoolean("show-time");
@@ -251,6 +257,7 @@ int main(int argc, char** argv)
 		}
 	    }
 	  FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(GroundStateFiles[i], MaxBand0, MaxBand1, MaxBand2, MaxBand3);
+	  FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(GroundStateFiles[i], MinBand0, MinBand1, MinBand2, MinBand3);
 	}
     }
   else
@@ -516,13 +523,27 @@ int main(int argc, char** argv)
 				}
 			      if (Manager.GetString("allowed-orbitals") == 0)
 				{
-				  if ((NbrSitesX * NbrSitesY) <= 21)
+				  if ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
 				    {
-				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+				      if ((NbrSitesX * NbrSitesY) <= 21)
+					{
+					  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+					}
+				      else
+					{
+					  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+					}
 				    }
 				  else
 				    {
-				      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+				      if ((NbrSitesX * NbrSitesY) <= 21)
+					{
+					  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+					}
+				      else
+					{
+					  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);
+					}
 				    }
 				}
 			      else

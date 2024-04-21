@@ -264,11 +264,12 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::GenerateSta
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < this->MinNbrParticlesBand0) || (maxNbrParticlesBand1 < this->MinNbrParticlesBand1) || (maxNbrParticlesBand2 < this->MinNbrParticlesBand2))
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < 0) || (maxNbrParticlesBand1 < 0) || (maxNbrParticlesBand2 < 0))
     return pos;
   if (nbrFermions == 0)
     {
-      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum)
+	  && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) >= this->MinNbrParticlesBand0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) >= this->MinNbrParticlesBand1) >= ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) < this->MinNbrParticlesBand2))
 	{
 	  this->StateDescription[pos] = ((ULONGLONG) 0x0ul);	  
 	  return (pos + 1l);
@@ -284,17 +285,17 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::GenerateSta
 	{
 	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 	    {
-	      if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+	      if ((maxNbrParticlesBand2 > 0) && ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) > this->MinNbrParticlesBand2))
 		{
 		  this->StateDescription[pos] = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + j) * 3);
 		  ++pos;
 		}
-	      if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+	      if ((maxNbrParticlesBand1 > 0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) > this->MinNbrParticlesBand1))
 		{
 		  this->StateDescription[pos] = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + j) * 3);
 		  ++pos;
 		}
-	      if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+	      if ((maxNbrParticlesBand0 > 0) && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) > this->MinNbrParticlesBand0))
 		{
 		  this->StateDescription[pos] = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + j) * 3);
 		  ++pos;
@@ -307,17 +308,17 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::GenerateSta
 	    {
 	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 		{
-		  if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+		  if ((maxNbrParticlesBand2 > 0) && ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) > this->MinNbrParticlesBand2))
 		    {
 		      this->StateDescription[pos] = ((ULONGLONG) 0x4ul) << (((i * this->NbrSiteY) + j) * 3);
 		      ++pos;
 		    }
-		  if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+		  if ((maxNbrParticlesBand1 > 0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) > this->MinNbrParticlesBand1))
 		    {
 		      this->StateDescription[pos] = ((ULONGLONG) 0x2ul) << (((i * this->NbrSiteY) + j) * 3);
 		      ++pos;
 		    }
-		  if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+		  if ((maxNbrParticlesBand0 > 0) && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) > this->MinNbrParticlesBand0))
 		    {
 		      this->StateDescription[pos] = ((ULONGLONG) 0x1ul) << (((i * this->NbrSiteY) + j) * 3);
 		      ++pos;
@@ -388,11 +389,12 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::EvaluateHil
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < this->MinNbrParticlesBand0) || (maxNbrParticlesBand1 < this->MinNbrParticlesBand1) || (maxNbrParticlesBand2 < this->MinNbrParticlesBand2))
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < 0) || (maxNbrParticlesBand1 < 0) || (maxNbrParticlesBand2 < 0))
     return 0l;
   if (nbrFermions == 0)
     {
-      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum)
+	  && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) >= this->MinNbrParticlesBand0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) >= this->MinNbrParticlesBand1) >= ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) < this->MinNbrParticlesBand2))
 	{
 	  return 1l;
 	}
@@ -405,15 +407,15 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::EvaluateHil
   if (nbrFermions == 1)
     {
       long TmpIncrement = 0l;
-      if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+      if ((maxNbrParticlesBand0 > 0) && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) > this->MinNbrParticlesBand0))
 	{
 	  TmpIncrement++;
 	}
-      if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+      if ((maxNbrParticlesBand1 > 0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) > this->MinNbrParticlesBand1))
 	{
 	  TmpIncrement++;
 	}
-      if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+      if ((maxNbrParticlesBand2 > 0) && ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) > this->MinNbrParticlesBand2))
 	{
 	  TmpIncrement++;
 	}

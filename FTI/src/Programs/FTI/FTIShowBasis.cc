@@ -317,7 +317,7 @@ int main(int argc, char** argv)
 					}
 				      if (Manager.GetString("allowed-orbitals") == 0)
 					{
-					  if ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
+					  if (false)// ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
 					    {
 					      if ((NbrSitesX * NbrSitesY) <= 21)
 						{

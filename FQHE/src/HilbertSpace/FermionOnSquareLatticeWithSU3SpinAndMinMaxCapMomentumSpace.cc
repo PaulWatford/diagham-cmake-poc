@@ -92,6 +92,8 @@ FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatti
   this->TotalY = 0;
   this->NbrSiteX = nbrSiteX;
   this->NbrSiteY = nbrSiteY;
+  this->LzMax = this->NbrSiteX * this->NbrSiteY;
+  this->NbrLzValue = this->LzMax + 1;
   this->MinNbrParticlesBand0 = minNbrParticlesBand0;
   this->MinNbrParticlesBand1 = minNbrParticlesBand1;
   this->MinNbrParticlesBand2 = minNbrParticlesBand2;
@@ -100,8 +102,6 @@ FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatti
   this->MaxNbrParticlesBand2 = maxNbrParticlesBand2;
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
-  this->LzMax = this->NbrSiteX * this->NbrSiteY;
-  this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
@@ -283,11 +283,12 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::GenerateStates(
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < this->MinNbrParticlesBand0) || (maxNbrParticlesBand1 < this->MinNbrParticlesBand1) || (maxNbrParticlesBand2 < this->MinNbrParticlesBand2))
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < 0) || (maxNbrParticlesBand1 < 0) || (maxNbrParticlesBand2 < 0))
     return pos;
   if (nbrFermions == 0)
     {
-      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum)
+	  && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) >= this->MinNbrParticlesBand0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) >= this->MinNbrParticlesBand1) >= ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) < this->MinNbrParticlesBand2))
 	{
 	  this->StateDescription[pos] = 0x0ul;	  
 	  return (pos + 1l);
@@ -303,17 +304,17 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::GenerateStates(
 	{
 	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 	    {
-	      if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+	      if ((maxNbrParticlesBand2 > 0) && ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) > this->MinNbrParticlesBand2))
 		{
 		  this->StateDescription[pos] = 0x4ul << (((currentKx * this->NbrSiteY) + j) * 3);
 		  ++pos;
 		}
-	      if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+	      if ((maxNbrParticlesBand1 > 0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) > this->MinNbrParticlesBand1))
 		{
 		  this->StateDescription[pos] = 0x2ul << (((currentKx * this->NbrSiteY) + j) * 3);
 		  ++pos;
 		}
-	      if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+	      if ((maxNbrParticlesBand0 > 0) && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) > this->MinNbrParticlesBand0))
 		{
 		  this->StateDescription[pos] = 0x1ul << (((currentKx * this->NbrSiteY) + j) * 3);
 		  ++pos;
@@ -326,17 +327,17 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::GenerateStates(
 	    {
 	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
 		{
-		  if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+		  if ((maxNbrParticlesBand2 > 0) && ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) > this->MinNbrParticlesBand2))
 		    {
 		      this->StateDescription[pos] = 0x4ul << (((i * this->NbrSiteY) + j) * 3);
 		      ++pos;
 		    }
-		  if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+		  if ((maxNbrParticlesBand1 > 0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) > this->MinNbrParticlesBand1))
 		    {
 		      this->StateDescription[pos] = 0x2ul << (((i * this->NbrSiteY) + j) * 3);
 		      ++pos;
 		    }
-		  if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+		  if ((maxNbrParticlesBand0 > 0) && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) > this->MinNbrParticlesBand0))
 		    {
 		      this->StateDescription[pos] = 0x1ul << (((i * this->NbrSiteY) + j) * 3);
 		      ++pos;
@@ -407,11 +408,12 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::EvaluateHilbert
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < this->MinNbrParticlesBand0) || (maxNbrParticlesBand1 < this->MinNbrParticlesBand1) || (maxNbrParticlesBand2 < this->MinNbrParticlesBand2))
+  if ((nbrFermions < 0) || (maxNbrParticlesBand0 < 0) || (maxNbrParticlesBand1 < 0) || (maxNbrParticlesBand2 < 0))
     return 0l;
   if (nbrFermions == 0)
     {
-      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum)
+	  && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) >= this->MinNbrParticlesBand0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) >= this->MinNbrParticlesBand1) >= ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) < this->MinNbrParticlesBand2))
 	{
 	  return 1l;
 	}
@@ -424,15 +426,15 @@ long FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::EvaluateHilbert
   if (nbrFermions == 1)
     {
       long TmpIncrement = 0l;
-      if (maxNbrParticlesBand0 > this->MinNbrParticlesBand0)
+      if ((maxNbrParticlesBand0 > 0) && ((this->MaxNbrParticlesBand0 - maxNbrParticlesBand0) > this->MinNbrParticlesBand0))
 	{
 	  TmpIncrement++;
 	}
-      if (maxNbrParticlesBand1 > this->MinNbrParticlesBand1)
+      if ((maxNbrParticlesBand1 > 0) && ((this->MaxNbrParticlesBand1 - maxNbrParticlesBand1) > this->MinNbrParticlesBand1))
 	{
 	  TmpIncrement++;
 	}
-      if (maxNbrParticlesBand2 > this->MinNbrParticlesBand2)
+      if ((maxNbrParticlesBand2 > 0) && ((this->MaxNbrParticlesBand2 - maxNbrParticlesBand2) > this->MinNbrParticlesBand2))
 	{
 	  TmpIncrement++;
 	}

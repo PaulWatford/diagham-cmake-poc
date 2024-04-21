@@ -341,7 +341,7 @@ void ParticleOnDiskGenericHamiltonian::EvaluateInteractionFactors()
 			   if (this->PseudoPotential[mRel] != 0)
   		           TmpCoef -= 4.0 * this->PseudoPotential[mRel] * this->EvaluateCGCoefficient(m1, m2, mRel, m1 + m2 - mRel) * this->EvaluateCGCoefficient(m3, m4, mRel, m3 + m4 - mRel);
 		     }
-           //cout << "m1= " << m1 << " m2= " << m2 << " m3= " << m3 << " m4= " << m4 << " " << TmpCoef << endl;
+           cout << "m1= " << m1 << " m2= " << m2 << " m3= " << m3 << " m4= " << m4 << " " << TmpCoef << endl;
 		   TmpCoefficient[Pos] = TmpCoef;
 		   if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
 		     MaxCoefficient = fabs(TmpCoefficient[Pos]);

@@ -49,6 +49,7 @@
 #include "HilbertSpace/BosonOnCubicLatticeMomentumSpace.h"
 #include "HilbertSpace/BosonOnSquareLatticeWannierSpace.h"
 
+#include "Operator/ParticleOnSphereDensityOperator.h"
 #include "Operator/ParticleOnSquareLatticeWithGenericSpinBandDensityOperator.h"
 #include "Operator/ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator.h"
 
@@ -370,6 +371,34 @@ int main(int argc, char** argv)
 			Spaces[TmpIndex] = new BosonOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx[i], TotalKy[i]);
 		      else
 			Spaces[TmpIndex] = new BosonOnSquareLatticeWannierSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKy[i], TotalKx[i]);
+		    }
+		  sprintf (FileHeader, "# kx ky <c^+ c>");
+		  NbrDensityIndices = NbrSitesX * NbrSitesY;
+		  NbrDensityPartialTraces = 1;
+		  PartialTraceLabels = new char* [NbrDensityPartialTraces];
+		  for (int i = 0; i < NbrDensityPartialTraces; ++i)
+		    {
+		      PartialTraceLabels[i] = new char [256];
+		      sprintf(PartialTraceLabels[i], "");
+		    }
+		  CreationMomentumIndices = new int[NbrDensityIndices];
+		  AnnihilationMomentumIndices = new int[NbrDensityIndices];
+		  CreationSigmaIndices = new int[NbrDensityIndices];
+		  AnnihilationSigmaIndices = new int[NbrDensityIndices];
+		  IndexLabels = new char*[NbrDensityIndices];
+		  NbrDensityIndices = 0;
+		  for (int kx = 0; kx < NbrSitesX; ++kx)
+		    {	
+		      for (int ky = 0; ky < NbrSitesY; ++ky)
+			{
+			  CreationMomentumIndices[NbrDensityIndices] = ((kx * NbrSitesY) + ky);
+			  AnnihilationMomentumIndices[NbrDensityIndices] = ((kx * NbrSitesY) + ky);
+			  CreationSigmaIndices[NbrDensityIndices] = 0;
+			  AnnihilationSigmaIndices[NbrDensityIndices] = 0;
+			  IndexLabels[NbrDensityIndices] = new char[256];
+			  sprintf(IndexLabels[NbrDensityIndices], "%d %d", kx, ky);
+			  ++NbrDensityIndices;
+			}
 		    }
 		}
 	      if (NbrBands == 2)
@@ -782,6 +811,32 @@ int main(int argc, char** argv)
     {
       if (NbrBands == 1)
 	{
+	  for (int i = 0; i < NbrSpaces; ++i)
+	    {
+	      Complex TmpTotalDensity = 0.0;
+	      Complex* PartialTraces = new Complex[NbrDensityPartialTraces];
+	      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+		{
+		  PartialTraces[j] = 0.0;
+		}
+	      int TmpIndex = (((TotalKx[i] * NbrSitesY) + TotalKy[i]) * NbrSiteZ) + TotalKz[i];
+	      for (int j = 0 ; j < NbrDensityIndices; ++j)
+		{
+		  ParticleOnSphereDensityOperator TmpOperator ((ParticleOnSphere*) Spaces[TmpIndex], CreationMomentumIndices[j], AnnihilationMomentumIndices[j]);
+		  Complex TmpElement = TmpOperator.MatrixElement(GroundStates[i], GroundStates[i]);
+		  if (CreationSigmaIndices[j] == AnnihilationSigmaIndices[j])
+		    {
+		      PartialTraces[CreationSigmaIndices[j]] += TmpElement;
+		      TmpTotalDensity += TmpElement;
+		    }
+		  File << IndexLabels[j] << " " << TmpElement << endl;
+		}
+	      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+		{
+		  File << "# partial density " << PartialTraceLabels[j] << " = " << PartialTraces[j] << endl;
+		}
+	      File << "# total density = " << TmpTotalDensity << endl;
+	    }
 	}
       else
 	{

@@ -95,8 +95,8 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLat
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   this->ParseOrbitalFile(allowedOrbitalsFileName);
-  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
-  if (this->NbrFermions <= (this->TotalNbrOrbitals / 2))
+  //  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
+  if (true)//(this->NbrFermions <= (this->TotalNbrOrbitals / 2))
      {
       this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
      }
@@ -119,7 +119,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLat
       this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
       long TmpLargeHilbertSpaceDimension = 0l;
-      if (this->NbrFermions <= (this->TotalNbrOrbitals / 2))
+      if (true)//(this->NbrFermions <= (this->TotalNbrOrbitals / 2))
 	{
 	  TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
 	}

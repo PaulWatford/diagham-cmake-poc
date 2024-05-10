@@ -68,9 +68,6 @@ class ParticleOnLatticeFromFileInteractionTwoBandHamiltonian : public ParticleOn
   // global rescaling factor for the two-body interaction term
   double InteractionRescalingFactor;
 
-  // include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
-  bool AdditionalSpinFlag;
-  
   // name of the ASCII file containing the matrix element for the generic two body interaction term
   char* MatrixElementsInteractionFile;
   

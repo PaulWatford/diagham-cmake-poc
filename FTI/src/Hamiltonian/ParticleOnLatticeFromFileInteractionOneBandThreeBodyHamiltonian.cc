@@ -7,10 +7,10 @@
 //                                                                            //
 //                        class author: Nicolas Regnault                      //
 //                                                                            //
-//          class of a two body interaction projected onto two bands          //
-//         from an ASCII file providing the two body matrix elements          //
+//        class of a two body interaction projected onto a single band        //
+//        from an ASCII file providing the three body matrix elements         //
 //                                                                            //
-//                        last modification : 01/05/2020                      //
+//                        last modification : 07/05/2024                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -31,7 +31,7 @@
 
 
 #include "config.h"
-#include "Hamiltonian/ParticleOnLatticeFromFileInteractionTwoBandHamiltonian.h"
+#include "Hamiltonian/ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian.h"
 #include "Matrix/ComplexMatrix.h"
 #include "Matrix/HermitianMatrix.h"
 #include "Matrix/RealDiagonalMatrix.h"
@@ -53,7 +53,7 @@ using std::ostream;
 // default constructor
 //
 
-ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFileInteractionTwoBandHamiltonian()
+ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian()
 {
 }
 
@@ -63,20 +63,23 @@ ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFil
 // nbrParticles = number of particles
 // nbrSiteX = number of sites in the x direction
 // nbrSiteY = number of sites in the y direction
-// matrixElementsInteractionFile = name of the ASCII file containing the matrix element for the generic two body interaction term
+// matrixElementsThreeBodyInteractionFile = name of the ASCII file containing the matrix element for the generic three body interaction term
+// threeBodyInteractionRescalingFactor = global rescaling factor for the three-body interaction term
+// matrixElementsTwoBodyInteractionFile = name of the ASCII file containing the matrix element for the generic two body interaction term
+// twoBodyInteractionRescalingFactor = global rescaling factor for the two-body interaction term
 // tightBindingModel = pointer to the tight binding model
 // flatBandFlag = use flat band model
-// interactionRescalingFactor = global rescaling factor for the two-body interaction term
 // spinFlag = include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 
-ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFileInteractionTwoBandHamiltonian(ParticleOnSphereWithSpin* particles, int nbrParticles,
-													       int nbrSiteX, int nbrSiteY,
-													       char* matrixElementsInteractionFile,
-													       Abstract2DTightBindingModel* tightBindingModel, 
-													       bool flatBandFlag, double interactionRescalingFactor, bool spinFlag,
-													       AbstractArchitecture* architecture, long memory)
+ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian(ParticleOnSphereWithSpin* particles, int nbrParticles, int nbrSiteX, int nbrSiteY,	
+																 char* matrixElementsThreeBodyInteractionFile,
+																 double threeBodyInteractionRescalingFactor,
+																 char* matrixElementsTwoBodyInteractionFile,
+																 double twoBodyInteractionRescalingFactor, 
+																 Abstract2DTightBindingModel* tightBindingModel ,bool flatBandFlag,
+																 bool spinFlag, AbstractArchitecture* architecture, long memory)
 {
   this->Particles = particles;
   this->NbrParticles = nbrParticles;
@@ -88,24 +91,34 @@ ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFil
   this->HamiltonianShift = 0.0;
   this->TightBindingModel = tightBindingModel;
   this->FlatBand = flatBandFlag;
-  this->InteractionRescalingFactor = interactionRescalingFactor;
+  this->ThreeBodyInteractionRescalingFactor = threeBodyInteractionRescalingFactor;
+  this->TwoBodyInteractionRescalingFactor = twoBodyInteractionRescalingFactor;
   this->AdditionalSpinFlag = spinFlag;
   if (this->AdditionalSpinFlag == true)
     {
-      this->NbrInternalIndices = 4;
+      this->NbrInternalIndices = 2;
     }
   else
     {
-      this->NbrInternalIndices = 2;
+      this->NbrInternalIndices = 1;
     }
-  this->MatrixElementsInteractionFile = new char[strlen(matrixElementsInteractionFile) + 1];
-  strcpy(this->MatrixElementsInteractionFile, matrixElementsInteractionFile);
+  this->MatrixElementsThreeBodyInteractionFile = new char[strlen(matrixElementsThreeBodyInteractionFile) + 1];
+  strcpy(this->MatrixElementsThreeBodyInteractionFile, matrixElementsThreeBodyInteractionFile);
+  if (matrixElementsTwoBodyInteractionFile == 0)
+    {
+      this->MatrixElementsTwoBodyInteractionFile = 0;
+    }
+  else
+    {
+      this->MatrixElementsTwoBodyInteractionFile = new char[strlen(matrixElementsTwoBodyInteractionFile) + 1];
+      strcpy(this->MatrixElementsTwoBodyInteractionFile, matrixElementsTwoBodyInteractionFile);
+    }
   
   this->Architecture = architecture;
   this->Memory = memory;
-  this->OneBodyInteractionFactorsupup = 0;
-  this->OneBodyInteractionFactorsdowndown = 0;
-  this->OneBodyInteractionFactorsupdown = 0;
+  // this->OneBodyInteractionFactorsupup = 0;
+  // this->OneBodyInteractionFactorsdowndown = 0;
+  // this->OneBodyInteractionFactorsupdown = 0;
   this->FastMultiplicationFlag = false;
   this->HermitianSymmetryFlag = true;//false;
   long MinIndex;
@@ -141,28 +154,16 @@ ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFil
 // destructor
 //
 
-ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::~ParticleOnLatticeFromFileInteractionTwoBandHamiltonian()
+ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::~ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian()
 {
 }
   
 // evaluate all interaction factors
 //   
 
-void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteractionFactors()
+void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateInteractionFactors()
 {
   long TotalNbrInteractionFactors = 0l;
-  this->InteractionFactorsupup = 0;
-  this->InteractionFactorsdowndown = 0;
-  this->InteractionFactorsupdown = 0;
-  this->InteractionFactorsupupupup = 0;
-  this->InteractionFactorsupupdowndown = 0;
-  this->InteractionFactorsdowndownupup = 0;
-  this->InteractionFactorsdowndowndowndown = 0;
-  this->InteractionFactorsupdownupup = 0;
-  this->InteractionFactorsupdowndowndown = 0;
-  this->InteractionFactorsupupupdown = 0;
-  this->InteractionFactorsdowndownupdown = 0;
-  this->InteractionFactorsupdownupdown = 0;
 
   int* TmpSigma1 = 0;
   int* TmpSigma2 = 0;
@@ -177,48 +178,8 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
   int* TmpKy3 = 0;
   int* TmpKy4 = 0;
   Complex* TmpMatrixElements = 0;
+
   int TmpNbrTwoBodyMatrixElements = this->ProcessTwoBodyMatrixElements(TmpSigma1, TmpSigma2, TmpSigma3, TmpSigma4, TmpKx1, TmpKy1, TmpKx2, TmpKy2, TmpKx3, TmpKy3, TmpKx4, TmpKy4, TmpMatrixElements);
-
-  
-  // MultiColumnASCIIFile TmpInteractionFile;
-  // if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
-  //   {
-  //     TmpInteractionFile.DumpErrors(cout) << endl;
-  //     exit(0);
-  //   }
-  // if (TmpInteractionFile.GetNbrLines() == 0)
-  //   {
-  //     cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
-  //     exit(0);
-  //   }
-  // if (TmpInteractionFile.GetNbrColumns() < 13)
-  //   {
-  //     cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
-  // 	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
-  //     exit(0);
-  //   }
-  // int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
-  // cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
-
-  // int* TmpSigma1 = TmpInteractionFile.GetAsIntegerArray(0);
-  // int* TmpSigma2 = TmpInteractionFile.GetAsIntegerArray(3);
-  // int* TmpSigma3 = TmpInteractionFile.GetAsIntegerArray(6);
-  // int* TmpSigma4 = TmpInteractionFile.GetAsIntegerArray(9);
-  // int* TmpKx1 = TmpInteractionFile.GetAsIntegerArray(1);
-  // int* TmpKx2 = TmpInteractionFile.GetAsIntegerArray(4);
-  // int* TmpKx3 = TmpInteractionFile.GetAsIntegerArray(7);
-  // int* TmpKx4 = TmpInteractionFile.GetAsIntegerArray(10);
-  // int* TmpKy1 = TmpInteractionFile.GetAsIntegerArray(2);
-  // int* TmpKy2 = TmpInteractionFile.GetAsIntegerArray(5);
-  // int* TmpKy3 = TmpInteractionFile.GetAsIntegerArray(8);
-  // int* TmpKy4 = TmpInteractionFile.GetAsIntegerArray(11);
-  // Complex* TmpMatrixElements = TmpInteractionFile.GetAsComplexArray(12);
-  // if (TmpMatrixElements == 0)
-  //   {
-  //     TmpInteractionFile.DumpErrors(cout) << endl;
-  //     exit(0);
-  //   }
-  
   int* TmpLinearizedSumK = new int[TmpNbrTwoBodyMatrixElements];
   int* TmpLinearizedK1 = new int[TmpNbrTwoBodyMatrixElements];
   int* TmpLinearizedK2 = new int[TmpNbrTwoBodyMatrixElements];
@@ -232,7 +193,7 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
       TmpLinearizedK2[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx2[i], TmpKy2[i]);
       TmpLinearizedK3[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx3[i], TmpKy3[i]);
       TmpLinearizedK4[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx4[i], TmpKy4[i]);
-      TmpMatrixElements[i] *= this->InteractionRescalingFactor;
+      TmpMatrixElements[i] *= this->TwoBodyInteractionRescalingFactor;
     }
   bool**** InternalIndicesFlags = this->TestMatrixElementsConservedDegreesOfFreedom(TmpNbrTwoBodyMatrixElements, TmpSigma1, TmpSigma2, TmpSigma3, TmpSigma4);
   
@@ -782,10 +743,8 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 // evaluate all one-body factors
 //   
 
-void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateOneBodyFactors()
+void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateOneBodyFactors()
 {
-  this->BandIndex1 = 0;
-  this->BandIndex2 = 1;
   this->OneBodyInteractionFactorsSigma = new Complex**[this->NbrInternalIndices];
   for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
     {
@@ -855,6 +814,90 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateOneBodyFact
     }
 }
 
+// evaluate all one-body factors
+// process the three-body matrix elements from the ascii file
+//
+// arraySigma1 = reference on the array containing the indices of the internal degree freedom for the operator 1
+// arraySigma2 = reference on the array containing the indices of the internal degree freedom for the operator 2
+// arraySigma3 = reference on the array containing the indices of the internal degree freedom for the operator 3
+// arraySigma4 = reference on the array containing the indices of the internal degree freedom for the operator 4
+// arraySigma5 = reference on the array containing the indices of the internal degree freedom for the operator 5
+// arraySigma6 = reference on the array containing the indices of the internal degree freedom for the operator 6
+// arrayKx1 = reference on the array containing the momentum along x for the operator 1
+// arrayKy1 = reference on the array containing the momentum along y for the operator 1
+// arrayKx2 = reference on the array containing the momentum along x for the operator 2
+// arrayKy2 = reference on the array containing the momentum along y for the operator 2
+// arrayKx3 = reference on the array containing the momentum along x for the operator 3
+// arrayKy3 = reference on the array containing the momentum along y for the operator 3
+// arrayKx4 = reference on the array containing the momentum along x for the operator 4
+// arrayKy4 = reference on the array containing the momentum along y for the operator 4
+// arrayKx5 = reference on the array containing the momentum along x for the operator 5
+// arrayKy5 = reference on the array containing the momentum along y for the operator 5
+// arrayKx6 = reference on the array containing the momentum along x for the operator 6
+// arrayKy6 = reference on the array containing the momentum along y for the operator 6
+// arrayMatrixElements = reference on the array containing the matrix elements
+// return value = number of entries
+
+int ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::ProcessThreeBodyMatrixElements(int*& arraySigma1, int*& arraySigma2, int*& arraySigma3, int*& arraySigma4, int*& arraySigma5, int*& arraySigma6,
+												    int*& arrayKx1, int*& arrayKy1, int*& arrayKx2, int*& arrayKy2, int*& arrayKx3, int*& arrayKy3,
+												    int*& arrayKx4, int*& arrayKy4, int*& arrayKx5, int*& arrayKy5, int*& arrayKx6, int*& arrayKy6, Complex*& arrayMatrixElements)
+{
+  MultiColumnASCIIFile TmpInteractionFile;
+  if (TmpInteractionFile.Parse(this->MatrixElementsThreeBodyInteractionFile) == false)
+    {
+      TmpInteractionFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  if (TmpInteractionFile.GetNbrLines() == 0)
+    {
+      cout << this->MatrixElementsThreeBodyInteractionFile << " is an empty file" << endl;
+      exit(0);
+    }
+  if (TmpInteractionFile.GetNbrColumns() < 13)
+    {
+      cout << this->MatrixElementsThreeBodyInteractionFile << " has a wrong number of column (has "
+	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
+      exit(0);
+    }
+  int TmpNbrThreeBodyMatrixElements = TmpInteractionFile.GetNbrLines();
+  cout << "nbr of two body matrix elements in " << this->MatrixElementsThreeBodyInteractionFile << " = " << TmpNbrThreeBodyMatrixElements << endl;
+
+  arraySigma1 = new int [TmpNbrThreeBodyMatrixElements];
+  arraySigma2 = new int [TmpNbrThreeBodyMatrixElements];
+  arraySigma3 = new int [TmpNbrThreeBodyMatrixElements];
+  arraySigma4 = new int [TmpNbrThreeBodyMatrixElements];
+  arraySigma5 = new int [TmpNbrThreeBodyMatrixElements];
+  arraySigma6 = new int [TmpNbrThreeBodyMatrixElements];
+  arrayKx1 = TmpInteractionFile.GetAsIntegerArray(0);
+  arrayKx2 = TmpInteractionFile.GetAsIntegerArray(2);
+  arrayKx3 = TmpInteractionFile.GetAsIntegerArray(4);
+  arrayKx4 = TmpInteractionFile.GetAsIntegerArray(6);
+  arrayKx5 = TmpInteractionFile.GetAsIntegerArray(8);
+  arrayKx6 = TmpInteractionFile.GetAsIntegerArray(10);
+  arrayKy1 = TmpInteractionFile.GetAsIntegerArray(1);
+  arrayKy2 = TmpInteractionFile.GetAsIntegerArray(3);
+  arrayKy3 = TmpInteractionFile.GetAsIntegerArray(5);
+  arrayKy4 = TmpInteractionFile.GetAsIntegerArray(7);
+  arrayKy5 = TmpInteractionFile.GetAsIntegerArray(9);
+  arrayKy6 = TmpInteractionFile.GetAsIntegerArray(11);
+  arrayMatrixElements = TmpInteractionFile.GetAsComplexArray(12);
+  for (int i = 0; i < TmpNbrThreeBodyMatrixElements; ++i)
+    {
+      arraySigma1[i] = 0;
+      arraySigma2[i] = 0;
+      arraySigma3[i] = 0;
+      arraySigma4[i] = 0;
+      arraySigma5[i] = 0;
+      arraySigma6[i] = 0;
+    }
+  if (arrayMatrixElements == 0)
+    {
+      TmpInteractionFile.DumpErrors(cout) << endl;
+      exit(0);
+    }
+  return TmpNbrThreeBodyMatrixElements;
+}
+
 // process the matrix elements from the ascii file
 //
 // arraySigma1 = reference on the array containing the indices of the internal degree freedom for the operator 1
@@ -872,41 +915,48 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateOneBodyFact
 // arrayMatrixElements = reference on the array containing the matrix elements
 // return value = number of entries
 
-int ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ProcessTwoBodyMatrixElements(int*& arraySigma1, int*& arraySigma2, int*& arraySigma3, int*& arraySigma4, int*& arrayKx1, int*& arrayKy1, int*& arrayKx2, int*& arrayKy2, int*& arrayKx3, int*& arrayKy3, int*& arrayKx4, int*& arrayKy4, Complex*& arrayMatrixElements)
+int ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::ProcessTwoBodyMatrixElements(int*& arraySigma1, int*& arraySigma2, int*& arraySigma3, int*& arraySigma4, int*& arrayKx1, int*& arrayKy1, int*& arrayKx2, int*& arrayKy2, int*& arrayKx3, int*& arrayKy3, int*& arrayKx4, int*& arrayKy4, Complex*& arrayMatrixElements)
 {
   MultiColumnASCIIFile TmpInteractionFile;
-  if (TmpInteractionFile.Parse(this->MatrixElementsInteractionFile) == false)
+  if (TmpInteractionFile.Parse(this->MatrixElementsTwoBodyInteractionFile) == false)
     {
       TmpInteractionFile.DumpErrors(cout) << endl;
       exit(0);
     }
   if (TmpInteractionFile.GetNbrLines() == 0)
     {
-      cout << this->MatrixElementsInteractionFile << " is an empty file" << endl;
+      cout << this->MatrixElementsTwoBodyInteractionFile << " is an empty file" << endl;
       exit(0);
     }
-  if (TmpInteractionFile.GetNbrColumns() < 13)
+  if (TmpInteractionFile.GetNbrColumns() < 9)
     {
-      cout << this->MatrixElementsInteractionFile << " has a wrong number of column (has "
-	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 13)" << endl;
+      cout << this->MatrixElementsTwoBodyInteractionFile << " has a wrong number of column (has "
+	   << TmpInteractionFile.GetNbrColumns() << ", should be at least 9)" << endl;
       exit(0);
     }
   int TmpNbrTwoBodyMatrixElements = TmpInteractionFile.GetNbrLines();
-  cout << "nbr of two body matrix elements in " << this->MatrixElementsInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
+  cout << "nbr of two body matrix elements in " << this->MatrixElementsTwoBodyInteractionFile << " = " << TmpNbrTwoBodyMatrixElements << endl;
 
-  arraySigma1 = TmpInteractionFile.GetAsIntegerArray(0);
-  arraySigma2 = TmpInteractionFile.GetAsIntegerArray(3);
-  arraySigma3 = TmpInteractionFile.GetAsIntegerArray(6);
-  arraySigma4 = TmpInteractionFile.GetAsIntegerArray(9);
-  arrayKx1 = TmpInteractionFile.GetAsIntegerArray(1);
-  arrayKx2 = TmpInteractionFile.GetAsIntegerArray(4);
-  arrayKx3 = TmpInteractionFile.GetAsIntegerArray(7);
-  arrayKx4 = TmpInteractionFile.GetAsIntegerArray(10);
-  arrayKy1 = TmpInteractionFile.GetAsIntegerArray(2);
-  arrayKy2 = TmpInteractionFile.GetAsIntegerArray(5);
-  arrayKy3 = TmpInteractionFile.GetAsIntegerArray(8);
-  arrayKy4 = TmpInteractionFile.GetAsIntegerArray(11);
-  arrayMatrixElements = TmpInteractionFile.GetAsComplexArray(12);
+  arraySigma1 = new int [TmpNbrTwoBodyMatrixElements];
+  arraySigma2 = new int [TmpNbrTwoBodyMatrixElements];
+  arraySigma3 = new int [TmpNbrTwoBodyMatrixElements];
+  arraySigma4 = new int [TmpNbrTwoBodyMatrixElements];
+  arrayKx1 = TmpInteractionFile.GetAsIntegerArray(0);
+  arrayKx2 = TmpInteractionFile.GetAsIntegerArray(2);
+  arrayKx3 = TmpInteractionFile.GetAsIntegerArray(4);
+  arrayKx4 = TmpInteractionFile.GetAsIntegerArray(6);
+  arrayKy1 = TmpInteractionFile.GetAsIntegerArray(1);
+  arrayKy2 = TmpInteractionFile.GetAsIntegerArray(3);
+  arrayKy3 = TmpInteractionFile.GetAsIntegerArray(5);
+  arrayKy4 = TmpInteractionFile.GetAsIntegerArray(7);
+  arrayMatrixElements = TmpInteractionFile.GetAsComplexArray(8);
+  for (int i = 0; i < TmpNbrTwoBodyMatrixElements; ++i)
+    {
+      arraySigma1[i] = 0;
+      arraySigma2[i] = 0;
+      arraySigma3[i] = 0;
+      arraySigma4[i] = 0;
+    }
   if (arrayMatrixElements == 0)
     {
       TmpInteractionFile.DumpErrors(cout) << endl;

@@ -338,7 +338,7 @@ int main(int argc, char** argv)
       char* BandCapPrefix0 = new char [256];
       char* BandCapPrefix1 = new char [256];
       char* BandCapPrefix2 = new char [256];
-      if (Manager.GetInteger("min-band0") < 0) 
+      if (Manager.GetInteger("min-band0") <= 0) 
 	{
 	  sprintf (BandCapPrefix0, "");
 	}
@@ -346,7 +346,7 @@ int main(int argc, char** argv)
 	{
 	  sprintf (BandCapPrefix0, "_minband0_%d", Manager.GetInteger("min-band0"));
 	}
-      if (Manager.GetInteger("min-band1") < 0) 
+      if (Manager.GetInteger("min-band1") <= 0) 
 	{
 	  sprintf (BandCapPrefix1, "");
 	}
@@ -354,7 +354,7 @@ int main(int argc, char** argv)
 	{
 	  sprintf (BandCapPrefix1, "_minband1_%d", Manager.GetInteger("min-band1"));
 	}
-      if (Manager.GetInteger("min-band2") < 0) 
+      if (Manager.GetInteger("min-band2") <= 0) 
 	{
 	  sprintf (BandCapPrefix2, "");
 	}

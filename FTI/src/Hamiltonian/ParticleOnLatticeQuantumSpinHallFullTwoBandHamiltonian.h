@@ -52,7 +52,10 @@ using std::endl;
 class ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian : public ParticleOnLatticeQuantumSpinHallTwoBandHamiltonian
 {
 
- protected:
+protected:
+  
+  // include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
+  bool AdditionalSpinFlag;
   
   // interaction factors
   // first entry is the sigma index for the first creation operator
@@ -183,6 +186,23 @@ class ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian : public ParticleOn
   virtual void EvaluateMNTwoBodyFastMultiplicationMemoryComponent(ParticleOnSphereWithSpin* particles, int firstComponent, int lastComponent, long& memory);
 
 
+  // test which internal degrees of freedom are conserved in the matrix elements
+  //   
+  // nbrMatrixElements = number of matrix elements
+  // sigmaIndices1 = array for internal degrees of freedom of the first creation operator
+  // sigmaIndices2 = array for internal degrees of freedom of the second creation operator
+  // sigmaIndices3 = array for internal degrees of freedom of the first annihilation operator
+  // sigmaIndices4 = array for internal degrees of freedom of the second annihilation operator
+  // return value = array that indicates which internal degrees of freedom are conserved  
+  virtual bool**** TestMatrixElementsConservedDegreesOfFreedom (int nbrMatrixElements, int* sigmaIndices1, int* sigmaIndices2,
+								int* sigmaIndices3, int* sigmaIndices4);
+  
+  // free the array tagging which internal degrees of freedom are conserved in the matrix elements
+  //   
+  // internalIndicesFlags = array that indicates which internal degrees of freedom are conserved
+  virtual void FreeMatrixElementsConservedDegreesOfFreedom (bool**** internalIndicesFlags);
+
+  
 };
 
 // core part of the AddMultiply method involving the one-body interaction, including loop on vector components
@@ -195,7 +215,7 @@ class ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian : public ParticleOn
 // vDestination = vector at which result has to be added
 
 inline void ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian::EvaluateMNOneBodyAddMultiplyComponent(ParticleOnSphereWithSpin* particles, int firstComponent, int lastComponent,
-												      int step, ComplexVector& vSource, ComplexVector& vDestination)
+													  int step, ComplexVector& vSource, ComplexVector& vDestination)
 {
   for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
     {

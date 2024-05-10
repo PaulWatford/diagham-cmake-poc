@@ -58,6 +58,7 @@ ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian::ParticleOnLatticeQuantum
 {
   this->OneBodyInteractionFactorsSigma = 0;
   this->NbrInternalIndices = 2;
+  this->AdditionalSpinFlag = false;
 }
 
 // destructor
@@ -114,4 +115,94 @@ ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian::~ParticleOnLatticeQuantu
 }
 
 
+
+// test which internal degrees of freedom are conserved in the matrix elements
+//   
+// nbrMatrixElements = number of matrix elements
+// sigmaIndices1 = array for internal degrees of freedom of the first creation operator
+// sigmaIndices2 = array for internal degrees of freedom of the second creation operator
+// sigmaIndices3 = array for internal degrees of freedom of the first annihilation operator
+// sigmaIndices4 = array for internal degrees of freedom of the second annihilation operator
+// return value = array that indicates which internal degrees of freedom are conserved
+
+bool**** ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian::TestMatrixElementsConservedDegreesOfFreedom (int nbrMatrixElements,
+													      int* sigmaIndices1, int* sigmaIndices2,
+													      int* sigmaIndices3, int* sigmaIndices4)
+{
+  int ReducedNbrInternalIndices = this->NbrInternalIndices;
+  if (this->AdditionalSpinFlag == true)
+    {
+      ReducedNbrInternalIndices /= 2;
+    }
+  bool**** InternalIndicesFlags = new bool*** [ReducedNbrInternalIndices];
+  for (int sigma1 = 0; sigma1 < ReducedNbrInternalIndices; ++sigma1)
+    {
+      InternalIndicesFlags[sigma1] = new bool** [ReducedNbrInternalIndices];
+      for (int sigma2 = 0; sigma2 < ReducedNbrInternalIndices; ++sigma2)
+	{
+	  InternalIndicesFlags[sigma1][sigma2] = new bool* [ReducedNbrInternalIndices];
+	  for (int sigma3 = 0; sigma3 < ReducedNbrInternalIndices; ++sigma3)
+	    {
+	      InternalIndicesFlags[sigma1][sigma2][sigma3] = new bool [ReducedNbrInternalIndices];
+	      for (int sigma4 = 0; sigma4 < ReducedNbrInternalIndices; ++sigma4)
+		{
+		  InternalIndicesFlags[sigma1][sigma2][sigma3][sigma4] = false;
+		}
+	    }
+	}
+    }
+
+  for (int i = 0; i < nbrMatrixElements; ++i)
+    {
+      InternalIndicesFlags[sigmaIndices1[i]][sigmaIndices2[i]][sigmaIndices4[i]][sigmaIndices3[i]] = true;
+    }
+
+  int NbrActivatedTerms = 0;
+  for (int sigma1 = 0; sigma1 < ReducedNbrInternalIndices; ++sigma1)
+    {
+      for (int sigma2 = 0; sigma2 < ReducedNbrInternalIndices; ++sigma2)
+	{
+	  for (int sigma3 = 0; sigma3 < ReducedNbrInternalIndices; ++sigma3)
+	    {
+	      for (int sigma4 = 0; sigma4 < ReducedNbrInternalIndices; ++sigma4)
+		{
+		  if (InternalIndicesFlags[sigma1][sigma2][sigma3][sigma4] == true)
+		    {
+		      NbrActivatedTerms++;
+		    }
+		}
+	    }
+	}
+    }
+  cout << "using " << NbrActivatedTerms << " out of the "
+       << (ReducedNbrInternalIndices * ReducedNbrInternalIndices * ReducedNbrInternalIndices * ReducedNbrInternalIndices)
+       << " possible two-body terms due to the internal degrees of freedom" << endl;
+  return InternalIndicesFlags;
+}
+
+// free the array tagging which internal degrees of freedom are conserved in the matrix elements
+//   
+// internalIndicesFlags = array that indicates which internal degrees of freedom are conserved
+
+void ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian::FreeMatrixElementsConservedDegreesOfFreedom (bool**** internalIndicesFlags)
+{
+  int ReducedNbrInternalIndices = this->NbrInternalIndices;
+  if (this->AdditionalSpinFlag == true)
+    {
+      ReducedNbrInternalIndices /= 2;
+    }
+  for (int sigma1 = 0; sigma1 < ReducedNbrInternalIndices; ++sigma1)
+    {
+      for (int sigma2 = 0; sigma2 < ReducedNbrInternalIndices; ++sigma2)
+	{
+	  for (int sigma3 = 0; sigma3 < ReducedNbrInternalIndices; ++sigma3)
+	    {
+	      delete[] internalIndicesFlags[sigma1][sigma2][sigma3];
+	    }
+	  delete[] internalIndicesFlags[sigma1][sigma2];
+	}
+      delete[] internalIndicesFlags[sigma1];
+    }
+  delete[] internalIndicesFlags;
+}
 

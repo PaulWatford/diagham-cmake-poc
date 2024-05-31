@@ -500,13 +500,13 @@ int main(int argc, char** argv)
           if (Manager.GetBoolean("time-reversal") == false)
 	    {
 	      Hamiltonian = new ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian (TotalSpace, NbrFermions, 
-												  MaxMomentum, XMomentum, XRatio, LayerSeparation, 
+												  MaxMomentum, XMomentum, XRatio, LandauLevel, LayerSeparation, 
 												  Architecture.GetArchitecture(), Memory);
 	    }
           else
 	    {
 	      Hamiltonian = new ParticleOnTorusCoulombWithSpinAndMagneticTranslationsTimeReversalSymmetricHamiltonian (TotalSpace, NbrFermions, 
-														       MaxMomentum, XMomentum, XRatio, LayerSeparation, 
+														       MaxMomentum, XMomentum, XRatio, LandauLevel, LayerSeparation, 
 														       Architecture.GetArchitecture(), Memory);
 	    }
 	}
@@ -521,7 +521,7 @@ int main(int argc, char** argv)
 		      if (Angle == 0.0)    
 			{
 			  Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedCoulombHamiltonian (TotalSpace, NbrFermions, 
-															 MaxMomentum, XMomentum, XRatio,
+															 MaxMomentum, XMomentum, XRatio, LandauLevel,
 															 DoubleGatedCoulombScreeningLength, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
 															 NbrPseudoPotentials[0], PseudoPotentials[0],
 															 NbrPseudoPotentials[1], PseudoPotentials[1],
@@ -558,7 +558,7 @@ int main(int argc, char** argv)
 		  if (RytovaKeldyshInterlayerDistance == 0.0)
 		    {
 		      Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCoulombHamiltonian (TotalSpace, NbrFermions, 
-																	  MaxMomentum, XMomentum, XRatio,
+																	  MaxMomentum, XMomentum, XRatio, LandauLevel,
 																	  DoubleGatedCoulombScreeningLength, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
 																	  NbrPseudoPotentials[0], PseudoPotentials[0],
 																	  NbrPseudoPotentials[1], PseudoPotentials[1],

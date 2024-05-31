@@ -58,6 +58,9 @@ using std::ostream;
 
 #define M1_12 0.08333333333333333
 
+static double MySqrArg;
+#define GETSQR(a) ((MySqrArg=(a)) == 1.0 ? 1.0 : MySqrArg*MySqrArg)
+
 
 // default constructor
 //
@@ -85,6 +88,7 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
   this->Architecture = 0;
   this->PrecalculationShift = 0;  
 
+  this->LandauLevel = 0;
   this->NbrPseudopotentialsUpUp = 0;
   this->PseudopotentialsUpUp = 0;
   this->NbrPseudopotentialsDownDown = 0;
@@ -107,6 +111,7 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
 // maxMomentum = maximum Lz value reached by a particle in the state
 // xMomentum = momentum in the x direction (modulo GCD of nbrParticles and maxMomentum)
 // ratio = ratio between the width in the x direction and the width in the y direction
+// landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
 // layerSeparation = layer separation in units of magnetic length
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
@@ -114,7 +119,7 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
 
 ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian
 (ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum, double ratio,
- double layerSeparation, AbstractArchitecture* architecture, long memory, char* precalculationFileName)
+ int landauLevel, double layerSeparation, AbstractArchitecture* architecture, long memory, char* precalculationFileName)
 {
   this->Particles = particles;
   this->MaxMomentum = maxMomentum;
@@ -127,6 +132,7 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
   this->HermitianSymmetryFlag = true;
   this->Ratio = ratio;  
   this->InvRatio = 1.0 / ratio;
+  this->LandauLevel = landauLevel;
   this->LayerSeparation=layerSeparation;
 //   double WignerEnergy = this->EvaluateWignerCrystalEnergy() / 2.0;
   double WignerEnergy = 0.0;
@@ -139,6 +145,18 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
   this->PrecalculationShift = (int) MinIndex;  
 
   cout << "Wigner Energy = " << WignerEnergy << endl;  
+
+  if (this->LandauLevel >= 0)
+    {
+      // simple coulomb interactions
+      this->FormFactor = LaguerrePolynomial(this->LandauLevel);
+    }
+  else
+    {
+      // coulomb interactions in graphene
+      this->FormFactor = 0.5*(LaguerrePolynomial(abs(this->LandauLevel))+LaguerrePolynomial(abs(this->LandauLevel)-1));
+    }
+
   this->PseudopotentialsUpUp = 0;
   this->PseudopotentialsDownDown = 0;
   this->PseudopotentialsUpDown = 0;
@@ -889,7 +907,7 @@ double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::Evaluat
 double ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::GetVofQ(double Q2_half, double layerSeparation)
 {
   double Q = sqrt(2.0*Q2_half);
-  return exp(-Q*layerSeparation)/Q;
+  return (GETSQR(this->FormFactor(Q2_half)) * exp(-Q*layerSeparation)) / Q;
 }
 
 

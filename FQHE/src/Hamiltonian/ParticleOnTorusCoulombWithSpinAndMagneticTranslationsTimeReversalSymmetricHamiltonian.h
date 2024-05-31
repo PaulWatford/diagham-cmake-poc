@@ -64,12 +64,13 @@ class ParticleOnTorusCoulombWithSpinAndMagneticTranslationsTimeReversalSymmetric
   // maxMomentum = maximum Lz value reached by a particle in the state
   // xMomentum = momentum in the x direction (modulo GCD of nbrBosons and maxMomentum)
   // ratio = ratio between the width in the x direction and the width in the y direction
+  // landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
   // layerSeparation = layer separation in units of magnetic length
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
   ParticleOnTorusCoulombWithSpinAndMagneticTranslationsTimeReversalSymmetricHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
-							    double ratio, double layerSeparation, AbstractArchitecture* architecture, int memory = -1, char* precalculationFileName = 0);
+											double ratio, int landauLevel, double layerSeparation, AbstractArchitecture* architecture, int memory = -1, char* precalculationFileName = 0);
 
   // constructor from pseudopotentials
   //

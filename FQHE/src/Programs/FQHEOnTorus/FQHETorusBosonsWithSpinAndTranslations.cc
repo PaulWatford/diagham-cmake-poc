@@ -403,7 +403,7 @@ int main(int argc, char** argv)
       if (HaveCoulomb == true)
 	{
 	  Hamiltonian = new ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian (Space, NbrBosons, 
-											      MaxMomentum, XMomentum, XRatio, LayerSeparation, 
+											      MaxMomentum, XMomentum, XRatio, LandauLevel, LayerSeparation, 
 											      Architecture.GetArchitecture(), Memory);
 	}
       else

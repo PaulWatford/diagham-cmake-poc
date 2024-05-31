@@ -75,6 +75,7 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCo
 // maxMomentum = maximum Lz value reached by a particle in the state
 // xMomentum = momentum in the x direction (modulo GCD of nbrBosons and maxMomentum)
 // ratio = ratio between the width in the x direction and the width in the y direction
+// landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
 // screeningLength = screening length (half the distance between the two screening gates)
 // scalingFactorUpUp = global rescaling factor for the up-up interaction
 // scalingFactorDownDown = global rescaling factor for the down-down interaction
@@ -91,7 +92,7 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCo
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
-ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCoulombHamiltonian::ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCoulombHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum, double ratio, 
+ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCoulombHamiltonian::ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCoulombHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum, double ratio, int landauLevel, 
 																			 double screeningLength, double scalingFactorUpUp, double scalingFactorDownDown, double scalingFactorUpDown,
 																			 int nbrPseudopotentialsUpUp, double* pseudopotentialsUpUp,
 																			 int nbrPseudopotentialsDownDown, double* pseudopotentialsDownDown,
@@ -173,6 +174,18 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedCo
       this->LaguerrePolynomials = 0;
     }
   
+  this->LandauLevel = landauLevel;
+  if (this->LandauLevel >= 0)
+    {
+      // simple coulomb interactions
+      this->FormFactor = LaguerrePolynomial(this->LandauLevel);
+    }
+  else
+    {
+      // coulomb interactions in graphene
+      this->FormFactor = 0.5*(LaguerrePolynomial(abs(this->LandauLevel))+LaguerrePolynomial(abs(this->LandauLevel)-1));
+    }
+
   this->OneBodyInteractionFactorsupup = 0;
   if(oneBodyPotentielUpUp != 0)
     {
@@ -463,12 +476,14 @@ double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDouble
 {
   if (Q2_half != 0.0)
     {
-      double Q = sqrt(2.0 * Q2_half);
+     double Q = this->FormFactor(Q2_half);
+      Q *= Q;
+      Q *= sqrt(2.0 * Q2_half);
       return (tanh (0.5 * this->ScreeningLength * Q)/ Q);
     }
   else
     {
-      return (0.5 * this->ScreeningLength);
+      return (this->FormFactor(Q2_half) * this->FormFactor(Q2_half) * (0.5 * this->ScreeningLength));
     }
 }
 

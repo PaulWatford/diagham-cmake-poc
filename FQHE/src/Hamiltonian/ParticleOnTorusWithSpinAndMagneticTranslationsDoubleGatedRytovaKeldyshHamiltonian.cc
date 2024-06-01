@@ -257,7 +257,7 @@ double ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedRytovaKeldyshHam
   if (Q2_half != 0.0)
     {
       double Q = sqrt(2.0 * Q2_half);
-      return (this->FormFactor(Q2_half) * this->FormFactor(Q2_half)) * (tanh (0.5 * this->ScreeningLength * Q)/ Q);
+      return (this->FormFactor(Q2_half) * this->FormFactor(Q2_half)) * (tanh (0.5 * this->ScreeningLength * Q)/ (Q * (1.0 + this->InterlayerDistance * Q)));
     }
   else
     {

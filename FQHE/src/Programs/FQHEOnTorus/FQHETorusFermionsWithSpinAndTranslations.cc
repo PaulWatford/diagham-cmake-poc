@@ -544,7 +544,7 @@ int main(int argc, char** argv)
 		  else
 		    {
 		      Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsDoubleGatedRytovaKeldyshHamiltonian (TotalSpace, NbrFermions, 
-															   MaxMomentum, XMomentum, XRatio,
+															   MaxMomentum, XMomentum, XRatio, LandauLevel,
 															   DoubleGatedCoulombScreeningLength, RytovaKeldyshInterlayerDistance, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
 															   NbrPseudoPotentials[0], PseudoPotentials[0],
 															   NbrPseudoPotentials[1], PseudoPotentials[1],
@@ -570,7 +570,7 @@ int main(int argc, char** argv)
 		  else
 		    {
 		      Hamiltonian = new ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian (TotalSpace, NbrFermions, 
-																		MaxMomentum, XMomentum, XRatio,
+																		MaxMomentum, XMomentum, XRatio, LandauLevel,
 																		DoubleGatedCoulombScreeningLength, RytovaKeldyshInterlayerDistance, ScalingFactorUpUp, ScalingFactorDownDown, ScalingFactorUpDown,
 																		NbrPseudoPotentials[0], PseudoPotentials[0],
 																		NbrPseudoPotentials[1], PseudoPotentials[1],

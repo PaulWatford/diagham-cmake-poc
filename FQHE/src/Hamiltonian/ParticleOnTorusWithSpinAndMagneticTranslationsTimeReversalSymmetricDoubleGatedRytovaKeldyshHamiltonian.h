@@ -70,6 +70,7 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleG
   // maxMomentum = maximum Lz value reached by a particle in the state
   // xMomentum = momentum in the x direction (modulo GCD of nbrBosons and maxMomentum)
   // ratio = ratio between the width in the x direction and the width in the y direction
+  // landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
   // screeningLength = screening length (half the distance between the two screening gates)
   // interlayerDistance = interlayer distance a.k.a. the alpha factor in 1 / (q (1 + alpha q))
   // scalingFactorUpUp = global rescaling factor for the up-up interaction
@@ -87,7 +88,7 @@ class ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleG
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
   ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
-													 double ratio,
+													 double ratio, int landauLevel,
 													 double screeningLength, double interlayerDistance, double scalingFactorUpUp, double scalingFactorDownDown, double scalingFactorUpDown,
 													 int nbrPseudopotentialsUpUp, double* pseudopotentialsUpUp,
 													 int nbrPseudopotentialsDownDown, double* pseudopotentialsDownDown,

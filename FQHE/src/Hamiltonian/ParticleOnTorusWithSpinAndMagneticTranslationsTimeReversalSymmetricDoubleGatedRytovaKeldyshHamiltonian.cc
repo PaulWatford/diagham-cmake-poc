@@ -75,6 +75,7 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRy
 // maxMomentum = maximum Lz value reached by a particle in the state
 // xMomentum = momentum in the x direction (modulo GCD of nbrBosons and maxMomentum)
 // ratio = ratio between the width in the x direction and the width in the y direction
+// landauLevel = landauLevel to be simulated (GaAs (>=0) or graphene (<0))
 // screeningLength = screening length (half the distance between the two screening gates)
 // interlayerDistance = interlayer distance a.k.a. the alpha factor in 1 / (q (1 + alpha q))
 // scalingFactorUpUp = global rescaling factor for the up-up interaction
@@ -92,7 +93,7 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRy
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
-ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian::ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum, double ratio, 
+ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian::ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRytovaKeldyshHamiltonian(ParticleOnTorusWithSpinAndMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum, double ratio, int landauLevel, 
 																									       double screeningLength, double interlayerDistance, double scalingFactorUpUp, double scalingFactorDownDown, double scalingFactorUpDown,
 																			 int nbrPseudopotentialsUpUp, double* pseudopotentialsUpUp,
 																			 int nbrPseudopotentialsDownDown, double* pseudopotentialsDownDown,
@@ -175,6 +176,18 @@ ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDoubleGatedRy
       this->LaguerrePolynomials = 0;
     }
   
+  this->LandauLevel = landauLevel;
+  if (this->LandauLevel >= 0)
+    {
+      // simple coulomb interactions
+      this->FormFactor = LaguerrePolynomial(this->LandauLevel);
+    }
+  else
+    {
+      // coulomb interactions in graphene
+      this->FormFactor = 0.5*(LaguerrePolynomial(abs(this->LandauLevel))+LaguerrePolynomial(abs(this->LandauLevel)-1));
+    }
+
   this->OneBodyInteractionFactorsupup = 0;
   if(oneBodyPotentielUpUp != 0)
     {
@@ -245,11 +258,11 @@ double ParticleOnTorusWithSpinAndMagneticTranslationsTimeReversalSymmetricDouble
   if (Q2_half != 0.0)
     {
       double Q = sqrt(2.0 * Q2_half);
-      return (tanh (0.5 * this->ScreeningLength * Q)/ (Q * (1.0 + this->InterlayerDistance * Q)));
+      return (this->FormFactor(Q2_half) * this->FormFactor(Q2_half)) * (tanh (0.5 * this->ScreeningLength * Q)/ Q);
     }
   else
     {
-      return (0.5 * this->ScreeningLength);
+      return (0.5 * this->FormFactor(Q2_half) * this->FormFactor(Q2_half) * this->ScreeningLength);
     }
 }
 

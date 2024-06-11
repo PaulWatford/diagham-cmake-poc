@@ -14,6 +14,7 @@
 // #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
 
 #include "Hamiltonian/ParticleOnLatticeFromFileInteractionOneBandHamiltonian.h"
+#include "Hamiltonian/ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian.h"
 //#include "Hamiltonian/ParticleOnLatticeFromFileInteractionTwoBandRealHamiltonian.h"
 #include "Hamiltonian/ParticleOnLatticeFromFileInteractionOneBandWithSpinHamiltonian.h"
 //#include "Hamiltonian/ParticleOnLatticeFromFileInteractionTwoBandWithSpinRealHamiltonian.h"
@@ -75,9 +76,11 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "full-momentum", "compute the spectrum for all momentum sectors, disregarding symmetries");
   (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics instead of fermionic statistics");
   (*SystemGroup) += new SingleStringOption  ('\n', "interaction-file", "name of the file containing the two-body interaction matrix elements");
+  (*SystemGroup) += new SingleStringOption  ('\n', "threebody-interaction-file", "name of the file containing an optional three-body interaction matrix elements");
   //  (*SystemGroup) += new BooleanOption  ('\n', "real-interaction", "assume that the two-body interaction matrix elements are real");
   (*SystemGroup) += new SingleStringOption  ('\n', "interaction-name", "name of the two-body interaction", "noname");
-  (*SystemGroup) += new SingleDoubleOption  ('u', "interaction-rescaling", "global rescaling of the two-body intearction", 1.0);
+  (*SystemGroup) += new SingleDoubleOption  ('u', "interaction-rescaling", "global rescaling of the two-body interactio", 1.0);
+  (*SystemGroup) += new SingleDoubleOption  ('u', "threebody-interaction-rescaling", "global rescaling of the three-body interaction", 1.0);
   (*SystemGroup) += new SingleStringOption  ('\n', "singleparticle-file", "optional name of the file containing the one-body matrix elements");
   //  (*SystemGroup) += new BooleanOption  ('\n', "full-singleparticle", "the one-body matrix element file contains off-diagonal inter-band contributions");
   (*SystemGroup) += new BooleanOption  ('\n', "complex-singlebody", "the one-body matrix element file contains complex entries (only valid when using --full-singleparticle)");
@@ -129,15 +132,20 @@ int main(int argc, char** argv)
       return 0;
     }
 
-  if (Manager.GetString("interaction-file") == 0)
+  if ((Manager.GetString("interaction-file") == 0) && (Manager.GetString("threebody-interaction-file") == 0))
     {
       cout << "no interaction file defined" << endl;
       cout << "see man page for option syntax or type FTIGenericInteractionFromFileSingleBand -h" << endl;
       return -1;
     }
-  if (!(IsFile(Manager.GetString("interaction-file"))))
+  if ((Manager.GetString("interaction-file") != 0) && (!(IsFile(Manager.GetString("interaction-file")))))
     {
       cout << "interaction file " << Manager.GetString("interaction-file")<< " does not exist" << endl;
+      return -1;
+    }
+  if ((Manager.GetString("threebody-interaction-file") != 0) && (!(IsFile(Manager.GetString("threebody-interaction-file")))))
+    {
+      cout << "three-body interaction file " << Manager.GetString("threebody-interaction-file")<< " does not exist" << endl;
       return -1;
     }
 
@@ -1126,21 +1134,42 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
-		  Hamiltonian = new ParticleOnLatticeFromFileInteractionOneBandHamiltonian (Space, NbrParticles, NbrSitesX, NbrSitesY,
-											    Manager.GetString("interaction-file"),
-											    TightBindingModel, Manager.GetBoolean("flat-band"), 
-											    Manager.GetDouble("interaction-rescaling"),
-											    Manager.GetBoolean("add-spin"),
-											    Architecture.GetArchitecture(), Memory);
+		  if (Manager.GetString("threebody-interaction-file") ==0)
+		    {
+		      Hamiltonian = new ParticleOnLatticeFromFileInteractionOneBandHamiltonian (Space, NbrParticles, NbrSitesX, NbrSitesY,
+												Manager.GetString("interaction-file"),
+												TightBindingModel, Manager.GetBoolean("flat-band"), 
+												Manager.GetDouble("interaction-rescaling"),
+												Manager.GetBoolean("add-spin"),
+												Architecture.GetArchitecture(), Memory);
+		    }
+		  else
+		    {
+		      Hamiltonian = new ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian (Space, NbrParticles, NbrSitesX, NbrSitesY,
+													 Manager.GetString("threebody-interaction-file"), Manager.GetDouble("threebody-interaction-rescaling"),
+													 Manager.GetString("interaction-file"), Manager.GetDouble("interaction-rescaling"),
+													 TightBindingModel, Manager.GetBoolean("flat-band"), 
+													 
+													 Manager.GetBoolean("add-spin"),
+													 Architecture.GetArchitecture(), Memory);
+		    }
 		}
 	      else
 		{
-		  Hamiltonian = new ParticleOnLatticeFromFileInteractionOneBandWithSpinHamiltonian (Space, NbrParticles, NbrSitesX, NbrSitesY,
-												    Manager.GetString("interaction-file"),
-												    TightBindingModel, Manager.GetBoolean("flat-band"), 
-												    Manager.GetDouble("interaction-rescaling"),
-												    Manager.GetBoolean("add-spin"),
-												    Architecture.GetArchitecture(), Memory);
+		  if (Manager.GetString("threebody-interaction-file") ==0)
+		    {
+		      Hamiltonian = new ParticleOnLatticeFromFileInteractionOneBandWithSpinHamiltonian (Space, NbrParticles, NbrSitesX, NbrSitesY,
+													Manager.GetString("interaction-file"),
+													TightBindingModel, Manager.GetBoolean("flat-band"), 
+													Manager.GetDouble("interaction-rescaling"),
+													Manager.GetBoolean("add-spin"),
+													Architecture.GetArchitecture(), Memory);
+		    }
+		  else
+		    {
+		      cout << "three-body interaction for spinful case is not yet implemented" << endl;
+		      return 0;
+		    }
 		}				
 	    }
 	  

@@ -95,33 +95,278 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLat
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   this->ParseOrbitalFile(allowedOrbitalsFileName);
-  //  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
-  if (true)//(this->NbrFermions <= (this->TotalNbrOrbitals / 2))
-     {
-      this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
-     }
-   else
-     {
-       int HoleMomentumX = (this->MaxTotalMomentumX - this->KxMomentum) % this->NbrSiteX;
-       int HoleMomentumY = (this->MaxTotalMomentumY - this->KyMomentum) % this->NbrSiteY;
-       int TmpKx = this->KxMomentum;
-       int TmpKy = this->KyMomentum;
-       this->KxMomentum = HoleMomentumX;
-       this->KyMomentum = HoleMomentumY;
-       this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->TotalNbrOrbitals - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
-       this->KxMomentum = TmpKx;
-       this->KyMomentum = TmpKy;
-     }
-  cout << "Temporary Hilbert space dimension: " << this->LargeHilbertSpaceDimension << endl;
-  if ( this->LargeHilbertSpaceDimension > 0l)
+
+  if (true)
     {
-      this->Flag.Initialize();
-      this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
-      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = 0l;
+      int TmpMaxBandOccupation = this->MaxNbrParticlesBand0;
+      if (TmpMaxBandOccupation < this->MaxNbrParticlesBand1)
+	{
+	  TmpMaxBandOccupation = this->MaxNbrParticlesBand1;
+	}
+      if (TmpMaxBandOccupation < this->MaxNbrParticlesBand2)
+	{
+	  TmpMaxBandOccupation = this->MaxNbrParticlesBand2;
+	}
+      if (TmpMaxBandOccupation > NbrFermions)
+	{
+	  TmpMaxBandOccupation = NbrFermions;
+	}
+      if (TmpMaxBandOccupation > (this->NbrSiteX * this->NbrSiteY))
+	{
+	  TmpMaxBandOccupation = this->NbrSiteX * this->NbrSiteY;
+	}
+      
+      int* TmpSingleBandTotalKxMax = new int[TmpMaxBandOccupation + 1];
+      int* TmpSingleBandTotalKyMax = new int[TmpMaxBandOccupation + 1];
+      long*** TmpSingleBandHilbertDimensions = new long**[TmpMaxBandOccupation + 1];
+      unsigned long**** TmpSingleBandStates = new unsigned long***[TmpMaxBandOccupation + 1];
+      int TmpHalfMaxBandOccupation = (this->NbrSiteX * this->NbrSiteY) >> 1;
+      if (TmpMaxBandOccupation < TmpHalfMaxBandOccupation)
+	{
+	  TmpHalfMaxBandOccupation = TmpMaxBandOccupation;
+	}
+      for (int i = 0; i <= TmpHalfMaxBandOccupation; ++i)
+	//  for (int i = 0; i <= TmpMaxBandOccupation; ++i)
+	{
+	  TmpSingleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
+	  TmpSingleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
+	  TmpSingleBandHilbertDimensions[i] = new long*[TmpSingleBandTotalKxMax[i] + 1];
+	  TmpSingleBandStates[i] = new unsigned long**[TmpSingleBandTotalKxMax[i] + 1];
+	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
+	    {
+	      TmpSingleBandHilbertDimensions[i][j] = new long[TmpSingleBandTotalKyMax[i] + 1];
+	      TmpSingleBandStates[i][j] = new unsigned long*[TmpSingleBandTotalKyMax[i] + 1];
+	      for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
+		{
+		  TmpSingleBandHilbertDimensions[i][j][k] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k);
+		  if (TmpSingleBandHilbertDimensions[i][j][k] > 0l)
+		    {
+		      TmpSingleBandStates[i][j][k] = new unsigned long[TmpSingleBandHilbertDimensions[i][j][k]];
+		      long Tmp = this->GenerateSingleBandStates(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k, TmpSingleBandStates[i][j][k], 0l);
+		      if (Tmp != TmpSingleBandHilbertDimensions[i][j][k])
+			{
+			  cout << "Single band Hilbert space generation error at N=" << i << " Kx=" << j << " Ky=" << k << endl;
+			}
+		    }
+		  else
+		    {
+		      TmpSingleBandStates[i][j][k] = 0;
+		    }
+		}
+	    }
+	}
+      
+      unsigned long TmpHoleMask = 0x0ul;
+      for (int i = 0; i < (this->NbrSiteX * this->NbrSiteY); ++i)
+	{
+	  TmpHoleMask |= 0x1ul << (3 * i);
+	}
+      
+      for (int i = TmpHalfMaxBandOccupation + 1; i <= TmpMaxBandOccupation; ++i)
+	{
+	  TmpSingleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
+	  TmpSingleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
+	  TmpSingleBandHilbertDimensions[i] = new long*[TmpSingleBandTotalKxMax[i] + 1];
+	  TmpSingleBandStates[i] = new unsigned long**[TmpSingleBandTotalKxMax[i] + 1];
+	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
+	    {
+	      TmpSingleBandHilbertDimensions[i][j] = new long[TmpSingleBandTotalKyMax[i] + 1];
+	      TmpSingleBandStates[i][j] = new unsigned long*[TmpSingleBandTotalKyMax[i] + 1];
+	      for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
+		{
+		  int TmpNbrHoles = (this->NbrSiteX * this->NbrSiteY) - i;
+		  int TmpHolesTotalKx = (this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) >> 1)) - j;
+		  int TmpHolesTotalKy = (this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) >> 1)) - k;
+		  if ((TmpSingleBandTotalKxMax[TmpNbrHoles] < TmpHolesTotalKx) || (TmpSingleBandTotalKyMax[TmpNbrHoles] < TmpHolesTotalKy)
+		      || (TmpHolesTotalKx < 0) || (TmpHolesTotalKy < 0))
+		    {
+		      TmpSingleBandHilbertDimensions[i][j][k] = 0l;
+		      TmpSingleBandStates[i][j][k] = 0;
+		    }
+		  else
+		    {
+		      TmpSingleBandHilbertDimensions[i][j][k] = TmpSingleBandHilbertDimensions[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
+		      if (TmpSingleBandHilbertDimensions[i][j][k] > 0l)
+			{
+			  long Tmp = TmpSingleBandHilbertDimensions[i][j][k];
+			  TmpSingleBandStates[i][j][k] = new unsigned long[Tmp];
+			  unsigned long* TmpInput = TmpSingleBandStates[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
+			  unsigned long* TmpOutput = TmpSingleBandStates[i][j][k];
+			  for (int l = 0; l < Tmp; ++l)
+			    {
+			      TmpOutput[l] = (~TmpInput[l]) & TmpHoleMask;
+			    }
+			}
+		      else
+			{
+			  TmpSingleBandStates[i][j][k] = 0;
+			}
+		    }
+		}
+	    }
+	}
+  
+      long TmpLargeHilbertSpaceDimension = 0;
+      for (int TmpN0 = 0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+	{
+	  for (int TmpN1 = 0; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
+	    {
+	      int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
+	      if ((TmpN2 >= 0) && (TmpN2 <=  this->MaxNbrParticlesBand2))
+		{
+		  for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
+		    {
+		      for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
+			{
+			  for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
+			    {
+			      if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
+				{
+				  for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
+				    {
+				      if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] > 0l)
+					{
+					  for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
+					    {
+					      if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] > 0l)
+						{
+						  for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
+						    {
+						      if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
+							{
+							  for (int Pos0 = 0; Pos0 < TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]; ++Pos0)
+							    {
+							      if ((TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][Pos0] & this->OrbitalFilteringMask) == 0x0ul)
+								{
+								  for (int Pos1 = 0; Pos1 < TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]; ++Pos1)
+								    {
+								      
+								      if (((TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][Pos1] << 1) & this->OrbitalFilteringMask) == 0x0ul)
+									{
+									  for (int Pos2 = 0; Pos2 < TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]; ++Pos2)
+									    {
+									      if (((TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][Pos2] << 2) & this->OrbitalFilteringMask) == 0x0ul)
+										{
+										  TmpLargeHilbertSpaceDimension++;
+										}
+									    }
+									}
+								    }
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+      if (TmpLargeHilbertSpaceDimension > 0l)
+	{
+	  this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;
+	  this->Flag.Initialize();
+	  this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+	  this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
+	  TmpLargeHilbertSpaceDimension = 0l;
+	  for (int TmpN0 = 0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+	    {
+	      for (int TmpN1 = 0; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
+		{
+		  int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
+		  if ((TmpN2 >= 0) && (TmpN2 <=  this->MaxNbrParticlesBand2))
+		    {
+		      for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
+			{
+			  for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
+			    {
+			      for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
+				{
+				  if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
+				    {
+				      for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
+					{
+					  if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] > 0l)
+					    {
+					      for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
+						{
+						  if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] > 0l)
+						    {
+						      for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
+							{
+							  if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
+							    {
+							      for (int Pos0 = 0; Pos0 < TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]; ++Pos0)
+								{
+								  if ((TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][Pos0] & this->OrbitalFilteringMask) == 0x0ul)
+								    {
+								      for (int Pos1 = 0; Pos1 < TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]; ++Pos1)
+									{
+									  
+									  if (((TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][Pos1] << 1) & this->OrbitalFilteringMask) == 0x0ul)
+									    {
+									      for (int Pos2 = 0; Pos2 < TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]; ++Pos2)
+										{
+										  if (((TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][Pos2] << 2) & this->OrbitalFilteringMask) == 0x0ul)
+										    {
+										      this->StateDescription[TmpLargeHilbertSpaceDimension] =  (TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][Pos0]
+																		 | (TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][Pos1] << 1)
+																		 | (TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][Pos2] << 2));
+										      TmpLargeHilbertSpaceDimension++;
+										    }
+										}
+									    }
+									}
+								    }
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	  SortArrayDownOrdering<unsigned long>(this->StateDescription, TmpLargeHilbertSpaceDimension);
+	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	    {
+	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	    }
+	}
+      for (int i = 0; i <= TmpMaxBandOccupation; ++i)
+	{
+	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
+	    {
+	      for (int k = 0; k < TmpSingleBandTotalKyMax[i]; ++k)
+		{
+		  delete[] TmpSingleBandStates[i][j][k];
+		}
+	      delete[] TmpSingleBandHilbertDimensions[i][j];
+	      delete[] TmpSingleBandStates[i][j];
+	    }
+	  delete[] TmpSingleBandHilbertDimensions[i];
+	  delete[] TmpSingleBandStates[i];
+	}
+      delete[] TmpSingleBandHilbertDimensions;
+      delete[] TmpSingleBandStates;
+      delete[] TmpSingleBandTotalKxMax;
+      delete[] TmpSingleBandTotalKyMax;
+    }
+  else
+    {
       if (true)//(this->NbrFermions <= (this->TotalNbrOrbitals / 2))
 	{
-	  TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
+	  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
 	}
       else
 	{
@@ -131,20 +376,48 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLat
 	  int TmpKy = this->KyMomentum;
 	  this->KxMomentum = HoleMomentumX;
 	  this->KyMomentum = HoleMomentumY;
-	  TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->TotalNbrOrbitals - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
+	  this->LargeHilbertSpaceDimension = this->EvaluateFilteredHilbertSpaceDimension(this->TotalNbrOrbitals - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
 	  this->KxMomentum = TmpKx;
 	  this->KyMomentum = TmpKy;
-	  unsigned long TmpMask = ~this->OrbitalFilteringMask;
-	  for (long i = 0; i < TmpLargeHilbertSpaceDimension; ++i)
-	    {
-	      this->StateDescription[i] = (~this->StateDescription[i]) & TmpMask;
-	    }
-	  SortArrayDownOrdering<unsigned long>(this->StateDescription, TmpLargeHilbertSpaceDimension);
 	}
-      if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+      cout << "Temporary Hilbert space dimension: " << this->LargeHilbertSpaceDimension << endl;
+      if ( this->LargeHilbertSpaceDimension > 0l)
 	{
-	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	  this->Flag.Initialize();
+	  this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+	  this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
+	  long TmpLargeHilbertSpaceDimension = 0l;
+	  if (true)//(this->NbrFermions <= (this->TotalNbrOrbitals / 2))
+	    {
+	      TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
+	    }
+	  else
+	    {
+	      int HoleMomentumX = (this->MaxTotalMomentumX - this->KxMomentum) % this->NbrSiteX;
+	      int HoleMomentumY = (this->MaxTotalMomentumY - this->KyMomentum) % this->NbrSiteY;
+	      int TmpKx = this->KxMomentum;
+	      int TmpKy = this->KyMomentum;
+	      this->KxMomentum = HoleMomentumX;
+	      this->KyMomentum = HoleMomentumY;
+	      TmpLargeHilbertSpaceDimension = this->GenerateFilteredStates(this->TotalNbrOrbitals - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
+	      this->KxMomentum = TmpKx;
+	      this->KyMomentum = TmpKy;
+	      unsigned long TmpMask = ~this->OrbitalFilteringMask;
+	      for (long i = 0; i < TmpLargeHilbertSpaceDimension; ++i)
+		{
+		  this->StateDescription[i] = (~this->StateDescription[i]) & TmpMask;
+		}
+	      SortArrayDownOrdering<unsigned long>(this->StateDescription, TmpLargeHilbertSpaceDimension);
+	    }
+	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	    {
+	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	    }
 	}
+    }
+
+  if (this->LargeHilbertSpaceDimension > 0l)
+    {
       this->FilterHilbertSpace(allowedOrbitalsFileName);
 //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
 // 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
@@ -649,3 +922,94 @@ long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::EvaluateFilte
   Count += this->EvaluateFilteredHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, maxNbrParticlesBand0, maxNbrParticlesBand1, maxNbrParticlesBand2);
   return Count;
 }
+
+
+// evaluate Hilbert space dimension for a single band
+//
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// singleBandTotalKx = total momentum along x
+// singleBandTotalKy = total momentum along y
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::EvaluateSingleBandHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrFermions == 0)
+    {
+      if ((currentTotalKx == singleBandTotalKx) && (currentTotalKy == singleBandTotalKy))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if ((currentKx < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+      || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
+    return 0l;
+  long Count = 0;
+  // if (nbrFermions == 1)
+  //   {
+  //     if (((currentKx + currentTotalKx) == singleBandTotalKx) && ((currentKy + currentTotalKy) == singleBandTotalKy))
+  // 	++Count;
+  //     return Count;
+  //   }
+  Count += this->EvaluateSingleBandHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, singleBandTotalKx, singleBandTotalKy);
+  Count += this->EvaluateSingleBandHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy);
+  return Count;
+}
+
+
+// generate all states corresponding to the constraints for a single band
+// 
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// singleBandTotalKx = total momentum along x
+// singleBandTotalKy = total momentum along y
+// singleBandStateDescription = pointer to the single band state description array
+// pos = position in StateDescription array where to store states
+// return value = position from which new states have to be stored
+
+long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::GenerateSingleBandStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy, unsigned long* singleBandStateDescription, long pos)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrFermions == 0)
+    {
+      if ((currentTotalKx == singleBandTotalKx) && (currentTotalKy == singleBandTotalKy))
+	{
+	  singleBandStateDescription[pos] = 0x0ul;	  
+	  return (pos + 1l);
+	}
+      else	
+	return pos;
+    }
+  if (currentKx < 0)
+    return pos;
+  // if (nbrFermions == 1)
+  //   {
+  //     if (((currentKx + currentTotalKx) == singleBandTotalKx) && ((currentKy + currentTotalKy) == singleBandTotalKy))
+  // 	{
+  // 	  singleBandStateDescription[pos] = 0x1ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  // 	  ++pos;
+  // 	}
+  //     return pos;
+  //   }
+  long TmpPos = this->GenerateSingleBandStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
+  unsigned long Mask = 0x1ul << (((currentKx * this->NbrSiteY) + currentKy) * 3);
+  for (; pos < TmpPos; ++pos)
+    singleBandStateDescription[pos] |= Mask;
+  return this->GenerateSingleBandStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
+};
+

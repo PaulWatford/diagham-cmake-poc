@@ -37,8 +37,7 @@
 #include "config.h"
 #include "HilbertSpace/ParticleOnSphereWithSpin.h"
 #include "Tools/FTITightBinding/Abstract2DTightBindingModel.h"
-//#include "Hamiltonian/ParticleOnLatticeWithSpinChernInsulatorNBodyHamiltonian.h"
-#include "Hamiltonian/ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian.h"
+#include "Hamiltonian/ParticleOnLatticeQuantumSpinHallFullTwoBandNBodyHamiltonian.h"
 #include "Vector/ComplexVector.h"
 
 #include <iostream>
@@ -49,7 +48,7 @@ using std::cout;
 using std::endl;
 
 
-class ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian : public ParticleOnLatticeQuantumSpinHallFullTwoBandHamiltonian
+class ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian : public ParticleOnLatticeQuantumSpinHallFullTwoBandNBodyHamiltonian
 {
 
  protected:
@@ -79,10 +78,6 @@ class ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian : public P
 
   // name of the ASCII file containing the matrix element for the generic two body interaction term
   char* MatrixElementsTwoBodyInteractionFile;
-
-  // include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
-  bool AdditionalSpinFlag;
-  
 
 
  public:
@@ -123,9 +118,17 @@ class ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian : public P
   //   
   virtual void EvaluateInteractionFactors();
 
+  // evaluate the three-body interaction factors 
+  //   
+  virtual void EvaluateThreeBodyInteractionFactors();
+  
+  // evaluate  the two-body interaction factors
+  //   
+  virtual void EvaluateTwoBodyInteractionFactors();
+  
   // evaluate all one-body factors
   //   
-  virtual void EvaluateOneBodyFactors();
+  virtual void EvaluateOneBodyInteractionFactors();
 
   // process the three-body matrix elements from the ascii file
   //
@@ -180,6 +183,9 @@ class ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian : public P
   // return value = true if the spin projection is conserved
   virtual bool TestSpinfulValleyConservation(int sigma1, int sigma2, int sigma3, int sigma4);
   
+  // initialize the n-body interaction terms
+  //
+  virtual void InitializeNBodyInteraction();
 
 };
 

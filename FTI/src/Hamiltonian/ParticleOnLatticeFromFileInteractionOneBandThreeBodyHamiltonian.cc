@@ -114,6 +114,8 @@ ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::ParticleOnLatti
       strcpy(this->MatrixElementsTwoBodyInteractionFile, matrixElementsTwoBodyInteractionFile);
     }
   
+  this->InitializeNBodyInteraction();
+  
   this->Architecture = architecture;
   this->Memory = memory;
   // this->OneBodyInteractionFactorsupup = 0;
@@ -157,11 +159,192 @@ ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::ParticleOnLatti
 ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::~ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian()
 {
 }
+
+// initialize the n-body interaction terms
+//
+
+void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::InitializeNBodyInteraction()
+{
+  this->MaxNBody = 3;
+  this->NBodyFlags = new bool [this->MaxNBody + 1];
+  this->NbrSpinSectors = new int [this->MaxNBody + 1];
+  this->NBodySign = new double*[this->MaxNBody + 1];
+  this->SpinIndices = new int** [this->MaxNBody + 1];
+  this->SpinIndicesShort = new int* [this->MaxNBody + 1];
+  this->NbrNBodySpinMomentumSectorSum = new int* [this->MaxNBody + 1];
+  this->NbrNBodySpinMomentumSectorIndicesPerSum = new int**[this->MaxNBody + 1];
+  this->NBodySpinMomentumSectorIndicesPerSum = new int***[this->MaxNBody + 1];
+  this->NBodyInteractionFactors = new Complex***[this->MaxNBody + 1];
+  for (int k = 0; k <= this->MaxNBody; ++k)
+    {
+      this->NBodyFlags[k] = false;
+      this->NbrSpinSectors[k] = 0;
+      this->NBodySign[k] = 0;
+      this->SpinIndices[k] = 0;
+      this->SpinIndicesShort[k] = 0;
+      this->NBodyInteractionFactors[k] = 0;
+    }
+
+  if (this->AdditionalSpinFlag == false)
+    {
+      if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
+	{
+	  this->NBodySign[3] = new double[1];
+	  this->NBodySign[3][0] = -1.0;
+	}
+      this->NbrSpinSectors[3] = 1;
+      this->SpinIndices[3] = new int*[this->NbrSpinSectors[3]];
+      this->SpinIndices[3][0] = new int[6];
+      this->SpinIndices[3][0][0] = 0;
+      this->SpinIndices[3][0][1] = 0;
+      this->SpinIndices[3][0][2] = 0;
+      this->SpinIndices[3][0][3] = 0;
+      this->SpinIndices[3][0][4] = 0;
+      this->SpinIndices[3][0][5] = 0;
+      this->SpinIndicesShort[3] = new int[this->NbrSpinSectors[3]];
+      this->SpinIndicesShort[3][0] = 0x0;
+    }
+  else
+    {
+       if (this->AdditionalSpinFlag == false)
+	{
+	   this->NBodySign[3] = new double[4];
+	   this->NBodySign[3][0] = -1.0;
+	   this->NBodySign[3][1] = -1.0;
+	   this->NBodySign[3][2] = 1.0;
+	   this->NBodySign[3][3] = 1.0;
+	 }
+      this->NbrSpinSectors[3] = 4;
+      this->SpinIndices[3] = new int*[this->NbrSpinSectors[3]];
+      this->SpinIndices[3][0] = new int[6];
+      this->SpinIndices[3][1] = new int[6];
+      this->SpinIndices[3][2] = new int[6];
+      this->SpinIndices[3][3] = new int[6];
+
+      this->SpinIndices[3][0][0] = 0;
+      this->SpinIndices[3][0][1] = 0;
+      this->SpinIndices[3][0][2] = 0;
+      this->SpinIndices[3][0][3] = 0;
+      this->SpinIndices[3][0][4] = 0;
+      this->SpinIndices[3][0][5] = 0;
+      this->SpinIndices[3][1][0] = 1;
+      this->SpinIndices[3][1][1] = 1;
+      this->SpinIndices[3][1][2] = 1;
+      this->SpinIndices[3][1][3] = 1;
+      this->SpinIndices[3][1][4] = 1;
+      this->SpinIndices[3][1][5] = 1;
+      
+      this->SpinIndices[3][2][0] = 0;
+      this->SpinIndices[3][2][1] = 1;
+      this->SpinIndices[3][2][2] = 1;
+      this->SpinIndices[3][2][3] = 0;
+      this->SpinIndices[3][2][4] = 1;
+      this->SpinIndices[3][2][5] = 1;
+      
+      this->SpinIndices[3][3][0] = 1;
+      this->SpinIndices[3][3][1] = 0;
+      this->SpinIndices[3][3][2] = 0;
+      this->SpinIndices[3][3][3] = 1;
+      this->SpinIndices[3][3][4] = 0;
+      this->SpinIndices[3][3][5] = 0;
+      this->SpinIndicesShort[3] = new int[this->NbrSpinSectors[3]];
+      this->SpinIndicesShort[3][0] = 0x0;
+      this->SpinIndicesShort[3][1] = 0x7 | (0x7<<3);
+      this->SpinIndicesShort[3][2] = 0x4 | (0x4<<3);
+      this->SpinIndicesShort[3][3] = 0x3 | (0x3<<3);
+    }
   
+  this->NBodyFlags[3] = true;
+  this->NbrNBodySpinMomentumSectorSum[3] = new int[this->NbrSpinSectors[3]];
+  this->NbrNBodySpinMomentumSectorIndicesPerSum[3] = new int* [this->NbrSpinSectors[3]];
+  this->NBodySpinMomentumSectorIndicesPerSum[3] = new int** [this->NbrSpinSectors[3]];
+  this->NBodyInteractionFactors[3] = new Complex**[this->NbrSpinSectors[3]];
+}
+
 // evaluate all interaction factors
 //   
 
 void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateInteractionFactors()
+{
+  this->EvaluateThreeBodyInteractionFactors();
+  this->EvaluateTwoBodyInteractionFactors();
+  this->EvaluateOneBodyInteractionFactors(); 
+}
+
+// evaluate the three-body interaction factors 
+//   
+
+void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateThreeBodyInteractionFactors()
+{
+  for (int s = 0; s < this->NbrSpinSectors[3]; ++s)
+    {
+      this->NbrNBodySpinMomentumSectorSum[3][s] = this->NbrSiteX * this->NbrSiteY;
+      this->NbrNBodySpinMomentumSectorIndicesPerSum[3][s] = new int[this->NbrNBodySpinMomentumSectorSum[3][s]];
+      this->NBodySpinMomentumSectorIndicesPerSum[3][s] = new int*[this->NbrNBodySpinMomentumSectorSum[3][s]];
+    }
+
+
+  Complex* TmpArrayMatrixElements = 0;
+  int* TmpArraySigma1 = 0;
+  int* TmpArraySigma2 = 0;
+  int* TmpArraySigma3 = 0;
+  int* TmpArraySigma4 = 0;
+  int* TmpArraySigma5 = 0;
+  int* TmpArraySigma6 = 0;
+  int* TmpArrayKx1 = 0;
+  int* TmpArrayKy1 = 0;
+  int* TmpArrayKx2 = 0;
+  int* TmpArrayKy2 = 0;
+  int* TmpArrayKx3 = 0;
+  int* TmpArrayKy3 = 0;
+  int* TmpArrayKx4 = 0;
+  int* TmpArrayKy4 = 0;
+  int* TmpArrayKx5 = 0;
+  int* TmpArrayKy5 = 0;
+  int* TmpArrayKx6 = 0;
+  int* TmpArrayKy6 = 0;
+  int TmpNbrThreeBodyMatrixElements = this->ProcessThreeBodyMatrixElements(TmpArraySigma1, TmpArraySigma2, TmpArraySigma3, TmpArraySigma4, TmpArraySigma5, TmpArraySigma6,
+									   TmpArrayKx1, TmpArrayKy1, TmpArrayKx2, TmpArrayKy2, TmpArrayKx3, TmpArrayKy3,
+									   TmpArrayKx4, TmpArrayKy4, TmpArrayKx5, TmpArrayKy5, TmpArrayKx6, TmpArrayKy6, TmpArrayMatrixElements);
+  int* TmpLinearizedSumK = new int[TmpNbrThreeBodyMatrixElements];
+  int* TmpLinearizedK1 = new int[TmpNbrThreeBodyMatrixElements];
+  int* TmpLinearizedK2 = new int[TmpNbrThreeBodyMatrixElements];
+  int* TmpLinearizedK3 = new int[TmpNbrThreeBodyMatrixElements];
+  int* TmpLinearizedK4 = new int[TmpNbrThreeBodyMatrixElements];
+  int* TmpLinearizedK5 = new int[TmpNbrThreeBodyMatrixElements];
+  int* TmpLinearizedK6 = new int[TmpNbrThreeBodyMatrixElements];
+  for (int i = 0; i < TmpNbrThreeBodyMatrixElements; ++i)
+    {
+      TmpLinearizedSumK[i] = this->TightBindingModel->GetLinearizedMomentumIndex((TmpArrayKx1[i] + TmpArrayKx2[i] + TmpArrayKx3[i]) % this->NbrSiteX,
+										 (TmpArrayKy1[i] + TmpArrayKy2[i] + TmpArrayKy3[i]) % this->NbrSiteY);
+      TmpLinearizedK1[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpArrayKx1[i], TmpArrayKy1[i]);
+      TmpLinearizedK2[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpArrayKx2[i], TmpArrayKy2[i]);
+      TmpLinearizedK3[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpArrayKx3[i], TmpArrayKy3[i]);
+      TmpLinearizedK4[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpArrayKx4[i], TmpArrayKy4[i]);
+      TmpLinearizedK5[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpArrayKx5[i], TmpArrayKy5[i]);
+      TmpLinearizedK6[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpArrayKx6[i], TmpArrayKy6[i]);
+      TmpArrayMatrixElements[i] *= this->ThreeBodyInteractionRescalingFactor;
+    }
+
+  
+  int** Permutations = 0; 
+  double* PermutationSign = 0; 
+  int NbrPermutations = this->ComputePermutations(Permutations, PermutationSign, 3);
+  
+  if (this->AdditionalSpinFlag == false)
+    {
+    }
+  else
+    {
+      cout << "spinful case not yet implemented" << endl;
+      exit(0);
+    }
+}
+
+// evaluate  the two-body interaction factors
+//   
+
+void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateTwoBodyInteractionFactors()
 {
   long TotalNbrInteractionFactors = 0l;
 
@@ -197,8 +380,6 @@ void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateIn
     }
   bool**** InternalIndicesFlags = this->TestMatrixElementsConservedDegreesOfFreedom(TmpNbrTwoBodyMatrixElements, TmpSigma1, TmpSigma2, TmpSigma3, TmpSigma4);
   
-  this->EvaluateOneBodyFactors();
- 
   this->NbrInterSectorSums = this->NbrSiteX * this->NbrSiteY;
   this->NbrInterSectorIndicesPerSum = new int[this->NbrInterSectorSums];
   for (int i = 0; i < this->NbrInterSectorSums; ++i)
@@ -743,7 +924,7 @@ void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateIn
 // evaluate all one-body factors
 //   
 
-void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateOneBodyFactors()
+void ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian::EvaluateOneBodyInteractionFactors()
 {
   this->OneBodyInteractionFactorsSigma = new Complex**[this->NbrInternalIndices];
   for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)

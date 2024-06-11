@@ -90,6 +90,7 @@ int main(int argc, char** argv)
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
+  (*ToolsGroup) += new BooleanOption  ('\n', "test-hermitian", "test if the hamiltonian is hermitian");
 
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -159,7 +160,7 @@ int main(int argc, char** argv)
       delete[] TmpColumns;
     }
 
-  char* OutputName = new char [512];
+  char* OutputName = new char [512 + strlen (Manager.GetString("interaction-name"))];
   if (Manager.GetDouble("angle") == 0.0)
     {
       sprintf (OutputName, "bosons_torus_%dbody_%s_n_%d_2s_%d_ratio_%.6f.dat", NbrNBody, Manager.GetString("interaction-name"),
@@ -402,7 +403,7 @@ int main(int argc, char** argv)
 	  sprintf (EigenvectorName, "%s_kx_%d_ky_%d", TmpName, XMomentum, YMomentum);
 	  delete [] TmpName;
 	}
-      FQHEOnTorusMainTask Task (&Manager, Space, &Lanczos, Hamiltonian, YMomentum, Shift, OutputName, FirstRun, EigenvectorName);
+      FQHEOnTorusMainTask Task (&Manager, Space, &Lanczos, Hamiltonian, YMomentum, Shift, OutputName, FirstRun, EigenvectorName, XMomentum);
       MainTaskOperation TaskOperation (&Task);
       Task.SetKxValue(XMomentum);
       TaskOperation.ApplyOperation(Architecture.GetArchitecture());

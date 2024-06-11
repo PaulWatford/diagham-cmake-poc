@@ -132,7 +132,6 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
   this->HermitianSymmetryFlag = true;
   this->Ratio = ratio;  
   this->InvRatio = 1.0 / ratio;
-  this->LandauLevel = landauLevel;
   this->LayerSeparation=layerSeparation;
 //   double WignerEnergy = this->EvaluateWignerCrystalEnergy() / 2.0;
   double WignerEnergy = 0.0;
@@ -146,6 +145,7 @@ ParticleOnTorusCoulombWithSpinAndMagneticTranslationsHamiltonian::ParticleOnToru
 
   cout << "Wigner Energy = " << WignerEnergy << endl;  
 
+  this->LandauLevel = landauLevel;
   if (this->LandauLevel >= 0)
     {
       // simple coulomb interactions

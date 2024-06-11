@@ -112,6 +112,83 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::FermionOnSquar
        this->KxMomentum = TmpKx;
        this->KyMomentum = TmpKy;
      }
+  
+  int TmpMaxBandOccupation = this->MaxNbrParticlesBand0;
+  if (TmpMaxBandOccupation < this->MaxNbrParticlesBand1)
+    {
+      TmpMaxBandOccupation = this->MaxNbrParticlesBand1;
+    }
+  if (TmpMaxBandOccupation < this->MaxNbrParticlesBand2)
+    {
+      TmpMaxBandOccupation = this->MaxNbrParticlesBand2;
+    }
+  int TmpSingleBandTotalKxMax = (this->NbrSiteX - 1) * TmpMaxBandOccupation;
+  int TmpSingleBandTotalKyMax = (this->NbrSiteY - 1) * TmpMaxBandOccupation;
+  long*** TmpSingleBandHilbertDimensions = new long**[TmpMaxBandOccupation];
+  for (int i = 0; i <= TmpMaxBandOccupation; ++i)
+    {
+      TmpSingleBandHilbertDimensions[i] = new long*[TmpSingleBandTotalKxMax];
+      for (int j = 0; j <= TmpSingleBandTotalKxMax; ++j)
+	{
+	  TmpSingleBandHilbertDimensions[i][j] = new long[TmpSingleBandTotalKyMax];
+	  for (int k = 0; k <= TmpSingleBandTotalKyMax; ++k)
+	    {
+	      TmpSingleBandHilbertDimensions[i][j][k] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k);
+	    }
+	}
+    }
+
+  long TmpLargeHilbertSpaceDimension2 = 0;
+  for (int TmpN0 = 0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+    {
+      for (int TmpN1 = 0; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
+	{
+	  int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
+	  if ((TmpN2 >= 0) && (TmpN2 <=  this->MaxNbrParticlesBand2))
+	    {
+	      for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax; ++TmpKx0)
+		{
+		  for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax; ++TmpKx1)
+		    {
+		      for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax; ++TmpKx2)
+			{
+			  if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
+			    {
+			      for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax; ++TmpKy0)
+				{
+				  for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax; ++TmpKy1)
+				    {
+				      for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax; ++TmpKy2)
+					{
+					  if (((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum)
+					    {
+					      TmpLargeHilbertSpaceDimension2 += (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]
+										 * TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]
+										 * TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]);
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+  
+  for (int i = 0; i <= TmpMaxBandOccupation; ++i)
+    {
+      for (int j = 0; j <= TmpSingleBandTotalKxMax; ++j)
+	{
+	  delete[] TmpSingleBandHilbertDimensions[i][j];
+	}
+      delete[] TmpSingleBandHilbertDimensions[i];
+    }
+  delete[] TmpSingleBandHilbertDimensions;
+
+  cout << "New algo: " << TmpLargeHilbertSpaceDimension2 << " vs old algo: " << this->LargeHilbertSpaceDimension << endl;
+  
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
@@ -149,6 +226,10 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::FermionOnSquar
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
+
+
+
+
       this->FilterHilbertSpace(allowedOrbitalsFileName);
 //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
 // 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
@@ -654,3 +735,41 @@ long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::EvaluateF
   return Count;
 }
 
+// evaluate Hilbert space dimension for a single band
+//
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// singleBandTotalKx = total momentum along x
+// singleBandTotalKy = total momentum along y
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::EvaluateSingleBandHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrFermions == 0)
+    {
+      if ((currentTotalKx == singleBandTotalKx) && (currentTotalKy == singleBandTotalKy))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      if (((currentKx + currentTotalKx) == singleBandTotalKx) && ((currentKy + currentTotalKy) == singleBandTotalKy))
+	++Count;
+      return Count;
+    }
+  Count += this->EvaluateSingleBandHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, singleBandTotalKx, singleBandTotalKy);
+  Count += this->EvaluateSingleBandHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy);
+  return Count;
+}

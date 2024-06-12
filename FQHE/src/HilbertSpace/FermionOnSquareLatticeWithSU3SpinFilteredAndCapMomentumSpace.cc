@@ -115,98 +115,14 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLat
 	{
 	  TmpMaxBandOccupation = this->NbrSiteX * this->NbrSiteY;
 	}
-      
-      int* TmpSingleBandTotalKxMax = new int[TmpMaxBandOccupation + 1];
-      int* TmpSingleBandTotalKyMax = new int[TmpMaxBandOccupation + 1];
-      long*** TmpSingleBandHilbertDimensions = new long**[TmpMaxBandOccupation + 1];
-      unsigned long**** TmpSingleBandStates = new unsigned long***[TmpMaxBandOccupation + 1];
-      int TmpHalfMaxBandOccupation = (this->NbrSiteX * this->NbrSiteY) >> 1;
-      if (TmpMaxBandOccupation < TmpHalfMaxBandOccupation)
-	{
-	  TmpHalfMaxBandOccupation = TmpMaxBandOccupation;
-	}
-      for (int i = 0; i <= TmpHalfMaxBandOccupation; ++i)
-	//  for (int i = 0; i <= TmpMaxBandOccupation; ++i)
-	{
-	  TmpSingleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
-	  TmpSingleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
-	  TmpSingleBandHilbertDimensions[i] = new long*[TmpSingleBandTotalKxMax[i] + 1];
-	  TmpSingleBandStates[i] = new unsigned long**[TmpSingleBandTotalKxMax[i] + 1];
-	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
-	    {
-	      TmpSingleBandHilbertDimensions[i][j] = new long[TmpSingleBandTotalKyMax[i] + 1];
-	      TmpSingleBandStates[i][j] = new unsigned long*[TmpSingleBandTotalKyMax[i] + 1];
-	      for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
-		{
-		  TmpSingleBandHilbertDimensions[i][j][k] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k);
-		  if (TmpSingleBandHilbertDimensions[i][j][k] > 0l)
-		    {
-		      TmpSingleBandStates[i][j][k] = new unsigned long[TmpSingleBandHilbertDimensions[i][j][k]];
-		      long Tmp = this->GenerateSingleBandStates(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k, TmpSingleBandStates[i][j][k], 0l);
-		      if (Tmp != TmpSingleBandHilbertDimensions[i][j][k])
-			{
-			  cout << "Single band Hilbert space generation error at N=" << i << " Kx=" << j << " Ky=" << k << endl;
-			}
-		    }
-		  else
-		    {
-		      TmpSingleBandStates[i][j][k] = 0;
-		    }
-		}
-	    }
-	}
-      
-      unsigned long TmpHoleMask = 0x0ul;
-      for (int i = 0; i < (this->NbrSiteX * this->NbrSiteY); ++i)
-	{
-	  TmpHoleMask |= 0x1ul << (3 * i);
-	}
-      
-      for (int i = TmpHalfMaxBandOccupation + 1; i <= TmpMaxBandOccupation; ++i)
-	{
-	  TmpSingleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
-	  TmpSingleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
-	  TmpSingleBandHilbertDimensions[i] = new long*[TmpSingleBandTotalKxMax[i] + 1];
-	  TmpSingleBandStates[i] = new unsigned long**[TmpSingleBandTotalKxMax[i] + 1];
-	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
-	    {
-	      TmpSingleBandHilbertDimensions[i][j] = new long[TmpSingleBandTotalKyMax[i] + 1];
-	      TmpSingleBandStates[i][j] = new unsigned long*[TmpSingleBandTotalKyMax[i] + 1];
-	      for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
-		{
-		  int TmpNbrHoles = (this->NbrSiteX * this->NbrSiteY) - i;
-		  int TmpHolesTotalKx = (this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) >> 1)) - j;
-		  int TmpHolesTotalKy = (this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) >> 1)) - k;
-		  if ((TmpSingleBandTotalKxMax[TmpNbrHoles] < TmpHolesTotalKx) || (TmpSingleBandTotalKyMax[TmpNbrHoles] < TmpHolesTotalKy)
-		      || (TmpHolesTotalKx < 0) || (TmpHolesTotalKy < 0))
-		    {
-		      TmpSingleBandHilbertDimensions[i][j][k] = 0l;
-		      TmpSingleBandStates[i][j][k] = 0;
-		    }
-		  else
-		    {
-		      TmpSingleBandHilbertDimensions[i][j][k] = TmpSingleBandHilbertDimensions[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
-		      if (TmpSingleBandHilbertDimensions[i][j][k] > 0l)
-			{
-			  long Tmp = TmpSingleBandHilbertDimensions[i][j][k];
-			  TmpSingleBandStates[i][j][k] = new unsigned long[Tmp];
-			  unsigned long* TmpInput = TmpSingleBandStates[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
-			  unsigned long* TmpOutput = TmpSingleBandStates[i][j][k];
-			  for (int l = 0; l < Tmp; ++l)
-			    {
-			      TmpOutput[l] = (~TmpInput[l]) & TmpHoleMask;
-			    }
-			}
-		      else
-			{
-			  TmpSingleBandStates[i][j][k] = 0;
-			}
-		    }
-		}
-	    }
-	}
-  
-      long TmpLargeHilbertSpaceDimension = 0;
+
+      int* TmpSingleBandTotalKxMax = 0;
+      int* TmpSingleBandTotalKyMax = 0;
+      long*** TmpSingleBandHilbertDimensions = 0;
+      unsigned long**** TmpSingleBandStates = 0;
+      this->GenerateAllSingleBandHilbertSpaces(TmpMaxBandOccupation, TmpSingleBandTotalKxMax, TmpSingleBandTotalKyMax, TmpSingleBandHilbertDimensions, TmpSingleBandStates);
+        
+      long TmpLargeHilbertSpaceDimension = 0l;
       for (int TmpN0 = 0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
 	{
 	  for (int TmpN1 = 0; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
@@ -418,6 +334,10 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::FermionOnSquareLat
 
   if (this->LargeHilbertSpaceDimension > 0l)
     {
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
       this->FilterHilbertSpace(allowedOrbitalsFileName);
 //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
 // 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
@@ -1012,4 +932,105 @@ long FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::GenerateSingl
     singleBandStateDescription[pos] |= Mask;
   return this->GenerateSingleBandStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
 };
+
+// evaluate all the single band Hilbert spaces
+//
+// maxBandOccupation = maiximum occupation of a single band
+// singleBandTotalKxMax = reference on the array for the maximum total Kx values 
+// singleBandTotalKyMax = reference on the array for the maximum total Ky values
+// singleBandHilbertDimensions = reference on the array for all the Hilbert space dimension (first index being the particle number, second index being the total Kx, third index being the total Ky)
+// singleBandStates = reference on the array for all the Hilbert space basis states 
+
+void FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace::GenerateAllSingleBandHilbertSpaces(int maxBandOccupation, int*& singleBandTotalKxMax, int*& singleBandTotalKyMax, long***& singleBandHilbertDimensions, unsigned long****& singleBandStates)
+{
+  singleBandTotalKxMax = new int[maxBandOccupation + 1];
+  singleBandTotalKyMax = new int[maxBandOccupation + 1];
+  singleBandHilbertDimensions = new long**[maxBandOccupation + 1];
+  singleBandStates = new unsigned long***[maxBandOccupation + 1];
+  int TmpHalfMaxBandOccupation = (this->NbrSiteX * this->NbrSiteY) >> 1;
+  if (maxBandOccupation < TmpHalfMaxBandOccupation)
+    {
+      TmpHalfMaxBandOccupation = maxBandOccupation;
+    }
+  for (int i = 0; i <= TmpHalfMaxBandOccupation; ++i)
+    //  for (int i = 0; i <= maxBandOccupation; ++i)
+    {
+      singleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
+      singleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
+      singleBandHilbertDimensions[i] = new long*[singleBandTotalKxMax[i] + 1];
+      singleBandStates[i] = new unsigned long**[singleBandTotalKxMax[i] + 1];
+      for (int j = 0; j <= singleBandTotalKxMax[i]; ++j)
+	{
+	  singleBandHilbertDimensions[i][j] = new long[singleBandTotalKyMax[i] + 1];
+	  singleBandStates[i][j] = new unsigned long*[singleBandTotalKyMax[i] + 1];
+	  for (int k = 0; k <= singleBandTotalKyMax[i]; ++k)
+	    {
+	      singleBandHilbertDimensions[i][j][k] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k);
+	      if (singleBandHilbertDimensions[i][j][k] > 0l)
+		{
+		  singleBandStates[i][j][k] = new unsigned long[singleBandHilbertDimensions[i][j][k]];
+		  long Tmp = this->GenerateSingleBandStates(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k, singleBandStates[i][j][k], 0l);
+		  if (Tmp != singleBandHilbertDimensions[i][j][k])
+		    {
+		      cout << "Single band Hilbert space generation error at N=" << i << " Kx=" << j << " Ky=" << k << endl;
+		    }
+		}
+	      else
+		{
+		  singleBandStates[i][j][k] = 0;
+		}
+	    }
+	}
+    }
+  
+  unsigned long TmpHoleMask = 0x0ul;
+  for (int i = 0; i < (this->NbrSiteX * this->NbrSiteY); ++i)
+    {
+      TmpHoleMask |= 0x1ul << (3 * i);
+    }
+  
+  for (int i = TmpHalfMaxBandOccupation + 1; i <= maxBandOccupation; ++i)
+    {
+      singleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
+      singleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
+      singleBandHilbertDimensions[i] = new long*[singleBandTotalKxMax[i] + 1];
+      singleBandStates[i] = new unsigned long**[singleBandTotalKxMax[i] + 1];
+      for (int j = 0; j <= singleBandTotalKxMax[i]; ++j)
+	{
+	  singleBandHilbertDimensions[i][j] = new long[singleBandTotalKyMax[i] + 1];
+	  singleBandStates[i][j] = new unsigned long*[singleBandTotalKyMax[i] + 1];
+	  for (int k = 0; k <= singleBandTotalKyMax[i]; ++k)
+	    {
+	      int TmpNbrHoles = (this->NbrSiteX * this->NbrSiteY) - i;
+	      int TmpHolesTotalKx = (this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) >> 1)) - j;
+	      int TmpHolesTotalKy = (this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) >> 1)) - k;
+	      if ((singleBandTotalKxMax[TmpNbrHoles] < TmpHolesTotalKx) || (singleBandTotalKyMax[TmpNbrHoles] < TmpHolesTotalKy)
+		  || (TmpHolesTotalKx < 0) || (TmpHolesTotalKy < 0))
+		{
+		  singleBandHilbertDimensions[i][j][k] = 0l;
+		  singleBandStates[i][j][k] = 0;
+		}
+	      else
+		{
+		  singleBandHilbertDimensions[i][j][k] = singleBandHilbertDimensions[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
+		  if (singleBandHilbertDimensions[i][j][k] > 0l)
+		    {
+		      long Tmp = singleBandHilbertDimensions[i][j][k];
+		      singleBandStates[i][j][k] = new unsigned long[Tmp];
+		      unsigned long* TmpInput = singleBandStates[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
+		      unsigned long* TmpOutput = singleBandStates[i][j][k];
+		      for (int l = 0; l < Tmp; ++l)
+			{
+			  TmpOutput[l] = (~TmpInput[l]) & TmpHoleMask;
+			}
+		    }
+		  else
+		    {
+		      singleBandStates[i][j][k] = 0;
+		    }
+		}
+	    }
+	}
+    }
+}
 

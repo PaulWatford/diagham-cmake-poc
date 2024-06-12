@@ -158,6 +158,15 @@ public:
   // return value = position from which new states have to be stored
   virtual long GenerateSingleBandStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy, unsigned long* singleBandStateDescription, long pos);
 
+  // evaluate all the single band Hilbert spaces
+  //
+  // maxBandOccupation = maiximum occupation of a single band
+  // singleBandTotalKxMax = reference on the array for the maximum total Kx values 
+  // singleBandTotalKyMax = reference on the array for the maximum total Ky values
+  // singleBandHilbertDimensions = reference on the array for all the Hilbert space dimension (first index being the particle number, second index being the total Kx, third index being the total Ky)
+  // singleBandStates = reference on the array for all the Hilbert space basis states 
+  virtual void GenerateAllSingleBandHilbertSpaces(int maxBandOccupation, int*& singleBandTotalKxMax, int*& singleBandTotalKyMax, long***& singleBandHilbertDimensions, unsigned long****& singleBandStates);
+
 };
 
 

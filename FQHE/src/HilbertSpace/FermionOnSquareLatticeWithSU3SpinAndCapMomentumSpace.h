@@ -44,6 +44,13 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace : public FermionOnSqu
 
  protected:
 
+  // minimum number of particles in band 0
+  int MinNbrParticlesBand0;
+  // minimum number of particles in band 1
+  int MinNbrParticlesBand1;
+  // minimum number of particles in band 2
+  int MinNbrParticlesBand2;
+
   // maximum number of particles in band 0
   int MaxNbrParticlesBand0;
   // maximum number of particles in band 1
@@ -120,7 +127,45 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace : public FermionOnSqu
   // return value = position from which new states have to be stored
   virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, long pos);
 
+  // evaluate Hilbert space dimension for a single band
+  //
+  // nbrFermions = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // singleBandTotalKx = total momentum along x
+  // singleBandTotalKy = total momentum along y
+  // return value = Hilbert space dimension
+  virtual long EvaluateSingleBandHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy);
 
+  // generate all states corresponding to the constraints for a single band
+  // 
+  // nbrFermions = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // singleBandTotalKx = total momentum along x
+  // singleBandTotalKy = total momentum along y
+  // singleBandStateDescription = pointer to the single band state description array
+  // pos = position in StateDescription array where to store states
+  // return value = position from which new states have to be stored
+  virtual long GenerateSingleBandStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy, unsigned long* singleBandStateDescription, long pos);
+
+  // evaluate all the single band Hilbert spaces
+  //
+  // maxBandOccupation = maiximum occupation of a single band
+  // singleBandTotalKxMax = reference on the array for the maximum total Kx values 
+  // singleBandTotalKyMax = reference on the array for the maximum total Ky values
+  // singleBandHilbertDimensions = reference on the array for all the Hilbert space dimension (first index being the particle number, second index being the total Kx, third index being the total Ky)
+  // singleBandStates = reference on the array for all the Hilbert space basis states 
+  virtual void GenerateAllSingleBandHilbertSpaces(int maxBandOccupation, int*& singleBandTotalKxMax, int*& singleBandTotalKyMax, long***& singleBandHilbertDimensions, unsigned long****& singleBandStates);
+
+  // generate all states using the single band hilbert spaces
+  //
+  virtual void GenerateStatesFromSingleBandHilbertSpaces();
+  
 };
 
 

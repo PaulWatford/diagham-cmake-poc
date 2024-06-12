@@ -61,9 +61,6 @@ using std::ios;
 
 FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace()
 {
-  this->MinNbrParticlesBand0 = 0;
-  this->MinNbrParticlesBand1 = 0;
-  this->MinNbrParticlesBand2 = 0;
 }
   
 // basic constructor
@@ -103,44 +100,38 @@ FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatti
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
   this->MaximumSignLookUp = 16;
-  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
-    this->HilbertSpaceDimension = 0;
+
+  if (true)
+    {
+      this->GenerateStatesFromSingleBandHilbertSpaces();
+    }
   else
-    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
-  if ( this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+      if ( this->LargeHilbertSpaceDimension > 0l)
+	{
+	  this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
+	  this->StateHighestBit = new int [this->HilbertSpaceDimension];  
+	  long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
+	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	    {
+	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	    }
+	}
+    }
+
+  if (this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
-      this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
-      this->StateHighestBit = new int [this->HilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
-      if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
-	{
-	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
-	}
-
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
       this->GenerateLookUpTable(memory);
-
-      // for (int i = 1; i < this->HilbertSpaceDimension; ++i)
-      // 	{
-      // 	  if (this->StateDescription[i - 1] < this->StateDescription[i])
-      // 	    {
-      // 	      cout << "sorting error at " << i << endl;
-      // 	    }
-      // 	}
-      // cout << "start check find index" << endl;
-      // for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-      // 	{
-      // 	  if (i != this->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]))
-      // 	    {
-      // 	      cout << "Error at " << i << endl;
-      // 	    }
-      // 	}
-      // cout << "check find index done" << endl;
-
-      
-      //       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
       
 #ifdef __DEBUG__
       long UsedMemory = 0;

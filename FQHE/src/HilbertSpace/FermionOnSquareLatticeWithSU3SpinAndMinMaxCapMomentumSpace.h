@@ -45,13 +45,6 @@ class FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace : public Fermio
 
  protected:
 
-  // minimum number of particles in band 0
-  int MinNbrParticlesBand0;
-  // minimum number of particles in band 1
-  int MinNbrParticlesBand1;
-  // minimum number of particles in band 2
-  int MinNbrParticlesBand2;
-
 public:
 
   // default constructor

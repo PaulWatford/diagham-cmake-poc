@@ -45,6 +45,13 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
 
  protected:
 
+  // minimum number of particles in band 0
+  int MinNbrParticlesBand0;
+  // minimum number of particles in band 1
+  int MinNbrParticlesBand1;
+  // minimum number of particles in band 2
+  int MinNbrParticlesBand2;
+
   // maximum number of particles in band 0
   int MaxNbrParticlesBand0;
   // maximum number of particles in band 1
@@ -155,6 +162,9 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   // singleBandStates = reference on the array for all the Hilbert space basis states 
   virtual void GenerateAllSingleBandHilbertSpaces(int maxBandOccupation, int*& singleBandTotalKxMax, int*& singleBandTotalKyMax, long***& singleBandHilbertDimensions, ULONGLONG****& singleBandStates);
 
+  // generate all states using the single band hilbert spaces
+  //
+  virtual void GenerateStatesFromSingleBandHilbertSpaces();
 
 };
 

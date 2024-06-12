@@ -62,6 +62,10 @@ using std::ios;
 
 FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong()
 {
+  this->MinNbrParticlesBand0 = 0;
+  this->MinNbrParticlesBand1 = 0;
+  this->MinNbrParticlesBand2 = 0;
+
   this->MaxNbrParticlesBand0 = 0;
   this->MaxNbrParticlesBand1 = 0;
   this->MaxNbrParticlesBand2 = 0;
@@ -90,6 +94,9 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::FermionOnSquareLattice
   this->TotalY = 0;
   this->NbrSiteX = nbrSiteX;
   this->NbrSiteY = nbrSiteY;
+  this->MinNbrParticlesBand0 = 0;
+  this->MinNbrParticlesBand1 = 0;
+  this->MinNbrParticlesBand2 = 0;
   this->MaxNbrParticlesBand0 = maxNbrParticlesBand0;
   this->MaxNbrParticlesBand1 = maxNbrParticlesBand1;
   this->MaxNbrParticlesBand2 = maxNbrParticlesBand2;
@@ -101,162 +108,7 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::FermionOnSquareLattice
 
   if (true)
     {
-      int TmpMaxBandOccupation = this->MaxNbrParticlesBand0;
-      if (TmpMaxBandOccupation < this->MaxNbrParticlesBand1)
-	{
-	  TmpMaxBandOccupation = this->MaxNbrParticlesBand1;
-	}
-      if (TmpMaxBandOccupation < this->MaxNbrParticlesBand2)
-	{
-	  TmpMaxBandOccupation = this->MaxNbrParticlesBand2;
-	}
-      if (TmpMaxBandOccupation > NbrFermions)
-	{
-	  TmpMaxBandOccupation = NbrFermions;
-	}
-      if (TmpMaxBandOccupation > (this->NbrSiteX * this->NbrSiteY))
-	{
-	  TmpMaxBandOccupation = this->NbrSiteX * this->NbrSiteY;
-	}
-      int* TmpSingleBandTotalKxMax = 0;
-      int* TmpSingleBandTotalKyMax = 0;
-      long*** TmpSingleBandHilbertDimensions = 0;
-      ULONGLONG**** TmpSingleBandStates = 0;
-      this->GenerateAllSingleBandHilbertSpaces(TmpMaxBandOccupation, TmpSingleBandTotalKxMax, TmpSingleBandTotalKyMax, TmpSingleBandHilbertDimensions, TmpSingleBandStates);
-      long TmpLargeHilbertSpaceDimension = 0l;
-      for (int TmpN0 = 0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
-	{
-	  for (int TmpN1 = 0; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
-	    {
-	      int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
-	      if ((TmpN2 >= 0) && (TmpN2 <=  this->MaxNbrParticlesBand2))
-		{
-		  for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
-		    {
-		      for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
-			{
-			  for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
-			    {
-			      if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
-				{
-				  for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
-				    {
-				      if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] > 0l)
-					{
-					  for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
-					    {
-					      if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] > 0l)
-						{
-						  for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
-						    {
-						      if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
-							{
-							  TmpLargeHilbertSpaceDimension += (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]
-											    * TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]
-											    * TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]);
-							}
-						    }
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	}
-      this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;
-      if (this->LargeHilbertSpaceDimension >= (1l << 30))
-	this->HilbertSpaceDimension = 0;
-      else
-	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
-      if (TmpLargeHilbertSpaceDimension > 0l)
-	{
-	  this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;
-	  this->Flag.Initialize();
-	  this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
-	  this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
-	  TmpLargeHilbertSpaceDimension = 0l;
-	  for (int TmpN0 = 0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
-	    {
-	      for (int TmpN1 = 0; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
-		{
-		  int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
-		  if ((TmpN2 >= 0) && (TmpN2 <=  this->MaxNbrParticlesBand2))
-		    {
-		      for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
-			{
-			  for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
-			    {
-			      for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
-				{
-				  if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
-				    {
-				      for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
-					{
-					  if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] > 0l)
-					    {
-					      for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
-						{
-						  if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] > 0l)
-						    {
-						      for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
-							{
-							  if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
-							    {
-							      for (int Pos0 = 0; Pos0 < TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]; ++Pos0)
-								{
-								  for (int Pos1 = 0; Pos1 < TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]; ++Pos1)
-								    {
-								      for (int Pos2 = 0; Pos2 < TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]; ++Pos2)
-									{
-									  this->StateDescription[TmpLargeHilbertSpaceDimension] =  (TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][Pos0]
-																    | (TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][Pos1] << 1)
-																    | (TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][Pos2] << 2));
-									  TmpLargeHilbertSpaceDimension++;
-									}
-								    }
-								}
-							    }
-							}
-						    }
-						}
-					    }
-					}
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	  SortArrayDownOrdering<ULONGLONG>(this->StateDescription, TmpLargeHilbertSpaceDimension);
-	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
-	    {
-	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
-	    }
-	}
-      for (int i = 0; i <= TmpMaxBandOccupation; ++i)
-	{
-	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
-	    {
-	      for (int k = 0; k < TmpSingleBandTotalKyMax[i]; ++k)
-		{
-		  delete[] TmpSingleBandStates[i][j][k];
-		}
-	      delete[] TmpSingleBandHilbertDimensions[i][j];
-	      delete[] TmpSingleBandStates[i][j];
-	    }
-	  delete[] TmpSingleBandHilbertDimensions[i];
-	  delete[] TmpSingleBandStates[i];
-	}
-      delete[] TmpSingleBandHilbertDimensions;
-      delete[] TmpSingleBandStates;
-      delete[] TmpSingleBandTotalKxMax;
-      delete[] TmpSingleBandTotalKyMax;
-      
+      this->GenerateStatesFromSingleBandHilbertSpaces();      
     }
   else
     {
@@ -323,6 +175,9 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::FermionOnSquareLattice
   this->TotalLz = fermions.TotalLz;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
+  this->MinNbrParticlesBand0 = fermions.MinNbrParticlesBand0;
+  this->MinNbrParticlesBand1 = fermions.MinNbrParticlesBand1;
+  this->MinNbrParticlesBand2 = fermions.MinNbrParticlesBand2;
   this->MaxNbrParticlesBand0 = fermions.MaxNbrParticlesBand0;
   this->MaxNbrParticlesBand1 = fermions.MaxNbrParticlesBand1;
   this->MaxNbrParticlesBand2 = fermions.MaxNbrParticlesBand2;
@@ -371,6 +226,9 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong& FermionOnSquareLattice
   this->LzMax = fermions.LzMax;
   this->NbrSiteX = fermions.NbrSiteX;
   this->NbrSiteY = fermions.NbrSiteY;
+  this->MinNbrParticlesBand0 = fermions.MinNbrParticlesBand0;
+  this->MinNbrParticlesBand1 = fermions.MinNbrParticlesBand1;
+  this->MinNbrParticlesBand2 = fermions.MinNbrParticlesBand2;
   this->MaxNbrParticlesBand0 = fermions.MaxNbrParticlesBand0;
   this->MaxNbrParticlesBand1 = fermions.MaxNbrParticlesBand1;
   this->MaxNbrParticlesBand2 = fermions.MaxNbrParticlesBand2;
@@ -789,3 +647,164 @@ long FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::GenerateSingleBan
   return this->GenerateSingleBandStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
 };
 
+// generate all states using the single band hilbert spaces
+//
+
+void FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::GenerateStatesFromSingleBandHilbertSpaces()
+{
+  int TmpMaxBandOccupation = this->MaxNbrParticlesBand0;
+  if (TmpMaxBandOccupation < this->MaxNbrParticlesBand1)
+    {
+      TmpMaxBandOccupation = this->MaxNbrParticlesBand1;
+    }
+  if (TmpMaxBandOccupation < this->MaxNbrParticlesBand2)
+    {
+      TmpMaxBandOccupation = this->MaxNbrParticlesBand2;
+    }
+  if (TmpMaxBandOccupation > NbrFermions)
+    {
+      TmpMaxBandOccupation = NbrFermions;
+    }
+  if (TmpMaxBandOccupation > (this->NbrSiteX * this->NbrSiteY))
+    {
+      TmpMaxBandOccupation = this->NbrSiteX * this->NbrSiteY;
+    }
+  int* TmpSingleBandTotalKxMax = 0;
+  int* TmpSingleBandTotalKyMax = 0;
+  long*** TmpSingleBandHilbertDimensions = 0;
+  ULONGLONG**** TmpSingleBandStates = 0;
+  this->GenerateAllSingleBandHilbertSpaces(TmpMaxBandOccupation, TmpSingleBandTotalKxMax, TmpSingleBandTotalKyMax, TmpSingleBandHilbertDimensions, TmpSingleBandStates);
+  long TmpLargeHilbertSpaceDimension = 0l;
+  for (int TmpN0 = this->MinNbrParticlesBand0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+    {
+      for (int TmpN1 = this->MinNbrParticlesBand1; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
+	{
+	  int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
+	  if ((TmpN2 >= this->MinNbrParticlesBand2) && (TmpN2 <=  this->MaxNbrParticlesBand2))
+	    {
+	      for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
+		{
+		  for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
+		    {
+		      for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
+			{
+			  if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
+			    {
+			      for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
+				{
+				  if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] > 0l)
+				    {
+				      for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
+					{
+					  if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] > 0l)
+					    {
+					      for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
+						{
+						  if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
+						    {
+						      TmpLargeHilbertSpaceDimension += (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]
+											* TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]
+											* TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]);
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+  this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;
+  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+    this->HilbertSpaceDimension = 0;
+  else
+    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+  if (TmpLargeHilbertSpaceDimension > 0l)
+    {
+      this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;
+      this->Flag.Initialize();
+      this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
+      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
+      TmpLargeHilbertSpaceDimension = 0l;
+      for (int TmpN0 = this->MinNbrParticlesBand0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+	{
+	  for (int TmpN1 = this->MinNbrParticlesBand1; TmpN1 <= this->MaxNbrParticlesBand1; ++TmpN1)
+	    {
+	      int TmpN2 = this->NbrFermions - TmpN0 - TmpN1;
+	      if ((TmpN2 >= this->MinNbrParticlesBand2) && (TmpN2 <=  this->MaxNbrParticlesBand2))
+		{
+		  for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
+		    {
+		      for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
+			{
+			  for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
+			    {
+			      if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
+				{
+				  for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
+				    {
+				      if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] > 0l)
+					{
+					  for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
+					    {
+					      if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] > 0l)
+						{
+						  for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
+						    {
+						      if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
+							{
+							  for (int Pos0 = 0; Pos0 < TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]; ++Pos0)
+							    {
+							      for (int Pos1 = 0; Pos1 < TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]; ++Pos1)
+								{
+								  for (int Pos2 = 0; Pos2 < TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]; ++Pos2)
+								    {
+								      this->StateDescription[TmpLargeHilbertSpaceDimension] =  (TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][Pos0]
+																| (TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][Pos1] << 1)
+																| (TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][Pos2] << 2));
+								      TmpLargeHilbertSpaceDimension++;
+								    }
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+      SortArrayDownOrdering<ULONGLONG>(this->StateDescription, TmpLargeHilbertSpaceDimension);
+      if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	{
+	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	}
+    }
+  for (int i = 0; i <= TmpMaxBandOccupation; ++i)
+    {
+      for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
+	{
+	  for (int k = 0; k < TmpSingleBandTotalKyMax[i]; ++k)
+	    {
+	      delete[] TmpSingleBandStates[i][j][k];
+	    }
+	  delete[] TmpSingleBandHilbertDimensions[i][j];
+	  delete[] TmpSingleBandStates[i][j];
+	}
+      delete[] TmpSingleBandHilbertDimensions[i];
+      delete[] TmpSingleBandStates[i];
+    }
+  delete[] TmpSingleBandHilbertDimensions;
+  delete[] TmpSingleBandStates;
+  delete[] TmpSingleBandTotalKxMax;
+  delete[] TmpSingleBandTotalKyMax;
+}

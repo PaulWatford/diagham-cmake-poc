@@ -104,23 +104,33 @@ FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::FermionOnSquareL
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
-  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
-    this->HilbertSpaceDimension = 0;
+
+  if (true)
+    {
+      this->GenerateStatesFromSingleBandHilbertSpaces();
+    }
   else
-    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+    {
+      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
+      if ( this->LargeHilbertSpaceDimension > 0l)
+	{
+	  this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
+	  this->StateHighestBit = new int [this->HilbertSpaceDimension];  
+	  long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
+	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	    {
+	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	    }
+	}
+    }
+  
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
-      this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
-      this->StateHighestBit = new int [this->HilbertSpaceDimension];  
-      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2, 0l);
-      if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
-	{
-	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
-	}
-//       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
-// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
       this->GenerateLookUpTable(memory);
       
 #ifdef __DEBUG__

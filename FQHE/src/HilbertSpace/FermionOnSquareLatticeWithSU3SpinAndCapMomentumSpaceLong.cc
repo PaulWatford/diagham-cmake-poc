@@ -788,14 +788,21 @@ void FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::GenerateStatesFro
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
-    }
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+     }
   for (int i = 0; i <= TmpMaxBandOccupation; ++i)
     {
       for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
 	{
 	  for (int k = 0; k < TmpSingleBandTotalKyMax[i]; ++k)
 	    {
-	      delete[] TmpSingleBandStates[i][j][k];
+	      if (TmpSingleBandStates[i][j][k] != 0)
+		{
+		  delete[] TmpSingleBandStates[i][j][k];
+		}
 	    }
 	  delete[] TmpSingleBandHilbertDimensions[i][j];
 	  delete[] TmpSingleBandStates[i][j];

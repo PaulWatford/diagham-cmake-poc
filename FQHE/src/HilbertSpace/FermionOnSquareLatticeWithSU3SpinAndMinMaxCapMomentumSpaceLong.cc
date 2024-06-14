@@ -62,9 +62,6 @@ using std::ios;
 
 FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong::FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong()
 {
-  this->MinNbrParticlesBand0 = 0;
-  this->MinNbrParticlesBand1 = 0;
-  this->MinNbrParticlesBand2 = 0;
 }
   
 // basic constructor

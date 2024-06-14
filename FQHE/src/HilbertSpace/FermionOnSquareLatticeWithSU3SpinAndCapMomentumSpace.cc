@@ -102,6 +102,18 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
+  if (this->MaxNbrParticlesBand0 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand0 = this->LzMax;
+    }
+  if (this->MaxNbrParticlesBand1 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand1 = this->LzMax;
+    }
+  if (this->MaxNbrParticlesBand2 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand2 = this->LzMax;
+    }
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   if (true)
@@ -700,6 +712,7 @@ void FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::GenerateStatesFromSin
 						{
 						  if ((((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] > 0l))
 						    {
+						      //						      cout << TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0] << " " <<  TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1] << " " << TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2] << endl;
 						      TmpLargeHilbertSpaceDimension += (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0]
 											* TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1]
 											* TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2]);
@@ -716,9 +729,10 @@ void FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::GenerateStatesFromSin
 	    }
 	}
     }
+  this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;  
+  cout << "Temporary Hilbert space dimension=" << TmpLargeHilbertSpaceDimension << endl;
   if (TmpLargeHilbertSpaceDimension > 0l)
     {
-      this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;
       this->Flag.Initialize();
       this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
@@ -781,14 +795,25 @@ void FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::GenerateStatesFromSin
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
-    }
+      else
+	{
+	  cout << "Hilbert space dimension " << this->LargeHilbertSpaceDimension << endl;
+	}
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+     }
   for (int i = 0; i <= TmpMaxBandOccupation; ++i)
     {
       for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
 	{
-	  for (int k = 0; k < TmpSingleBandTotalKyMax[i]; ++k)
+	  for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
 	    {
-	      delete[] TmpSingleBandStates[i][j][k];
+	      if (TmpSingleBandStates[i][j][k] != 0)
+		{
+		  delete[] TmpSingleBandStates[i][j][k];
+		}
 	    }
 	  delete[] TmpSingleBandHilbertDimensions[i][j];
 	  delete[] TmpSingleBandStates[i][j];

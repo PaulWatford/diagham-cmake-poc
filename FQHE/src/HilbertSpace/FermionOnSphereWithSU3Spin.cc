@@ -540,7 +540,7 @@ void FermionOnSphereWithSU3Spin::GenerateLookUpTable(unsigned long memory)
   if (this->StateHighestBit != 0)
     {
       this->StateHighestBit[0] = CurrentHighestBit;
-      for (int i = 1; i < this->HilbertSpaceDimension; ++i)
+      for (long i = 1l; i < this->LargeHilbertSpaceDimension; ++i)
 	{
 	  TmpPosition = this->StateDescription[i];
 	  while (((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul) && (CurrentHighestBit > 0))

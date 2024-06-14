@@ -261,7 +261,7 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::FermionOnSquar
 	{
 	  for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
 	    {
-	      for (int k = 0; k < TmpSingleBandTotalKyMax[i]; ++k)
+	      for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
 		{
 		  delete[] TmpSingleBandStates[i][j][k];
 		}

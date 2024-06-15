@@ -464,6 +464,7 @@ double ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian::GetVofQ(double
     if (this->Pseudopotentials[i]!=0.0)
       Result += 2.0*this->Pseudopotentials[i]*this->LaguerreM[i].PolynomialEvaluate(Q2);
   //cout <<"V("<<2*Q2_half<<")="<<Result<<" LL="<<this->LandauLevel<<endl;
+  cout << Q2 << " " << Result << endl;
   return Result * exp(-Q2_half);
 }
 

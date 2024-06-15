@@ -124,10 +124,10 @@ int main(int argc, char** argv)
   int MaxBand1 = -1;
   int MaxBand2 = -1;
   int MaxBand3 = -1;
-  int MinBand0 = -1;
-  int MinBand1 = -1;
-  int MinBand2 = -1;
-  int MinBand3 = -1;
+  int MinBand0 = 0;
+  int MinBand1 = 0;
+  int MinBand2 = 0;
+  int MinBand3 = 0;
   bool Statistics = true;
   double* Coefficients = 0;
   bool ShowTimeFlag = Manager.GetBoolean("show-time");
@@ -565,6 +565,7 @@ int main(int argc, char** argv)
 				    }
 				  else
 				    {
+				      cout << MinBand0<< " " << MinBand1<< " " << MinBand2<< " " << MaxBand0<< " " << MaxBand1<< " " << MaxBand2 << endl;
 				      if ((NbrSitesX * NbrSitesY) <= 21)
 					{
 					  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx[i], TotalKy[i]);

@@ -548,10 +548,10 @@ bool FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(char* filename, int& nb
 
 bool FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(char* filename, int& minBand0, int& minBand1, int& minBand2, int& minBand3)
 {
-  minBand0 = -1;
-  minBand1 = -1;
-  minBand2 = -1;
-  minBand3 = -1;
+  minBand0 = 0;
+  minBand1 = 0;
+  minBand2 = 0;
+  minBand3 = 0;
   char* StrNbrParticles = strstr(filename, "_minband0_");
   if (StrNbrParticles != 0)
     {

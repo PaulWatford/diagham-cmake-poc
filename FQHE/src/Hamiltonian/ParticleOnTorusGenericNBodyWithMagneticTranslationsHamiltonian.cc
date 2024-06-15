@@ -622,6 +622,7 @@ double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::Recursive
 
 double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::VFactor(double* q2Values)
 {
+  double TmpExponentialFactor = 2.0 * M_PI / ((double) this->MaxMomentum);
   double Tmp = 0.0;
   double Tmp2;
   for (int i = 0; i < this->NbrMonomials; ++i)
@@ -630,10 +631,11 @@ double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::VFactor(d
       for (int j = 0; j < this->NBodyValue; ++j)
 	{
   	  for (int k = 0; k < this->MonomialDescription[i][j]; ++k)
-  	    Tmp2 *= q2Values[j];
+  	    Tmp2 *= TmpExponentialFactor * q2Values[j];
 	}
       Tmp += Tmp2;
     }
+  cout << (TmpExponentialFactor * q2Values[0]) << " " << (TmpExponentialFactor * q2Values[1]) << " " << Tmp << endl;
   return Tmp;
 }
 

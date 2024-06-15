@@ -97,6 +97,18 @@ FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace::FermionOnSquareLatti
   this->MaxNbrParticlesBand0 = maxNbrParticlesBand0;
   this->MaxNbrParticlesBand1 = maxNbrParticlesBand1;
   this->MaxNbrParticlesBand2 = maxNbrParticlesBand2;
+  if (this->MaxNbrParticlesBand0 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand0 = this->LzMax;
+    }
+  if (this->MaxNbrParticlesBand1 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand1 = this->LzMax;
+    }
+  if (this->MaxNbrParticlesBand2 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand2 = this->LzMax;
+    }
   this->KxMomentum = kxMomentum;
   this->KyMomentum = kyMomentum;
   this->MaximumSignLookUp = 16;

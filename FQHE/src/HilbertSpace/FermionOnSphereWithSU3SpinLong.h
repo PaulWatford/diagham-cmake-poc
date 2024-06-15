@@ -336,12 +336,13 @@ class FermionOnSphereWithSU3SpinLong :  public ParticleOnSphereWithSU3Spin
   // timeCoherence = true if time coherence has to be used
   virtual void InitializeWaveFunctionEvaluation (bool timeCoherence = false);
   
-  // create a U(1) state from an SU(3) state
+  // convert a given state from a generic basis to the current Sz subspace basis
   //
-  // state = vector describing the SU(3) state
-  // u1Space = reference on the Hilbert space associated to the U(1) state
-  // return value = resulting U(1) state
-  //  virtual RealVector ForgeU1FromSU3(RealVector& state, FermionOnSphere& u1Space);
+  // state = reference on the vector to convert
+  // basis = reference on the basis associated to state
+  // return value = converted vector
+  virtual ComplexVector ConvertFromNbodyBasis(ComplexVector& state, ParticleOnSphereWithSpin& basis);
+  
 
   protected:
 

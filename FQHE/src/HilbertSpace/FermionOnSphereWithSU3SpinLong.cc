@@ -1448,3 +1448,24 @@ int FermionOnSphereWithSU3SpinLong::Ad3Ad3 (int m1, int m2, double& coefficient)
   return this->FindStateIndex(TmpState, NewLzMax);
 }
 
+// convert a given state from a generic basis to the current Sz subspace basis
+//
+// state = reference on the vector to convert
+// basis = reference on the basis associated to state
+// return value = converted vector
+
+ComplexVector FermionOnSphereWithSU3SpinLong::ConvertFromNbodyBasis(ComplexVector& state, ParticleOnSphereWithSpin& basis)
+{
+  FermionOnSphereWithSU3SpinLong* TmpBasis = (FermionOnSphereWithSU3SpinLong*) &basis;
+  ComplexVector TmpState (this->LargeHilbertSpaceDimension, true);
+  for (long i = 0l; i < TmpBasis->LargeHilbertSpaceDimension; ++i)
+    {
+      int TmpIndex = this->FindStateIndex(TmpBasis->StateDescription[i], TmpBasis->StateHighestBit[i]);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  TmpState[TmpIndex] = state[i];
+	}
+    }
+  return TmpState;
+}
+  

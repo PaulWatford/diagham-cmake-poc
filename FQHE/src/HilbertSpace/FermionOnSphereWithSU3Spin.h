@@ -355,6 +355,13 @@ class FermionOnSphereWithSU3Spin :  public ParticleOnSphereWithSU3Spin
   // return value = resulting U(1) state
   virtual RealVector ForgeU1FromSU3(RealVector& state, FermionOnSphere& u1Space);
 
+  // convert a given state from a generic basis to the current Sz subspace basis
+  //
+  // state = reference on the vector to convert
+  // basis = reference on the basis associated to state
+  // return value = converted vector
+  virtual ComplexVector ConvertFromNbodyBasis(ComplexVector& state, ParticleOnSphereWithSpin& basis);
+  
   protected:
 
   // save Hilbert space description to disk

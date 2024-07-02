@@ -312,7 +312,11 @@ RealVector FermionOnSphereWithSpinAllSzGutzwillerProjection::GutzwillerProjectio
   RealVector TmpVector (this->LargeHilbertSpaceDimension, true);
   for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
     {
-      int TmpIndex = TmpSpace->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]);
+      int NewLzMax = 1 + (this->LzMax << 1);
+      unsigned long TmpState = this->StateDescription[i];
+      while ((TmpState >> NewLzMax) == 0x0ul)
+	--NewLzMax;
+      int TmpIndex = TmpSpace->FindStateIndex(TmpState, NewLzMax);
       if (TmpIndex != TmpSpace->GetHilbertSpaceDimension())
 	{
 	  TmpVector[i] = state[TmpIndex];

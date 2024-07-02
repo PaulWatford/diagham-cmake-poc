@@ -1454,6 +1454,32 @@ ComplexVector ParticleOnSphereWithSpin::ConvertFromNbodyBasis(ComplexVector& sta
   return TmpVector;
 }
 
+// convert a given state from a generic basis to the gutzwiller basis
+//
+// state = reference on the vector to convert
+// basis = pointer to the basis associated to state
+// return value = converted vector
+
+RealVector ParticleOnSphereWithSpin::GutzwillerProjection(RealVector& state, ParticleOnSphereWithSpin* basis)
+{
+  cout << "using dummy ParticleOnSphereWithSpin::GutzwillerProjection" << endl;
+  RealVector TmpVector;
+  return TmpVector;
+}
+  
+// convert a given state from a generic basis to the gutzwiller basis
+//
+// state = reference on the vector to convert
+// basis = pointer to the basis associated to state
+// return value = converted vector
+
+ComplexVector ParticleOnSphereWithSpin::GutzwillerProjection(ComplexVector& state, ParticleOnSphereWithSpin* basis)
+{
+  cout << "using dummy ParticleOnSphereWithSpin::GutzwillerProjection" << endl;
+  ComplexVector TmpVector;
+  return TmpVector;
+}
+  
 
 // get the total spin
 //

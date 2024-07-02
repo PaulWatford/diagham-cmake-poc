@@ -613,7 +613,11 @@ double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::Recursive
       qyValues[xPosition] = -currentSumQy;  
       q2Values[xPosition] = (qxValues[xPosition] * qxValues[xPosition] * this->InvRatio) + (qyValues[xPosition] * qyValues[xPosition] * this->Ratio);
       currentSumPhase += qxValues[xPosition] * (cosineCoefficients[xPosition] + qyValues[xPosition]);
-      currentPrecision = exp(- 0.5 * TmpExponentialFactor * (q2Values[xPosition] + currentSumQ2)) * this->VFactor(q2Values);
+      //      currentPrecision = exp(- TmpExponentialFactor * (q2Values[xPosition] + currentSumQ2)) * this->VFactor(q2Values);
+      currentPrecision = exp(- 1.0 * TmpExponentialFactor * (q2Values[xPosition] + currentSumQ2)) * this->VFactor(q2Values);
+      //      currentPrecision = exp(- 0.5 * TmpExponentialFactor * (q2Values[xPosition] + currentSumQ2)) * this->VFactor(q2Values);
+      cout << "q_1^2=" << (TmpExponentialFactor * q2Values[0]) << " q_2^2=" << (TmpExponentialFactor * q2Values[1]) << " | " << currentPrecision << " " << this->VFactor(q2Values) <<  endl;
+      cout << (cos(TmpExponentialFactor * currentSumPhase) * currentPrecision) << " "  << currentSumPhase << " " << TmpExponentialFactor << endl;
       return (cos(TmpExponentialFactor * currentSumPhase) * currentPrecision);
     }
 }
@@ -622,7 +626,7 @@ double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::Recursive
 
 double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::VFactor(double* q2Values)
 {
-  double TmpExponentialFactor = 2.0 * M_PI / ((double) this->MaxMomentum);
+  double TmpExponentialFactor = 4.0 * M_PI / ((double) this->MaxMomentum);
   double Tmp = 0.0;
   double Tmp2;
   for (int i = 0; i < this->NbrMonomials; ++i)
@@ -635,7 +639,6 @@ double ParticleOnTorusGenericNBodyWithMagneticTranslationsHamiltonian::VFactor(d
 	}
       Tmp += Tmp2;
     }
-  cout << (TmpExponentialFactor * q2Values[0]) << " " << (TmpExponentialFactor * q2Values[1]) << " " << Tmp << endl;
   return Tmp;
 }
 

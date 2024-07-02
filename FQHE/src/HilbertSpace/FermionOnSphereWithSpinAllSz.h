@@ -47,7 +47,8 @@ class FermionOnSphereWithSpinAllSz :  public FermionOnSphereWithSpin
 
   friend class FermionOnSphereWithSpinAllSzLzSymmetry;
   friend class FermionOnSphereWithSpinAllSzLzSzSymmetry; 
-  friend class FermionOnSphereWithSpinAllSzSzSymmetry; 
+  friend class FermionOnSphereWithSpinAllSzSzSymmetry;
+  friend class FermionOnSphereWithSpinAllSzGutzwillerProjection;
 /*   friend class FermionOnSphereWithSpinAllSzLzSymmetry; */
 
  protected:

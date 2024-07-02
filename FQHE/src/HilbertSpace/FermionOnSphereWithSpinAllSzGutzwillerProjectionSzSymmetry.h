@@ -98,6 +98,12 @@ class FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry :  public Fermi
   // return value = pointer to cloned Hilbert space
   AbstractHilbertSpace* Clone();
 
+  // convert a given state from a generic basis to the gutzwiller basis
+  //
+  // state = reference on the vector to convert
+  // basis = pointer to the basis associated to state
+  // return value = converted vector
+  virtual RealVector GutzwillerProjection(RealVector& state, ParticleOnSphereWithSpin* basis);
 
 protected:
 

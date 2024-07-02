@@ -381,6 +381,7 @@ double ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian::EvaluateIntera
 	  Q2 = this->InvRatio * N1 * N1 + this->Ratio * N2 * N2;
 	  Precision = 2.0 * this->GetVofQ(PIOnM*Q2);
 	  Coefficient += Precision * cos (N1 * Factor);
+	  cout << (Precision * cos (N1 * Factor)) << " " << N1 << " " << Factor << " " << Precision << endl;
 	  N1 += 1.0;
 	}
       Sum += Coefficient;
@@ -407,6 +408,7 @@ double ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian::EvaluateIntera
 	  Q2 = this->InvRatio * N1 * N1 + this->Ratio * N2 * N2;
 	  Precision = 2.0 * this->GetVofQ(PIOnM*Q2);
 	  Coefficient += Precision * cos (N1 * Factor);
+	  cout << (Precision * cos (N1 * Factor)) << " " << N1 << " " << Factor<< " " << Precision << endl;
 	  N1 += 1.0;
 	}
       Sum += Coefficient;
@@ -464,7 +466,7 @@ double ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian::GetVofQ(double
     if (this->Pseudopotentials[i]!=0.0)
       Result += 2.0*this->Pseudopotentials[i]*this->LaguerreM[i].PolynomialEvaluate(Q2);
   //cout <<"V("<<2*Q2_half<<")="<<Result<<" LL="<<this->LandauLevel<<endl;
-  cout << Q2 << " " << Result << endl;
+  cout << "q^2=" << Q2 << " | " << (Result * exp(-Q2_half)) << " " << Result << endl;
   return Result * exp(-Q2_half);
 }
 

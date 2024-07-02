@@ -300,4 +300,23 @@ long FermionOnSphereWithSpinAllSzGutzwillerProjection::ShiftedEvaluateHilbertSpa
   return Count;
 }
 
+// convert a given state from a generic basis to the gutzwiller basis
+//
+// state = reference on the vector to convert
+// basis = pointer to the basis associated to state
+// return value = converted vector
 
+RealVector FermionOnSphereWithSpinAllSzGutzwillerProjection::GutzwillerProjection(RealVector& state, ParticleOnSphereWithSpin* basis)
+{
+  FermionOnSphereWithSpinAllSz* TmpSpace = (FermionOnSphereWithSpinAllSz*) basis;
+  RealVector TmpVector (this->LargeHilbertSpaceDimension, true);
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      int TmpIndex = TmpSpace->FindStateIndex(this->StateDescription[i], this->StateHighestBit[i]);
+      if (TmpIndex != TmpSpace->GetHilbertSpaceDimension())
+	{
+	  TmpVector[i] = state[TmpIndex];
+	}
+    }
+  return TmpVector;
+}

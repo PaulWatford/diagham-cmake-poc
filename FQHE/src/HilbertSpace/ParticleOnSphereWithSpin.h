@@ -997,6 +997,20 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
 													int nbrEntanglementMatrices, int* entanglementMatrixLzSectors,
 													RealMatrix* entanglementMatrices);
 
+  // convert a given state from a generic basis to the gutzwiller basis
+  //
+  // state = reference on the vector to convert
+  // basis = pointer to the basis associated to state
+  // return value = converted vector
+  virtual RealVector GutzwillerProjection(RealVector& state, ParticleOnSphereWithSpin* basis);
+  
+  // convert a given state from a generic basis to the gutzwiller basis
+  //
+  // state = reference on the vector to convert
+  // basis = pointer to the basis associated to state
+  // return value = converted vector
+  virtual ComplexVector GutzwillerProjection(ComplexVector& state, ParticleOnSphereWithSpin* basis);
+  
   // convert a given state from a generic basis to the current Sz subspace basis
   //
   // state = reference on the vector to convert

@@ -340,14 +340,7 @@ int main(int argc, char** argv)
 	  else
 	    {
 	      char* TmpString = 0;
-	      if (FermionFlag == true)
-		{
-		  TmpOutputName = ReplaceString(InputStateFiles[i], "fermions", "fermions_gutzwiller_projected");
-		}
-	      else
-		{
-		  TmpOutputName = ReplaceString(InputStateFiles[i], "bosons", "bosons_gutzwiller_projected");
-		}
+	      TmpOutputName = ReplaceString(InputStateFiles[i], "_su2_", "_gutzwiller_projected_su2_");
 	      if (TmpOutputName == 0)
 		{
 		  cout << "cannot build output file name from file name " << InputStateFiles[i] << endl;

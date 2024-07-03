@@ -62,6 +62,8 @@ int main(int argc, char** argv)
       return 0;
     }
     
+  cout.precision(14);
+
   int NbrSpaces = 1;
   ComplexVector* InputStates = 0;
   char** InputStateFiles = 0;
@@ -308,7 +310,6 @@ int main(int argc, char** argv)
       cout << "gutzwiller projection is not implemented for bosons" << endl;
       return 0;
     }
-  
   for (int i = 0; i < NbrSpaces; ++i)
     {
       cout << "projecting " << InputStateFiles[i] << endl;

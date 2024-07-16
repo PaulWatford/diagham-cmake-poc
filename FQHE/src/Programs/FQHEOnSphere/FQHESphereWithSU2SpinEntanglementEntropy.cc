@@ -12,6 +12,8 @@
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjection.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -137,11 +139,16 @@ int main(int argc, char** argv)
   int SzSymmetry = 0;
   bool Statistics = true;
   bool AllSzFlag = false;
+  bool GutzwillerProjectionFlag = false;
   
   if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(FileName, NbrParticles, LzMax, TotalLz, TotalSz, SzSymmetry, LzSymmetry, Statistics, AllSzFlag) == false)
     {
       cout << "error while retrieving system parameters from file name " << FileName << endl;
       return -1;
+    }
+  if (strstr(FileName, "_gutzwiller_") != 0)
+    {
+      GutzwillerProjectionFlag = true;
     }
   cout << "N=" << NbrParticles << ", 2S=" << LzMax << ", 2Lz=" << TotalLz;
   if (AllSzFlag == false)
@@ -156,6 +163,10 @@ int main(int argc, char** argv)
     {
        cout << ", Sz<->-Sz=" << SzSymmetry;
    }
+  if (GutzwillerProjectionFlag == true)
+    {
+      cout << ", Gutzwiller projection" << endl;
+    }
   cout << endl;
   int NbrParticlesUp = (NbrParticles + TotalSz) >> 1;
   int NbrParticlesDown = (NbrParticles - TotalSz) >> 1;
@@ -215,7 +226,14 @@ int main(int argc, char** argv)
 			if (LzMax <= 15)
 #endif
 			  {
-			    Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
+			    if (GutzwillerProjectionFlag == false)
+			      {
+				Space = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz, LzMax);
+			      }
+			    else
+			      {
+				Space = new FermionOnSphereWithSpinAllSzGutzwillerProjection  (NbrParticles, TotalLz, LzMax);
+			      }
 			  }
 			else
 			  {
@@ -231,7 +249,14 @@ int main(int argc, char** argv)
 			if (LzMax <= 15)
 #endif
 			  {
-			    Space = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
+			    if (GutzwillerProjectionFlag == false)
+			      {
+				Space = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
+			      }
+			    else
+			      {
+				Space = new FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry  (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
+			      }
 			  }
 			else
 			  {

@@ -10,6 +10,8 @@
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjection.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSpin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -170,6 +172,7 @@ int main(int argc, char** argv)
   int* LzSymmetry = 0;
   int* SzSymmetry = 0;
   bool Statistics = true;
+  bool GutzwillerProjectionFlag = false;
   int NbrSpaces = 1;
   ParticleOnSphereWithSpin** Spaces = 0;
   RealVector* GroundStates = 0;
@@ -231,6 +234,10 @@ int main(int argc, char** argv)
 	      cout << "error while retrieving system parameters from file name " << GroundStateFiles[i] << endl;
 	      return -1;
 	    }
+	}
+      if (strstr(GroundStateFiles[i], "_gutzwiller_") != 0)
+	{
+	  GutzwillerProjectionFlag = true;
 	}
     }
   if (AllSzFlag == true)
@@ -475,7 +482,14 @@ int main(int argc, char** argv)
 			if (LzMax <= 15)
 #endif
 			  {
-			    Spaces[i] = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz[i], LzMax);
+			    if (GutzwillerProjectionFlag == false)
+			      {
+				Spaces[i] = new FermionOnSphereWithSpinAllSz  (NbrParticles, TotalLz[i], LzMax);
+			      }
+			    else
+			      {
+				Spaces[i] = new FermionOnSphereWithSpinAllSzGutzwillerProjection  (NbrParticles, TotalLz[i], LzMax);
+			      }
 			  }
 			else
 			  {
@@ -491,7 +505,14 @@ int main(int argc, char** argv)
 			if (LzMax <= 15)
 #endif
 			  {
-			    Spaces[i] = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz[i], LzMax, (SzSymmetry[i] == -1));
+			    if (GutzwillerProjectionFlag == false)
+			      {
+				Spaces[i] = new FermionOnSphereWithSpinAllSzSzSymmetry  (NbrParticles, TotalLz[i], LzMax, (SzSymmetry[i] == -1));
+			      }
+			    else
+			      {
+				Spaces[i] = new FermionOnSphereWithSpinAllSzGutzwillerProjectionSzSymmetry  (NbrParticles, TotalLz[i], LzMax, (SzSymmetry[i] == -1));
+			      }
 			  }
 			else
 			  {

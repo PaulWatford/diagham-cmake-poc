@@ -641,11 +641,15 @@ int FermionOnSphereWithSU4SpinLong::AddmAdm (int index, int m, int n, double& co
 
 int FermionOnSphereWithSU4SpinLong::FindStateIndex(ULONGLONG stateDescription, int lzmax)
 {
-  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]) || (lzmax > this->StateHighestBit[0]) || (lzmax < this->StateHighestBit[this->HilbertSpaceDimension - 1]))
     {
       return this->HilbertSpaceDimension;
     }
   ULONGLONG CurrentState = stateDescription >> this->LookUpTableShift[lzmax];
+  if (((ULONGLONG) this->LookUpTableMemorySize) < CurrentState)
+    {
+      return this->HilbertSpaceDimension;
+    }
   int PosMin = this->LookUpTable[lzmax][CurrentState];
   int PosMax = this->LookUpTable[lzmax][CurrentState+ 1];
   int PosMid = (PosMin + PosMax) >> 1;
@@ -1007,12 +1011,14 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
   int CurrentShift = this->LookUpTableShift[CurrentHighestBit];
   ULONGLONG CurrentLookUpTableValue = this->LookUpTableMemorySize;
   ULONGLONG TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
+  // this->LookUpTableMaxIndex[CurrentHighestBit] = CurrentLookUpTableValue;
   while (CurrentLookUpTableValue > TmpLookUpTableValue)
     {
       TmpLookUpTable[CurrentLookUpTableValue] = 0;
       --CurrentLookUpTableValue;
     }
   TmpLookUpTable[CurrentLookUpTableValue] = 0;
+  // this->LookUpTableMinIndex[CurrentHighestBit] = CurrentLookUpTableValue;
   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
     {
       if (CurrentHighestBit != this->StateHighestBit[i])

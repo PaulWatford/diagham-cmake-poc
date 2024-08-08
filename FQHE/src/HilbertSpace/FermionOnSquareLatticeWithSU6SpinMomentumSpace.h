@@ -61,6 +61,10 @@ class FermionOnSquareLatticeWithSU6SpinMomentumSpace : public FermionOnSphereWit
   
  public:
 
+  // default constructor
+  //
+  FermionOnSquareLatticeWithSU6SpinMomentumSpace();
+  
   // basic constructor
   // 
   // nbrFermions = number of fermions

@@ -100,7 +100,8 @@ class FermionOnSphereWithSU4SpinLong :  public ParticleOnSphereWithSU4Spin
   int* LookUpTableShift;
   // look-up table with two entries : the first one used lzmax value of the state an the second 
   int** LookUpTable;
-
+  // minimum index of LookUpTable in each lzmax sector
+  //  int* LookUpTableMinIndex;
   // a table containing ranging from 0 to 2^MaximumSignLookUp - 1
   double* SignLookUpTable;
   // a table containing the mask on the bits to keep for each shift that is requested by sign evaluation

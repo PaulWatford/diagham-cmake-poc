@@ -1012,7 +1012,8 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
   ULONGLONG CurrentLookUpTableValue = this->LookUpTableMemorySize;
   ULONGLONG TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
   // this->LookUpTableMaxIndex[CurrentHighestBit] = CurrentLookUpTableValue;
-  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+  //  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+  while (CurrentLookUpTableValue >= 0)
     {
       TmpLookUpTable[CurrentLookUpTableValue] = 0;
       --CurrentLookUpTableValue;
@@ -1038,24 +1039,26 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
 	  CurrentShift = this->LookUpTableShift[CurrentHighestBit];
 	  TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
 	  CurrentLookUpTableValue = this->LookUpTableMemorySize;
-	  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+	  //	  while (CurrentLookUpTableValue > TmpLookUpTableValue)
+	  while (CurrentLookUpTableValue >= 0)
 	    {
 	      TmpLookUpTable[CurrentLookUpTableValue] = i;
 	      --CurrentLookUpTableValue;
 	    }
-	  TmpLookUpTable[CurrentLookUpTableValue] = i;
+	  //	  TmpLookUpTable[CurrentLookUpTableValue] = i;
 	}
       else
 	{
 	  TmpLookUpTableValue = this->StateDescription[i] >> CurrentShift;
 	  if (TmpLookUpTableValue != CurrentLookUpTableValue)
 	    {
-	      while (CurrentLookUpTableValue > TmpLookUpTableValue)
+	      //	      while (CurrentLookUpTableValue > TmpLookUpTableValue)
+	      while (CurrentLookUpTableValue >= 0)
 		{
 		  TmpLookUpTable[CurrentLookUpTableValue] = i;
 		  --CurrentLookUpTableValue;
 		}
-	      TmpLookUpTable[CurrentLookUpTableValue] = i;
+	      //	      TmpLookUpTable[CurrentLookUpTableValue] = i;
 	    }
 	}
     }

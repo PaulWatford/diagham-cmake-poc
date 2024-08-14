@@ -1018,7 +1018,7 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
       TmpLookUpTable[CurrentLookUpTableValue] = 0;
       --CurrentLookUpTableValue;
     }
-  TmpLookUpTable[CurrentLookUpTableValue] = 0;
+  //  TmpLookUpTable[CurrentLookUpTableValue] = 0;
   // this->LookUpTableMinIndex[CurrentHighestBit] = CurrentLookUpTableValue;
   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
     {

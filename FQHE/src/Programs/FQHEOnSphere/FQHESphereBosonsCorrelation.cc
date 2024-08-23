@@ -252,9 +252,9 @@ int main(int argc, char** argv)
 	     double FactorI = Factor * CoeffLLS.GetCoefficient(((i << 1) - LzMax), -((i << 1) - LzMax), L << 1);
 	     for (int j = 0; j <= LzMax; ++j)
 	       {        
-		 double FactorJ = FactorI * CoeffLLS.GetCoefficient(((j << 1) - LzMax), -((j << 1) - LzMax), L << 1) * pow(-1.0, -(i - S)-(j-S));
+		 double FactorJ = FactorI * CoeffLLS.GetCoefficient(((j << 1) - LzMax), -((j << 1) - LzMax), L << 1) * pow(-1.0, -(i - S) - (j-S));
 		 ParticleOnSphereDensityDensityOperator Operator (Space, i, j, i, j);
-		 SumIJ -=  FactorJ * Operator.MatrixElement(State, State);
+		 SumIJ +=  FactorJ * Operator.MatrixElement(State, State);
 		 if (i == j)
 		   {
 		     SumIJ += FactorJ * DensityMatEl[i]; 

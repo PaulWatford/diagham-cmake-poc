@@ -112,7 +112,7 @@ int main(int argc, char** argv)
 
   if (Manager.GetString("eigenstate") == 0)
     {
-      cout << "FQHESphereFermionsCorrelation requires a state" << endl;
+      cout << "FQHESphereBosonsCorrelation requires a state" << endl;
       return -1;
     }
   if (IsFile(Manager.GetString("eigenstate")) == false)
@@ -148,6 +148,11 @@ int main(int argc, char** argv)
 	  cout << "can't open vector file " << Manager.GetString("eigenstate") << endl;
 	  return -1;      
 	}
+      if (Space->GetLargeHilbertSpaceDimension()!=State.GetLargeVectorDimension())
+	{
+	  cout << "Dimension mismatch between state and Hilbert space!"<<endl;
+	  return -1;
+	}
       if (DensityFlag == false)
 	for (int i = 0; i <= LzMax; ++i)
 	  {
@@ -170,19 +175,28 @@ int main(int argc, char** argv)
 	  cout << "can't open vector file " << Manager.GetString("eigenstate") << endl;
 	  return -1;      
 	}
+      if (Space->GetLargeHilbertSpaceDimension()!=State.GetLargeVectorDimension())
+	{
+	  cout << "Dimension mismatch between state and Hilbert space!"<<endl;
+	  return -1;
+	}
       if (DensityFlag == false)
-	for (int i = 0; i <= LzMax; ++i)
-	  {
-	    Basis->GetFunctionValue(Value, TmpValue, LzMax);
-	    ParticleOnSphereDensityDensityOperator Operator (Space, i, LzMax, i, LzMax);
-	    PrecalculatedValues[i] = Operator.MatrixElement(ComplexState, ComplexState) * TmpValue * Conj(TmpValue);
-	  }
+	{
+	  for (int i = 0; i <= LzMax; ++i)
+	    {
+	      Basis->GetFunctionValue(Value, TmpValue, LzMax);
+	      ParticleOnSphereDensityDensityOperator Operator (Space, i, LzMax, i, LzMax);
+	      PrecalculatedValues[i] = Operator.MatrixElement(ComplexState, ComplexState) * TmpValue * Conj(TmpValue);
+	    }
+	}
       else
-	for (int i = 0; i <= LzMax; ++i)
-	  {
-	    ParticleOnSphereDensityOperator Operator (Space, i);
-	    PrecalculatedValues[i] = Operator.MatrixElement(ComplexState, ComplexState);
-	  }
+	{
+	  for (int i = 0; i <= LzMax; ++i)
+	    {
+	      ParticleOnSphereDensityOperator Operator (Space, i);
+	      PrecalculatedValues[i] = Operator.MatrixElement(ComplexState, ComplexState);
+	    }
+	}
     }
 
   ofstream File;

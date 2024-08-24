@@ -20,6 +20,7 @@
 
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
+#include "Architecture/ArchitectureOperation/OperatorMatrixElementOperation.h"
 
 #include "Options/OptionManager.h"
 #include "Options/OptionGroup.h"
@@ -71,7 +72,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('r', "radians", "set units to radians instead of magnetic lengths", false);
   (*SystemGroup) += new BooleanOption  ('c', "chord", "use chord distance instead of distance on the sphere", false);
   (*SystemGroup) += new BooleanOption  ('\n', "density", "plot density insted of density-density correlation", false);
-  (*SystemGroup) += new BooleanOption  ('\n', "structure-factor", "evaluate the projected structure factor instead of (density-)density (use with radians option)", false);
+  (*SystemGroup) += new BooleanOption  ('\n', "structure-factor", "evaluate the projected structure factor instead of (density-)density", false);
+  (*SystemGroup) += new BooleanOption  ('\n', "guidingcenter-structurefactor", "evaluate the guiding center structure factor instead of (density-)density", false);
   (*SystemGroup) += new BooleanOption  ('\n', "coefficients-only", "only compute the one or two body coefficients that are requested to evaluate the density-density correlation", false);
   (*PrecalculationGroup) += new SingleIntegerOption  ('\n', "fast-search", "amount of memory that can be allocated for fast state search (in Mbytes)", 9);
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name instead of the one that can be deduced from the input file name (replacing the vec extension with rhorho extension");
@@ -98,6 +100,7 @@ int main(int argc, char** argv)
   unsigned long MemorySpace = ((unsigned long) Manager.GetInteger("fast-search")) << 20;
   bool DensityFlag = Manager.GetBoolean("density");
   bool StructureFactorFlag = Manager.GetBoolean("structure-factor");
+  bool GuidingCenterStructureFactorFlag = Manager.GetBoolean("guidingcenter-structurefactor");
   bool ChordFlag = Manager.GetBoolean("chord");
   bool HaldaneBasisFlag = Manager.GetBoolean("haldane");
   bool SymmetrizedBasis = Manager.GetBoolean("symmetrized-basis");
@@ -220,7 +223,14 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  TmpFileName = ReplaceExtensionToFileName(Manager.GetString("eigenstate"), "vec", "rhorho");
+		  if (GuidingCenterStructureFactorFlag == true)
+		    {
+		      TmpFileName = ReplaceExtensionToFileName(Manager.GetString("eigenstate"), "vec", "guidstrucfactor");
+		    }
+		  else
+		    {
+		      TmpFileName = ReplaceExtensionToFileName(Manager.GetString("eigenstate"), "vec", "rhorho");
+		    }
 		}
 	    }
 	}
@@ -236,14 +246,24 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  if (StructureFactorFlag == true)
+  if ((StructureFactorFlag == true) || (GuidingCenterStructureFactorFlag == true))
    {
-     cout << "Projected structure factor is evaluated for LLL; " << endl;
-     cout << "use normalization convention from He, Simon & Halperin." << endl;
-  
-     File << "# Structure factor for " << Manager.GetString("eigenstate") << endl;
-     File << "# L(from 0 to Nphi) Re(StructureFactor) Im(StructureFactor)" << endl;
-     
+     if (StructureFactorFlag == true)
+       {
+	 cout << "Projected structure factor is evaluated for LLL; " << endl;
+	 cout << "use normalization convention from He, Simon & Halperin." << endl;
+	 
+	 File << "# Structure factor for " << Manager.GetString("eigenstate") << endl;
+	 File << "# L(from 0 to Nphi) Re(StructureFactor) Im(StructureFactor)" << endl;
+       }
+     else
+       {
+	 cout<< "Evaluating the guiding-center structure factor: " << endl;
+	 cout<< "S_L = <rho_{L,0}rho_{L,0}>, where rho_{L,M}=\\sum_m \\sqrt{2L+1}C_{m0m}^{SLS} c_m^+ c_m" << endl;
+	 cout<< "Normalization 1/N_{orb}, for L->infty S->nu-1/nu^2" << endl;
+	 File << "# Guiding-center sucture factor for " << Manager.GetString("eigenstate") << endl;
+	 File << "# L(from 0 to Nphi) Re(GuidingCenterStructureFactor) Im(GuidingCenterStructureFactor)" << endl; 
+       }
      Complex* DensityMatEl;
      DensityMatEl = new Complex[LzMax + 1];
 
@@ -252,36 +272,71 @@ int main(int argc, char** argv)
 	 ParticleOnSphereDensityOperator Operator (Space, i);
 	 DensityMatEl[i] = Operator.MatrixElement(State, State);
        }
-
+     
      double S = 0.5 * (double)LzMax;
      ClebschGordanCoefficients CoeffLLS(LzMax, LzMax);  
-     for (int L = 0; L <= LzMax; ++L)
+
+     
+     if (StructureFactorFlag == true)
        {
-	 double Factor = pow(-1.0, 3.0 * LzMax + (L << 1)) * pow(LzMax + 1.0, 2.0) /(4.0 * M_PI * (2.0 * L + 1.0));
-	 Factor *=  pow(CoeffLLS.GetCoefficient(-LzMax, LzMax, L << 1), 2.0);
-	 
-	 Complex SumIJ(0.0,0.0);
-	 for (int i = 0; i <= LzMax; ++i)
-           {
-	     double FactorI = Factor * CoeffLLS.GetCoefficient(((i << 1) - LzMax), -((i << 1) - LzMax), L << 1);
-	     for (int j = 0; j <= LzMax; ++j)
-	       {        
-		 double FactorJ = FactorI * CoeffLLS.GetCoefficient(((j << 1) - LzMax), -((j << 1) - LzMax), L << 1) * pow(-1.0, -(i - S) - (j-S));
+	 for (int L = 0; L <= LzMax; ++L)
+	   {
+	     double Factor = pow(-1.0, 3.0 * LzMax + (L << 1)) * pow(LzMax + 1.0, 2.0) /(4.0 * M_PI * (2.0 * L + 1.0));
+	     Factor *=  pow(CoeffLLS.GetCoefficient(-LzMax, LzMax, L << 1), 2.0);
+	     
+	     Complex SumIJ(0.0,0.0);
+	     for (int i = 0; i <= LzMax; ++i)
+	       {
+		 double FactorI = Factor * CoeffLLS.GetCoefficient(((i << 1) - LzMax), -((i << 1) - LzMax), L << 1);
+		 for (int j = 0; j <= LzMax; ++j)
+		   {        
+		     double FactorJ = FactorI * CoeffLLS.GetCoefficient(((j << 1) - LzMax), -((j << 1) - LzMax), L << 1) * pow(-1.0, -(i - S) - (j-S));
 		 ParticleOnSphereDensityDensityOperator Operator (Space, i, j, i, j);
 		 SumIJ +=  FactorJ * Operator.MatrixElement(State, State);
 		 if (i == j)
 		   {
 		     SumIJ += FactorJ * DensityMatEl[i]; 
 		   }
-	       }
-           }     
-         cout << L << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Re << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Im <<endl;
-         File << L << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Re << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Im <<endl;
+		   }
+	       }     
+	     cout << L << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Re << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Im <<endl;
+	     File << L << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Re << " " << (4.0 * M_PI/(double)NbrParticles) * SumIJ.Im <<endl;
+	   }
+       }
+     else
+       {
+	  OperatorMatrixElementOperation* Operation;
+	  ParticleOnSphereDensityDensityOperator* DensityDensityOperator;
+	  for (int L = 0; L <= LzMax; ++L)
+	    {
+	      Complex SumIJ(0.0,0.0);
+	      for (int i = 0; i <= LzMax; ++i)
+		{
+		  for (int j = 0; j <= LzMax; ++j)
+		    {        
+		      double Factor = (LzMax + 1.0) * pow(-1.0, 2*LzMax - i - j) * CoeffLLS.GetCoefficient(((j << 1) - LzMax), -((j << 1) - LzMax), L << 1) * CoeffLLS.GetCoefficient(((i << 1) - LzMax), -((i << 1) - LzMax), L << 1);
+
+		      DensityDensityOperator = new ParticleOnSphereDensityDensityOperator(Space, i, j, i, j);
+		      Operation = new OperatorMatrixElementOperation (DensityDensityOperator, State, State);          
+		      Operation->ApplyOperation(Architecture.GetArchitecture());               
+		      
+		      SumIJ -=  Factor * Operation->GetScalar();
+		      if (i != j)
+			SumIJ += Factor * DensityMatEl[j]; 
+		      
+		      delete DensityDensityOperator;
+		      delete Operation;
+		    }
+		}     
+	      cout << L << " " << -(1.0/(double)(LzMax + 1)) * SumIJ.Re << " " << -(1.0/(double)(LzMax + 1)) * SumIJ.Im << endl;
+	      File << L << " " << -(1.0/(double)(LzMax + 1)) * SumIJ.Re << " " << -(1.0/(double)(LzMax + 1)) * SumIJ.Im << endl;
+	    }
        }
      delete[] DensityMatEl;
      return 0;
    }
-
+  
+  
   if (DensityFlag == true)      
     File << "# density correlation coefficients for " << Manager.GetString("eigenstate") << endl;
   else

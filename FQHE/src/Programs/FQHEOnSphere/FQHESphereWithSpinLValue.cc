@@ -432,10 +432,28 @@ int main(int argc, char** argv)
     {
       if (AllSzFlag)
 	{
-	  if ( PairParity >=0 ) 
-	    Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
+	  if (SzSymmetrizedBasis == true)
+	    {
+	      if (LzSymmetry == 0)
+		{
+		  Space = new BosonOnSphereWithSU2SpinSzSymmetry (NbrParticles, TotalLz, LzMax, (SzSymmetry == -1));
+		}
+	      else
+		{
+		  Space = new BosonOnSphereWithSU2SpinLzSzSymmetry (NbrParticles, LzMax, (SzSymmetry == -1), (LzSymmetry == -1));
+		}
+	    }
 	  else
-	    Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+	    {
+	      if (PairParity >= 0)
+		{
+		  Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
+		}
+	      else
+		{
+		  Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		}
+	    }
 	}
       else
 	{

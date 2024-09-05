@@ -264,7 +264,7 @@ int main(int argc, char** argv)
 	  sprintf(ExtraTerms,"_s2_%g",Manager.GetDouble("s2-factor"));
     }
   char* OutputName = new char [512 + strlen(DiscreteSymmetryName) + strlen(InteractionName)];
-  if (OneBodyPseudoPotentials[2] == 0)
+  if ((OneBodyPseudoPotentials[2] == 0) && (Manager.GetBoolean("all-sz") == false))
     {
       sprintf (OutputName, "bosons_sphere_su2%s_%s%s_n_%d_2s_%d_sz_%d_lz.dat", DiscreteSymmetryName, InteractionName, ExtraTerms,
 	       NbrBosons, LzMax, SzTotal);

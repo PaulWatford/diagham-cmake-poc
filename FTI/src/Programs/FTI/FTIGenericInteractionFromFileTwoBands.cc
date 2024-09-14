@@ -241,7 +241,7 @@ int main(int argc, char** argv)
 	{
 	  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 	    {
-	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_sz_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY, MinSz);
+	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_usesz", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
 	      if ((MinSz == 0) && (DisableSzMinusSzSymmetry == false))
 		{
 		  UseSzMinusSzSymmetry = true;
@@ -254,7 +254,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_sz_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY, MinSz);
+	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_usesz", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
 	      sprintf (CommentLine, "eigenvalues\n# Sz kx ky n1up n1down n2up n2down");
 	    }
 	}
@@ -265,7 +265,7 @@ int main(int argc, char** argv)
 	{
 	  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 	    {
-	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_pz_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY, MinPz);
+	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_usepz_", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
 	      if ((MinPz == 0) && (DisablePzMinusPzSymmetry == false))
 		{
 		  UsePzMinusPzSymmetry = true;
@@ -278,7 +278,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_pz_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY, MinPz);
+	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_usepz_", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
 	      sprintf (CommentLine, "eigenvalues\n# Pz kx ky n1plus n1minus n2plus n2minus");
 	    }
 	}
@@ -286,7 +286,7 @@ int main(int argc, char** argv)
 	{
 	  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 	    {
-	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_pz_%d_ez_%d_sz_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY, MinPz, MinEz, MinSz);
+	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_usepz_eusez_usesz", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
 	      if (((MinSz == 0) && (DisableSzMinusSzSymmetry == false)) || ((MinPz == 0) && (DisablePzMinusPzSymmetry == false)))
 		{
 		  UseSzMinusSzSymmetry = true;
@@ -300,7 +300,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_pz_%d_ez_%d_sz_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY, MinPz, MinEz, MinSz);
+	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d_usepz_useez_usesz_", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
 	      sprintf (CommentLine, "eigenvalues\n# Pz Sz Ez kx ky n1upplus n2upplus n1upminus n2upminus n1downplus n2downplus n1downminus n2downminus");
 	    }
 	}

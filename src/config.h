@@ -199,10 +199,10 @@ typedef unsigned int uint128_t __attribute__((__mode__(TI)));
 
 #else
 
-#ifdef #ifdef __aarch64__
+#ifdef __aarch64__
 
-typedef int int128_t __attribute__((__mode__(TI)));
-typedef unsigned int uint128_t __attribute__((__mode__(TI)));
+//typedef int int128_t __attribute__((__mode__(TI)));
+//typedef unsigned int uint128_t __attribute__((__mode__(TI)));
 
 #define __128_BIT_LONGLONG__
 #define LONGLONG int128_t

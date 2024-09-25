@@ -154,6 +154,17 @@ typedef struct { doublereal r, i; } doublecomplex;
 
 #endif
 
+// llavm and arm64 specific options (assume 64bits compilation)
+
+#ifdef __aarch64__
+
+// 64 bits architecture
+#ifndef __64_BITS__
+#define __64_BITS__
+#endif
+
+#endif
+
 // pathscale 64 bit options - test for 64 bit compilation with pathscale suite
 
 #ifdef __LP64__
@@ -188,10 +199,22 @@ typedef unsigned int uint128_t __attribute__((__mode__(TI)));
 
 #else
 
+#ifdef #ifdef __aarch64__
+
+typedef int int128_t __attribute__((__mode__(TI)));
+typedef unsigned int uint128_t __attribute__((__mode__(TI)));
+
+#define __128_BIT_LONGLONG__
+#define LONGLONG int128_t
+#define ULONGLONG uint128_t
+
+#else
 #define LONGLONG long long
 #define ULONGLONG unsigned long long
-
 #endif
+#endif
+
+
 
 // define long long types (128 bits on x86_64 architecture, 64 bits elsewhere)
 

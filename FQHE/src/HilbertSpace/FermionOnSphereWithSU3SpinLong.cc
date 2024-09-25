@@ -303,7 +303,7 @@ double FermionOnSphereWithSU3SpinLong::Ad3A3 (int index, int m)
 
 int FermionOnSphereWithSU3SpinLong::FindStateIndex(ULONGLONG stateDescription, int lzmax)
 {
-  return this->CarefulFindStateIndex(stateDescription, lzmax);
+  //  return this->CarefulFindStateIndex(stateDescription, lzmax);
   if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
     {
       return this->HilbertSpaceDimension;

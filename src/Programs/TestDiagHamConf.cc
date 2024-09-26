@@ -46,7 +46,7 @@ int main()
 
 // use sstream instead of strstream
 #ifdef __SSTREAM_STYLE__ 
-  cout <<" __SSTREAM_STYLE__ defined"<<endl;
+  cout <<"__SSTREAM_STYLE__ defined"<<endl;
 #endif
 
 // machine precision
@@ -147,7 +147,7 @@ int main()
 
 #ifdef __x86_64__
 
-  cout <<"x86 Architecture detected"<<endl;
+  cout <<"x86-64 architecture detected"<<endl;
 
   // 64 bits architecture
   cout <<"__64_BITS__ defined"<<endl;
@@ -161,17 +161,6 @@ int main()
   cout <<"arm64 architecture detected"<<endl;
 
   // 64 bits architecture
-  cout <<"__64_BITS__ defined"<<endl;
-
-#endif
-
-// pathscale 64 bit options - test for 64 bit compilation with pathscale suite
-
-#ifdef __LP64__
-
-  cout << "Pathscale compiler found"<<endl,
-
-// 64 bits architecture
   cout <<"__64_BITS__ defined"<<endl;
 
 #endif

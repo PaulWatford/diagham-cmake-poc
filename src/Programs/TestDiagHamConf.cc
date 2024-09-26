@@ -83,6 +83,36 @@ int main()
   cout <<"__LAPACKONLY__ defined"<<endl;
 #endif
 
+// SCALAPACK flag
+#ifdef HAVE_SCALAPACK
+  cout <<"__SCALAPACK__ defined"<<endl;
+#endif
+
+// use BZ2 routines
+#ifdef HAVE_BZ2
+  cout << "__BZ2LIB__ defined" << endl;
+#endif
+  
+// use GMP routines
+#ifdef HAVE_GMP
+  cout << "__GMP__ defined" << endl;
+#endif
+  
+// use MPACK routines
+#ifdef HAVE_MPACK
+  cout << "__MPACK__ defined" << endl;
+#endif
+  
+// use FFTW routines
+#ifdef HAVE_FFTW
+  cout << "__FFTW__ defined" << endl;
+#endif
+
+// use GSL routines
+#ifdef HAVE_GSL
+  cout << "__GSL__ defined" << endl;
+#endif
+  
 
 // architecture dependant options
 //
@@ -91,7 +121,7 @@ int main()
 
 # if defined __DECC || defined __DECCXX
 
-  cout << "DEC system recognized"<<endl;
+  cout << "DEC system detected"<<endl;
 // enable cxx options
   cout <<"__USE_STD_IOSTREAM defined"<<endl;
 
@@ -105,7 +135,7 @@ int main()
 // xlC and AIX specific options (assume 64bits compilation)
 
 # if defined __TOS_AIX__ && __xlC__
-  cout <<"AIX system recognized"<<endl;
+  cout <<"AIX system detected"<<endl;
 // 64 bits architecture
   cout <<"__64_BITS__ defined"<<endl;
 
@@ -117,9 +147,20 @@ int main()
 
 #ifdef __x86_64__
 
-  cout <<"x86 Architecture recognized"<<endl;
-// 64 bits architecture
+  cout <<"x86 Architecture detected"<<endl;
 
+  // 64 bits architecture
+  cout <<"__64_BITS__ defined"<<endl;
+
+#endif
+
+// llvm and arm64 specific options (assume 64bits compilation)
+
+#ifdef __aarch64__
+
+  cout <<"arm64 architecture detected"<<endl;
+
+  // 64 bits architecture
   cout <<"__64_BITS__ defined"<<endl;
 
 #endif
@@ -162,9 +203,17 @@ int main()
 
 #else
 
+#ifdef __aarch64__
+
+ cout <<"__128_BIT_LONGLONG__ defined"<<endl;
+ cout <<"LONGLONG int128_t defined"<<endl;
+ cout <<"ULONGLONG uint128_t defined"<<endl;
+
+#else
  cout <<"LONGLONG long long defined"<<endl;
  cout <<"ULONGLONG unsigned long long defined"<<endl;
-
+#endif
+ 
 #endif
 
 // package option

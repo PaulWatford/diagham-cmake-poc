@@ -1045,8 +1045,12 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
     }
   if (this->MaximumLookUpShift > MaxHighestBit)
     this->MaximumLookUpShift = MaxHighestBit;
+  cout << "this->MaximumLookUpShift=" << this->MaximumLookUpShift << endl;
   this->LookUpTableMemorySize = ((ULONGLONG) 0x1ul) << this->MaximumLookUpShift;
-
+  cout << "this->LookUpTableMemorySize=" << this->LookUpTableMemorySize << endl;
+  this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
+  cout << "this->LookUpTableMemorySize=" << this->LookUpTableMemorySize << endl;
+    
   // construct  look-up tables for searching states
   this->LookUpTable = new int* [MaxHighestBit + 1];
   this->LookUpTableShift = new int [MaxHighestBit + 1];

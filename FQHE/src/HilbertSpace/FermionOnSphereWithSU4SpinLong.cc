@@ -1079,6 +1079,7 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
       --CurrentLookUpTableValue;
     }
   TmpLookUpTable[CurrentLookUpTableValue] = 0;
+  cout << "test1" << endl;
   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
     {
       if (CurrentHighestBit != this->StateHighestBit[i])
@@ -1126,6 +1127,7 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
       --CurrentLookUpTableValue;
     }
   TmpLookUpTable[0] = this->HilbertSpaceDimension - 1;
+  cout << "test final" << endl;
 
   // look-up tables for evaluating sign when applying creation/annihilation operators
   int Size = 1 << this->MaximumSignLookUp;

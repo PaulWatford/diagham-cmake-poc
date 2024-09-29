@@ -95,7 +95,7 @@ class FermionOnSphereWithSU4SpinLong :  public ParticleOnSphereWithSU4Spin
   // maximum shift used for searching a position in the look-up table
   int MaximumLookUpShift;
   // memory used for the look-up table in a given lzmax sector
-  int LookUpTableMemorySize;
+  unsigned long LookUpTableMemorySize;
   // shift used in each lzmax sector
   int* LookUpTableShift;
   // look-up table with two entries : the first one used lzmax value of the state an the second 

@@ -583,7 +583,7 @@ void FermionOnSphereWithSU3SpinLong::GenerateLookUpTable(unsigned long memory)
 	--CurrentHighestBit;  
       if (CurrentLargestBit != CurrentHighestBit)
 	{
-	  while (CurrentLookUpTableValue > 0)
+	  while (CurrentLookUpTableValue > ((ULONGLONG) 0x0ul))
 	    {
 	      TmpLookUpTable[CurrentLookUpTableValue] = i;
 	      --CurrentLookUpTableValue;
@@ -598,7 +598,7 @@ void FermionOnSphereWithSU3SpinLong::GenerateLookUpTable(unsigned long memory)
 		this->LookUpTableShift[CurrentLargestBit] = CurrentLargestBit + 1 - this->MaximumLookUpShift;
 	      TmpLookUpTable = this->LookUpTable[CurrentLargestBit];
 	      CurrentLookUpTableValue = this->LookUpTableMemorySize;
-	      while (CurrentLookUpTableValue > 0x0ul)
+	      while (CurrentLookUpTableValue > ((ULONGLONG) 0x0ul))
 		{
 		  TmpLookUpTable[CurrentLookUpTableValue] = i;
 		  --CurrentLookUpTableValue;
@@ -634,7 +634,7 @@ void FermionOnSphereWithSU3SpinLong::GenerateLookUpTable(unsigned long memory)
 	    }
 	}
     }
-  while (CurrentLookUpTableValue > 0)
+  while (CurrentLookUpTableValue > ((ULONGLONG) 0x0ul))
     {
       TmpLookUpTable[CurrentLookUpTableValue] = this->HilbertSpaceDimension - 1;
       --CurrentLookUpTableValue;

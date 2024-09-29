@@ -1024,6 +1024,7 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
   while ((TmpPosition & (((ULONGLONG) 0x1ul) << CurrentHighestBit)) == ((ULONGLONG) 0x0ul))
     --CurrentHighestBit;  
   int MaxHighestBit = CurrentHighestBit;
+  cout << "MaxHighestBit=" << MaxHighestBit << " CurrentHighestBit=" << CurrentHighestBit << endl;
   this->StateHighestBit[0] = CurrentHighestBit;
   for (int i = 1; i < this->HilbertSpaceDimension; ++i)
     {
@@ -1060,6 +1061,7 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
     }
 
   CurrentHighestBit = this->StateHighestBit[0];
+  cout << "v2 MaxHighestBit=" << MaxHighestBit << " CurrentHighestBit=" << CurrentHighestBit << endl;
   int* TmpLookUpTable = this->LookUpTable[CurrentHighestBit];
   if (CurrentHighestBit < this->MaximumLookUpShift)
     this->LookUpTableShift[CurrentHighestBit] = 0;

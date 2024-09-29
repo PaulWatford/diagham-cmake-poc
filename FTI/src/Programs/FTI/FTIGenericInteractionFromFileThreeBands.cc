@@ -344,7 +344,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  sprintf (BandCapPrefix0, "_minband0_%d", Manager.GetInteger("min-band0"));
+	  sprintf (BandCapPrefix0, "_minband0_%ld", Manager.GetInteger("min-band0"));
 	}
       if (Manager.GetInteger("min-band1") <= 0) 
 	{
@@ -352,7 +352,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  sprintf (BandCapPrefix1, "_minband1_%d", Manager.GetInteger("min-band1"));
+	  sprintf (BandCapPrefix1, "_minband1_%ld", Manager.GetInteger("min-band1"));
 	}
       if (Manager.GetInteger("min-band2") <= 0) 
 	{
@@ -360,7 +360,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  sprintf (BandCapPrefix2, "_minband2_%d", Manager.GetInteger("min-band2"));
+	  sprintf (BandCapPrefix2, "_minband2_%ld", Manager.GetInteger("min-band2"));
 	}
       BandMinCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1) + strlen(BandCapPrefix2)];
       if (Manager.GetString("allowed-orbitals") == 0)
@@ -397,7 +397,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  sprintf (BandCapPrefix0, "_maxband0_%d", Manager.GetInteger("max-band0"));
+	  sprintf (BandCapPrefix0, "_maxband0_%ld", Manager.GetInteger("max-band0"));
 	}
       if (Manager.GetInteger("max-band1") < 0) 
 	{
@@ -405,7 +405,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  sprintf (BandCapPrefix1, "_maxband1_%d", Manager.GetInteger("max-band1"));
+	  sprintf (BandCapPrefix1, "_maxband1_%ld", Manager.GetInteger("max-band1"));
 	}
       if (Manager.GetInteger("max-band2") < 0) 
 	{
@@ -413,7 +413,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  sprintf (BandCapPrefix2, "_maxband2_%d", Manager.GetInteger("max-band2"));
+	  sprintf (BandCapPrefix2, "_maxband2_%ld", Manager.GetInteger("max-band2"));
 	}
       BandMaxCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1) + strlen(BandCapPrefix2)];
       if (Manager.GetString("allowed-orbitals") == 0)

@@ -641,6 +641,7 @@ int FermionOnSphereWithSU4SpinLong::AddmAdm (int index, int m, int n, double& co
 
 int FermionOnSphereWithSU4SpinLong::FindStateIndex(ULONGLONG stateDescription, int lzmax)
 {
+  return this->CarefulFindStateIndex(stateDescription, lzmax);
   if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]) || (lzmax > this->StateHighestBit[0]) || (lzmax < this->StateHighestBit[this->HilbertSpaceDimension - 1]))
     {
       return this->HilbertSpaceDimension;
@@ -652,6 +653,55 @@ int FermionOnSphereWithSU4SpinLong::FindStateIndex(ULONGLONG stateDescription, i
     }
   int PosMin = this->LookUpTable[lzmax][CurrentState];
   int PosMax = this->LookUpTable[lzmax][CurrentState+ 1];
+  int PosMid = (PosMin + PosMax) >> 1;
+  CurrentState = this->StateDescription[PosMid];
+  while ((PosMax != PosMid) && (CurrentState != stateDescription))
+    {
+      if (CurrentState > stateDescription)
+	{
+	  PosMax = PosMid;
+	}
+      else
+	{
+	  PosMin = PosMid;
+	} 
+      PosMid = (PosMin + PosMax) >> 1;
+      CurrentState = this->StateDescription[PosMid];
+    }
+  if (CurrentState == stateDescription)
+    return PosMid;
+  else
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
+}
+
+// find state index with additional sanity checks (for debug purposes)
+//
+// stateDescription = unsigned integer describing the state
+// lzmax = maximum Lz value reached by a fermion in the state
+// return value = corresponding index
+
+int FermionOnSphereWithSU4SpinLong::CarefulFindStateIndex(ULONGLONG stateDescription, int lzmax)
+{
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]) || (lzmax > this->StateHighestBit[0]) || (lzmax < this->StateHighestBit[this->HilbertSpaceDimension - 1]))
+    {
+      return this->HilbertSpaceDimension;
+    }
+  cout << "stateDescription=" << hex << ((unsigned long) (stateDescription >> 64))
+       << ((unsigned long) (stateDescription & ((ULONGLONG) 0xfffffffffffffffflu))) << dec << endl;
+  cout << "lzmax=" << lzmax<< endl;
+  cout << "LookUpTableShift=" << this->LookUpTableShift[lzmax] << endl;
+  ULONGLONG CurrentState = stateDescription >> this->LookUpTableShift[lzmax];
+  if (((ULONGLONG) this->LookUpTableMemorySize) < CurrentState)
+    {
+      return this->HilbertSpaceDimension;
+    }
+  int PosMin = this->LookUpTable[lzmax][CurrentState];
+  cout << "PosMin=" << PosMin << endl;
+  int PosMax = this->LookUpTable[lzmax][CurrentState+ 1];
+  cout << "PosMax=" << PosMax << endl;
   int PosMid = (PosMin + PosMax) >> 1;
   CurrentState = this->StateDescription[PosMid];
   while ((PosMax != PosMid) && (CurrentState != stateDescription))
@@ -1000,7 +1050,14 @@ void FermionOnSphereWithSU4SpinLong::GenerateLookUpTable(unsigned long memory)
   this->LookUpTable = new int* [MaxHighestBit + 1];
   this->LookUpTableShift = new int [MaxHighestBit + 1];
   for (int i = 0; i <= MaxHighestBit; ++i)
-    this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+    {
+      this->LookUpTableShift[i] = -1;
+      this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+      for (int j = 0; j <= this->LookUpTableMemorySize; ++j)
+	{
+	  this->LookUpTable[i][j] = -1;
+	}
+    }
 
   CurrentHighestBit = this->StateHighestBit[0];
   int* TmpLookUpTable = this->LookUpTable[CurrentHighestBit];

@@ -637,7 +637,13 @@ class FermionOnSphereWithSU4SpinLong :  public ParticleOnSphereWithSU4Spin
   // return value = corresponding index
   int FindStateIndex(ULONGLONG stateDescription, int lzmax);
 
-
+  // find state index with additional sanity checks (for debug purposes)
+  //
+  // stateDescription = unsigned integer describing the state
+  // lzmax = maximum Lz value reached by a fermion in the state
+  // return value = corresponding index
+  int CarefulFindStateIndex(ULONGLONG stateDescription, int lzmax);
+    
   // evaluate Hilbert space dimension
   //
   // nbrFermions = number of fermions

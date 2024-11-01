@@ -167,6 +167,85 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
     }
 }
 
+// basic constructor
+// 
+// nbrFermions = number of fermions
+// nbrSiteX = number of sites in the x direction
+// nbrSiteY = number of sites in the y direction
+// minNbrParticlesBand0 = minimum number of particles in band 0
+// minNbrParticlesBand1 = minimum number of particles in band 1
+// minNbrParticlesBand2 = minimum number of particles in band 2
+// maxNbrParticlesBand0 = maximum number of particles in band 0
+// maxNbrParticlesBand1 = maximum number of particles in band 1
+// maxNbrParticlesBand2 = maximum number of particles in band 2
+// kxMomentum = momentum along the x direction
+// kyMomentum = momentum along the y direction
+// memory = amount of memory granted for precalculations
+
+FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory)
+{
+  this->NbrFermions = nbrFermions;
+  this->IncNbrFermions = this->NbrFermions + 1;
+  this->SzFlag = false;
+  this->PzFlag = false;
+  this->TotalLz = 0;
+  this->TotalTz = 0;
+  this->TotalY = 0;
+  this->NbrSiteX = nbrSiteX;
+  this->NbrSiteY = nbrSiteY;
+  this->MinNbrParticlesBand0 = minNbrParticlesBand0;
+  this->MinNbrParticlesBand1 = minNbrParticlesBand1;
+  this->MinNbrParticlesBand2 = minNbrParticlesBand2;
+  this->MaxNbrParticlesBand0 = maxNbrParticlesBand0;
+  this->MaxNbrParticlesBand1 = maxNbrParticlesBand1;
+  this->MaxNbrParticlesBand2 = maxNbrParticlesBand2;
+  this->KxMomentum = kxMomentum;
+  this->KyMomentum = kyMomentum;
+  this->LzMax = this->NbrSiteX * this->NbrSiteY;
+  if (this->MaxNbrParticlesBand0 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand0 = this->LzMax;
+    }
+  if (this->MaxNbrParticlesBand1 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand1 = this->LzMax;
+    }
+  if (this->MaxNbrParticlesBand2 > this->LzMax)
+    {
+      this->MaxNbrParticlesBand2 = this->LzMax;
+    }
+  this->NbrLzValue = this->LzMax + 1;
+  this->MaximumSignLookUp = 16;
+  this->GenerateStatesFromSingleBandHilbertSpaces();
+  if ( this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->Flag.Initialize();
+      this->GenerateLookUpTable(memory);      
+#ifdef __DEBUG__
+      long UsedMemory = 0;
+      UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(unsigned long) + sizeof(int));
+      cout << "memory requested for Hilbert space = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+      UsedMemory = this->NbrLzValue * sizeof(int);
+      UsedMemory += this->NbrLzValue * this->LookUpTableMemorySize * sizeof(int);
+      cout << "memory requested for lookup table = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+#endif
+    }
+}
+
 // copy constructor (without duplicating datas)
 //
 // fermions = reference on the hilbert space to copy to copy

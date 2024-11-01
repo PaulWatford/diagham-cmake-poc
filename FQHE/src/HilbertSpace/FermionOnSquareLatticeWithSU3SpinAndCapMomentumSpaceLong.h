@@ -78,6 +78,22 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   // memory = amount of memory granted for precalculations
   FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
 
+  // basic constructor
+  // 
+  // nbrFermions = number of fermions
+  // nbrSiteX = number of sites in the x direction
+  // nbrSiteY = number of sites in the y direction
+  // minNbrParticlesBand0 = minimum number of particles in band 0
+  // minNbrParticlesBand1 = minimum number of particles in band 1
+  // minNbrParticlesBand2 = minimum number of particles in band 2
+  // maxNbrParticlesBand0 = maximum number of particles in band 0
+  // maxNbrParticlesBand1 = maximum number of particles in band 1
+  // maxNbrParticlesBand2 = maximum number of particles in band 2
+  // kxMomentum = momentum along the x direction
+  // kyMomentum = momentum along the y direction
+  // memory = amount of memory granted for precalculations
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+
   // copy constructor (without duplicating datas)
   //
   // fermions = reference on the hilbert space to copy to copy

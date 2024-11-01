@@ -1796,6 +1796,7 @@ int main(int argc, char** argv)
 		      if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0) && (Manager.GetInteger("max-band2") < 0)
 			  && (Manager.GetInteger("min-band0") == 0) && (Manager.GetInteger("min-band1") == 0) && (Manager.GetInteger("min-band2") == 0))
 			{
+			  cout << "test" << endl;
 			  if (Manager.GetString("allowed-orbitals") == 0)
 			    {
 			      if ((NbrSitesX * NbrSitesY) <= 21)
@@ -1855,6 +1856,7 @@ int main(int argc, char** argv)
 			    {
 			      if ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
 				{
+				  cout << "tata" << endl;
 				  if ((NbrSitesX * NbrSitesY) <= 21)
 				    {
 				      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
@@ -1866,13 +1868,16 @@ int main(int argc, char** argv)
 				}
 			      else
 				{
+				  cout << "toto" << endl;
 				  if ((NbrSitesX * NbrSitesY) <= 21)
 				    {
-				      Space = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				      ///				      Space = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 				    }
 				  else
 				    {
-				      Space = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				      //				      Space = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 				    }
 				}				
 			    }

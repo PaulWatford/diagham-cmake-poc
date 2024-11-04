@@ -14,6 +14,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.h"
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry.h"
@@ -1988,11 +1989,10 @@ int main(int argc, char** argv)
 			{
 			  if (PzParityValues1[SymmetrySectorIndex] == 0)
 			    {
-				  // Space = new FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY,
-				  // 									MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2,
-				  // 									KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-				  // 									PzValues[SymmetrySectorIndex], 10000000ul);
-				  //				  Space = new FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+			      Space = new FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY,
+												    MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2,
+												    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+												    PzValues[SymmetrySectorIndex], 10000000ul);
 			    }
 			  else
 			    {
@@ -2013,7 +2013,7 @@ int main(int argc, char** argv)
 	      // spinful case
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
-		  //		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
+		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 		    {
 		      if ((NbrSitesX * NbrSitesY) <= 10)
 			{
@@ -2035,22 +2035,11 @@ int main(int argc, char** argv)
 			  Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], 10000000ul);
 			}
 		    }
-		  // else
-		  //   {
-		  //     int FakePz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-		  // 		    + NbrParticlesBand1DownPlus[SymmetrySectorIndex] - NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
-		  //     int FakeEz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-		  // 		    - NbrParticlesBand1DownPlus[SymmetrySectorIndex] + NbrParticlesBand2DownPlus[SymmetrySectorIndex]);
-		  //     // if ((NbrSitesX * NbrSitesY) <= 16)
-		  //     // 	{
-		  //     // 	  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-		  //     // 								      SzValues[SymmetrySectorIndex], FakePz, FakeEz, 10000000ul);
-		  //     // 	}
-		  //     // else
-		  //     // 	{
-		  //     // 	  Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], FakePz, FakeEz);
-		  //     // 	}
-		  //   }
+		    else
+		      {
+			      cout << "--conserve-bandoccuption for 3 bands plus valley is not implemented" << endl;
+			      return 0 ;			      
+		      }
 		}
 	      else
 		{

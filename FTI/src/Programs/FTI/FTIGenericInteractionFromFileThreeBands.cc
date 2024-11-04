@@ -13,6 +13,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.h"
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry.h"
@@ -1796,7 +1797,6 @@ int main(int argc, char** argv)
 		      if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0) && (Manager.GetInteger("max-band2") < 0)
 			  && (Manager.GetInteger("min-band0") == 0) && (Manager.GetInteger("min-band1") == 0) && (Manager.GetInteger("min-band2") == 0))
 			{
-			  cout << "test" << endl;
 			  if (Manager.GetString("allowed-orbitals") == 0)
 			    {
 			      if ((NbrSitesX * NbrSitesY) <= 21)
@@ -1838,25 +1838,24 @@ int main(int argc, char** argv)
 			      MaxBand2 = 2 * NbrSitesX * NbrSitesY;
 			    }
 			  int MinBand0 = Manager.GetInteger("min-band0");
-			  if (MinBand0 > (NbrSitesX * NbrSitesY))
+			  if (MinBand0 > (2 * NbrSitesX * NbrSitesY))
 			    {
-			      MinBand0 = NbrSitesX * NbrSitesY;
+			      MinBand0 = 2 * NbrSitesX * NbrSitesY;
 			    }
 			  int MinBand1 = Manager.GetInteger("min-band1");
-			  if (MinBand1 > (NbrSitesX * NbrSitesY))
+			  if (MinBand1 > (2 * NbrSitesX * NbrSitesY))
 			    {
-			      MinBand1 = NbrSitesX * NbrSitesY;
+			      MinBand1 = 2 * NbrSitesX * NbrSitesY;
 			    }
 			  int MinBand2 = Manager.GetInteger("min-band2");
-			  if (MinBand2 > (NbrSitesX * NbrSitesY))
+			  if (MinBand2 > (2 * NbrSitesX * NbrSitesY))
 			    {
-			      MinBand2 = NbrSitesX * NbrSitesY;
+			      MinBand2 = 2 * NbrSitesX * NbrSitesY;
 			    }
 			  if (Manager.GetString("allowed-orbitals") == 0)
 			    {
 			      if ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
 				{
-				  cout << "tata" << endl;
 				  if ((NbrSitesX * NbrSitesY) <= 21)
 				    {
 				      Space = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
@@ -1909,8 +1908,9 @@ int main(int argc, char** argv)
 	      else
 		{
 		  // valley but no spin
-		  //		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
-		    {			  
+		  if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0) && (Manager.GetInteger("max-band2") < 0)
+		      && (Manager.GetInteger("min-band0") == 0) && (Manager.GetInteger("min-band1") == 0) && (Manager.GetInteger("min-band2") == 0))
+		    {
 		      if ((NbrSitesX * NbrSitesY) <= 10)
 			{
 			  if (PzParityValues1[SymmetrySectorIndex] == 0)
@@ -1920,39 +1920,93 @@ int main(int argc, char** argv)
 			    }
 			  else
 			    {
-			      // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
-			      // 									    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			      // 									    PzValues[SymmetrySectorIndex],
-			      // 									    (PzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
-			      // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzPzPreservingEzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
-			      // 											  KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			      // 											  PzValues[SymmetrySectorIndex],
-			      // 											  (PzParityValues1[SymmetrySectorIndex] == -1), 10000000ul);
+			      cout << "Pz<->-Pz symmetry not implemented" << endl;
+			      return 0;
 			    }			    
 			}
 		      else
 			{
-			  Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+			  if (PzParityValues1[SymmetrySectorIndex] == 0)
+			    {
+			      Space = new FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+			    }
+			  else
+			    {
+			      cout << "Pz<->-Pz symmetry not implemented" << endl;
+			      return 0;
+			    }			    			    
 			}
 		    }
-		  // else
-		  //   {
-		  //     int FakePz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-		  // 		    + NbrParticlesBand1UpMinus[SymmetrySectorIndex] - NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
-		  //     int FakeEz = (NbrParticlesBand1UpPlus[SymmetrySectorIndex] - NbrParticlesBand2UpPlus[SymmetrySectorIndex]
-		  // 		    - NbrParticlesBand1UpMinus[SymmetrySectorIndex] + NbrParticlesBand2UpMinus[SymmetrySectorIndex]);
-		  //     if ((NbrSitesX * NbrSitesY) <= 16)
-		  // 	{
-		  // 	  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-		  // 	  // 							      PzValues[SymmetrySectorIndex], FakePz, FakeEz, 10000000ul);
-		  // 	}
-		  //     else
-		  // 	{
-		  // 	  cout << "SU(4) not supported with more than 16 momenta" << endl;
-		  // 	  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], FakePz, FakeEz);
-		  // 	}
-		  //   }
+		  else
+		    {
+		      int MaxBand0 = Manager.GetInteger("max-band0");
+		      if (MaxBand0 < 0)
+			{
+			  MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+			}
+		      int MaxBand1 = Manager.GetInteger("max-band1");
+		      if (MaxBand1 < 0)
+			{
+			  MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+			}
+		      int MaxBand2 = Manager.GetInteger("max-band2");
+		      if (MaxBand2 < 0)
+			{
+			  MaxBand2 = 2 * NbrSitesX * NbrSitesY;
+			}
+		      int MinBand0 = Manager.GetInteger("min-band0");
+		      if (MinBand0 > (2 * NbrSitesX * NbrSitesY))
+			{
+			  MinBand0 = 2 * NbrSitesX * NbrSitesY;
+			}
+		      int MinBand1 = Manager.GetInteger("min-band1");
+		      if (MinBand1 > (NbrSitesX * NbrSitesY))
+			{
+			  MinBand1 = 2 * NbrSitesX * NbrSitesY;
+			}
+		      int MinBand2 = Manager.GetInteger("min-band2");
+		      if (MinBand2 > (NbrSitesX * NbrSitesY))
+			{
+			  MinBand2 = 2 * NbrSitesX * NbrSitesY;
+			}
+		      if ((NbrSitesX * NbrSitesY) <= 10)
+			{
+			  if (PzParityValues1[SymmetrySectorIndex] == 0)
+			    {
+			      Space = new FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY,
+												MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2,
+												KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+												PzValues[SymmetrySectorIndex], 10000000ul);
+			    }
+			  else
+			    {
+			      cout << "Pz<->-Pz symmetry not implemented" << endl;
+			      return 0;
+			    }			    
+			}
+		      else
+			{
+			  if (PzParityValues1[SymmetrySectorIndex] == 0)
+			    {
+				  // Space = new FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY,
+				  // 									MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2,
+				  // 									KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+				  // 									PzValues[SymmetrySectorIndex], 10000000ul);
+				  //				  Space = new FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+			    }
+			  else
+			    {
+			      cout << "Pz<->-Pz symmetry not implemented" << endl;
+			      return 0;
+			    }			    			    
+			}
+		    }
 		}
+	      // for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)
+	      // 	{
+	      // 	  cout << i << ": ";
+	      // 	  Space->PrintState(cout, i) << endl;
+	      // 	}
 	    }
 	  else
 	    {

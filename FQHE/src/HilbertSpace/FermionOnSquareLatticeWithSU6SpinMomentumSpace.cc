@@ -327,7 +327,7 @@ ostream& FermionOnSquareLatticeWithSU6SpinMomentumSpace::PrintState (ostream& St
       int TmpKx = i / this->NbrSiteY;
       int TmpKy = i % this->NbrSiteY;
       if ((Tmp & 0x20ul) != 0ul)
-	Str << "(" << TmpKx << "," << TmpKy << ",Au";
+	Str << "(" << TmpKx << "," << TmpKy << ",Au)";
       if ((Tmp & 0x10ul) != 0ul)
 	Str << "(" << TmpKx << "," << TmpKy << ",Bu)";
       if ((Tmp & 0x8ul) != 0ul)

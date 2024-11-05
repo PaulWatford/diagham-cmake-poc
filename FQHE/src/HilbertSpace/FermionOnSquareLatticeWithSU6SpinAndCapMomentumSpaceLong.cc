@@ -383,7 +383,7 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::EvaluateSingleBan
       else	
 	return 0l;
     }
-  if ((currentKx < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
       || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return 0l;
   long Count = 0;
@@ -420,7 +420,7 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::EvaluateSingleBan
       else	
 	return 0l;
     }
-  if ((currentKx < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
       || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return 0l;
   long Count = 0;
@@ -461,7 +461,8 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSingleBan
       else	
 	return pos;
     }
-  if (currentKx < 0)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+      || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return pos;
   long TmpPos = this->GenerateSingleBandStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
   ULONGLONG Mask = ((ULONGLONG) 0x9ul) << (((currentKx * this->NbrSiteY) + currentKy) * 6);
@@ -513,7 +514,8 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSingleBan
       else	
 	return pos;
     }
-  if (currentKx < 0)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+      || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return pos;
   long TmpPos = this->GenerateSingleBandStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), currentTotalSz, singleBandTotalKx, singleBandTotalKy, singleBandTotalSz, singleBandStateDescription, pos);
   ULONGLONG Mask = ((ULONGLONG) 0x9ul) << (((currentKx * this->NbrSiteY) + currentKy) * 6);
@@ -674,8 +676,9 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateAllSingle
 	      singleBandStates[i][j][k] = new ULONGLONG*[singleBandTotalSz[i] + 1];
 	      for (int l = 0; l <= singleBandTotalSz[i]; ++l)
 		{
+		  
 		  singleBandHilbertDimensions[i][j][k][l] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0, j, k, (2 * l) - i);
-		  //		  cout << "N=" << i << " Kx=" << j << " Ky=" << k << " 2Sz=" << ((2 * l) - i) << " dim=" << singleBandHilbertDimensions[i][j][k][l] << " | " <<  singleBandTotalKxMax[i] << " " << singleBandTotalKyMax[i] << " " << singleBandTotalSz[i] << endl;
+		  //		  cout << "N=" << i << " Kx=" << j << " Ky=" << k << " 2Sz=" << ((2 * l) - i) << " dim=" << singleBandHilbertDimensions[i][j][k][l] << endl;
 		  if (singleBandHilbertDimensions[i][j][k][l] > 0l)
 		    {
 		      singleBandStates[i][j][k][l] = new ULONGLONG[singleBandHilbertDimensions[i][j][k][l]];
@@ -960,6 +963,33 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
   ULONGLONG***** TmpSingleBandStates = 0;
   this->GenerateAllSingleBandHilbertSpaces(TmpMaxBandOccupation, TmpSingleBandTotalKxMax, TmpSingleBandTotalKyMax, TmpSingleBandTotalSz, TmpSingleBandHilbertDimensions, TmpSingleBandStates);
 
+  int TmpNbrSingleBandHilbertDimensions = 0;
+  int TmpNbrNonZeroSingleBandHilbertDimensions = 0;
+  int**** TmpUsedSingleBandHilbert =  new int***[TmpMaxBandOccupation];
+  
+  for (int TmpN0 = this->MinNbrParticlesBand0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+    {
+      TmpUsedSingleBandHilbert[TmpN0] =  new int**[TmpSingleBandTotalKxMax[TmpN0] + 1];
+      for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
+	{
+	  TmpUsedSingleBandHilbert[TmpN0][TmpKx0] =  new int*[TmpSingleBandTotalKyMax[TmpN0] + 1];
+	  for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
+	    {
+	      TmpUsedSingleBandHilbert[TmpN0][TmpKx0][TmpKy0] =  new int[TmpSingleBandTotalSz[TmpN0] + 1];
+	      for (int TmpSz0 = 0; TmpSz0 <= TmpSingleBandTotalSz[TmpN0]; ++TmpSz0)
+		{
+		  TmpUsedSingleBandHilbert[TmpN0][TmpKx0][TmpKy0][TmpSz0] = 0;
+		  if (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0][TmpSz0] > 0l)
+		    {
+		      ++TmpNbrNonZeroSingleBandHilbertDimensions;
+		    }
+		  ++TmpNbrSingleBandHilbertDimensions;
+		}
+	    }
+	}
+    }
+  cout << "nbr non-zero single particle Hilbert spaces = " <<  TmpNbrNonZeroSingleBandHilbertDimensions << " / " << TmpNbrSingleBandHilbertDimensions << endl;
+  
   long TmpLargeHilbertSpaceDimension = 0l;
   for (int TmpN0 = this->MinNbrParticlesBand0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
     {
@@ -972,7 +1002,12 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 		{
 		  for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
 		    {
-		      for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
+		      int TmpKx2 = (this->KxMomentum - (TmpKx0 + TmpKx1)) % this->NbrSiteX;
+		      if (TmpKx2 < 0)
+			{
+			  TmpKx2 += this->NbrSiteX;
+			}
+		      for (; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; TmpKx2 += this->NbrSiteX)
 			{
 			  if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
 			    {
@@ -980,7 +1015,12 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 				{
 				  for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
 				    {
-				      for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
+				      int TmpKy2 = (this->KyMomentum - (TmpKy0 + TmpKy1)) % this->NbrSiteY;
+				      if (TmpKy2 < 0)
+					{
+					  TmpKy2 += this->NbrSiteY;
+					}
+				      for (; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; TmpKy2 += this->NbrSiteY)
 					{
 					  if (((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum)
 					    {
@@ -992,14 +1032,15 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 							{
 							  if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1][TmpSz1] > 0l)
 							    {
-							      for (int TmpSz2 = 0; TmpSz2 <= TmpSingleBandTotalSz[TmpN2]; ++TmpSz2)
-								{								  
-								  if (((TmpSz0 + TmpSz1 + TmpSz2) == TmpNbrSpinUp) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2] > 0l))
-								    {
-								      TmpLargeHilbertSpaceDimension += (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0][TmpSz0]
-													* TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1][TmpSz1]
-													* TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2]);
-								    }
+							      int TmpSz2 = TmpNbrSpinUp - (TmpSz0 + TmpSz1);
+							      if ((TmpSz2 >= 0) && (TmpSz2 <= TmpSingleBandTotalSz[TmpN2]) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2] > 0l))
+								{
+								  TmpUsedSingleBandHilbert[TmpN0][TmpKx0][TmpKy0][TmpSz0] = 1;
+								  TmpUsedSingleBandHilbert[TmpN1][TmpKx1][TmpKy1][TmpSz1] = 1;
+								  TmpUsedSingleBandHilbert[TmpN2][TmpKx2][TmpKy2][TmpSz2] = 1;
+								  TmpLargeHilbertSpaceDimension += (TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0][TmpSz0]
+												    * TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1][TmpSz1]
+												    * TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2]);
 								}
 							    }
 							}
@@ -1016,6 +1057,23 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 	    }
 	}
     }
+
+  // int TmpNbrUsedSingleBandHilbert = 0;
+  // for (int TmpN0 = this->MinNbrParticlesBand0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+  //   {
+  //     for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)
+  // 	{
+  // 	  for (int TmpKy0 = 0; TmpKy0 <= TmpSingleBandTotalKyMax[TmpN0]; ++TmpKy0)
+  // 	    {
+  // 	      for (int TmpSz0 = 0; TmpSz0 <= TmpSingleBandTotalSz[TmpN0]; ++TmpSz0)
+  // 		{
+  // 		  TmpNbrUsedSingleBandHilbert += TmpUsedSingleBandHilbert[TmpN0][TmpKx0][TmpKy0][TmpSz0];
+  // 		}
+  // 	    }
+  // 	}
+  //   }
+  // cout << "nbr used single particle Hilbert spaces = " << TmpNbrUsedSingleBandHilbert  << " / " << TmpNbrSingleBandHilbertDimensions << endl;
+  
   this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;  
   cout << "Temporary Hilbert space dimension=" << TmpLargeHilbertSpaceDimension << endl;
   if (TmpLargeHilbertSpaceDimension > 0l)
@@ -1035,7 +1093,12 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 		    {
 		      for (int TmpKx1 = 0; TmpKx1 <= TmpSingleBandTotalKxMax[TmpN1]; ++TmpKx1)
 			{
-			  for (int TmpKx2 = 0; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; ++TmpKx2)
+			  int TmpKx2 = (this->KxMomentum - (TmpKx0 + TmpKx1)) % this->NbrSiteX;
+			  if (TmpKx2 < 0)
+			    {
+			      TmpKx2 += this->NbrSiteX;
+			    }
+			  for (; TmpKx2 <= TmpSingleBandTotalKxMax[TmpN2]; TmpKx2 += this->NbrSiteX)
 			    {
 			      if (((TmpKx0 + TmpKx1 + TmpKx2) % this->NbrSiteX) == this->KxMomentum)
 				{
@@ -1043,7 +1106,12 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 				    {
 				      for (int TmpKy1 = 0; TmpKy1 <= TmpSingleBandTotalKyMax[TmpN1]; ++TmpKy1)
 					{
-					  for (int TmpKy2 = 0; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; ++TmpKy2)
+					  int TmpKy2 = (this->KyMomentum - (TmpKy0 + TmpKy1)) % this->NbrSiteY;
+					  if (TmpKy2 < 0)
+					    {
+					      TmpKy2 += this->NbrSiteY;
+					    }
+					  for (; TmpKy2 <= TmpSingleBandTotalKyMax[TmpN2]; TmpKy2 += this->NbrSiteY)
 					    {
 					      if (((TmpKy0 + TmpKy1 + TmpKy2) % this->NbrSiteY) == this->KyMomentum)
 						{
@@ -1055,21 +1123,19 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
 							    {
 							      if (TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1][TmpSz1] > 0l)
 								{
-								  for (int TmpSz2 = 0; TmpSz2 <= TmpSingleBandTotalSz[TmpN2]; ++TmpSz2)
+								  int TmpSz2 = TmpNbrSpinUp - (TmpSz0 + TmpSz1);
+								  if ((TmpSz2 >= 0) && (TmpSz2 <= TmpSingleBandTotalSz[TmpN2]) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2] > 0l))
 								    {
-								      if (((TmpSz0 + TmpSz1 + TmpSz2) == TmpNbrSpinUp) && (TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2] > 0l))
+								      for (int Pos0 = 0; Pos0 < TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0][TmpSz0]; ++Pos0)
 									{
-									  for (int Pos0 = 0; Pos0 < TmpSingleBandHilbertDimensions[TmpN0][TmpKx0][TmpKy0][TmpSz0]; ++Pos0)
+									  for (int Pos1 = 0; Pos1 < TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1][TmpSz1]; ++Pos1)
 									    {
-									      for (int Pos1 = 0; Pos1 < TmpSingleBandHilbertDimensions[TmpN1][TmpKx1][TmpKy1][TmpSz1]; ++Pos1)
+									      for (int Pos2 = 0; Pos2 < TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2]; ++Pos2)
 										{
-										  for (int Pos2 = 0; Pos2 < TmpSingleBandHilbertDimensions[TmpN2][TmpKx2][TmpKy2][TmpSz2]; ++Pos2)
-										    {
-										      this->StateDescription[TmpLargeHilbertSpaceDimension] =  (TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][TmpSz0][Pos0]
-																		| (TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][TmpSz1][Pos1] << 1)
-																		| (TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][TmpSz2][Pos2] << 2));
-										      TmpLargeHilbertSpaceDimension++;
-										    }
+										  this->StateDescription[TmpLargeHilbertSpaceDimension] =  (TmpSingleBandStates[TmpN0][TmpKx0][TmpKy0][TmpSz0][Pos0]
+																	    | (TmpSingleBandStates[TmpN1][TmpKx1][TmpKy1][TmpSz1][Pos1] << 1)
+																	    | (TmpSingleBandStates[TmpN2][TmpKx2][TmpKy2][TmpSz2][Pos2] << 2));
+										  TmpLargeHilbertSpaceDimension++;
 										}
 									    }
 									}

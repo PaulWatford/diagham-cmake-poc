@@ -382,7 +382,7 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace::EvaluateSingleBandHil
       else	
 	return 0l;
     }
-  if ((currentKx < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
       || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return 0l;
   long Count = 0;
@@ -419,7 +419,7 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace::EvaluateSingleBandHil
       else	
 	return 0l;
     }
-  if ((currentKx < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
       || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return 0l;
   long Count = 0;
@@ -460,7 +460,8 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace::GenerateSingleBandSta
       else	
 	return pos;
     }
-  if (currentKx < 0)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+      || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return pos;
   long TmpPos = this->GenerateSingleBandStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
   unsigned long Mask = 0x9ul << (((currentKx * this->NbrSiteY) + currentKy) * 6);
@@ -512,7 +513,8 @@ long FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpace::GenerateSingleBandSta
       else	
 	return pos;
     }
-  if (currentKx < 0)
+  if ((currentKx < 0) || (nbrFermions < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+      || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
     return pos;
   long TmpPos = this->GenerateSingleBandStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), currentTotalSz, singleBandTotalKx, singleBandTotalKy, singleBandTotalSz, singleBandStateDescription, pos);
   unsigned long Mask = 0x9ul << (((currentKx * this->NbrSiteY) + currentKy) * 6);

@@ -1529,3 +1529,93 @@ ComplexVector FermionOnSphereWithSU3SpinLong::ConvertFromNbodyBasis(ComplexVecto
   return TmpState;
 }
   
+// core part of the evaluation density matrix particle partition calculation
+// 
+// minIndex = first index to consider in source Hilbert space
+// nbrIndex = number of indices to consider in source Hilbert space
+// complementaryHilbertSpace = pointer to the complementary Hilbert space (i.e. part B)
+// destinationHilbertSpace = pointer to the destination Hilbert space  (i.e. part A)
+// groundState = reference on the total system ground state
+// densityMatrix = reference on the density matrix where result has to stored
+// return value = number of components that have been added to the density matrix
+
+long FermionOnSphereWithSU3SpinLong::EvaluatePartialDensityMatrixParticlePartitionCore (int minIndex, int nbrIndex, ParticleOnSphere* complementaryHilbertSpace,  ParticleOnSphere* destinationHilbertSpace,
+											ComplexVector& groundState, HermitianMatrix* densityMatrix)
+{
+  FermionOnSphereWithSU3SpinLong* TmpHilbertSpace = (FermionOnSphereWithSU3SpinLong*) complementaryHilbertSpace;
+  FermionOnSphereWithSU3SpinLong* TmpDestinationHilbertSpace = (FermionOnSphereWithSU3SpinLong*) destinationHilbertSpace;
+  int* TmpStatePosition = new int [TmpDestinationHilbertSpace->HilbertSpaceDimension];
+  int* TmpStatePosition2 = new int [TmpDestinationHilbertSpace->HilbertSpaceDimension];
+  Complex* TmpStateCoefficient = new Complex [TmpDestinationHilbertSpace->HilbertSpaceDimension];
+  long TmpNbrNonZeroElements = 0;
+  BinomialCoefficients TmpBinomial (this->NbrFermions);
+  double TmpInvBinomial = 1.0 / sqrt(TmpBinomial(this->NbrFermions, TmpDestinationHilbertSpace->NbrFermions));
+  for (int MinIndex = 0; MinIndex < TmpHilbertSpace->HilbertSpaceDimension; ++MinIndex)    
+    {
+      int Pos = 0;
+      ULONGLONG TmpState = TmpHilbertSpace->StateDescription[MinIndex];
+      for (int j = 0; j < TmpDestinationHilbertSpace->HilbertSpaceDimension; ++j)
+	{
+	  ULONGLONG TmpState2 = TmpDestinationHilbertSpace->StateDescription[j];
+	  if ((TmpState & TmpState2) == 0x0ul)
+	    {
+	      int TmpLzMax = (3 * this->LzMax) + 2;
+	      ULONGLONG TmpState3 = TmpState | TmpState2;
+	      while ((TmpState3 >> TmpLzMax) == ((ULONGLONG) 0x0ul))
+		--TmpLzMax;
+	      int TmpPos = this->FindStateIndex(TmpState3, TmpLzMax);
+	      if (TmpPos != this->HilbertSpaceDimension)
+		{
+ 		  double Coefficient = TmpInvBinomial;
+		  ULONGLONG Sign = ((ULONGLONG) 0x0ul);
+		  int Pos2 = (TmpDestinationHilbertSpace->LzMax * 3) + 2;
+		  while ((Pos2 > 0) && (TmpState2 != ((ULONGLONG) 0x0ul)))
+		    {
+		      while (((TmpState2 >> Pos2) & ((ULONGLONG) 0x1ul)) == ((ULONGLONG) 0x0ul))
+			--Pos2;
+		      TmpState3 = TmpState & ((((ULONGLONG) 0x1ul) << (Pos2 + 1)) - ((ULONGLONG) 0x1ul));
+#ifdef __128_BIT_LONGLONG__
+		      TmpState3 ^= TmpState3 >> 64;
+#endif	
+		      TmpState3 ^= TmpState3 >> 32;
+		      TmpState3 ^= TmpState3 >> 16;
+		      TmpState3 ^= TmpState3 >> 8;
+		      TmpState3 ^= TmpState3 >> 4;
+		      TmpState3 ^= TmpState3 >> 2;
+		      TmpState3 ^= TmpState3 >> 1;
+		      Sign ^= TmpState3;
+		      TmpState2 &= ~(((ULONGLONG) 0x1ul) << Pos2);
+		      --Pos2;
+		    }
+ 		  if ((Sign & ((ULONGLONG) 0x1ul)) == ((ULONGLONG) 0x0ul))		  
+ 		    Coefficient *= 1.0;
+ 		  else
+ 		    Coefficient *= -1.0;
+		  TmpStatePosition[Pos] = TmpPos;
+		  TmpStatePosition2[Pos] = j;
+		  TmpStateCoefficient[Pos] = Coefficient;
+		  ++Pos;
+		}
+	    }
+	}
+      if (Pos != 0)
+	{
+	  ++TmpNbrNonZeroElements;
+	  for (int j = 0; j < Pos; ++j)
+	    {
+	      int Pos2 = TmpStatePosition2[j];
+	      Complex TmpValue = Conj(groundState[TmpStatePosition[j]]) * TmpStateCoefficient[j];
+	      for (int k = 0; k < Pos; ++k)
+		if (TmpStatePosition2[k] >= Pos2)
+		  {
+		    densityMatrix->AddToMatrixElement(Pos2, TmpStatePosition2[k], TmpValue * groundState[TmpStatePosition[k]] * TmpStateCoefficient[k]);
+		  }
+	    }
+	}
+    }
+  delete[] TmpStatePosition2;
+  delete[] TmpStatePosition;
+  delete[] TmpStateCoefficient;
+  return TmpNbrNonZeroElements;
+}
+

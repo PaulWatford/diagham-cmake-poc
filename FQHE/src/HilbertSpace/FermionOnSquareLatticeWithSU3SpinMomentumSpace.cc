@@ -41,6 +41,7 @@
 #include "GeneralTools/UnsignedIntegerTools.h"
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
+#include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
 
 #include <math.h>
 #include <cstdlib>
@@ -415,3 +416,137 @@ long FermionOnSquareLatticeWithSU3SpinMomentumSpace::EvaluateHilbertSpaceDimensi
   Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy);
   return Count;
 }
+
+// evaluate a density matrix of a subsystem of the whole system described by a given ground state, using particle partition. The density matrix is only evaluated in a given momentum sector.
+// 
+// nbrParticleSector = number of particles that belong to the subsytem 
+// groundState = reference on the total system ground state
+// architecture = pointer to the architecture to use parallelized algorithm 
+// return value = density matrix of the subsytem (return a wero dimension matrix if the density matrix is equal to zero)
+
+HermitianMatrix FermionOnSquareLatticeWithSU3SpinMomentumSpace::EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, ComplexVector& groundState, AbstractArchitecture* architecture)
+{
+  if (nbrParticleSector == 0)
+    {
+      if ((kxSector == 0) && (kySector == 0))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 1.0;
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  if (nbrParticleSector == this->NbrFermions)
+    {
+      if ((kxSector == this->KxMomentum) && (kySector == this->KyMomentum))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 1.0;
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  int ComplementaryNbrParticles = this->NbrFermions - nbrParticleSector;
+  int ComplementaryKxMomentum = (this->KxMomentum - kxSector) % this->NbrSiteX;
+  int ComplementaryKyMomentum = (this->KyMomentum - kySector) % this->NbrSiteY;
+  if (ComplementaryKxMomentum < 0)
+    ComplementaryKxMomentum += this->NbrSiteX;
+  if (ComplementaryKyMomentum < 0)
+    ComplementaryKyMomentum += this->NbrSiteY;
+  cout << "kx = " << this->KxMomentum << " " << kxSector << " " << ComplementaryKxMomentum << endl;
+  cout << "ky = " << this->KyMomentum << " " << kySector << " " << ComplementaryKyMomentum << endl;
+  FermionOnSquareLatticeWithSU3SpinMomentumSpace SubsytemSpace (nbrParticleSector, this->NbrSiteX, this->NbrSiteY, kxSector, kySector);
+  HermitianMatrix TmpDensityMatrix (SubsytemSpace.GetHilbertSpaceDimension(), true);
+  FermionOnSquareLatticeWithSU3SpinMomentumSpace ComplementarySpace (ComplementaryNbrParticles, this->NbrSiteX, this->NbrSiteY, ComplementaryKxMomentum, ComplementaryKyMomentum);
+  cout << "subsystem Hilbert space dimension = " << SubsytemSpace.HilbertSpaceDimension << endl;
+
+  FQHESphereParticleEntanglementSpectrumOperation Operation(this, &SubsytemSpace, &ComplementarySpace, groundState, TmpDensityMatrix);
+  Operation.ApplyOperation(architecture);
+  if (Operation.GetNbrNonZeroMatrixElements() > 0)	
+    return TmpDensityMatrix;
+  else
+    {
+      HermitianMatrix TmpDensityMatrixZero;
+      return TmpDensityMatrixZero;
+    }
+}
+  
+// evaluate a density matrix of a subsystem of the whole system described by a given sum of projectors, using particle partition. The density matrix is only evaluated in a given Lz sector.
+// 
+// nbrBosonSector = number of particles that belong to the subsytem 
+// lzSector = Lz sector in which the density matrix has to be evaluated 
+// nbrGroundStates = number of projectors
+// groundStates = array of degenerate groundstates associated to each projector
+// weights = array of weights in front of each projector
+// architecture = pointer to the architecture to use parallelized algorithm 
+// return value = density matrix of the subsytem (return a wero dimension matrix if the density matrix is equal to zero)
+
+HermitianMatrix FermionOnSquareLatticeWithSU3SpinMomentumSpace::EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, 
+												    int nbrGroundStates, ComplexVector* groundStates, double* weights, AbstractArchitecture* architecture)
+{
+  if (nbrParticleSector == 0)
+    {
+      if ((kxSector == 0) && (kySector == 0))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 0.0;
+	  for (int i = 0; i < nbrGroundStates; ++i)
+	    TmpDensityMatrix(0, 0) += weights[i];
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  if (nbrParticleSector == this->NbrFermions)
+    {
+      if ((kxSector == this->KxMomentum) && (kySector == this->KyMomentum))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 0.0;
+	  for (int i = 0; i < nbrGroundStates; ++i)
+	    TmpDensityMatrix(0, 0) += weights[i];
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  int ComplementaryNbrParticles = this->NbrFermions - nbrParticleSector;
+  int ComplementaryKxMomentum = (this->KxMomentum - kxSector) % this->NbrSiteX;
+  int ComplementaryKyMomentum = (this->KyMomentum - kySector) % this->NbrSiteY;
+  if (ComplementaryKxMomentum < 0)
+    ComplementaryKxMomentum += this->NbrSiteX;
+  if (ComplementaryKyMomentum < 0)
+    ComplementaryKyMomentum += this->NbrSiteY;
+  cout << "kx = " << this->KxMomentum << " " << kxSector << " " << ComplementaryKxMomentum << endl;
+  cout << "ky = " << this->KyMomentum << " " << kySector << " " << ComplementaryKyMomentum << endl;
+  FermionOnSquareLatticeWithSU3SpinMomentumSpace SubsytemSpace (nbrParticleSector, this->NbrSiteX, this->NbrSiteY, kxSector, kySector);
+  HermitianMatrix TmpDensityMatrix (SubsytemSpace.GetHilbertSpaceDimension(), true);
+  FermionOnSquareLatticeWithSU3SpinMomentumSpace ComplementarySpace (ComplementaryNbrParticles, this->NbrSiteX, this->NbrSiteY, ComplementaryKxMomentum, ComplementaryKyMomentum);
+  cout << "subsystem Hilbert space dimension = " << SubsytemSpace.HilbertSpaceDimension << endl;
+
+
+  FQHESphereParticleEntanglementSpectrumOperation Operation(this, &SubsytemSpace, &ComplementarySpace, nbrGroundStates, groundStates, weights, TmpDensityMatrix);
+  Operation.ApplyOperation(architecture);
+  if (Operation.GetNbrNonZeroMatrixElements() > 0)	
+    return TmpDensityMatrix;
+  else
+    {
+      HermitianMatrix TmpDensityMatrixZero;
+      return TmpDensityMatrixZero;
+    }
+}
+

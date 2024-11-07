@@ -40,6 +40,7 @@
 
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU6SpinMomentumSpaceLong.h"
+
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU12SpinMomentumSpaceLong.h"
 

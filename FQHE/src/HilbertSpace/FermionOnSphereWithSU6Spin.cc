@@ -63,7 +63,11 @@ FermionOnSphereWithSU6Spin::~FermionOnSphereWithSU6Spin ()
   if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
       unsigned long TmpPosition = this->StateDescription[0];
-      int CurrentHighestBit = (this->LzMax + 1) * 6 - 1;
+#ifdef __64_BITS__
+      int CurrentHighestBit = 63;
+#else
+      int CurrentHighestBit = 31;
+#endif
       while ((TmpPosition & (0x1ul << CurrentHighestBit)) == 0x0ul)
 	--CurrentHighestBit;  
       delete[] this->StateDescription;

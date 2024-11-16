@@ -676,7 +676,6 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateAllSingle
 	      singleBandStates[i][j][k] = new ULONGLONG*[singleBandTotalSz[i] + 1];
 	      for (int l = 0; l <= singleBandTotalSz[i]; ++l)
 		{
-		  
 		  singleBandHilbertDimensions[i][j][k][l] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0, j, k, (2 * l) - i);
 		  //		  cout << "N=" << i << " Kx=" << j << " Ky=" << k << " 2Sz=" << ((2 * l) - i) << " dim=" << singleBandHilbertDimensions[i][j][k][l] << endl;
 		  if (singleBandHilbertDimensions[i][j][k][l] > 0l)
@@ -967,7 +966,7 @@ void FermionOnSquareLatticeWithSU6SpinAndCapMomentumSpaceLong::GenerateSpinConve
   int TmpNbrNonZeroSingleBandHilbertDimensions = 0;
   int**** TmpUsedSingleBandHilbert =  new int***[TmpMaxBandOccupation];
   
-  for (int TmpN0 = this->MinNbrParticlesBand0; TmpN0 <= this->MaxNbrParticlesBand0; ++TmpN0)
+  for (int TmpN0 = 0; TmpN0 <= TmpMaxBandOccupation; ++TmpN0)
     {
       TmpUsedSingleBandHilbert[TmpN0] =  new int**[TmpSingleBandTotalKxMax[TmpN0] + 1];
       for (int TmpKx0 = 0; TmpKx0 <= TmpSingleBandTotalKxMax[TmpN0]; ++TmpKx0)

@@ -445,13 +445,20 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      if (PairParity >= 0)
+	      if (Manager.GetBoolean("use-alt") == false)
 		{
-		  Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
+		  if (PairParity >= 0)
+		    {
+		      Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, PairParity, MemorySpace);
+		    }
+		  else
+		    {
+		      Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		    }
 		}
 	      else
 		{
-		  Space = new BosonOnSphereWithSpinAllSz (NbrParticles, TotalLz, LzMax, MemorySpace);
+		  Space = new BosonOnSphereWithSU2Spin (NbrParticles, TotalLz, LzMax);		  
 		}
 	    }
 	}

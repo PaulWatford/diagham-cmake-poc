@@ -42,6 +42,7 @@
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
 #include "GeneralTools/ArrayTools.h"
+#include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
 
 #include <math.h>
 #include <cstdlib>
@@ -905,3 +906,208 @@ void FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::GenerateStatesFromSin
   delete[] TmpSingleBandTotalKxMax;
   delete[] TmpSingleBandTotalKyMax;
 }    
+
+
+// evaluate a density matrix of a subsystem of the whole system described by a given ground state, using particle partition. The density matrix is only evaluated in a given momentum sector.
+// 
+// nbrParticleSector = number of particles that belong to the subsytem 
+// groundState = reference on the total system ground state
+// architecture = pointer to the architecture to use parallelized algorithm 
+// return value = density matrix of the subsytem (return a wero dimension matrix if the density matrix is equal to zero)
+
+HermitianMatrix FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, ComplexVector& groundState, AbstractArchitecture* architecture)
+{
+  if (nbrParticleSector == 0)
+    {
+      if ((kxSector == 0) && (kySector == 0))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 1.0;
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  if (nbrParticleSector == this->NbrFermions)
+    {
+      if ((kxSector == this->KxMomentum) && (kySector == this->KyMomentum))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 1.0;
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  int ComplementaryNbrParticles = this->NbrFermions - nbrParticleSector;
+  int ComplementaryKxMomentum = (this->KxMomentum - kxSector) % this->NbrSiteX;
+  int ComplementaryKyMomentum = (this->KyMomentum - kySector) % this->NbrSiteY;
+  if (ComplementaryKxMomentum < 0)
+    ComplementaryKxMomentum += this->NbrSiteX;
+  if (ComplementaryKyMomentum < 0)
+    ComplementaryKyMomentum += this->NbrSiteY;
+
+  int SubsystemMaxNbrParticlesBand0 = this->MaxNbrParticlesBand0;
+  int SubsystemMaxNbrParticlesBand1 = this->MaxNbrParticlesBand1;
+  int SubsystemMaxNbrParticlesBand2 = this->MaxNbrParticlesBand2;
+  if (SubsystemMaxNbrParticlesBand0 > nbrParticleSector)
+    {
+      SubsystemMaxNbrParticlesBand0 = nbrParticleSector;
+    }
+  if (SubsystemMaxNbrParticlesBand1 > nbrParticleSector)
+    {
+      SubsystemMaxNbrParticlesBand1 = nbrParticleSector;
+    }
+  if (SubsystemMaxNbrParticlesBand2 > nbrParticleSector)
+    {
+      SubsystemMaxNbrParticlesBand2 = nbrParticleSector;
+    }
+  int ComplementaryMaxNbrParticlesBand0 = this->MaxNbrParticlesBand0;
+  int ComplementaryMaxNbrParticlesBand1 = this->MaxNbrParticlesBand1;
+  int ComplementaryMaxNbrParticlesBand2 = this->MaxNbrParticlesBand2;
+  if (ComplementaryMaxNbrParticlesBand0 > ComplementaryNbrParticles)
+    {
+      ComplementaryMaxNbrParticlesBand0 = ComplementaryNbrParticles;
+    }
+  if (ComplementaryMaxNbrParticlesBand1 > ComplementaryNbrParticles)
+    {
+      ComplementaryMaxNbrParticlesBand1 = ComplementaryNbrParticles;
+    }
+  if (ComplementaryMaxNbrParticlesBand2 > ComplementaryNbrParticles)
+    {
+      ComplementaryMaxNbrParticlesBand2 = ComplementaryNbrParticles;
+    }
+
+  cout << "kx = " << this->KxMomentum << " " << kxSector << " " << ComplementaryKxMomentum << endl;
+  cout << "ky = " << this->KyMomentum << " " << kySector << " " << ComplementaryKyMomentum << endl;
+  cout << "maxband0 = " << this->MaxNbrParticlesBand0 << " " << SubsystemMaxNbrParticlesBand0 << " " << ComplementaryMaxNbrParticlesBand0 << endl;
+  cout << "maxband1 = " << this->MaxNbrParticlesBand1 << " " << SubsystemMaxNbrParticlesBand1 << " " << ComplementaryMaxNbrParticlesBand1 << endl;
+  cout << "maxband2 = " << this->MaxNbrParticlesBand2 << " " << SubsystemMaxNbrParticlesBand2 << " " << ComplementaryMaxNbrParticlesBand2 << endl;
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace SubsytemSpace (nbrParticleSector, this->NbrSiteX, this->NbrSiteY, SubsystemMaxNbrParticlesBand0, SubsystemMaxNbrParticlesBand1, SubsystemMaxNbrParticlesBand2, kxSector, kySector);
+  HermitianMatrix TmpDensityMatrix (SubsytemSpace.GetHilbertSpaceDimension(), true);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace ComplementarySpace (ComplementaryNbrParticles, this->NbrSiteX, this->NbrSiteY, ComplementaryMaxNbrParticlesBand0, ComplementaryMaxNbrParticlesBand1, ComplementaryMaxNbrParticlesBand2, ComplementaryKxMomentum, ComplementaryKyMomentum);
+  cout << "subsystem Hilbert space dimension = " << SubsytemSpace.HilbertSpaceDimension << endl;
+
+  FQHESphereParticleEntanglementSpectrumOperation Operation(this, &SubsytemSpace, &ComplementarySpace, groundState, TmpDensityMatrix);
+  Operation.ApplyOperation(architecture);
+  if (Operation.GetNbrNonZeroMatrixElements() > 0)	
+    return TmpDensityMatrix;
+  else
+    {
+      HermitianMatrix TmpDensityMatrixZero;
+      return TmpDensityMatrixZero;
+    }
+}
+  
+// evaluate a density matrix of a subsystem of the whole system described by a given sum of projectors, using particle partition. The density matrix is only evaluated in a given Lz sector.
+// 
+// nbrBosonSector = number of particles that belong to the subsytem 
+// lzSector = Lz sector in which the density matrix has to be evaluated 
+// nbrGroundStates = number of projectors
+// groundStates = array of degenerate groundstates associated to each projector
+// weights = array of weights in front of each projector
+// architecture = pointer to the architecture to use parallelized algorithm 
+// return value = density matrix of the subsytem (return a wero dimension matrix if the density matrix is equal to zero)
+
+HermitianMatrix FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, 
+												    int nbrGroundStates, ComplexVector* groundStates, double* weights, AbstractArchitecture* architecture)
+{
+  if (nbrParticleSector == 0)
+    {
+      if ((kxSector == 0) && (kySector == 0))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 0.0;
+	  for (int i = 0; i < nbrGroundStates; ++i)
+	    TmpDensityMatrix(0, 0) += weights[i];
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  if (nbrParticleSector == this->NbrFermions)
+    {
+      if ((kxSector == this->KxMomentum) && (kySector == this->KyMomentum))
+	{
+	  HermitianMatrix TmpDensityMatrix(1, true);
+	  TmpDensityMatrix(0, 0) = 0.0;
+	  for (int i = 0; i < nbrGroundStates; ++i)
+	    TmpDensityMatrix(0, 0) += weights[i];
+	  return TmpDensityMatrix;
+	}
+      else
+	{
+	  HermitianMatrix TmpDensityMatrix;
+	  return TmpDensityMatrix;
+	}
+    }
+  int ComplementaryNbrParticles = this->NbrFermions - nbrParticleSector;
+  int ComplementaryKxMomentum = (this->KxMomentum - kxSector) % this->NbrSiteX;
+  int ComplementaryKyMomentum = (this->KyMomentum - kySector) % this->NbrSiteY;
+  if (ComplementaryKxMomentum < 0)
+    ComplementaryKxMomentum += this->NbrSiteX;
+  if (ComplementaryKyMomentum < 0)
+    ComplementaryKyMomentum += this->NbrSiteY;
+
+  int SubsystemMaxNbrParticlesBand0 = this->MaxNbrParticlesBand0;
+  int SubsystemMaxNbrParticlesBand1 = this->MaxNbrParticlesBand1;
+  int SubsystemMaxNbrParticlesBand2 = this->MaxNbrParticlesBand2;
+  if (SubsystemMaxNbrParticlesBand0 > nbrParticleSector)
+    {
+      SubsystemMaxNbrParticlesBand0 = nbrParticleSector;
+    }
+  if (SubsystemMaxNbrParticlesBand1 > nbrParticleSector)
+    {
+      SubsystemMaxNbrParticlesBand1 = nbrParticleSector;
+    }
+  if (SubsystemMaxNbrParticlesBand2 > nbrParticleSector)
+    {
+      SubsystemMaxNbrParticlesBand2 = nbrParticleSector;
+    }
+  int ComplementaryMaxNbrParticlesBand0 = this->MaxNbrParticlesBand0;
+  int ComplementaryMaxNbrParticlesBand1 = this->MaxNbrParticlesBand1;
+  int ComplementaryMaxNbrParticlesBand2 = this->MaxNbrParticlesBand2;
+  if (ComplementaryMaxNbrParticlesBand0 > ComplementaryNbrParticles)
+    {
+      ComplementaryMaxNbrParticlesBand0 = ComplementaryNbrParticles;
+    }
+  if (ComplementaryMaxNbrParticlesBand1 > ComplementaryNbrParticles)
+    {
+      ComplementaryMaxNbrParticlesBand1 = ComplementaryNbrParticles;
+    }
+  if (ComplementaryMaxNbrParticlesBand2 > ComplementaryNbrParticles)
+    {
+      ComplementaryMaxNbrParticlesBand2 = ComplementaryNbrParticles;
+    }
+  
+  cout << "kx = " << this->KxMomentum << " " << kxSector << " " << ComplementaryKxMomentum << endl;
+  cout << "ky = " << this->KyMomentum << " " << kySector << " " << ComplementaryKyMomentum << endl;
+  cout << "maxband0 = " << this->MaxNbrParticlesBand0 << " " << SubsystemMaxNbrParticlesBand0 << " " << ComplementaryMaxNbrParticlesBand0 << endl;
+  cout << "maxband1 = " << this->MaxNbrParticlesBand1 << " " << SubsystemMaxNbrParticlesBand1 << " " << ComplementaryMaxNbrParticlesBand1 << endl;
+  cout << "maxband2 = " << this->MaxNbrParticlesBand2 << " " << SubsystemMaxNbrParticlesBand2 << " " << ComplementaryMaxNbrParticlesBand2 << endl;
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace SubsytemSpace (nbrParticleSector, this->NbrSiteX, this->NbrSiteY, SubsystemMaxNbrParticlesBand0, SubsystemMaxNbrParticlesBand1, SubsystemMaxNbrParticlesBand2, kxSector, kySector);
+  HermitianMatrix TmpDensityMatrix (SubsytemSpace.GetHilbertSpaceDimension(), true);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace ComplementarySpace (ComplementaryNbrParticles, this->NbrSiteX, this->NbrSiteY, ComplementaryMaxNbrParticlesBand0, ComplementaryMaxNbrParticlesBand1, ComplementaryMaxNbrParticlesBand2, ComplementaryKxMomentum, ComplementaryKyMomentum);
+  cout << "subsystem Hilbert space dimension = " << SubsytemSpace.HilbertSpaceDimension << endl;
+
+
+  FQHESphereParticleEntanglementSpectrumOperation Operation(this, &SubsytemSpace, &ComplementarySpace, nbrGroundStates, groundStates, weights, TmpDensityMatrix);
+  Operation.ApplyOperation(architecture);
+  if (Operation.GetNbrNonZeroMatrixElements() > 0)	
+    return TmpDensityMatrix;
+  else
+    {
+      HermitianMatrix TmpDensityMatrixZero;
+      return TmpDensityMatrixZero;
+    }
+}
+

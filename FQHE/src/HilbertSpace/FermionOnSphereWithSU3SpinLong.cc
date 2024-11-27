@@ -1550,7 +1550,9 @@ long FermionOnSphereWithSU3SpinLong::EvaluatePartialDensityMatrixParticlePartiti
   long TmpNbrNonZeroElements = 0;
   BinomialCoefficients TmpBinomial (this->NbrFermions);
   double TmpInvBinomial = 1.0 / sqrt(TmpBinomial(this->NbrFermions, TmpDestinationHilbertSpace->NbrFermions));
-  for (int MinIndex = 0; MinIndex < TmpHilbertSpace->HilbertSpaceDimension; ++MinIndex)    
+  int MaxIndex = minIndex + nbrIndex;
+  //  for (int MinIndex = 0; MinIndex < TmpHilbertSpace->HilbertSpaceDimension; ++MinIndex)
+  for (int MinIndex = minIndex; MinIndex < MaxIndex; ++MinIndex)    
     {
       int Pos = 0;
       ULONGLONG TmpState = TmpHilbertSpace->StateDescription[MinIndex];

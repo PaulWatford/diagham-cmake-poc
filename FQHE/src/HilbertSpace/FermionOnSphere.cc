@@ -6573,10 +6573,39 @@ RealVector FermionOnSphere::ParticleHoleSymmetrize (RealVector& state, FermionOn
       int TmpLzMax = this->LzMax;
       while ((TmpState & (0x1ul << TmpLzMax)) == 0x0l)
 	--TmpLzMax;
-      TmpVector[holeBasis.FindStateIndex(TmpState, TmpLzMax)] = state[i];
+      int TmpIndex = holeBasis.FindStateIndex(TmpState, TmpLzMax);
+      if (TmpIndex < holeBasis.HilbertSpaceDimension)
+	{
+	  TmpVector[TmpIndex] = state[i];
+	}
     }
   return TmpVector;
 }
+
+// compute particule-hole symmetric state from a given state
+//
+// state = vector corresponding to the state to symmetrize
+// holeBasis = n-body basis on which the symmetrized state has to be expressed
+
+ComplexVector FermionOnSphere::ParticleHoleSymmetrize (ComplexVector& state, FermionOnSphere& holeBasis)
+{
+  ComplexVector TmpVector(holeBasis.HilbertSpaceDimension, true);
+  unsigned long TmpMask = (0x1ul << (this->LzMax + 1)) - 1;
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      unsigned long TmpState = (~this->StateDescription[i]) & TmpMask;
+      int TmpLzMax = this->LzMax;
+      while ((TmpState & (0x1ul << TmpLzMax)) == 0x0l)
+	--TmpLzMax;
+      int TmpIndex = holeBasis.FindStateIndex(TmpState, TmpLzMax);
+      if (TmpIndex < holeBasis.HilbertSpaceDimension)
+	{
+	  TmpVector[TmpIndex] = Conj(state[i]);
+	}
+    }
+  return TmpVector;
+}
+
 
 // convert a state such that its components are now expressed in the unnormalized basis
 //

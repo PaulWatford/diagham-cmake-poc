@@ -1011,6 +1011,14 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
   // return value = converted vector
   virtual ComplexVector GutzwillerProjection(ComplexVector& state, ParticleOnSphereWithSpin* basis);
   
+  // evaluate Hilbert space dimension with a fixed number of bosons with spin up
+  //
+  // initialState = state to be projected
+  // finalSpace = space in which the projected state is
+  // finalState = state after projection
+  // bandIndex = index of the project to project onto
+  virtual void ProjectOntoSingleBand(ComplexVector * initialState, ParticleOnSphere* finalSpace, ComplexVector * finalState, bool bandIndex = 0);
+
   // convert a given state from a generic basis to the current Sz subspace basis
   //
   // state = reference on the vector to convert

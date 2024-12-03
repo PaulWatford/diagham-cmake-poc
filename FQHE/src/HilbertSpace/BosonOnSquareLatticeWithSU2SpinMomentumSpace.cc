@@ -1102,13 +1102,31 @@ long BosonOnSquareLatticeWithSU2SpinMomentumSpace::EvaluatePartialDensityMatrixP
 // initialState = state to be projected
 // finalSpace = space in which the projected state is
 // finalState = state after projection
-// otherBand = true if the projection should tqke the other band
+// bandIndex = index of the project to project onto
 
-void BosonOnSquareLatticeWithSU2SpinMomentumSpace::ProjectIntoTheLowestBand(ComplexVector * initialState, BosonOnSquareLatticeMomentumSpace * finalSpace, ComplexVector * finalState, bool otherBand )
+void BosonOnSquareLatticeWithSU2SpinMomentumSpace::ProjectOntoSingleBand(ComplexVector* initialState, ParticleOnSphere* finalSpace, ComplexVector* finalState, bool bandIndex)
 {
- for(int i = 0; i < finalSpace->GetHilbertSpaceDimension(); i++)
-{
- (*finalState)[i] =  (*initialState)[this->FindStateIndex(finalSpace->FermionBasis->StateDescription[i], 0)];  
-}
- 
+  BosonOnSquareLatticeMomentumSpace* TmpTargetSpace = (BosonOnSquareLatticeMomentumSpace*) finalSpace;
+  if (bandIndex == 0)
+    {
+      for(int i = 0; i < finalSpace->GetHilbertSpaceDimension(); i++)
+	{
+	  int TmpIndex = this->FindStateIndex(TmpTargetSpace->FermionBasis->StateDescription[i], 0x0ul);
+	  if (TmpIndex != this->HilbertSpaceDimension)
+	    {
+	      (*finalState)[i] =  (*initialState)[TmpIndex];
+	    }
+	}
+    }
+  else
+    {
+      for(int i = 0; i < finalSpace->GetHilbertSpaceDimension(); i++)
+	{
+	  int TmpIndex = this->FindStateIndex(0x0ul, TmpTargetSpace->FermionBasis->StateDescription[i]);
+	  if (TmpIndex != this->HilbertSpaceDimension)
+	    {
+	      (*finalState)[i] =  (*initialState)[TmpIndex];
+	    }
+	}
+    }
 }

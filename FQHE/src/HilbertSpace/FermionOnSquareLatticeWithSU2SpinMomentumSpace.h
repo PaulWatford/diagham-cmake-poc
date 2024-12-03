@@ -121,6 +121,14 @@ class FermionOnSquareLatticeWithSU2SpinMomentumSpace : public FermionOnSquareLat
   // return value = index of the destination state 
   virtual int AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient);
 
+  // evaluate Hilbert space dimension with a fixed number of bosons with spin up
+  //
+  // initialState = state to be projected
+  // finalSpace = space in which the projected state is
+  // finalState = state after projection
+  // bandIndex = index of the project to project onto
+  virtual void ProjectOntoSingleBand(ComplexVector * initialState, ParticleOnSphere* finalSpace, ComplexVector * finalState, bool bandIndex = 0);
+
 protected:
 
 };

@@ -1480,6 +1480,17 @@ ComplexVector ParticleOnSphereWithSpin::GutzwillerProjection(ComplexVector& stat
   return TmpVector;
 }
   
+// evaluate Hilbert space dimension with a fixed number of bosons with spin up
+//
+// initialState = state to be projected
+// finalSpace = space in which the projected state is
+// finalState = state after projection
+// bandIndex = index of the project to project onto
+
+void ParticleOnSphereWithSpin::ProjectOntoSingleBand(ComplexVector * initialState, ParticleOnSphere* finalSpace, ComplexVector * finalState, bool bandIndex)
+{
+  cout << "using dummy ParticleOnSphereWithSpin::ProjectOntoSingleBand" << endl;
+}
 
 // get the total spin
 //

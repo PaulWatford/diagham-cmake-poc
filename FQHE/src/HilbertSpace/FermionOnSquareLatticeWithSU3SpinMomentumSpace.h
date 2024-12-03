@@ -122,6 +122,14 @@ class FermionOnSquareLatticeWithSU3SpinMomentumSpace : public FermionOnSphereWit
   virtual HermitianMatrix EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, 
 									 int nbrGroundStates, ComplexVector* groundStates, double* weights, AbstractArchitecture* architecture = 0);
   
+  // evaluate Hilbert space dimension with a fixed number of bosons with spin up
+  //
+  // initialState = state to be projected
+  // finalSpace = space in which the projected state is
+  // finalState = state after projection
+  // bandIndex = index of the project to project onto
+  virtual void ProjectOntoSingleBand(ComplexVector * initialState, ParticleOnSphere* finalSpace, ComplexVector * finalState, bool bandIndex = 0);
+
  protected:
 
   // save Hilbert space description to disk

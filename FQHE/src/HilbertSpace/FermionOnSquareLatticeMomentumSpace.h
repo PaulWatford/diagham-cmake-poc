@@ -42,6 +42,13 @@
 class FermionOnSquareLatticeMomentumSpace : public FermionOnSphere
 {
 
+  friend class FermionOnSquareLatticeWithSU2SpinMomentumSpace;
+  friend class FermionOnSquareLatticeWithSU3SpinMomentumSpace;
+  friend class FermionOnSquareLatticeWithSU4SpinMomentumSpace;
+  friend class FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong;
+  friend class FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong;
+  friend class FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong;
+  
  protected:
 
   // number of sites in the x direction

@@ -161,8 +161,8 @@ class BosonOnSquareLatticeWithSU2SpinMomentumSpace : public BosonOnSphereWithSU2
   // initialState = state to be projected
   // finalSpace = space in which the projected state is
   // finalState = state after projection
-  // otherBand = true if the projection should tqke the other band
-  virtual void ProjectIntoTheLowestBand(ComplexVector * initialState, BosonOnSquareLatticeMomentumSpace * finalSpace, ComplexVector * finalState, bool otherBand = false);
+  // bandIndex = index of the project to project onto
+  virtual void ProjectOntoSingleBand(ComplexVector * initialState, ParticleOnSphere* finalSpace, ComplexVector * finalState, bool bandIndex = 0);
 
  protected:
 

@@ -42,6 +42,7 @@
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
 #include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
+#include "HilbertSpace/FermionOnSquareLatticeMomentumSpace.h"
 
 #include <math.h>
 #include <cstdlib>
@@ -547,6 +548,46 @@ HermitianMatrix FermionOnSquareLatticeWithSU3SpinMomentumSpace::EvaluatePartialD
     {
       HermitianMatrix TmpDensityMatrixZero;
       return TmpDensityMatrixZero;
+    }
+}
+
+// evaluate Hilbert space dimension with a fixed number of bosons with spin up
+//
+// initialState = state to be projected
+// finalSpace = space in which the projected state is
+// finalState = state after projection
+// bandIndex = index of the project to project onto
+
+void FermionOnSquareLatticeWithSU3SpinMomentumSpace::ProjectOntoSingleBand(ComplexVector* initialState, ParticleOnSphere* finalSpace, ComplexVector* finalState, bool bandIndex)
+{
+  FermionOnSquareLatticeMomentumSpace* TmpSpace = (FermionOnSquareLatticeMomentumSpace*) finalSpace;
+  for (long i = 0l; i < TmpSpace->LargeHilbertSpaceDimension; ++i)
+    {
+      unsigned long TmpInputState = TmpSpace->StateDescription[i];
+      unsigned long TmpOutputState = 0x0ul;
+      for (int j = 0; j < 64; ++j)
+	{
+	  TmpOutputState |= ((TmpInputState >> j) & 0x1ul) << (j * 3);
+	}
+      TmpOutputState <<= bandIndex;
+#ifdef __64_BITS__      
+      int TmpLzMax = 63;
+#else
+      int TmpLzMax = 31;
+#endif
+      while ((TmpLzMax > 0) && (((TmpOutputState >> TmpLzMax) & 0x1ul) == 0x0ul))
+	{
+	  TmpLzMax--;	  
+	}
+      int TmpIndex = this->FindStateIndex(TmpOutputState, TmpLzMax);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  (*finalState)[i] = (*initialState)[TmpIndex];
+	}
+      else
+	{
+	  (*finalState)[i] = 0.0;
+	}
     }
 }
 

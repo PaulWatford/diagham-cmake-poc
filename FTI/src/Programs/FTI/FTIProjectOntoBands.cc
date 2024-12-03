@@ -10,11 +10,29 @@
 
 
 #include "Tools/FQHEFiles/FQHEOnSquareLatticeFileTools.h"
+
 #include "HilbertSpace/FermionOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/BosonOnSquareLatticeMomentumSpace.h"
+
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpaceLong.h"
 #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
 
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong.h"
+
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong.h"
 
 
 #include <iostream>
@@ -31,7 +49,9 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  OptionManager Manager ("FTIProjectionIntheLowestBand" , "0.01");
+  cout.precision(14);
+  
+  OptionManager Manager ("FTIProjectOntoBands" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
   OptionGroup* OutputGroup = new OptionGroup ("output options");
@@ -44,13 +64,16 @@ int main(int argc, char** argv)
   Manager += MiscGroup;
 
   (*SystemGroup) += new SingleStringOption  ('\0', "ground-file", "name of the file corresponding to the state to be projected");
+  (*SystemGroup) += new SingleIntegerOption  ('s', "nbr-subbands", "number of subbands for the input state", 1);
+  (*SystemGroup) += new SingleStringOption ('\n', "allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed");
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name to store the projected state");
+  (*OutputGroup) += new BooleanOption('\n', "normalize", "normalize the projected state");
 
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
     {
-      cout << "see man page for option syntax or type FTIProjectionIntheLowestBand -h" << endl;
+      cout << "see man page for option syntax or type FTIProjectOntoBands -h" << endl;
       return -1;
     }
   if (Manager.GetBoolean("help") == true)
@@ -59,18 +82,28 @@ int main(int argc, char** argv)
       return 0;
     }
 
+  int ProjectedBandIndex = 0;
+  int MaxBand0 = -1;
+  int MaxBand1 = -1;
+  int MaxBand2 = -1;
+  int MaxBand3 = -1;
+  int MinBand0 = 0;
+  int MinBand1 = 0;
+  int MinBand2 = 0;
+  int MinBand3 = 0;
   int TotalKx = 0;
   int TotalKy = 0;
   int NbrParticles = 0;
-  int NbrSiteX = 0;
-  int NbrSiteY = 0;
+  int NbrSitesX = 0;
+  int NbrSitesY = 0;
   bool Statistics = true;
   int TotalSpin = 0;
+  int NbrBands = Manager.GetInteger("nbr-subbands");
 
   
   if ( Manager.GetString("ground-file") == 0)
     {
-      cout << "error, a ground state file should be provided. See man page for option syntax or type  FTIProjectionIntheLowestBand -h" << endl;
+      cout << "error, a ground state file should be provided. See man page for option syntax or type  FTIProjectOntoBands -h" << endl;
       return -1;
     }
   if ((Manager.GetString("ground-file") != 0) &&  (IsFile(Manager.GetString("ground-file")) == false))
@@ -81,11 +114,17 @@ int main(int argc, char** argv)
   char* OutputFileName = 0;
   if (Manager.GetString("output-file") == 0)
     {
-      OutputFileName = ReplaceString(Manager.GetString("ground-file"), "twoband", "singleband_projected");
+      char* TmpProjectedName = new char[64];
+      sprintf(TmpProjectedName, "singleband_proj_band%d", ProjectedBandIndex);
+      OutputFileName = ReplaceString(Manager.GetString("ground-file"), "twoband", TmpProjectedName);
       if (OutputFileName == 0)
 	{
-	  cout << "can't guess output name from " << Manager.GetString("ground-file") << "(should contain twoband)" << endl;
-	  return 0;
+	  OutputFileName = ReplaceString(Manager.GetString("ground-file"), "threeband", TmpProjectedName);
+	  if (OutputFileName == 0)
+	    {
+	      cout << "can't guess output name from " << Manager.GetString("ground-file") << "(should contain *band)" << endl;
+	      return 0;
+	    }
 	}
     }
   else
@@ -94,21 +133,138 @@ int main(int argc, char** argv)
       strcpy (OutputFileName, Manager.GetString("output-file"));
     }
 
- if (FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName( Manager.GetString("ground-file"), NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy, TotalSpin, Statistics) == false)
+ if (FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(Manager.GetString("ground-file"), NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSpin, Statistics) == false)
   {
      cout << "error while retrieving system parameters from file name " <<  Manager.GetString("ground-file") << endl;
      return -1;
  }
+ FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(Manager.GetString("ground-file"), MaxBand0, MaxBand1, MaxBand2, MaxBand3);
+ FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(Manager.GetString("ground-file"), MinBand0, MinBand1, MinBand2, MinBand3);
 
-  if (Statistics == true ) 
-  {
- 	cout <<" Fermion are not yet supported"<<endl;
-	return -1;
-  }
 
-  BosonOnSquareLatticeWithSU2SpinMomentumSpace * InitialSpace = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy); 
-  BosonOnSquareLatticeMomentumSpace * FinalSpace = new BosonOnSquareLatticeMomentumSpace (NbrParticles, NbrSiteX, NbrSiteY, TotalKx, TotalKy); 
+  ParticleOnSphere* FinalSpace = 0;
+  if (Statistics == true)
+    {
+      FinalSpace  = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+    }
+  else
+    {
+      FinalSpace = new BosonOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy); 
+    }
+    
 
+  ParticleOnSphereWithSpin* InitialSpace = 0;
+  if (NbrBands == 2)
+    {
+      if (Statistics == true)
+	{
+	  if ((NbrSitesX * NbrSitesY) <= 32)
+	    {
+	      InitialSpace = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+	    }
+	  else
+	    {
+	     InitialSpace  = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+	    }
+	}
+      else
+	{
+	  InitialSpace = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy); 
+	}
+    }
+  if (NbrBands == 3)
+    {
+      if (Statistics == true)
+	{
+	  if ((MaxBand0 < 0) && (MaxBand1 < 0) && (MaxBand2 < 0))
+	    {
+	      if (Manager.GetString("allowed-orbitals") == 0)
+		{
+		  if ((NbrSitesX * NbrSitesY) <= 21)
+		    {
+		      InitialSpace = new FermionOnSquareLatticeWithSU3SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		    }
+		  else
+		    {
+		      InitialSpace = new FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		    }
+		}
+	      else
+		{
+		  if ((NbrSitesX * NbrSitesY) <= 21)
+		    {
+		      InitialSpace = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx, TotalKy);
+		    }
+		  else
+		    {
+		      InitialSpace = new FermionOnSquareLatticeWithSU3SpinFilteredMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), TotalKx, TotalKy);
+		    }
+		}
+	    }
+	  else
+	    {
+	      if (MaxBand0 < 0)
+		{
+		  MaxBand0 = NbrSitesX * NbrSitesY;
+		}
+	      if (MaxBand1 < 0)
+		{
+		  MaxBand1 = NbrSitesX * NbrSitesY;
+		}
+	      if (MaxBand2 < 0)
+		{
+		  MaxBand2 = NbrSitesX * NbrSitesY;
+		}
+	      if (Manager.GetString("allowed-orbitals") == 0)
+		{
+		  if ((MinBand0 == 0) && (MinBand1 == 0) && (MinBand2 == 0))
+		    {
+		      if ((NbrSitesX * NbrSitesY) <= 21)
+			{
+			  InitialSpace = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+			}
+		      else
+			{
+			  InitialSpace = new FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+			}
+		    }
+		  else
+		    {
+		      if ((NbrSitesX * NbrSitesY) <= 21)
+			{
+			  InitialSpace = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+			}
+		      else
+			{
+			  InitialSpace = new FermionOnSquareLatticeWithSU3SpinAndMinMaxCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MinBand2, MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+			}
+		    }
+		}
+	      else
+		{
+		  if ((NbrSitesX * NbrSitesY) <= 21)
+		    {
+		      InitialSpace = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+		    }
+		  else
+		    {
+		      InitialSpace = new FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), MaxBand0, MaxBand1, MaxBand2, TotalKx, TotalKy);
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  cout << "bosons with 3 bands are not supported" << endl;
+	  return 0;
+	}	
+    }
+  if (InitialSpace == 0)
+    {
+      cout << "unsupported number of bands" << endl;
+      return 0;
+    }
+  
   ComplexVector InitialState;
   if (InitialState.ReadVector(Manager.GetString("ground-file")) == false)
   {
@@ -117,8 +273,14 @@ int main(int argc, char** argv)
   }
 
   ComplexVector FinalState (FinalSpace->GetHilbertSpaceDimension()); 
-  InitialSpace->ProjectIntoTheLowestBand(&InitialState, FinalSpace, &FinalState);
+  InitialSpace->ProjectOntoSingleBand(&InitialState, FinalSpace, &FinalState, ProjectedBandIndex);
+  cout << "weight onto band " << ProjectedBandIndex << " : " << FinalState.SqrNorm() << endl;
+  if (Manager.GetBoolean("normalize") == true)
+    {
+      FinalState.Normalize();
+    }
   FinalState.WriteVector(OutputFileName);
+  
 
   return 0;
 }

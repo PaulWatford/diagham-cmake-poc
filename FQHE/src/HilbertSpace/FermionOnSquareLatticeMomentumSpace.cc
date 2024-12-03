@@ -1035,3 +1035,27 @@ Complex FermionOnSquareLatticeMomentumSpace::ComputeOverlapWaveFunctionsWithDiff
  delete []  TmpState;
  return Result;
 }
+
+// compute particule-hole symmetric state from a given state
+//
+// state = vector corresponding to the state to symmetrize
+// holeBasis = n-body basis on which the symmetrized state has to be expressed
+
+ComplexVector FermionOnSquareLatticeMomentumSpace::ParticleHoleSymmetrize (ComplexVector& state, FermionOnSphere& holeBasis)
+{
+  ComplexVector TmpVector(holeBasis.HilbertSpaceDimension, true);
+  unsigned long TmpMask = (0x1ul << this->LzMax) - 1;
+  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+    {
+      unsigned long TmpState = (~this->StateDescription[i]) & TmpMask;
+      int TmpLzMax = this->LzMax - 1;
+      while ((TmpState & (0x1ul << TmpLzMax)) == 0x0l)
+	--TmpLzMax;
+      int TmpIndex = holeBasis.FindStateIndex(TmpState, TmpLzMax);
+      if (TmpIndex < holeBasis.HilbertSpaceDimension)
+	{
+	  TmpVector[TmpIndex] = Conj(state[i]);
+	}
+    }
+  return TmpVector;
+}

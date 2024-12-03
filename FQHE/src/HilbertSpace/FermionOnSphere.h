@@ -134,6 +134,8 @@ class FermionOnSphere :  public ParticleOnSphere
 
   friend class BosonOnSphereTwoLandauLevels;
 
+  friend class FermionOnSquareLatticeMomentumSpace;
+
   friend class BosonOnSquareLatticeMomentumSpace;
   friend class BosonOnSquareLatticeWithSU2SpinMomentumSpace;
   friend class BosonOnSquareLatticeWannierSpace;

@@ -188,7 +188,13 @@ class FermionOnSquareLatticeMomentumSpace : public FermionOnSphere
   // return value = corresponding index, -1 if an error occured
   virtual int FindStateIndexFromArray(int* stateDescription);
 
- protected:
+  // compute particule-hole symmetric state from a given state
+  //
+  // state = vector corresponding to the state to symmetrize
+  // holeBasis = n-body basis on which the symmetrized state has to be expressed
+  virtual ComplexVector ParticleHoleSymmetrize (ComplexVector& state, FermionOnSphere& holeBasis);
+
+protected:
 
   // evaluate Hilbert space dimension
   //

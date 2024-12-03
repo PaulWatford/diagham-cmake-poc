@@ -6591,6 +6591,7 @@ ComplexVector FermionOnSphere::ParticleHoleSymmetrize (ComplexVector& state, Fer
 {
   ComplexVector TmpVector(holeBasis.HilbertSpaceDimension, true);
   unsigned long TmpMask = (0x1ul << (this->LzMax + 1)) - 1;
+  cout << "test" << endl;
   for (int i = 0; i < this->HilbertSpaceDimension; ++i)
     {
       unsigned long TmpState = (~this->StateDescription[i]) & TmpMask;

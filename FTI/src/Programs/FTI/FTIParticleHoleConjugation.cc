@@ -86,8 +86,10 @@ int main(int argc, char** argv)
       return -1;
     }
 
-  int TargetTotalKx = (NbrSitesX - TotalKx) % NbrSitesX;
-  int TargetTotalKy = (NbrSitesY - TotalKy) % NbrSitesY;
+  int KxShift = ((NbrSitesX * (NbrSitesX - 1) * NbrSitesY) / 2) % NbrSitesX;
+  int KyShift = ((NbrSitesY * (NbrSitesY - 1) * NbrSitesX) / 2) % NbrSitesY;
+  int TargetTotalKx = (NbrSitesX + KxShift - TotalKx) % NbrSitesX;
+  int TargetTotalKy = (NbrSitesY + KyShift - TotalKy) % NbrSitesY;
   int TargetNbrParticles = (NbrSitesX * NbrSitesY) - NbrParticles;
   
   if (Statistics == false)

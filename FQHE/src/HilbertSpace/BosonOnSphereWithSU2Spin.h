@@ -358,7 +358,7 @@ class BosonOnSphereWithSU2Spin :  public ParticleOnSphereWithSpin
   // return value = reference on current output stream 
   virtual ostream& PrintStateMonomial (ostream& Str, long state);
  
-   // convert a state from one SU(2) basis to another, transforming the one body basis in each momentum sector
+  // convert a state from one SU(2) basis to another, transforming the one body basis in each momentum sector
   //
   // initialState = state to transform  
   // targetState = vector where the transformed state has to be stored
@@ -367,7 +367,7 @@ class BosonOnSphereWithSU2Spin :  public ParticleOnSphereWithSpin
   // nbrComponents = number of consecutive components to compute
   virtual void TransformOneBodyBasis(RealVector& initialState, RealVector& targetState, RealMatrix* oneBodyBasis, long firstComponent = 0l, long nbrComponents = 0l);
 
- // convert a state from one SU(2) basis to another, transforming the one body basis in each momentum sector
+  // convert a state from one SU(2) basis to another, transforming the one body basis in each momentum sector
   //
   // initialState = state to transform  
   // targetState = vector where the transformed state has to be stored

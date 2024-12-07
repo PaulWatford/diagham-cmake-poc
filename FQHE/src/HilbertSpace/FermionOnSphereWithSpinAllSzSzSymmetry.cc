@@ -404,6 +404,18 @@ RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToNbodyBasis(RealVecto
   return TmpVector;  
 }
 
+// convert a given state from a generic basis from the current Sz subspace basis
+//
+// state = reference on the vector to convert
+// space = reference on the basis associated to state
+// return value = converted vector
+
+RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToNbodyBasis(RealVector& state, ParticleOnSphereWithSpin* space)
+{
+  FermionOnSphereWithSpinAllSz* TmpSpace = (FermionOnSphereWithSpinAllSz*) space;
+  return this->ConvertToNbodyBasis(state, *TmpSpace);
+}
+
 // convert a given state from the usual n-body basis to the symmetric basis
 //
 // state = reference on the vector to convert
@@ -427,15 +439,21 @@ RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToSymmetricNbodyBasis(
 	  NewLzMax = 1 + (this->LzMax << 1);
 	  while ((TmpState >> NewLzMax) == 0x0ul)
 	    --NewLzMax;
-	  if (Signature != 0x0ul)	
-	    TmpVector[this->FindStateIndex(TmpState, NewLzMax)] += state[i] * M_SQRT1_2;
-	  else
+	  int TmpIndex = this->FindStateIndex(TmpState, NewLzMax);
+	  if (TmpIndex < this->HilbertSpaceDimension)
 	    {
-	      Signature = TmpState;
-	      this->GetStateSingletParity(Signature);
-	      if ((((Signature & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0) && (this->LzParitySign > 0.0))
-		  || (((Signature & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0) && (this->LzParitySign < 0.0)))
-		TmpVector[this->FindStateIndex(TmpState, NewLzMax)] = state[i];
+	      if ((Signature & FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT) == 0x0ul)	
+		{
+		  Signature = TmpState;
+		  this->GetStateSingletParity(Signature);
+		  if ((((Signature & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0) && (this->SzParitySign > 0.0))
+		      || (((Signature & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0) && (this->SzParitySign < 0.0)))
+		    TmpVector[TmpIndex] += state[i];
+		}
+	      else
+		{
+		  TmpVector[TmpIndex] += state[i] * M_SQRT1_2;
+		}
 	    }
 	}
       else
@@ -444,9 +462,13 @@ RealVector FermionOnSphereWithSpinAllSzSzSymmetry::ConvertToSymmetricNbodyBasis(
 	  NewLzMax = 1 + (this->LzMax << 1);
 	  while ((TmpState >> NewLzMax) == 0x0ul)
 	    --NewLzMax;
-	  Signature = TmpState;
-	  this->GetStateSingletParity(Signature);
-	  TmpVector[this->FindStateIndex(TmpState, NewLzMax)] += (1.0 - 2.0 * ((double) ((Signature >> FERMION_SPHERE_SU2_SINGLETPARITY_SHIFT) & 0x1ul))) * this->LzParitySign * state[i] * M_SQRT1_2;
+	  int TmpIndex = this->FindStateIndex(TmpState, NewLzMax);
+	  if (TmpIndex < this->HilbertSpaceDimension)
+	    {
+	      Signature = TmpState;
+	      this->GetStateSingletParity(Signature);
+	      TmpVector[TmpIndex] += (1.0 - 2.0 * ((double) ((Signature >> FERMION_SPHERE_SU2_SINGLETPARITY_SHIFT) & 0x1ul))) * this->SzParitySign * state[i] * M_SQRT1_2;
+	    }
 	}
     }
   return TmpVector;  

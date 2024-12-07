@@ -108,6 +108,13 @@ class FermionOnSphereWithSpinAllSzSzSymmetry :  public FermionOnSphereWithSpinSz
   // return value = converted vector  
   virtual RealVector ConvertToNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis);
 
+  // convert a given state from a generic basis from the current Sz subspace basis
+  //
+  // state = reference on the vector to convert
+  // space = reference on the basis associated to state
+  // return value = converted vector
+  virtual RealVector ConvertToNbodyBasis(RealVector& state, ParticleOnSphereWithSpin* space);
+  
   // convert a given state from the usual n-body basis to the symmetric basis
   //
   // state = reference on the vector to convert

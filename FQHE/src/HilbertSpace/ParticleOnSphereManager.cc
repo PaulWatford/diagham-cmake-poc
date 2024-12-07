@@ -59,6 +59,7 @@
 #include "HilbertSpace/FermionOnSphereWithSpinLzSymmetryLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinHaldaneLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzGutzwillerProjection.h"
@@ -789,29 +790,51 @@ ParticleOnSphere* ParticleOnSphereManager::GetHilbertSpaceSU2(int totalLz)
 		}
 	      else
 		{
+		  if (this->Options->GetBoolean("all-sz"))
+		    {
 #ifdef __64_BITS__
-		  if (LzMax <= 28)
+		      if (LzMax <= 28)
 #else
-		    if (LzMax <= 13)
+			if (LzMax <= 13)
 #endif
-		      {
-			if (this->Options->GetString("load-hilbert") == 0)
-			  Space = new FermionOnSphereWithSpinLzSymmetry(NbrFermions, LzMax, SzTotal, this->Options->GetBoolean("minus-lzparity"), MemorySpace);
+			  {
+			    if (this->Options->GetString("load-hilbert") == 0)
+			      Space = new FermionOnSphereWithSpinAllSzLzSymmetry(NbrFermions, LzMax, this->Options->GetBoolean("minus-lzparity"), MemorySpace);
+			    else
+			      Space = new FermionOnSphereWithSpinAllSzSzSymmetry(this->Options->GetString("load-hilbert"), MemorySpace);
+			  }
 			else
-			  Space = new FermionOnSphereWithSpinLzSymmetry(this->Options->GetString("load-hilbert"), MemorySpace);	      
-		      }
-		    else
-		      {
-			if (this->Options->GetString("load-hilbert") == 0)
-			  Space = new FermionOnSphereWithSpinLzSymmetryLong(NbrFermions, LzMax, SzTotal, this->Options->GetBoolean("minus-lzparity"), MemorySpace);
+			  {
+			    cout << "States of this Hilbert space cannot be represented in a single word." << endl;
+			    return 0;
+			  }
+		    }
+		  else
+		    {
+#ifdef __64_BITS__
+		      if (LzMax <= 28)
+#else
+			if (LzMax <= 13)
+#endif
+			  {
+			    if (this->Options->GetString("load-hilbert") == 0)
+			      Space = new FermionOnSphereWithSpinLzSymmetry(NbrFermions, LzMax, SzTotal, this->Options->GetBoolean("minus-lzparity"), MemorySpace);
+			    else
+			      Space = new FermionOnSphereWithSpinLzSymmetry(this->Options->GetString("load-hilbert"), MemorySpace);	      
+			  }
 			else
-			  Space = new FermionOnSphereWithSpinLzSymmetryLong(this->Options->GetString("load-hilbert"), MemorySpace);	      
-		      }
-		}
-	      if (this->Options->GetString("save-hilbert") != 0)
-		{
-		  ((FermionOnSphereWithSpinLzSzSymmetry*) Space)->WriteHilbertSpace(this->Options->GetString("save-hilbert"));
-		  return 0;
+			  {
+			    if (this->Options->GetString("load-hilbert") == 0)
+			      Space = new FermionOnSphereWithSpinLzSymmetryLong(NbrFermions, LzMax, SzTotal, this->Options->GetBoolean("minus-lzparity"), MemorySpace);
+			    else
+			      Space = new FermionOnSphereWithSpinLzSymmetryLong(this->Options->GetString("load-hilbert"), MemorySpace);	      
+			  }
+		    }
+		  if (this->Options->GetString("save-hilbert") != 0)
+		    {
+		      ((FermionOnSphereWithSpinLzSzSymmetry*) Space)->WriteHilbertSpace(this->Options->GetString("save-hilbert"));
+		      return 0;
+		    }
 		}
 	    }
 	  return Space;

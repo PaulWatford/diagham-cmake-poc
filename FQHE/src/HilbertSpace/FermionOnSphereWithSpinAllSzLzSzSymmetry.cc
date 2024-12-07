@@ -33,6 +33,7 @@
 #include "config.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 #include "QuantumNumber/AbstractQuantumNumber.h"
 #include "QuantumNumber/SzQuantumNumber.h"
@@ -457,6 +458,32 @@ RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ConvertToNbodyBasis(RealVec
   return TmpVector;  
 }
 
+// convert a given state from symmetric basis to the usual n-body basis
+//
+// state = reference on the vector to convert
+// nbodyBasis = reference on the nbody-basis to use
+// return value = converted vector  
+
+RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ConvertToNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSzLzSymmetry& nbodyBasis)
+{
+  RealVector TmpVector (nbodyBasis.GetHilbertSpaceDimension(), true);
+  unsigned long TmpState;
+  unsigned long Signature;  
+  int NewLzMax;
+  for (long i = 0l; i < nbodyBasis.GetLargeHilbertSpaceDimension(); ++i)
+    {
+      unsigned long TmpState = nbodyBasis.StateDescription[i];
+      double Coefficient = 1.0;
+      this->ProdASignature = TmpState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
+      int TmpPos = this->SymmetrizeAdAdResult(TmpState, Coefficient);
+      if (TmpPos != this->HilbertSpaceDimension)
+	{
+	  TmpVector[i] = state[TmpPos] * Coefficient;
+	}
+    }
+  return TmpVector;  
+}
+
 // convert a given state from the usual n-body basis to the symmetric basis
 //
 // state = reference on the vector to convert
@@ -500,6 +527,64 @@ RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ConvertToSymmetricNbodyBasi
 	  Signature = TmpState;
 	  this->GetStateSingletParity(Signature);
 	  TmpVector[this->FindStateIndex(TmpState, NewLzMax)] += (1.0 - 2.0 * ((double) ((Signature >> FERMION_SPHERE_SU2_SINGLETPARITY_SHIFT) & 0x1ul))) * this->LzParitySign * state[i] * M_SQRT1_2;
+	}
+    }
+  return TmpVector;  
+}
+
+// convert a given state from the usual n-body basis to the symmetric basis
+//
+// state = reference on the vector to convert
+// nbodyBasis = reference on the nbody-basis to use
+// return value = converted vector
+
+RealVector FermionOnSphereWithSpinAllSzLzSzSymmetry::ConvertToSymmetricNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSzLzSymmetry& nbodyBasis)
+{
+  RealVector TmpVector (this->GetHilbertSpaceDimension(), true);
+  unsigned long TmpState;
+  unsigned long Signature;  
+  int NewLzMax;
+  for (int i = 0; i < nbodyBasis.GetHilbertSpaceDimension(); ++i)
+    {
+      Signature = nbodyBasis.StateDescription[i];
+      TmpState = this->GetSignedCanonicalState(Signature);
+      if ((TmpState & FERMION_SPHERE_SU2_SYMMETRIC_MASK) == Signature)
+	{
+	  Signature = TmpState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
+	  TmpState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+	  NewLzMax = 1 + (this->LzMax << 1);
+	  while ((TmpState >> NewLzMax) == 0x0ul)
+	    --NewLzMax;
+	  int TmpIndex = this->FindStateIndex(TmpState, NewLzMax);
+	  if (TmpIndex < this->HilbertSpaceDimension)
+	    {
+	      if ((Signature & FERMION_SPHERE_SU2_SZ_SYMMETRIC_BIT) == 0x0ul)	
+		{
+		  Signature = TmpState;
+		  this->GetStateSingletParity(Signature);
+		  if ((((Signature & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) == 0) && (this->SzParitySign > 0.0))
+		      || (((Signature & FERMION_SPHERE_SU2_SINGLETPARITY_BIT) != 0) && (this->SzParitySign < 0.0)))
+		    TmpVector[TmpIndex] += state[i];
+		}
+	      else
+		{
+		  TmpVector[TmpIndex] += state[i] * M_SQRT1_2;
+		}
+	    }
+	}
+      else
+	{
+	  TmpState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+	  NewLzMax = 1 + (this->LzMax << 1);
+	  while ((TmpState >> NewLzMax) == 0x0ul)
+	    --NewLzMax;
+	  int TmpIndex = this->FindStateIndex(TmpState, NewLzMax);
+	  if (TmpIndex < this->HilbertSpaceDimension)
+	    {
+	      Signature = TmpState;
+	      this->GetStateSingletParity(Signature);
+	      TmpVector[TmpIndex] += (1.0 - 2.0 * ((double) ((Signature >> FERMION_SPHERE_SU2_SINGLETPARITY_SHIFT) & 0x1ul))) * this->SzParitySign * state[i] * M_SQRT1_2;
+	    }
 	}
     }
   return TmpVector;  

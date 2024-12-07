@@ -1,3 +1,10 @@
+#include "HilbertSpace/FermionOnSphere.h"
+#include "HilbertSpace/FermionOnSphereWithSpin.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
+
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
 
@@ -86,9 +93,14 @@ int main(int argc, char** argv)
   bool Statistics = true;
   int TotalLz = 0;
   int TotalSz = 0;
-
+  bool SzSymmetry = false;
+  bool SzSymmetryMinusParity = false;
+  bool LzSymmetry = false;
+  bool LzSymmetryMinusParity = false;
+  
   if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(Manager.GetString("input-state"), NbrParticles, NbrFluxQuanta,
-							   TotalLz, TotalSz, Statistics) == false)
+							   TotalLz, TotalSz, SzSymmetry, SzSymmetryMinusParity,
+							   LzSymmetry, LzSymmetryMinusParity, Statistics) == false)
     {
       cout << "error while retrieving system parameters from file name " << Manager.GetString("input-state") << endl;
       return -1;
@@ -108,8 +120,14 @@ int main(int argc, char** argv)
     }
   else
     {
-      cout << "not yet implemented for fermions" << endl;
-      return 0;
+      if (LzSymmetry == false)
+	{
+	  InputSpace = new FermionOnSphereWithSpin(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz);
+	}
+      else
+	{
+	  InputSpace = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, NbrFluxQuanta, TotalSz, LzSymmetryMinusParity);
+	}
     }
 
   if (InputSpace->GetLargeHilbertSpaceDimension() != InputState.GetLargeVectorDimension())
@@ -127,8 +145,15 @@ int main(int argc, char** argv)
     }
   else
     {
-      cout << "not yet implemented for fermions, use the old code FQHESphereFermionsWithSpinRotation" << endl;
-      return 0;
+      if (LzSymmetry == false)
+	{
+	  long MemorySpace = 9l << 20;
+	  OutputSpace = new FermionOnSphereWithSpinAllSz(NbrParticles, TotalLz, NbrFluxQuanta, MemorySpace);
+	}
+      else
+	{
+	  OutputSpace = new FermionOnSphereWithSpinAllSzLzSymmetry(NbrParticles, NbrFluxQuanta, LzSymmetryMinusParity);
+	}
     }
 
   double Theta = Manager.GetDouble("spin-angle");
@@ -160,8 +185,21 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout << "not yet implemented for fermions, use the old code FQHESphereFermionsWithSpinRotation" << endl;
-	      return 0;
+	      if (LzSymmetry == false)
+		{
+		  FermionOnSphereWithSpinAllSzSzSymmetry*  OutputSpace2 = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
+		  OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSz*)OutputSpace);	      
+		  OutputState = OutputState2;
+		  delete OutputSpace2;
+		}
+	      else
+		{
+		  FermionOnSphereWithSpinAllSzLzSzSymmetry* OutputSpace2 = new FermionOnSphereWithSpinAllSzLzSzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"), LzSymmetryMinusParity);
+		  cout << OutputSpace2->GetHilbertSpaceDimension() << endl;
+		  OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSzLzSymmetry*) OutputSpace);	      
+		  OutputState = OutputState2;
+		  delete OutputSpace2;
+		}
 	    }
 	}
     }

@@ -129,6 +129,7 @@ FermionOnSphereWithSpinAllSzLzSymmetry::FermionOnSphereWithSpinAllSzLzSymmetry (
     this->LzParitySign = -1.0;
 
   this->Flag.Initialize();
+  this->TargetSpace = this;
   this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
   this->StateHighestBit = new int [this->HilbertSpaceDimension];  
   this->HilbertSpaceDimension = this->GenerateStates(this->NbrFermions, (this->LzMax<<1)+1, (this->TotalLz + (this->NbrFermions * this->LzMax)) >> 1, 0x0l);
@@ -254,6 +255,7 @@ FermionOnSphereWithSpinAllSzLzSymmetry::FermionOnSphereWithSpinAllSzLzSymmetry (
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
   this->Flag.Initialize();
+  this->TargetSpace = this;
 #ifdef __64_BITS__
   if ((this->LzMax & 1) == 0)
     {
@@ -340,6 +342,7 @@ FermionOnSphereWithSpinAllSzLzSymmetry::FermionOnSphereWithSpinAllSzLzSymmetry(c
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
   this->LzParitySign = fermions.LzParitySign;
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+  this->TargetSpace = this;
 }
 
 // destructor
@@ -380,6 +383,7 @@ FermionOnSphereWithSpinAllSzLzSymmetry& FermionOnSphereWithSpinAllSzLzSymmetry::
   this->LookUpTable = fermions.LookUpTable;  
   this->LzParitySign = fermions.LzParitySign;
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+  this->TargetSpace = this;
   return *this;
 }
 
@@ -702,3 +706,142 @@ long FermionOnSphereWithSpinAllSzLzSymmetry::ShiftedEvaluateHilbertSpaceDimensio
 	   + this->ShiftedEvaluateHilbertSpaceDimension(nbrFermions, posMax - 1, totalLz));
 }
 
+// convert state of a SU(2) Hilbert space with fixed Sz to a SU(2) space with all sz sectors
+//
+// state = state that needs to be projected
+// su2space = SU(2) space with fixed sz of the input state
+// return value = input state expression in the SU(2) basis
+
+RealVector FermionOnSphereWithSpinAllSzLzSymmetry::SU2ToSU2AllSz(RealVector& state, ParticleOnSphereWithSpin* su2space)
+{
+  FermionOnSphereWithSpinLzSymmetry* TmpSpace = (FermionOnSphereWithSpinLzSymmetry*) su2space;
+  RealVector FinalState(this->GetHilbertSpaceDimension(), true);
+  int SU2Dimension = state.GetVectorDimension();
+  unsigned long SU2BasisState;
+  unsigned long TmpState;
+
+  for (int j = 0; j < SU2Dimension; ++j)    
+    {
+      SU2BasisState = TmpSpace->StateDescription[j] & FERMION_SPHERE_SU2_SYMMETRIC_MASK;     
+      int TmpLzMax = this->NbrLzValue << 1;
+      while ((TmpLzMax > 0) && ((SU2BasisState >> TmpLzMax) == 0x0ul))
+	--TmpLzMax; 
+      int TmpIndex = this->FindStateIndex(SU2BasisState, TmpLzMax);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  FinalState[TmpIndex] = state[j];
+	}
+    }
+  return FinalState;  
+}
+
+// convert a state from a SU(2) basis to another one, transforming the one body basis in each momentum sector
+//
+// initialState = state to transform  
+// targetState = vector where the transformed state has to be stored
+// oneBodyBasis = array that gives the unitary matrices associated to each one body transformation, one per momentum sector
+// firstComponent = index of the first component to compute in initialState
+// nbrComponents = number of consecutive components to compute
+
+void FermionOnSphereWithSpinAllSzLzSymmetry::TransformOneBodyBasis(RealVector& initialState, RealVector& targetState, RealMatrix* oneBodyBasis, 
+								   long firstComponent, long nbrComponents)
+{
+  int* TmpMomentumIndices = new int [this->NbrFermions];
+  int* TmpSpinIndices = new int [this->NbrFermions];
+  int* TmpSpinIndices2 = new int [this->NbrFermions];
+  targetState.ClearVector();
+  long LastComponent = firstComponent + nbrComponents;
+  if (nbrComponents == 0)
+    LastComponent = this->LargeHilbertSpaceDimension;
+  for (long i = firstComponent; i < LastComponent; ++i)
+    {
+      unsigned long TmpState = this->StateDescription[i] & FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+      this->ProdASignature = this->StateDescription[i] & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
+      unsigned long Tmp;
+      int TmpIndex = 0;
+      for (int j = this->LzMax; j >= 0; --j)
+	{
+	  Tmp = (TmpState >> (j << 1)) & 0x3ul;;
+	  if ((Tmp & 0x2ul) != 0x0ul) // If there is a particle with momentum j and spin down in the ith state of the basis 
+	    {
+	      TmpMomentumIndices[TmpIndex] = j; // An array which gathers all momenta
+	      TmpSpinIndices[TmpIndex] = 1; // An array which gathers all spins: 1 = down
+	      ++TmpIndex;
+	    }
+	  if ((Tmp & 0x1ul) != 0x0ul) // If there is a particle with momentum j and spin up in the ith state of the basis  
+	    {
+	      TmpMomentumIndices[TmpIndex] = j;// An array which gathers all momenta
+	      TmpSpinIndices[TmpIndex] = 0;// An array which gathers all spins: 0 = up
+	      ++TmpIndex;
+	    }	  
+	}	
+      this->TransformOneBodyBasisRecursive(targetState, initialState[i], 0, TmpMomentumIndices, TmpSpinIndices, TmpSpinIndices2, oneBodyBasis);
+    }
+  delete[] TmpMomentumIndices;
+  delete[] TmpSpinIndices;
+  delete[] TmpSpinIndices2;
+}
+
+// recursive part of the convertion from a state from a SU(2) basis to another one, transforming the one body basis in each momentum sector
+//
+// targetState = vector where the transformed state has to be stored
+// coefficient = current coefficient to assign
+// position = current particle consider in the n-body state
+// momentumIndices = array that gives the momentum partition of the initial n-body state
+// initialSpinIndices = array that gives the spin dressing the initial n-body state
+// currentSpinIndices = array that gives the spin dressing the current transformed n-body state
+// oneBodyBasis = array that gives the unitary matrices associated to each one body transformation, one per momentum sector
+
+void FermionOnSphereWithSpinAllSzLzSymmetry::TransformOneBodyBasisRecursive(RealVector& targetState, double coefficient,
+									    int position, int* momentumIndices, int* initialSpinIndices, int* currentSpinIndices, RealMatrix* oneBodyBasis) 
+{
+  if (position == this->NbrFermions)
+    {
+      unsigned long TmpState = 0x0ul;
+      unsigned long TmpState2;
+      unsigned long Mask = 0x0ul;
+      unsigned long MaskSign = 0x0ul;
+      for (int i = 0; i < this->NbrFermions; ++i)
+	{
+	  Mask = 0x1ul << ((momentumIndices[i] << 1) + currentSpinIndices[i]); // Mask = 00...0100...0 : one fermion state in the second quantized basis
+	  if ((TmpState & Mask) != 0x0ul)
+	    return;
+	  // SignMask computation -----------------------------------
+	  TmpState2 = TmpState & (Mask - 0x1ul); 
+#ifdef __64_BITS__
+	  TmpState2 ^= TmpState2 >> 32;
+#endif
+	  TmpState2 ^= (TmpState2 >> 16);
+	  TmpState2 ^= (TmpState2 >> 8);
+	  TmpState2 ^= (TmpState2 >> 4);
+	  TmpState2 ^= (TmpState2 >> 2);
+	  MaskSign ^= (TmpState2 ^ (TmpState2 >> 1)) & 0x1ul;
+	  // End of SignMask computation -----------------------------------
+
+	  TmpState |= Mask; //set bit corresponding to the current fermion state to 1 in TmpState
+	}
+      double TmpCoefficient = 1.0;
+      int TmpProdASignature = this->ProdASignature;
+      int Index = this->SymmetrizeAdAdResult(TmpState, TmpCoefficient);
+      this->ProdASignature = TmpProdASignature;
+      if (Index < this->HilbertSpaceDimension)
+	{
+	  if (MaskSign == 0ul)
+	    {
+	      targetState[Index] += coefficient * TmpCoefficient;
+	    }
+	  else
+	    {
+	      targetState[Index] -= coefficient * TmpCoefficient;
+	    }
+	}
+      return;      
+    }
+  else
+    {
+      currentSpinIndices[position] = 0;
+      this->TransformOneBodyBasisRecursive(targetState, coefficient * (oneBodyBasis[momentumIndices[position]][1 - initialSpinIndices[position]][1]), position + 1, momentumIndices, initialSpinIndices, currentSpinIndices, oneBodyBasis);
+      currentSpinIndices[position] = 1;
+      this->TransformOneBodyBasisRecursive(targetState, coefficient * (oneBodyBasis[momentumIndices[position]][1 - initialSpinIndices[position]][0]), position + 1, momentumIndices, initialSpinIndices, currentSpinIndices, oneBodyBasis);
+    }
+}

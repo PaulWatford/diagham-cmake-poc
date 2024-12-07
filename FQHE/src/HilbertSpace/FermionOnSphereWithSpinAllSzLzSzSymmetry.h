@@ -36,6 +36,7 @@
 
 #include "config.h"
 #include "HilbertSpace/FermionOnSphereWithSpinLzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
 
 #include <iostream>
@@ -105,12 +106,26 @@ class FermionOnSphereWithSpinAllSzLzSzSymmetry :  public FermionOnSphereWithSpin
   // return value = converted vector  
   virtual RealVector ConvertToNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis);
 
+  // convert a given state from a generic basis from the current Sz subspace basis
+  //
+  // state = reference on the vector to convert
+  // space = reference on the basis associated to state
+  // return value = converted vector
+  virtual RealVector ConvertToNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSzLzSymmetry& space);
+  
   // convert a given state from the usual n-body basis to the symmetric basis
   //
   // state = reference on the vector to convert
   // nbodyBasis = reference on the nbody-basis to use
   // return value = converted vector
   virtual RealVector ConvertToSymmetricNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSz& nbodyBasis);
+
+  // convert a given state from the usual n-body basis to the symmetric basis
+  //
+  // state = reference on the vector to convert
+  // nbodyBasis = reference on the nbody-basis to use
+  // return value = converted vector
+  virtual RealVector ConvertToSymmetricNbodyBasis(RealVector& state, FermionOnSphereWithSpinAllSzLzSymmetry& nbodyBasis);
 
   // apply a^+_m_u a_n_d operator to a given state 
   //

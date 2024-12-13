@@ -528,23 +528,6 @@ bool FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(char* filename, int& n
 	  return false;            
 	}
     }
-  if (strstr(filename, "_szsym_") != 0)
-    {
-      char* StrNbrParticles = strstr(filename, "_szsym_");
-      szSymmetry = true;
-      szSymmetryMinusParity = false;
-      int SizeString = 0;
-      while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
-	     && (StrNbrParticles[SizeString] <= '9'))
-	++SizeString;
-      if ((StrNbrParticles[SizeString] == '_') && (SizeString != 0))
-	{
-	  StrNbrParticles[SizeString] = '\0';
-	  int Tmp = atoi(StrNbrParticles);
-	  StrNbrParticles[SizeString] = '_';
-	  StrNbrParticles += SizeString;
-	}
-    }
   
   return true;
   

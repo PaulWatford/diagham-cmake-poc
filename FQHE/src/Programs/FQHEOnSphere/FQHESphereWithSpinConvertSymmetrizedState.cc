@@ -16,10 +16,17 @@
 #include "HilbertSpace/FermionOnSphereWithSpinLzSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinSzSymmetry.h"
 #include "HilbertSpace/FermionOnSphereWithSpinLzSymmetry.h"
+
 #include "HilbertSpace/FermionOnSphereWithSpinLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinLzSzSymmetryLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinSzSymmetryLong.h"
 #include "HilbertSpace/FermionOnSphereWithSpinLzSymmetryLong.h"
+
+#include "HilbertSpace/FermionOnSphereWithSpinAllSz.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzSzSymmetry.h"
+#include "HilbertSpace/FermionOnSphereWithSpinAllSzLzSymmetry.h"
+
 #include "HilbertSpace/BosonOnSphereWithSU2Spin.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinLzSymmetry.h"
 #include "HilbertSpace/BosonOnSphereWithSU2SpinSzSymmetry.h"
@@ -94,14 +101,15 @@ int main(int argc, char** argv)
   bool LzSymmetrizedBasis = Manager.GetBoolean("lzsymmetrized-basis");
   bool LzMinusParity = Manager.GetBoolean("minus-lzparity");
   bool Statistics = true;
+  bool AllSzFlag = false;
   long MemorySpace = 9l << 20;
   if (FQHEOnSphereWithSpinFindSystemInfoFromVectorFileName(Manager.GetString("input-file"), NbrParticles, LzMax, TotalLz, TotalSz, SzSymmetrizedBasis, SzMinusParity, 
-							   LzSymmetrizedBasis, LzMinusParity, Statistics) == false)
+							   LzSymmetrizedBasis, LzMinusParity, Statistics, AllSzFlag) == false)
     {
       cout << "error while retrieving system parameters from file name " << Manager.GetString("input-file") << endl;
       return -1;
     }
-      
+  
   if (Manager.GetBoolean("lzsymmetrized-basis") == true)
     {
       LzSymmetrizedBasis = Manager.GetBoolean("lzsymmetrized-basis");
@@ -125,6 +133,50 @@ int main(int argc, char** argv)
       return -1;
     }
 
+  if (Statistics == false)
+    {
+      cout << "bosons ";
+    }
+  else
+    {
+      cout << "fermions ";
+    }
+  cout << "N=" <<  NbrParticles << " Nphi=" << LzMax << " Lz=" << TotalLz;
+  if (AllSzFlag == false)
+    {
+      cout << " 2Sz=" << TotalSz;
+    }
+  else
+    {
+      cout << " all-sz";
+    }
+  if (LzSymmetrizedBasis == true)
+    {
+      cout << " Lz<->-Lz=";
+      if (LzMinusParity == true)
+	{
+	  cout << "-1";
+	}
+      else
+	{
+	  cout << "1";
+	}
+    }
+  if (SzSymmetrizedBasis == true)
+    {
+      cout << " Sz<->-Sz=";
+      if (SzMinusParity == true)
+	{
+	  cout << "-1";
+	}
+      else
+	{
+	  cout << "1";
+	}
+    }
+   cout << endl;
+
+  
   RealVector State;
   if (State.ReadVector (Manager.GetString("input-file")) == false)
     {
@@ -132,6 +184,7 @@ int main(int argc, char** argv)
       return -1;      
     }
 
+  
   if (Manager.GetBoolean("conjugate-down"))
     {
       #ifdef __64_BITS__
@@ -159,65 +212,97 @@ int main(int argc, char** argv)
 	    exit(1);
 	  }
     } 
-      char* OutputFileName = 0;
-      if (Manager.GetString("output-file") != 0)
+  char* OutputFileName = 0;
+  if (Manager.GetString("output-file") != 0)
+    {
+      OutputFileName = new char[strlen(Manager.GetString("output-file")) + 1];
+      strcpy (OutputFileName, Manager.GetString("output-file"));
+    }
+  else
+    {
+      char* TmpOldString = new char [8];
+      sprintf (TmpOldString, "_su2_");
+      char* TmpSymString = new char [128];
+      if (LzSymmetrizedBasis == true)
 	{
-	  OutputFileName = new char[strlen(Manager.GetString("output-file")) + 1];
-	  strcpy (OutputFileName, Manager.GetString("output-file"));
+	  if (SzSymmetrizedBasis == true)
+	    {
+	      if (LzMinusParity == false)
+		{
+		  if (SzMinusParity == false)
+		    sprintf (TmpSymString, "_su2_lzsym_1_szsym_1_");
+		  else
+		    sprintf (TmpSymString, "_su2_lzsym_1_szsym_-1_");
+		}
+	      else
+		{
+		  if (SzMinusParity == false)
+		    sprintf (TmpSymString, "_su2_lzsym_-1_szsym_1_");
+		  else
+		    sprintf (TmpSymString, "_su2_lzsym_-1_szsym_-1_");
+		}
+	    }
+	  else
+	    {		 
+	      if (LzMinusParity == false)
+		sprintf (TmpSymString, "_su2_lzsym_1_");
+	      else
+		sprintf (TmpSymString, "_su2_lzsym_-1_");
+	    }
 	}
       else
 	{
-	  char* TmpOldString = new char [8];
-	  sprintf (TmpOldString, "_su2_");
-	  char* TmpSymString = new char [128];
-	  if (LzSymmetrizedBasis == true)
+	  if (SzMinusParity == false)
+	    sprintf (TmpSymString, "_su2_szsym_1_");
+	  else
+	    sprintf (TmpSymString, "_su2_szsym_-1_");
+	}
+      if (SymmetrizeFlag)
+	{
+	  OutputFileName = ReplaceString(Manager.GetString("input-file"), TmpOldString, TmpSymString);
+	}
+      else
+	{
+	  OutputFileName = ReplaceString(Manager.GetString("input-file"), TmpSymString, TmpOldString);
+	}
+      if (OutputFileName == 0)
+	{
+	  if ((LzSymmetrizedBasis == true) && (SzSymmetrizedBasis == true))
 	    {
-	      if (SzSymmetrizedBasis == true)
+	      if (LzMinusParity == false)
 		{
-		  if (LzMinusParity == false)
-		    {
-		      if (SzMinusParity == false)
-			sprintf (TmpSymString, "_su2_lzsym_1_szsym_1_");
-		      else
-			sprintf (TmpSymString, "_su2_lzsym_1_szsym_-1_");
-		    }
+		  if (SzMinusParity == false)
+		    sprintf (TmpSymString, "_su2_szsym_1_lzsym_1_");
 		  else
-		    {
-		      if (SzMinusParity == false)
-			sprintf (TmpSymString, "_su2_lzsym_-1_szsym_1_");
-		      else
-			sprintf (TmpSymString, "_su2_lzsym_-1_szsym_-1_");
-		    }
+		    sprintf (TmpSymString, "_su2_szsym_-1_lzsym_1_");
 		}
 	      else
-		{		 
-		  if (LzMinusParity == false)
-		    sprintf (TmpSymString, "_su2_lzsym_1_");
+		{
+		  if (SzMinusParity == false)
+		    sprintf (TmpSymString, "_su2_szsym_1_lzsym_-1_");
 		  else
-		    sprintf (TmpSymString, "_su2_lzsym_-1_");
+		    sprintf (TmpSymString, "_su2_szsym_-1_lzsym_-1_");
+		}
+	      if (SymmetrizeFlag)
+		{
+		  OutputFileName = ReplaceString(Manager.GetString("input-file"), TmpOldString, TmpSymString);
+		}
+	      else
+		{
+		  OutputFileName = ReplaceString(Manager.GetString("input-file"), TmpSymString, TmpOldString);
+		}
+	      if (OutputFileName == 0)
+		{
+		  cout << "can't guess output file name from " << Manager.GetString("input-file") << endl;
 		}
 	    }
 	  else
-	    {
-	      if (SzMinusParity == false)
-		sprintf (TmpSymString, "_su2_szsym_1_");
-	      else
-		sprintf (TmpSymString, "_su2_szsym_-1_");
-	    }
-	  if (SymmetrizeFlag)
-	    {
-	      OutputFileName = ReplaceString(Manager.GetString("input-file"), TmpOldString, TmpSymString);
-	    }
-	  else
-	    {
-	      OutputFileName = ReplaceString(Manager.GetString("input-file"), TmpSymString, TmpOldString);
-	    }
-	  if (OutputFileName == 0)
 	    {
 	      cout << "can't guess output file name from " << Manager.GetString("input-file") << endl;
 	    }
 	}
-
+    }
+  
   if (Statistics == true)
     {
       RealVector OutputState;
@@ -228,31 +313,58 @@ int main(int argc, char** argv)
 #endif
 	  {
 	    FermionOnSphereWithSpinLzSzSymmetry* InitialSpace = 0;
-	    if (SzSymmetrizedBasis == true) 
-	      if (LzSymmetrizedBasis == false)
-		InitialSpace = new FermionOnSphereWithSpinSzSymmetry(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
-	      else
-		InitialSpace = new FermionOnSphereWithSpinLzSzSymmetry(NbrParticles, LzMax, SzMinusParity, LzMinusParity, MemorySpace);
+	    FermionOnSphereWithSpin* TargetSpace = 0;
+	    if (AllSzFlag == false)
+	      {
+		if (SzSymmetrizedBasis == true)
+		  {
+		    if (LzSymmetrizedBasis == false)
+		      {
+			InitialSpace = new FermionOnSphereWithSpinSzSymmetry(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+		      }
+		    else
+		      {
+			InitialSpace = new FermionOnSphereWithSpinLzSzSymmetry(NbrParticles, LzMax, SzMinusParity, LzMinusParity, MemorySpace);
+		      }
+		  }
+		else
+		  {
+		    InitialSpace = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, LzMax, TotalSz, LzMinusParity, MemorySpace);
+		  }
+		TargetSpace = new FermionOnSphereWithSpin(NbrParticles, TotalLz, LzMax, TotalSz);
+	      }
 	    else
-	      InitialSpace = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, LzMax, TotalSz, LzMinusParity, MemorySpace);
-	    FermionOnSphereWithSpin TargetSpace(NbrParticles, TotalLz, LzMax, TotalSz);
+	      {
+		if (SzSymmetrizedBasis == true)
+		  {
+		    if (LzSymmetrizedBasis == false)
+		      InitialSpace = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, LzMax, SzMinusParity, MemorySpace);
+		    else
+		      InitialSpace = new FermionOnSphereWithSpinAllSzLzSzSymmetry(NbrParticles, LzMax, SzMinusParity, LzMinusParity, MemorySpace);
+		  }
+		else
+		  {
+		    InitialSpace = new FermionOnSphereWithSpinAllSzLzSymmetry(NbrParticles, LzMax, LzMinusParity, MemorySpace);
+		  }
+		TargetSpace = new FermionOnSphereWithSpinAllSz(NbrParticles, TotalLz, LzMax);
+	      }
 	    if (SymmetrizeFlag)
 	      {
-		if (TargetSpace.GetHilbertSpaceDimension() != State.GetVectorDimension())
+		if (TargetSpace->GetHilbertSpaceDimension() != State.GetVectorDimension())
 		  {
-		    cout << "dimension mismatch between Hilbert space and input state" << endl;
+		    cout << "dimension mismatch between Hilbert space (" << TargetSpace->GetHilbertSpaceDimension() << ") and input state (" << State.GetVectorDimension() << ")" << endl;
 		    return -1;
 		  }
-		OutputState = InitialSpace->ConvertToSymmetricNbodyBasis(State, TargetSpace);
+		OutputState = InitialSpace->ConvertToSymmetricNbodyBasis(State, *TargetSpace);
 	      }
 	    else
 	      {
 		if (InitialSpace->GetHilbertSpaceDimension() != State.GetVectorDimension())
 		  {
-		    cout << "dimension mismatch between Hilbert space and input state" << endl;
+		    cout << "dimension mismatch between Hilbert space (" << InitialSpace->GetHilbertSpaceDimension() << ") and input state (" << State.GetVectorDimension() << ")" << endl;
 		    return -1;
 		  }
-		OutputState = InitialSpace->ConvertToNbodyBasis(State, TargetSpace);
+		OutputState = InitialSpace->ConvertToNbodyBasis(State, *TargetSpace);
 		delete InitialSpace;
 	      }
 	  }

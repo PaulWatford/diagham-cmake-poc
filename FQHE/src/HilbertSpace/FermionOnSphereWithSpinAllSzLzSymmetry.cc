@@ -512,13 +512,14 @@ int FermionOnSphereWithSpinAllSzLzSymmetry::AduAd (int index, int m1, int n2, do
     return this->HilbertSpaceDimension;
   this->ProdASignature = this->ProdATemporaryState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
   this->ProdATemporaryState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+  // warning, annihilation is made before sign computation to be consistent with FermionOnSphereWithSpinAllSz
+  this->ProdATemporaryState &= ~(0x1ul << n2);
   Coefficient = this->SignLookUpTable[(this->ProdATemporaryState >> n2) & this->SignLookUpTableMask[n2]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 16))  & this->SignLookUpTableMask[n2 + 16]];
 #ifdef  __64_BITS__
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 32)) & this->SignLookUpTableMask[n2 + 32]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 48)) & this->SignLookUpTableMask[n2 + 48]];
 #endif
-  this->ProdATemporaryState &= ~(0x1ul << n2);
 
   unsigned long TmpState = this->ProdATemporaryState;
   m1 <<= 1;
@@ -558,13 +559,14 @@ int FermionOnSphereWithSpinAllSzLzSymmetry::AddAu (int index, int m1, int n2, do
     return this->HilbertSpaceDimension;
   this->ProdASignature = this->ProdATemporaryState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
   this->ProdATemporaryState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+  // warning, annihilation is made before sign computation to be consistent with FermionOnSphereWithSpinAllSz
+  this->ProdATemporaryState &= ~(0x1ul << n2);
   Coefficient = this->SignLookUpTable[(this->ProdATemporaryState >> n2) & this->SignLookUpTableMask[n2]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 16))  & this->SignLookUpTableMask[n2 + 16]];
 #ifdef  __64_BITS__
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 32)) & this->SignLookUpTableMask[n2 + 32]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 48)) & this->SignLookUpTableMask[n2 + 48]];
 #endif
-  this->ProdATemporaryState &= ~(0x1ul << n2);
 
   unsigned long TmpState = this->ProdATemporaryState;
   m1 <<= 1;
@@ -753,10 +755,40 @@ void FermionOnSphereWithSpinAllSzLzSymmetry::TransformOneBodyBasis(RealVector& i
   long LastComponent = firstComponent + nbrComponents;
   if (nbrComponents == 0)
     LastComponent = this->LargeHilbertSpaceDimension;
+  // for (long i = firstComponent; i < LastComponent; ++i)
+  //   {
+  //     unsigned long TmpState = this->StateDescription[i] & FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+  //     this->ProdASignature = this->StateDescription[i] & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
+  //     unsigned long Tmp;
+  //     int TmpIndex = 0;
+  //     for (int j = this->LzMax; j >= 0; --j)
+  // 	{
+  // 	  Tmp = (TmpState >> (j << 1)) & 0x3ul;;
+  // 	  if ((Tmp & 0x2ul) != 0x0ul) // If there is a particle with momentum j and spin down in the ith state of the basis 
+  // 	    {
+  // 	      TmpMomentumIndices[TmpIndex] = j; // An array which gathers all momenta
+  // 	      TmpSpinIndices[TmpIndex] = 1; // An array which gathers all spins: 1 = down
+  // 	      ++TmpIndex;
+  // 	    }
+  // 	  if ((Tmp & 0x1ul) != 0x0ul) // If there is a particle with momentum j and spin up in the ith state of the basis  
+  // 	    {
+  // 	      TmpMomentumIndices[TmpIndex] = j;// An array which gathers all momenta
+  // 	      TmpSpinIndices[TmpIndex] = 0;// An array which gathers all spins: 0 = up
+  // 	      ++TmpIndex;
+  // 	    }	  
+  // 	}	
+  //     this->TransformOneBodyBasisRecursive(targetState, initialState[i], 0, TmpMomentumIndices, TmpSpinIndices, TmpSpinIndices2, oneBodyBasis);
+  //   }
+
   for (long i = firstComponent; i < LastComponent; ++i)
     {
       unsigned long TmpState = this->StateDescription[i] & FERMION_SPHERE_SU2_SYMMETRIC_MASK;
-      this->ProdASignature = this->StateDescription[i] & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
+      this->ProdASignature = 0x0u;
+      double TmpLzFactor = 1.0;
+      if ((this->StateDescription[i] & FERMION_SPHERE_SU2_LZ_SYMMETRIC_BIT) != 0x0ul)
+	{
+	  TmpLzFactor = M_SQRT1_2;
+	}
       unsigned long Tmp;
       int TmpIndex = 0;
       for (int j = this->LzMax; j >= 0; --j)
@@ -775,8 +807,34 @@ void FermionOnSphereWithSpinAllSzLzSymmetry::TransformOneBodyBasis(RealVector& i
 	      ++TmpIndex;
 	    }	  
 	}	
-      this->TransformOneBodyBasisRecursive(targetState, initialState[i], 0, TmpMomentumIndices, TmpSpinIndices, TmpSpinIndices2, oneBodyBasis);
+      this->TransformOneBodyBasisRecursive(targetState, initialState[i] * TmpLzFactor, 0, TmpMomentumIndices, TmpSpinIndices, TmpSpinIndices2, oneBodyBasis);
+      if ((this->StateDescription[i] & FERMION_SPHERE_SU2_LZ_SYMMETRIC_BIT) != 0x0ul)
+	{
+	  TmpIndex = 0;
+	  TmpLzFactor = 1.0;	  
+	  TmpState = this->ApplyLzSymmetry(TmpState, this->LzMax, TmpLzFactor);
+	  TmpLzFactor *= this->LzParitySign * M_SQRT1_2;
+	  for (int j = this->LzMax; j >= 0; --j)
+	    {
+	      Tmp = (TmpState >> (j << 1)) & 0x3ul;;
+	      if ((Tmp & 0x2ul) != 0x0ul) // If there is a particle with momentum j and spin down in the ith state of the basis 
+		{
+		  TmpMomentumIndices[TmpIndex] = j; // An array which gathers all momenta
+		  TmpSpinIndices[TmpIndex] = 1; // An array which gathers all spins: 1 = down
+		  ++TmpIndex;
+		}
+	      if ((Tmp & 0x1ul) != 0x0ul) // If there is a particle with momentum j and spin up in the ith state of the basis  
+		{
+		  TmpMomentumIndices[TmpIndex] = j;// An array which gathers all momenta
+		  TmpSpinIndices[TmpIndex] = 0;// An array which gathers all spins: 0 = up
+		  ++TmpIndex;
+		}	  
+	    }	
+	  this->TransformOneBodyBasisRecursive(targetState, initialState[i] * TmpLzFactor, 0, TmpMomentumIndices, TmpSpinIndices, TmpSpinIndices2, oneBodyBasis);
+	}
     }
+
+  
   delete[] TmpMomentumIndices;
   delete[] TmpSpinIndices;
   delete[] TmpSpinIndices2;

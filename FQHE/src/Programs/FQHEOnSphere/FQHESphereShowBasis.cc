@@ -455,131 +455,134 @@ int main(int argc, char** argv)
       else
  	if (SU2SpinFlag == true)
 	  {
-	    if (HaldaneBasisFlag == false)
-	      {                 
-		if (Manager.GetBoolean("use-pairing") == false)
+	    if (AllSzFlag == true)
+	      {
+		if (SzSymmetrizedBasis == true)
 		  {
-		    if (TwoLLFlag == false)
+		    if (LzSymmetrizedBasis == true)
 		      {
-			if ((SzSymmetrizedBasis == false) && (LzSymmetrizedBasis == false))
-			  {
-			    if (Manager.GetInteger("nbrspin-polarized") > 0)
-			      {
-				Space = new FermionOnSphereWithSpinPartialPolarization(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz, 
-											(int) Manager.GetInteger("nbrspin-polarized"));
-			      }
-			    else
-			      {
-				Space = new FermionOnSphereWithSpin(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz);
-			      }
-			  }
-			else //either Lz or Sz symmetrized basis
-			  {
-			    if ((SzSymmetrizedBasis == true)  && (TotalSz == 0) && (LzSymmetrizedBasis == true) && (TotalLz == 0))
-			      {
-				Space = new FermionOnSphereWithSpinLzSzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"),
-										Manager.GetBoolean("minus-lzparity"));
-			      }
-			    else 
-			      if ((SzSymmetrizedBasis == true)  && (TotalSz == 0))
-				{
-				  Space = new FermionOnSphereWithSpinSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
-				}
-			      else
-				Space = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, NbrFluxQuanta, TotalSz, Manager.GetBoolean("minus-lzparity"));
-			  }
+			Space = new FermionOnSphereWithSpinAllSzLzSzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"), Manager.GetBoolean("minus-lzparity"));
 		      }
 		    else
 		      {
-			Space = new FermionOnSphereWithSpinTwoLandauLevels(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz);
+			Space = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
 		      }
 		  }
 		else
 		  {
-		    if (Manager.GetBoolean("quasiholes") == false)
+		    if (LzSymmetrizedBasis == true)
 		      {
-			if ((SzSymmetrizedBasis == false) && (LzSymmetrizedBasis == false))
-			  Space = new FermionOnSphereWithSpinAndPairing(TotalLz, NbrFluxQuanta, TotalSz);
+			Space = new FermionOnSphereWithSpinAllSzLzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-lzparity"));
 		      }
 		    else
 		      {
-			if (PauliK == 0 or PauliR == 0)
-			  {
-			    PauliK = 1;
-			    PauliR = 2;
-			  }
-			Space = new QuasiholeOnSphereWithSpinAndPairing(PauliK, PauliR, TotalLz, NbrFluxQuanta, TotalSz, 0, "fermions");
+			Space = new FermionOnSphereWithSpinAllSz(NbrParticles, TotalLz, NbrFluxQuanta);
 		      }
 		  }
 	      }
 	    else
 	      {
-		 int LzMax = NbrFluxQuanta;
-		 int** ReferenceStates = 0;
-		 int NbrReferenceStates;
-		 bool TexturelessFlag; 
-		 if (FQHEGetRootPartitionSU2(Manager.GetString("reference-file"), NbrParticles, LzMax, ReferenceStates, NbrReferenceStates, TexturelessFlag) == false)
-		  {
-		    cout << "error while parsing " << Manager.GetString("reference-file") << endl;	      
-		    return 0;
-		  }
-		 if ( TexturelessFlag == false ) 
-		  {
-		      Space = new FermionOnSphereWithSpinHaldaneBasis(NbrParticles, TotalLz, LzMax, TotalSz, ReferenceStates, NbrReferenceStates);
+		if (HaldaneBasisFlag == false)
+		  {                 
+		    if (Manager.GetBoolean("use-pairing") == false)
+		      {
+			if (TwoLLFlag == false)
+			  {
+			    if ((SzSymmetrizedBasis == false) && (LzSymmetrizedBasis == false))
+			      {
+				if (Manager.GetInteger("nbrspin-polarized") > 0)
+				  {
+				    Space = new FermionOnSphereWithSpinPartialPolarization(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz, 
+											   (int) Manager.GetInteger("nbrspin-polarized"));
+				  }
+				else
+				  {
+				    Space = new FermionOnSphereWithSpin(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz);
+				  }
+			      }
+			    else //either Lz or Sz symmetrized basis
+			      {
+				if ((SzSymmetrizedBasis == true)  && (TotalSz == 0) && (LzSymmetrizedBasis == true) && (TotalLz == 0))
+				  {
+				    Space = new FermionOnSphereWithSpinLzSzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"),
+										    Manager.GetBoolean("minus-lzparity"));
+				  }
+				else 
+				  if ((SzSymmetrizedBasis == true)  && (TotalSz == 0))
+				    {
+				      Space = new FermionOnSphereWithSpinSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
+				    }
+				  else
+				    Space = new FermionOnSphereWithSpinLzSymmetry(NbrParticles, NbrFluxQuanta, TotalSz, Manager.GetBoolean("minus-lzparity"));
+			      }
+			  }
+			else
+			  {
+			    Space = new FermionOnSphereWithSpinTwoLandauLevels(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz);
+			  }
+		      }
+		    else
+		      {
+			if (Manager.GetBoolean("quasiholes") == false)
+			  {
+			    if ((SzSymmetrizedBasis == false) && (LzSymmetrizedBasis == false))
+			      Space = new FermionOnSphereWithSpinAndPairing(TotalLz, NbrFluxQuanta, TotalSz);
+			  }
+			else
+			  {
+			    if (PauliK == 0 or PauliR == 0)
+			      {
+				PauliK = 1;
+				PauliR = 2;
+			      }
+			    Space = new QuasiholeOnSphereWithSpinAndPairing(PauliK, PauliR, TotalLz, NbrFluxQuanta, TotalSz, 0, "fermions");
+			  }
+		      }
 		  }
 		else
 		  {
-		    int **TexturelessReferenceState = new int*[NbrReferenceStates];
-		    for ( int j = 0 ; j < NbrReferenceStates ; j++ ) 
+		    int LzMax = NbrFluxQuanta;
+		    int** ReferenceStates = 0;
+		    int NbrReferenceStates;
+		    bool TexturelessFlag; 
+		    if (FQHEGetRootPartitionSU2(Manager.GetString("reference-file"), NbrParticles, LzMax, ReferenceStates, NbrReferenceStates, TexturelessFlag) == false)
 		      {
-			TexturelessReferenceState[j] = new int[LzMax+1];
-			for ( int i = 0 ; i < (LzMax + 1) ; i++ )
+			cout << "error while parsing " << Manager.GetString("reference-file") << endl;	      
+			return 0;
+		      }
+		    if ( TexturelessFlag == false ) 
+		      {
+			Space = new FermionOnSphereWithSpinHaldaneBasis(NbrParticles, TotalLz, LzMax, TotalSz, ReferenceStates, NbrReferenceStates);
+		      }
+		    else
+		      {
+			int **TexturelessReferenceState = new int*[NbrReferenceStates];
+			for ( int j = 0 ; j < NbrReferenceStates ; j++ ) 
 			  {
-			    if ( ReferenceStates[j][i] == 3 ) 
+			    TexturelessReferenceState[j] = new int[LzMax+1];
+			    for ( int i = 0 ; i < (LzMax + 1) ; i++ )
 			      {
-				  TexturelessReferenceState[j][i] = 2;
+				if ( ReferenceStates[j][i] == 3 ) 
+				  {
+				    TexturelessReferenceState[j][i] = 2;
+				  }
+				else if ( (ReferenceStates[j][i] == 1) || (ReferenceStates[j][i] == 2) ) 
+				  {
+				    TexturelessReferenceState[j][i] = 1;
+				  }
+				else
+				  {
+				    TexturelessReferenceState[j][i] = 0;
+				  }
 			      }
-			    else if ( (ReferenceStates[j][i] == 1) || (ReferenceStates[j][i] == 2) ) 
-			      {
-				  TexturelessReferenceState[j][i] = 1;
-			      }
-			    else
-			      {
-				  TexturelessReferenceState[j][i] = 0;
-			      }
-			  }
-		      }	
-		    Space = new FermionOnSphereWithSpinHaldaneBasis(NbrParticles, TotalLz, LzMax, TotalSz, TexturelessReferenceState, NbrReferenceStates, true);
+			  }	
+			Space = new FermionOnSphereWithSpinHaldaneBasis(NbrParticles, TotalLz, LzMax, TotalSz, TexturelessReferenceState, NbrReferenceStates, true);
+		      }
 		  }
-	      }	    
+	      }
 	  }
-	else 
-	  if (AllSzFlag == true)
-	    {
-	      if (SzSymmetrizedBasis == true)
-		{
-		  if (LzSymmetrizedBasis == true)
-		    {
-		      Space = new FermionOnSphereWithSpinAllSzLzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"), Manager.GetBoolean("minus-lzparity"));
-		    }
-		  else
-		    {
-		      Space = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
-		    }
-		}
-	      else
-		{
-		  if (LzSymmetrizedBasis == true)
-		    {
-		      Space = new FermionOnSphereWithSpinAllSzLzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-lzparity"));
-		    }
-		  else
-		    {
-		      Space = new FermionOnSphereWithSpinAllSz(NbrParticles, TotalLz, NbrFluxQuanta);
-		    }
-		}
-	    }
-	  else
+	else
+	  {
 	    if (SU3SpinFlag == true)
 	      Space = new FermionOnSphereWithSU3Spin(NbrParticles, TotalLz, NbrFluxQuanta, TotalTz, TotalY);
 	    else
@@ -587,12 +590,12 @@ int main(int argc, char** argv)
 		Space = new FermionOnSphereWithSU4Spin(NbrParticles, TotalLz, NbrFluxQuanta, TotalSz, TotalIz, TotalPz);	    
 	      else
 		if (TwoLLFlag == true)
-                  {
-                    if (Manager.GetBoolean("restrict-polarization")) 
-                      Space = new FermionOnSphereTwoLandauLevels( Manager.GetInteger("nbrparticles-up"),  Manager.GetInteger("nbrparticles-down"), TotalLz, NbrFluxQuanta + 2, NbrFluxQuanta);	    
-                    else
-	  	      Space = new FermionOnSphereTwoLandauLevels(NbrParticles, TotalLz, NbrFluxQuanta + 2, NbrFluxQuanta);	    
-                  }
+		  {
+		    if (Manager.GetBoolean("restrict-polarization")) 
+		      Space = new FermionOnSphereTwoLandauLevels( Manager.GetInteger("nbrparticles-up"),  Manager.GetInteger("nbrparticles-down"), TotalLz, NbrFluxQuanta + 2, NbrFluxQuanta);	    
+		    else
+		      Space = new FermionOnSphereTwoLandauLevels(NbrParticles, TotalLz, NbrFluxQuanta + 2, NbrFluxQuanta);	    
+		  }
 		else
 		  if (ThreeLLFlag == true)
 		    Space = new FermionOnSphereThreeLandauLevels(NbrParticles, TotalLz, NbrFluxQuanta);	 
@@ -617,16 +620,17 @@ int main(int argc, char** argv)
 			  }
 			if (S2xS2Flag == true)
 			  {
-			      if (Manager.GetBoolean("s2s2-hardcorenonn") == true)
-				{
-				  Space = new FermionOnS2xS2WithExclusionPrinciple(NbrParticles, NbrFluxQuanta, NbrFluxQuanta2, TotalLz, TotalKz);
-				}
-			      else
-				{
-				  Space = new FermionOnS2xS2(NbrParticles, NbrFluxQuanta, NbrFluxQuanta2, TotalLz, TotalKz);
-				}
+			    if (Manager.GetBoolean("s2s2-hardcorenonn") == true)
+			      {
+				Space = new FermionOnS2xS2WithExclusionPrinciple(NbrParticles, NbrFluxQuanta, NbrFluxQuanta2, TotalLz, TotalKz);
+			      }
+			    else
+			      {
+				Space = new FermionOnS2xS2(NbrParticles, NbrFluxQuanta, NbrFluxQuanta2, TotalLz, TotalKz);
+			      }
 			  }
 		      }
+	  }
     }
   
   if (Manager.GetString("get-index") != 0)

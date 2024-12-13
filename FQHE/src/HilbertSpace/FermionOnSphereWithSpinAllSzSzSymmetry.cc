@@ -494,13 +494,14 @@ int FermionOnSphereWithSpinAllSzSzSymmetry::AduAd (int index, int m1, int n2, do
     return this->HilbertSpaceDimension;
   this->ProdASignature = this->ProdATemporaryState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
   this->ProdATemporaryState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+  // warning, annihilation is made before sign computation to be consistent with FermionOnSphereWithSpinAllSz
+  this->ProdATemporaryState &= ~(0x1ul << n2);
   Coefficient = this->SignLookUpTable[(this->ProdATemporaryState >> n2) & this->SignLookUpTableMask[n2]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 16))  & this->SignLookUpTableMask[n2 + 16]];
 #ifdef  __64_BITS__
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 32)) & this->SignLookUpTableMask[n2 + 32]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 48)) & this->SignLookUpTableMask[n2 + 48]];
 #endif
-  this->ProdATemporaryState &= ~(0x1ul << n2);
 
   unsigned long TmpState = this->ProdATemporaryState;
   m1 <<= 1;
@@ -540,13 +541,14 @@ int FermionOnSphereWithSpinAllSzSzSymmetry::AddAu (int index, int m1, int n2, do
     return this->HilbertSpaceDimension;
   this->ProdASignature = this->ProdATemporaryState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
   this->ProdATemporaryState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
+  // warning, annihilation is made before sign computation to be consistent with FermionOnSphereWithSpinAllSz
+  this->ProdATemporaryState &= ~(0x1ul << n2);
   Coefficient = this->SignLookUpTable[(this->ProdATemporaryState >> n2) & this->SignLookUpTableMask[n2]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 16))  & this->SignLookUpTableMask[n2 + 16]];
 #ifdef  __64_BITS__
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 32)) & this->SignLookUpTableMask[n2 + 32]];
   Coefficient *= this->SignLookUpTable[(this->ProdATemporaryState >> (n2 + 48)) & this->SignLookUpTableMask[n2 + 48]];
 #endif
-  this->ProdATemporaryState &= ~(0x1ul << n2);
 
   unsigned long TmpState = this->ProdATemporaryState;
   m1 <<= 1;

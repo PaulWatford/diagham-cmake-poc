@@ -278,7 +278,7 @@ int FermionOnSphereWithSpinAllSz::AduAd (int index, int m, int n, double& coeffi
       coefficient *= this->SignLookUpTable[(TmpState >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
 #endif
     }
-  TmpState |= (((unsigned long) (0x1)) << m);
+  TmpState |= (((unsigned long) (0x1ul)) << m);
 //  return this->FindStateIndex(TmpState, NewHighestBit);
   return this->FindStateIndex(TmpState,NewHighestBit);
 }

@@ -68,6 +68,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption  ('a', "spin-angle", "rotation angle along the Sy axis (in pi units)", 0.0);
   (*SystemGroup) += new BooleanOption  ('\n', "szsymmetrized-basis", "use Sz <-> -Sz symmetrized version of the basis (only valid if total-sz=0)");
   (*SystemGroup) += new BooleanOption  ('\n', "minus-szparity", "select the  Sz <-> -Sz symmetric sector with negative parity");
+  (*SystemGroup) += new BooleanOption  ('\n', "szsymmetrized-normalize", "normalize the state written in the Sz <-> -Sz symmetrized basis (which is not one in general)");
 
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -182,6 +183,10 @@ int main(int argc, char** argv)
 	  BosonOnSphereWithSU2SpinSzSymmetry* OutputSpace2 = new BosonOnSphereWithSU2SpinSzSymmetry (NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
 	  RealVector OutputState2 = OutputSpace2->ConvertToNbodyBasis(OutputState, OutputSpace);	      
 	  OutputState = OutputState2;
+	  if (Manager.GetBoolean("szsymmetrized-normalize") == true)
+	    {
+	      OutputState.Normalize();
+	    }
 	  delete OutputSpace2;
 	}
       else
@@ -191,6 +196,10 @@ int main(int argc, char** argv)
 	      FermionOnSphereWithSpinAllSzSzSymmetry*  OutputSpace2 = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
 	      RealVector OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSz*)OutputSpace);	      
 	      OutputState = OutputState2;
+	      if (Manager.GetBoolean("szsymmetrized-normalize") == true)
+		{
+		  OutputState.Normalize();
+		}
 	      delete OutputSpace2;
 	    }
 	  else
@@ -199,6 +208,10 @@ int main(int argc, char** argv)
 	      cout << OutputSpace2->GetHilbertSpaceDimension() << endl;
 	      RealVector OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSzLzSymmetry*) OutputSpace);	      
 	      OutputState = OutputState2;
+	      if (Manager.GetBoolean("szsymmetrized-normalize") == true)
+		{
+		  OutputState.Normalize();
+		}
 	      delete OutputSpace2;
 	    }
 	}

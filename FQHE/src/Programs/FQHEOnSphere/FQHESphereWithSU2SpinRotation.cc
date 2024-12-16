@@ -66,9 +66,8 @@ int main(int argc, char** argv)
 
   (*SystemGroup) += new SingleStringOption  ('i', "input-state", "name of the file that contains the input state");
   (*SystemGroup) += new SingleDoubleOption  ('a', "spin-angle", "rotation angle along the Sy axis (in pi units)", 0.0);
-  (*SystemGroup) += new BooleanOption  ('\n', "szsymmetrized-basis", "use Sz <-> -Sz symmetrized version of the basis (only valid if total-sz=0)");
+  (*SystemGroup) += new BooleanOption  ('\n', "szsymmetrized-basis", "use Sz <-> -Sz symmetrized version of the basis (only valid if total-sz=0, otherwise use the superposition |angle> +/- |pi - angle>)");
   (*SystemGroup) += new BooleanOption  ('\n', "minus-szparity", "select the  Sz <-> -Sz symmetric sector with negative parity");
-  (*SystemGroup) += new BooleanOption  ('\n', "szsymmetrized-normalize", "normalize the state written in the Sz <-> -Sz symmetrized basis (which is not one in general)");
 
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -180,38 +179,59 @@ int main(int argc, char** argv)
     {
       if (Statistics == false)
 	{
-	  BosonOnSphereWithSU2SpinSzSymmetry* OutputSpace2 = new BosonOnSphereWithSU2SpinSzSymmetry (NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
-	  RealVector OutputState2 = OutputSpace2->ConvertToNbodyBasis(OutputState, OutputSpace);	      
-	  OutputState = OutputState2;
-	  if (Manager.GetBoolean("szsymmetrized-normalize") == true)
+	  RealVector OutputState2(OutputSpace->GetLargeHilbertSpaceDimension(), true);
+	  ((BosonOnSphereWithSU2SpinSzSymmetry*) OutputSpace)->ApplySzToMinusSz(OutputState, OutputState2);
+	  if (Manager.GetBoolean("minus-szparity") == false)
 	    {
-	      OutputState.Normalize();
+	      OutputState += OutputState2;
 	    }
+	  else
+	    {
+	      OutputState -= OutputState2;
+	    }
+	  OutputState.Normalize();
+	  BosonOnSphereWithSU2SpinSzSymmetry* OutputSpace2 = new BosonOnSphereWithSU2SpinSzSymmetry (NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
+	  OutputState2 = OutputSpace2->ConvertToNbodyBasis(OutputState, OutputSpace);	      
+	  OutputState = OutputState2;
+	  OutputState.Normalize();
 	  delete OutputSpace2;
 	}
       else
 	{
 	  if (LzSymmetry == false)
 	    {
-	      FermionOnSphereWithSpinAllSzSzSymmetry*  OutputSpace2 = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
-	      RealVector OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSz*)OutputSpace);	      
-	      OutputState = OutputState2;
-	      if (Manager.GetBoolean("szsymmetrized-normalize") == true)
+	      RealVector OutputState2(OutputSpace->GetLargeHilbertSpaceDimension(), true);
+	      ((FermionOnSphereWithSpinAllSz*) OutputSpace)->ApplySzToMinusSz(OutputState, OutputState2);
+	      if (Manager.GetBoolean("minus-szparity") == false)
 		{
-		  OutputState.Normalize();
+		  OutputState += OutputState2;
 		}
+	      else
+		{
+		  OutputState -= OutputState2;
+		}
+	      OutputState.Normalize();
+	      FermionOnSphereWithSpinAllSzSzSymmetry*  OutputSpace2 = new FermionOnSphereWithSpinAllSzSzSymmetry(NbrParticles, TotalLz, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"));
+	      OutputState2= OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSz*)OutputSpace);	      
+	      OutputState = OutputState2;
 	      delete OutputSpace2;
 	    }
 	  else
 	    {
-	      FermionOnSphereWithSpinAllSzLzSzSymmetry* OutputSpace2 = new FermionOnSphereWithSpinAllSzLzSzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"), LzSymmetryMinusParity);
-	      cout << OutputSpace2->GetHilbertSpaceDimension() << endl;
-	      RealVector OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSzLzSymmetry*) OutputSpace);	      
-	      OutputState = OutputState2;
-	      if (Manager.GetBoolean("szsymmetrized-normalize") == true)
+	      RealVector OutputState2(OutputSpace->GetLargeHilbertSpaceDimension(), true);
+	      ((FermionOnSphereWithSpinAllSzLzSymmetry*) OutputSpace)->ApplySzToMinusSz(OutputState, OutputState2);
+	      if (Manager.GetBoolean("minus-szparity") == false)
 		{
-		  OutputState.Normalize();
+		  OutputState += OutputState2;
 		}
+	      else
+		{
+		  OutputState -= OutputState2;
+		}
+	      OutputState.Normalize();
+	      FermionOnSphereWithSpinAllSzLzSzSymmetry* OutputSpace2 = new FermionOnSphereWithSpinAllSzLzSzSymmetry(NbrParticles, NbrFluxQuanta, Manager.GetBoolean("minus-szparity"), LzSymmetryMinusParity);
+	      OutputState2 = OutputSpace2->ConvertToSymmetricNbodyBasis(OutputState, *(FermionOnSphereWithSpinAllSzLzSymmetry*) OutputSpace);	      
+	      OutputState = OutputState2;
 	      delete OutputSpace2;
 	    }
 	}

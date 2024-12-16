@@ -731,6 +731,12 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
   // return value = index of the destination state 
   virtual int SzToMinusSz (int index, double& coefficient);
 
+  // apply the Sz<->-Sz transformation to a state
+  //
+  // initialState = state to transform  
+  // targetState = vector where the transformed state has to be stored
+  virtual void ApplySzToMinusSz(RealVector& initialState, RealVector& targetState);
+
   // carefully test whether state is in Hilbert-space and find corresponding state index
   //
   // stateDescription = unsigned integer describing the state

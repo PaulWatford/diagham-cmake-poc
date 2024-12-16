@@ -1341,3 +1341,20 @@ RealMatrix& FermionOnSphereWithSpinAllSz::EvaluateEntanglementMatrixGenericRealS
   return entanglementMatrix;
 }
 
+// apply the Sz<->-Sz transformation to a state
+//
+// initialState = state to transform  
+// targetState = vector where the transformed state has to be stored
+
+void FermionOnSphereWithSpinAllSz::ApplySzToMinusSz(RealVector& initialState, RealVector& targetState)
+{
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      double TmpCoefficient = 1.0;
+      int TmpIndex = this->SzToMinusSz(i, TmpCoefficient);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  targetState[TmpIndex] = TmpCoefficient * initialState[i];
+	}
+    }
+}

@@ -903,3 +903,21 @@ void FermionOnSphereWithSpinAllSzLzSymmetry::TransformOneBodyBasisRecursive(Real
       this->TransformOneBodyBasisRecursive(targetState, coefficient * (oneBodyBasis[momentumIndices[position]][1 - initialSpinIndices[position]][0]), position + 1, momentumIndices, initialSpinIndices, currentSpinIndices, oneBodyBasis);
     }
 }
+
+// apply the Sz<->-Sz transformation to a state
+//
+// initialState = state to transform  
+// targetState = vector where the transformed state has to be stored
+
+void FermionOnSphereWithSpinAllSzLzSymmetry::ApplySzToMinusSz(RealVector& initialState, RealVector& targetState)
+{
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
+    {
+      double TmpCoefficient = 1.0;
+      int TmpIndex = this->SzToMinusSz(i, TmpCoefficient);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  targetState[TmpIndex] = TmpCoefficient * initialState[i];
+	}
+    }
+}

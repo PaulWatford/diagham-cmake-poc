@@ -257,7 +257,12 @@ class FermionOnSphereWithSpinAllSz :  public FermionOnSphereWithSpin
 													 int nbrOrbitalB, double* weightOrbitalBUp, double* weightOrbitalBDown, 
 													 RealMatrix& entanglementMatrix);
 
-
+  // apply the Sz<->-Sz transformation to a state
+  //
+  // initialState = state to transform  
+  // targetState = vector where the transformed state has to be stored
+  virtual void ApplySzToMinusSz(RealVector& initialState, RealVector& targetState);
+  
  protected:
 
   // evaluate Hilbert space dimension

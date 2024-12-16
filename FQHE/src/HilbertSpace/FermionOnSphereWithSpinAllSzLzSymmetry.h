@@ -168,6 +168,12 @@ class FermionOnSphereWithSpinAllSzLzSymmetry :  public FermionOnSphereWithSpinLz
   virtual void TransformOneBodyBasisRecursive(RealVector& targetState, double coefficient,
 					      int position, int* momentumIndices, int* initialSU2Indices, int* currentSU2Indices, RealMatrix* oneBodyBasis);
 
+  // apply the Sz<->-Sz transformation to a state
+  //
+  // initialState = state to transform  
+  // targetState = vector where the transformed state has to be stored
+  virtual void ApplySzToMinusSz(RealVector& initialState, RealVector& targetState);
+  
 protected:
 
   // evaluate Hilbert space dimension

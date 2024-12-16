@@ -1438,7 +1438,17 @@ RealMatrix ParticleOnSphereWithSpin::EvaluateEntanglementMatrixGenericRealSpaceP
 
 int ParticleOnSphereWithSpin::SzToMinusSz (int index, double& coefficient)
 {
+  cout << "using dummy ParticleOnSphereWithSpin::SzToMinusSz" << endl;
   return this->HilbertSpaceDimension;
+}
+
+// apply the Sz<->-Sz transformation to a state
+//
+// initialState = state to transform  
+// targetState = vector where the transformed state has to be stored
+void ParticleOnSphereWithSpin::ApplySzToMinusSz(RealVector& initialState, RealVector& targetState)
+{
+  cout << "using dummy ParticleOnSphereWithSpin::ApplySzToMinusSz" << endl;
 }
 
 // convert a given state from a generic basis to the current Sz subspace basis

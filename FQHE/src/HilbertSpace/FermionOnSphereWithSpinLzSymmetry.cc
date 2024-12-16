@@ -677,6 +677,8 @@ int FermionOnSphereWithSpinLzSymmetry::SzToMinusSz (int index, double& coefficie
 {
   coefficient = 1.0;
   unsigned long TmpState = this->StateDescription[index];
+  this->ProdASignature = TmpState & FERMION_SPHERE_SU2_SYMMETRIC_BIT;
+  TmpState &= FERMION_SPHERE_SU2_SYMMETRIC_MASK;
   unsigned long TmpState2 = 0x0ul;
   for (int j = 0; j <= this->LzMax; ++j)
     {

@@ -4,6 +4,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
@@ -95,6 +96,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "conserve-bandoccuption", "assume that the interaction conserves the number of particles per band");
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band0", "maximum number of particles in band 0 (negative if this number should be equal to the number of orbitals)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "max-band1", "maximum number of particles in band 1 (negative if this number should be equal to the number of orbitals)", -1);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "min-band0", "minimum number of particles in band 0", 0);
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "min-band1", "minimum number of particles in band 1", 0);
   (*SystemGroup) += new SingleStringOption ('\n', "allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed");
   (*SystemGroup) += new SingleStringOption ('\n', "selected-sectors", "provide an ascii file that indicates which symmetry sectors have to be computed");
   (*SystemGroup) += new BooleanOption ('\n', "variable-nbreigenvalues", "when using the --selected-points option, use the last column of the momentum file to fix the number of eigenvalues to compute (overriding the command line options)", false);
@@ -305,47 +308,103 @@ int main(int argc, char** argv)
 	    }
 	}
     }
-  char* BandCapPrefix = new char [256];
+  char* BandMaxCapPrefix = new char [256];
   if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0))
     { 
       if (Manager.GetString("allowed-orbitals") == 0)
 	{
-	  BandCapPrefix = new char [2];
-	  sprintf (BandCapPrefix, "");
+	  BandMaxCapPrefix = new char [2];
+	  sprintf (BandMaxCapPrefix, "");
 	}
       else
 	{
-	  BandCapPrefix = new char [32];
-	  sprintf (BandCapPrefix, "_allowed_orbs");	  
+	  BandMaxCapPrefix = new char [32];
+	  sprintf (BandMaxCapPrefix, "_allowed_orbs");	  
 	}
     }
   else
     {
-      if (Manager.GetInteger("max-band0") < 0)
+      char* BandCapPrefix0 = new char [256];
+      char* BandCapPrefix1 = new char [256];
+     if (Manager.GetInteger("max-band0") < 0) 
 	{
-	  sprintf (BandCapPrefix, "_maxband1_%d", Manager.GetInteger("max-band1"));
+	  sprintf (BandCapPrefix0, "");
 	}
       else
 	{
-	  if (Manager.GetInteger("max-band1") < 0)
-	    {
-	      sprintf (BandCapPrefix, "_maxband0_%d", Manager.GetInteger("max-band0"));
-	    }
-	  else
-	    {
-	      sprintf (BandCapPrefix, "_maxband0_%d_maxband1_%d", Manager.GetInteger("max-band0"), Manager.GetInteger("max-band1"));
-	    }
+	  sprintf (BandCapPrefix0, "_maxband0_%ld", Manager.GetInteger("max-band0"));
+	}
+      if (Manager.GetInteger("max-band1") < 0) 
+	{
+	  sprintf (BandCapPrefix1, "");
+	}
+      else
+	{
+	  sprintf (BandCapPrefix1, "_maxband1_%ld", Manager.GetInteger("max-band1"));
+	}
+      BandMaxCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1)];
+      if (Manager.GetString("allowed-orbitals") == 0)
+	{
+	  sprintf (BandMaxCapPrefix, "%s%s", BandCapPrefix0, BandCapPrefix1);
+	}
+      else
+	{
+	  sprintf (BandMaxCapPrefix, "_allowed_orbs%s%s", BandCapPrefix0, BandCapPrefix1);
 	}
     }
-  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix) + strlen(Manager.GetString("interaction-name"))];
+  char* BandMinCapPrefix = 0;
+  if ((Manager.GetInteger("min-band0") < 0) && (Manager.GetInteger("min-band1") < 0))
+    {
+      if (Manager.GetString("allowed-orbitals") == 0)
+	{
+	  BandMinCapPrefix = new char [2];
+	  sprintf (BandMinCapPrefix, "");
+	}
+      else
+	{
+	  BandMinCapPrefix = new char [32];
+	  sprintf (BandMinCapPrefix, "_allowed_orbs");	  
+	}
+    }
+  else
+    {
+      char* BandCapPrefix0 = new char [256];
+      char* BandCapPrefix1 = new char [256];
+      if (Manager.GetInteger("min-band0") <= 0) 
+	{
+	  sprintf (BandCapPrefix0, "");
+	}
+      else
+	{
+	  sprintf (BandCapPrefix0, "_minband0_%ld", Manager.GetInteger("min-band0"));
+	}
+      if (Manager.GetInteger("min-band1") <= 0) 
+	{
+	  sprintf (BandCapPrefix1, "");
+	}
+      else
+	{
+	  sprintf (BandCapPrefix1, "_minband1_%ld", Manager.GetInteger("min-band1"));
+	}
+      BandMinCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1)];
+      if (Manager.GetString("allowed-orbitals") == 0)
+	{
+	  sprintf (BandMinCapPrefix, "%s%s", BandCapPrefix0, BandCapPrefix1);
+	}
+      else
+	{
+	  sprintf (BandMinCapPrefix, "_allowed_orbs%s%s", BandCapPrefix0, BandCapPrefix1);
+	}
+    }
+  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandMaxCapPrefix) + strlen(BandMinCapPrefix) + strlen(Manager.GetString("interaction-name"))];
   if (Manager.GetBoolean("flat-band"))
     {
-      sprintf (FilePrefix, "%s_twoband_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+      sprintf (FilePrefix, "%s_twoband_flatband_%s%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
     }
   else
     {
-      sprintf (FilePrefix, "%s_twoband_u_%.3f_%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
-	       Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+      sprintf (FilePrefix, "%s_twoband_u_%.3f_%s%s$s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
+	       Manager.GetString("interaction-name"), BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
     }
   
   char* EigenvalueOutputFile = new char [512 + strlen(FilePrefix)];
@@ -1686,31 +1745,89 @@ int main(int argc, char** argv)
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
 		  if ((Manager.GetInteger("max-band0") >= 0) || (Manager.GetInteger("max-band1") >= 0))
-		    {
-		      cout << "--max-band0 and --max-band1 options are only available with valley" << endl;
-		      return 0;
-		    }
-		  // no valley, no spin
-		  if (Manager.GetBoolean("conserve-bandoccuption") == false)
-		    {		      
-		      if (Manager.GetBoolean("3band-convention"))
-			{
+		    {	
+			  int MaxBand0 = Manager.GetInteger("max-band0");
+			  if (MaxBand0 < 0)
+			    {
+			      MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  int MaxBand1 = Manager.GetInteger("max-band1");
+			  if (MaxBand1 < 0)
+			    {
+			      MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  int MinBand0 = Manager.GetInteger("min-band0");
+			  if (MinBand0 > (2 * NbrSitesX * NbrSitesY))
+			    {
+			      MinBand0 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  int MinBand1 = Manager.GetInteger("min-band1");
+			  if (MinBand1 > (2 * NbrSitesX * NbrSitesY))
+			    {
+			      MinBand1 = 2 * NbrSitesX * NbrSitesY;
+			    }
+			  // no valley, no spin, with max-band
+		      if (Manager.GetBoolean("conserve-bandoccuption") == false)
+			{		      
 			  if (Manager.GetString("allowed-orbitals") == 0)
 			    {
 			      if ((NbrSitesX * NbrSitesY) <= 32)
 				{
-				  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				  Space = new FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 				}
 			      else
 				{
-				  //				  Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				  cout << "--max-band0 and --max-band1 options without valley and more than 32 unit cells is not yet implemented" << endl;
+				  return 0;
+				}
+			    }
+			  else
+			    {
+			      cout << "--max-band0 and --max-band1 options combined with --allowed-orbitals without valley is not yet implemented" << endl;
+			      return 0;
+			    }
+			}
+		      else
+			{
+			  cout << "--max-band0 and --max-band1 options combined with --conserve-bandoccuption with valley is not yet implemented" << endl;
+			  return 0;
+			}
+		    }
+		  else
+		    {
+		      // no valley, no spin, no max-band
+		      if (Manager.GetBoolean("conserve-bandoccuption") == false)
+			{		      
+			  if (Manager.GetBoolean("3band-convention"))
+			    {
+			      if (Manager.GetString("allowed-orbitals") == 0)
+				{
+				  if ((NbrSitesX * NbrSitesY) <= 32)
+				    {
+				      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				    }
+				  else
+				    {
+				      //				  Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				    }
+				}
+			      else
+				{
+				  if ((NbrSitesX * NbrSitesY) <= 32)
+				    {
+				      Space = new FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				    }
 				}
 			    }
 			  else
 			    {
 			      if ((NbrSitesX * NbrSitesY) <= 32)
 				{
-				  Space = new FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, Manager.GetString("allowed-orbitals"), KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				  Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 				}
 			    }
 			}
@@ -1718,30 +1835,19 @@ int main(int argc, char** argv)
 			{
 			  if ((NbrSitesX * NbrSitesY) <= 32)
 			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			      if (Manager.GetBoolean("3band-convention"))
+				{
+				  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
 			    }
 			  else
 			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			      Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 			    }
-			}
-		    }
-		  else
-		    {
-		      if ((NbrSitesX * NbrSitesY) <= 32)
-			{
-			  if (Manager.GetBoolean("3band-convention"))
-			    {
-			      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-			    }
-			  else
-			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-			    }
-			}
-		      else
-			{
-			  Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
 			}
 		    }
 		}

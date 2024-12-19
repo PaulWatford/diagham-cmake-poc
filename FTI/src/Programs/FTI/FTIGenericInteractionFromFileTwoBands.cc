@@ -352,6 +352,12 @@ int main(int argc, char** argv)
 	  sprintf (BandMaxCapPrefix, "_allowed_orbs%s%s", BandCapPrefix0, BandCapPrefix1);
 	}
     }
+  int TotalMinNbrParticles = Manager.GetInteger("min-band0")  + Manager.GetInteger("min-band1");
+  if (TotalMinNbrParticles > NbrParticles)
+    {
+      cout << "the total minimum number of particles per band (" << TotalMinNbrParticles << ") exceeds the number of particles (" << NbrParticles << ")" << endl;
+      return 0;
+    }
   char* BandMinCapPrefix = 0;
   if ((Manager.GetInteger("min-band0") < 0) && (Manager.GetInteger("min-band1") < 0))
     {
@@ -403,7 +409,7 @@ int main(int argc, char** argv)
     }
   else
     {
-      sprintf (FilePrefix, "%s_twoband_u_%.3f_%s%s$s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
+      sprintf (FilePrefix, "%s_twoband_u_%.3f_%s%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
 	       Manager.GetString("interaction-name"), BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
     }
   

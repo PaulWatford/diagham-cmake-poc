@@ -71,8 +71,9 @@ public:
   // maxNbrParticlesBand1 = maximum number of particles in band 1
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int kxMomentum, int kyMomentum, char* outputDirectory = 0, unsigned long memory = 10000000);
 
   // basic constructor
   // 
@@ -85,8 +86,9 @@ public:
   // maxNbrParticlesBand1 = maximum number of particles in band 1
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int kxMomentum, int kyMomentum, char* outputDirectory = 0, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
@@ -108,6 +110,10 @@ public:
   // return value = pointer to cloned Hilbert space
   AbstractHilbertSpace* Clone();
 
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
   
 protected:
 

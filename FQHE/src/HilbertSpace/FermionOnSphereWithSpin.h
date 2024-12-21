@@ -207,8 +207,8 @@ class FermionOnSphereWithSpin :  public ParticleOnSphereWithSpin
   //
   // fileName = name of the file where the Hilbert space description has to be saved
   // return value = true if no error occured
-  bool WriteHilbertSpace (char* fileName);
-  
+  virtual bool WriteHilbertSpace (char* fileName);
+    
   // apply creation operator to a word, using the conventions
   // for state-coding and quantum numbers of this space
   // state = word to be acted upon
@@ -842,6 +842,18 @@ class FermionOnSphereWithSpin :  public ParticleOnSphereWithSpin
   // pos = position in StateDescription array where to store states
   // return value = position from which new states have to be stored
   virtual long GenerateStates(int nbrFermions, int lzMax, int totalLz, int totalSpin, long pos);
+
+  // save Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description has to be saved
+  // return value = true if no error occured
+  virtual bool WriteCoreHilbertSpace (char* fileName);
+
+  // read Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description is stored
+  // return value = true if no error occured
+  virtual bool ReadCoreHilbertSpace (char* fileName);
 
   // compute sign
   //

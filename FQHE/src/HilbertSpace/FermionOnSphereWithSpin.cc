@@ -2310,6 +2310,55 @@ void FermionOnSphereWithSpin::GenerateSignLookUpTable()
 #endif
 }
 
+// save Hilbert space description to disk, restricted to the raw Hilbert space
+//
+// fileName = name of the file where the Hilbert space description has to be saved
+// return value = true if no error occured
+
+bool FermionOnSphereWithSpin::WriteCoreHilbertSpace (char* fileName)
+{
+  ofstream File;
+  File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "can't open the file: " << fileName << endl;
+      return false;
+    }
+  WriteLittleEndian(File, this->LargeHilbertSpaceDimension);
+  for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+    WriteLittleEndian(File, this->StateDescription[i]);
+  File.close();
+  return true;
+}
+
+// read Hilbert space description to disk, restricted to the raw Hilbert space
+//
+// fileName = name of the file where the Hilbert space description is stored
+// return value = true if no error occured
+
+bool FermionOnSphereWithSpin::ReadCoreHilbertSpace (char* fileName)
+{
+  ifstream File;
+  File.open(fileName, ios::binary | ios::out);
+  if (!File.is_open())
+    {
+      cout << "can't open the file: " << fileName << endl;
+      return false;
+    }
+  ReadLittleEndian(File, this->LargeHilbertSpaceDimension);
+  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+    this->HilbertSpaceDimension = 0;
+  else
+    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
+  cout << "Reading Hilbert space from " << fileName << " with dimension " << this->LargeHilbertSpaceDimension << endl;
+  this->StateDescription = new unsigned long[this->LargeHilbertSpaceDimension];
+  for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
+    ReadLittleEndian(File, this->StateDescription[i]);
+  File.close();
+  return true;
+}
+
 // compute sign
 //
 // signs = 

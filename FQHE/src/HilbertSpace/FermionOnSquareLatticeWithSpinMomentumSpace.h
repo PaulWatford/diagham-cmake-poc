@@ -153,7 +153,12 @@ class FermionOnSquareLatticeWithSpinMomentumSpace : public FermionOnSphereWithSp
   virtual HermitianMatrix EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, int szSector,
 									 int nbrGroundStates, ComplexVector* groundStates, double* weights, AbstractArchitecture* architecture = 0);
 
- protected:
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+
+protected:
 
   // evaluate Hilbert space dimension
   //

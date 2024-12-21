@@ -117,6 +117,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
   (*SystemGroup) += new SingleDoubleOption ('\n', "energy-shift", "apply a temporary energy shift during the diagonalization", 0.0);
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 500);
+  (*PrecalculationGroup) += new SingleStringOption ('\n', "hilbert-directory", "directory where Hilbert spaces should be read and stored (bypassing their construction)");
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
@@ -1751,7 +1752,7 @@ int main(int argc, char** argv)
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
 		  if ((Manager.GetInteger("max-band0") >= 0) || (Manager.GetInteger("max-band1") >= 0))
-		    {	
+		    {
 			  int MaxBand0 = Manager.GetInteger("max-band0");
 			  if (MaxBand0 < 0)
 			    {
@@ -1779,7 +1780,7 @@ int main(int argc, char** argv)
 			    {
 			      if ((NbrSitesX * NbrSitesY) <= 32)
 				{
-				  Space = new FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				  Space = new FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], Manager.GetString("hilbert-directory"));
 				}
 			      else
 				{

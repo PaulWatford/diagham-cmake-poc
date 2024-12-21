@@ -68,6 +68,11 @@ class AbstractQHEParticle :  public AbstractHilbertSpace
   // return value = true if no error occured
   virtual bool WriteHilbertSpace (char* fileName);
 
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+  
   // forge an eigenstate from a description given by a file
   //
   // filename = name of the file that contains the state description
@@ -177,6 +182,18 @@ class AbstractQHEParticle :  public AbstractHilbertSpace
   //
   //return value = dimension of the filtered Hilbert space
   virtual long FilterHilbertSpace();
+
+  // save Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description has to be saved
+  // return value = true if no error occured
+  virtual bool WriteCoreHilbertSpace (char* fileName);
+
+  // read Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description is stored
+  // return value = true if no error occured
+  virtual bool ReadCoreHilbertSpace (char* fileName);
 
   
 };

@@ -370,6 +370,18 @@ class FermionOnSphereWithSU3Spin :  public ParticleOnSphereWithSU3Spin
   // return value = true if no error occured
   virtual bool WriteHilbertSpace (ofstream& outputFile);
   
+   // save Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description has to be saved
+  // return value = true if no error occured
+  virtual bool WriteCoreHilbertSpace (char* fileName);
+
+  // read Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description is stored
+  // return value = true if no error occured
+  virtual bool ReadCoreHilbertSpace (char* fileName);
+
   // factorized code for any a^+_m_x a_n_y operator 
   //
   // index = index of the state on which the operator has to be applied

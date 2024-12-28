@@ -422,6 +422,18 @@ class FermionOnSphereWithSU3SpinLong :  public ParticleOnSphereWithSU3Spin
   // return value = position from which new states have to be stored
   virtual long GenerateStates(int nbrFermions, int lzMax, int totalLz, int nbrN1, int nbrN2, int nbrN3, long pos);
 
+  // save Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description has to be saved
+  // return value = true if no error occured
+  virtual bool WriteCoreHilbertSpace (char* fileName);
+
+  // read Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description is stored
+  // return value = true if no error occured
+  virtual bool ReadCoreHilbertSpace (char* fileName);
+
 };
 
 // get the particle statistic 

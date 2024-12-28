@@ -682,9 +682,10 @@ char* FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace::GetDefaultHilbertSpa
       return 0;
     }
   char* TmpExtension = new char[256];
-  sprintf(TmpExtension, "_minband1_%d_minband1_%d_maxband0_%d_maxband1_%d.hil", this->MinNbrParticlesBand0, this->MinNbrParticlesBand1, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1);
+  sprintf(TmpExtension, "_minband0_%d_minband1_%d_maxband0_%d_maxband1_%d.hil", this->MinNbrParticlesBand0, this->MinNbrParticlesBand1, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1);
   char* TmpName2 = ReplaceExtensionToFileName(TmpName, ".hil", TmpExtension);
   delete[] TmpExtension;
   delete[] TmpName;
   return TmpName2;
 }
+

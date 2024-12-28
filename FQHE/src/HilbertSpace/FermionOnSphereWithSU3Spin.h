@@ -370,7 +370,7 @@ class FermionOnSphereWithSU3Spin :  public ParticleOnSphereWithSU3Spin
   // return value = true if no error occured
   virtual bool WriteHilbertSpace (ofstream& outputFile);
   
-   // save Hilbert space description to disk, restricted to the raw Hilbert space
+  // save Hilbert space description to disk, restricted to the raw Hilbert space
   //
   // fileName = name of the file where the Hilbert space description has to be saved
   // return value = true if no error occured

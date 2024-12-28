@@ -130,6 +130,11 @@ class FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong : public FermionOnSpher
   // bandIndex = index of the project to project onto
   virtual void ProjectOntoSingleBand(ComplexVector * initialState, ParticleOnSphere* finalSpace, ComplexVector * finalState, bool bandIndex = 0);
 
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+  
  protected:
 
   // evaluate Hilbert space dimension

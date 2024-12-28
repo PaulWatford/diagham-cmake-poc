@@ -584,3 +584,34 @@ void FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong::ProjectOntoSingleBand(C
     }
 }
 
+// provide the default name of the file for Hilbert space storage 
+//
+// return value = pointer to file name (0 if no default file name exists) 
+
+char* FermionOnSquareLatticeWithSU3SpinMomentumSpaceLong::GetDefaultHilbertSpaceFileName()
+{
+  char* TmpName = new char[256];
+  if ((this->SzFlag == false) && (this->PzFlag == false))
+    {
+      sprintf(TmpName, "fermions_klattice_su3_n_%d_nx_%d_ny_%d_kx_%d_ky_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum);
+    }
+  else
+    {
+      if (this->PzFlag == false)
+	{
+	  sprintf(TmpName, "fermions_klattice_su3_n_%d_nx_%d_ny_%d_kx_%d_ky_%d_tz_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum, this->TotalTz);
+	}
+      else
+	{
+	  if (this->SzFlag == false)
+	    {
+	      sprintf(TmpName, "fermions_klattice_su3_n_%d_nx_%d_ny_%d_kx_%d_ky_%d_y_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum, this->TotalY);
+	    }
+	  else
+	    {
+	      sprintf(TmpName, "fermions_klattice_su3_n_%d_nx_%d_ny_%d_kx_%d_ky_%d_tz_%d_y_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum, this->TotalTz, this->TotalY);
+	    }
+	}
+    }
+  return TmpName;
+}

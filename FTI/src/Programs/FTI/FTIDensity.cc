@@ -21,6 +21,8 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpaceLong.h"
 #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace.h"
 
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
@@ -84,6 +86,7 @@ int main(int argc, char** argv)
 
   (*SystemGroup) += new SingleStringOption  ('\0', "ground-file", "name of the file corresponding to the ground state of the whole system");
   (*SystemGroup) += new SingleStringOption  ('\n', "degenerated-groundstate", "single column file describing a degenerated ground state");
+  (*SystemGroup) += new BooleanOption  ('\n', "off-diagonal", "use --degenerated-groundstate as a list of states and compute all the cross density terms");
   (*SystemGroup) += new BooleanOption  ('\n', "show-time", "show time required for each operation");
   (*SystemGroup) += new SingleIntegerOption  ('s', "nbr-subbands", "number of subbands", 1);
   (*SystemGroup) += new BooleanOption ('\n', "decoupled", "assume that the FTI states are made of two decoupled FCI copies");
@@ -408,13 +411,44 @@ int main(int argc, char** argv)
 		    {
 		      if (Statistics == true)
 			{
-			  if ((NbrSitesX * NbrSitesY) <= 32)
+			  if ((MaxBand0 >= 0) || (MaxBand1 >= 0))
 			    {
-			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx[i], TotalKy[i]);
+			      if (MaxBand0 < 0)
+				{
+				  MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+				}
+			      if (MaxBand1 < 0)
+				{
+				  MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+				}
+			      if (MinBand0 > (2 * NbrSitesX * NbrSitesY))
+				{
+				  MinBand0 = 2 * NbrSitesX * NbrSitesY;
+				}
+			      if (MinBand1 > (2 * NbrSitesX * NbrSitesY))
+				{
+				  MinBand1 = 2 * NbrSitesX * NbrSitesY;
+				}
+			      if ((NbrSitesX * NbrSitesY) <= 32)
+				{
+				  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MaxBand0, MaxBand1, TotalKx[i], TotalKy[i]);
+				}
+			      else
+				{
+				  cout << "--max-band0 and --max-band1 options without valley and more than 32 unit cells is not yet implemented" << endl;
+				  return 0;
+				}
 			    }
 			  else
 			    {
-			      Spaces[TmpIndex] = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx[i], TotalKy[i]);
+			      if ((NbrSitesX * NbrSitesY) <= 32)
+				{
+				  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx[i], TotalKy[i]);
+				}
+			      else
+				{
+				  Spaces[TmpIndex] = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx[i], TotalKy[i]);
+				}
 			    }
 			}
 		      else
@@ -808,41 +842,12 @@ int main(int argc, char** argv)
   File.precision(14);
   cout.precision(14);
   File << FileHeader << endl;
-  
-  if (Flag3d == false)
+
+  if (Manager.GetBoolean("off-diagonal") == false)
     {
-      if (NbrBands == 1)
+      if (Flag3d == false)
 	{
-	  for (int i = 0; i < NbrSpaces; ++i)
-	    {
-	      Complex TmpTotalDensity = 0.0;
-	      Complex* PartialTraces = new Complex[NbrDensityPartialTraces];
-	      for (int j = 0; j < NbrDensityPartialTraces; ++j)
-		{
-		  PartialTraces[j] = 0.0;
-		}
-	      int TmpIndex = (((TotalKx[i] * NbrSitesY) + TotalKy[i]) * NbrSiteZ) + TotalKz[i];
-	      for (int j = 0 ; j < NbrDensityIndices; ++j)
-		{
-		  ParticleOnSphereDensityOperator TmpOperator ((ParticleOnSphere*) Spaces[TmpIndex], CreationMomentumIndices[j], AnnihilationMomentumIndices[j]);
-		  Complex TmpElement = TmpOperator.MatrixElement(GroundStates[i], GroundStates[i]);
-		  if (CreationSigmaIndices[j] == AnnihilationSigmaIndices[j])
-		    {
-		      PartialTraces[CreationSigmaIndices[j]] += TmpElement;
-		      TmpTotalDensity += TmpElement;
-		    }
-		  File << IndexLabels[j] << " " << TmpElement << endl;
-		}
-	      for (int j = 0; j < NbrDensityPartialTraces; ++j)
-		{
-		  File << "# partial density " << PartialTraceLabels[j] << " = " << PartialTraces[j] << endl;
-		}
-	      File << "# total density = " << TmpTotalDensity << endl;
-	    }
-	}
-      else
-	{
-	  if (NbrBands >= 2)
+	  if (NbrBands == 1)
 	    {
 	      for (int i = 0; i < NbrSpaces; ++i)
 		{
@@ -855,7 +860,7 @@ int main(int argc, char** argv)
 		  int TmpIndex = (((TotalKx[i] * NbrSitesY) + TotalKy[i]) * NbrSiteZ) + TotalKz[i];
 		  for (int j = 0 ; j < NbrDensityIndices; ++j)
 		    {
-		      ParticleOnSquareLatticeWithGenericSpinBandDensityOperator TmpOperator ((ParticleOnSphereWithSpin*) Spaces[TmpIndex], CreationMomentumIndices[j], CreationSigmaIndices[j], AnnihilationMomentumIndices[j], AnnihilationSigmaIndices[j]);
+		      ParticleOnSphereDensityOperator TmpOperator ((ParticleOnSphere*) Spaces[TmpIndex], CreationMomentumIndices[j], AnnihilationMomentumIndices[j]);
 		      Complex TmpElement = TmpOperator.MatrixElement(GroundStates[i], GroundStates[i]);
 		      if (CreationSigmaIndices[j] == AnnihilationSigmaIndices[j])
 			{
@@ -871,7 +876,43 @@ int main(int argc, char** argv)
 		  File << "# total density = " << TmpTotalDensity << endl;
 		}
 	    }
+	  else
+	    {
+	      if (NbrBands >= 2)
+		{
+		  for (int i = 0; i < NbrSpaces; ++i)
+		    {
+		      Complex TmpTotalDensity = 0.0;
+		      Complex* PartialTraces = new Complex[NbrDensityPartialTraces];
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  PartialTraces[j] = 0.0;
+			}
+		      int TmpIndex = (((TotalKx[i] * NbrSitesY) + TotalKy[i]) * NbrSiteZ) + TotalKz[i];
+		      for (int j = 0 ; j < NbrDensityIndices; ++j)
+			{
+			  ParticleOnSquareLatticeWithGenericSpinBandDensityOperator TmpOperator ((ParticleOnSphereWithSpin*) Spaces[TmpIndex], CreationMomentumIndices[j], CreationSigmaIndices[j], AnnihilationMomentumIndices[j], AnnihilationSigmaIndices[j]);
+			  Complex TmpElement = TmpOperator.MatrixElement(GroundStates[i], GroundStates[i]);
+			  if (CreationSigmaIndices[j] == AnnihilationSigmaIndices[j])
+			    {
+			      PartialTraces[CreationSigmaIndices[j]] += TmpElement;
+			      TmpTotalDensity += TmpElement;
+			    }
+			  File << IndexLabels[j] << " " << TmpElement << endl;
+			}
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  File << "# partial density " << PartialTraceLabels[j] << " = " << PartialTraces[j] << endl;
+			}
+		      File << "# total density = " << TmpTotalDensity << endl;
+		    }
+		}
+	    }
 	}
+    }
+  else
+    {
+      // off diagonal case
     }
   File.close();
 

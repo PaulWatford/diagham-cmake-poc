@@ -43,6 +43,7 @@
 #include "GeneralTools/Endian.h"
 #include "GeneralTools/ArrayTools.h"
 #include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
+#include "GeneralTools/FilenameTools.h"
 
 #include <math.h>
 #include <cstdlib>
@@ -81,9 +82,10 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
 // maxNbrParticlesBand2 = maximum number of particles in band 2
 // kxMomentum = momentum along the x direction
 // kyMomentum = momentum along the y direction
+// outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
 // memory = amount of memory granted for precalculations
 
-FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory)
+FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, char* outputDirectory, unsigned long memory)
 {  
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
@@ -119,7 +121,27 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
   this->MaximumSignLookUp = 16;
   if (true)
     {
-      this->GenerateStatesFromSingleBandHilbertSpaces();
+      if (outputDirectory == 0)
+	{
+	  this->GenerateStatesFromSingleBandHilbertSpaces();
+	}
+      else
+	{
+	  char* TmpName = this->GetDefaultHilbertSpaceFileName();
+	  char* FullName = new char[strlen(TmpName) + strlen(outputDirectory) + 16];
+	  sprintf (FullName, "%s/%s", outputDirectory, TmpName);
+	  if (IsFile(FullName))
+	    {
+	      this->ReadCoreHilbertSpace(FullName);	  
+	    }
+	  else
+	    {
+	      this->GenerateStatesFromSingleBandHilbertSpaces();
+	      this->WriteCoreHilbertSpace(FullName);
+	    }
+	  delete[] TmpName;
+	  delete[] FullName;
+	}
     }
   else
     {
@@ -181,9 +203,10 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
 // maxNbrParticlesBand2 = maximum number of particles in band 2
 // kxMomentum = momentum along the x direction
 // kyMomentum = momentum along the y direction
+// outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
 // memory = amount of memory granted for precalculations
 
-FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory)
+FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, char* outputDirectory, unsigned long memory)
 {
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
@@ -217,7 +240,27 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
     }
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
-  this->GenerateStatesFromSingleBandHilbertSpaces();
+  if (outputDirectory == 0)
+    {
+      this->GenerateStatesFromSingleBandHilbertSpaces();
+    }
+  else
+    {
+      char* TmpName = this->GetDefaultHilbertSpaceFileName();
+      char* FullName = new char[strlen(TmpName) + strlen(outputDirectory) + 16];
+      sprintf (FullName, "%s/%s", outputDirectory, TmpName);
+      if (IsFile(FullName))
+	{
+	  this->ReadCoreHilbertSpace(FullName);	  
+	}
+      else
+	{
+	  this->GenerateStatesFromSingleBandHilbertSpaces();
+	  this->WriteCoreHilbertSpace(FullName);
+	}
+      delete[] TmpName;
+      delete[] FullName;
+    }
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
@@ -1109,5 +1152,24 @@ HermitianMatrix FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::EvaluatePa
       HermitianMatrix TmpDensityMatrixZero;
       return TmpDensityMatrixZero;
     }
+}
+
+// provide the default name of the file for Hilbert space storage 
+//
+// return value = pointer to file name (0 if no default file name exists) 
+
+char* FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::GetDefaultHilbertSpaceFileName()
+{
+  char* TmpName = this->FermionOnSquareLatticeWithSU3SpinMomentumSpace::GetDefaultHilbertSpaceFileName();
+  if (TmpName == 0)
+    {
+      return 0;
+    }
+  char* TmpExtension = new char[256];
+  sprintf(TmpExtension, "_minband0_%d_minband1_%d_minband2_%d_maxband0_%d_maxband1_%d_maxband2_%d.hil", this->MinNbrParticlesBand0, this->MinNbrParticlesBand1, this->MinNbrParticlesBand2, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
+  char* TmpName2 = ReplaceExtensionToFileName(TmpName, ".hil", TmpExtension);
+  delete[] TmpExtension;
+  delete[] TmpName;
+  return TmpName2;
 }
 

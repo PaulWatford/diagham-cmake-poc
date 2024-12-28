@@ -75,8 +75,9 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   // maxNbrParticlesBand2 = maximum number of particles in band 2
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, char* outputDirectory = 0, unsigned long memory = 10000000);
 
   // basic constructor
   // 
@@ -91,8 +92,9 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   // maxNbrParticlesBand2 = maximum number of particles in band 2
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int minNbrParticlesBand0, int minNbrParticlesBand1, int minNbrParticlesBand2, int maxNbrParticlesBand0, int maxNbrParticlesBand1, int maxNbrParticlesBand2, int kxMomentum, int kyMomentum, char* outputDirectory = 0, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
@@ -134,7 +136,12 @@ class FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong : public FermionO
   virtual HermitianMatrix EvaluatePartialDensityMatrixParticlePartition (int nbrParticleSector, int kxSector, int kySector, 
 									 int nbrGroundStates, ComplexVector* groundStates, double* weights, AbstractArchitecture* architecture = 0);
   
- protected:
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+
+protected:
 
   // evaluate Hilbert space dimension
   //

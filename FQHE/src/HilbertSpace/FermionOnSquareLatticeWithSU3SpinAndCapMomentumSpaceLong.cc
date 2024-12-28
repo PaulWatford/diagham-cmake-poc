@@ -1146,7 +1146,7 @@ char* FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpaceLong::GetDefaultHilber
       return 0;
     }
   char* TmpExtension = new char[256];
-  sprintf(TmpExtension, "_minband1_%d_minband1_%d_minband2_%dmaxband0_%d_maxband1_%d_maxband2_%d.hil", this->MinNbrParticlesBand0, this->MinNbrParticlesBand1, this->MinNbrParticlesBand2, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
+  sprintf(TmpExtension, "_minband0_%d_minband1_%d_minband2_%dmaxband0_%d_maxband1_%d_maxband2_%d.hil", this->MinNbrParticlesBand0, this->MinNbrParticlesBand1, this->MinNbrParticlesBand2, this->MaxNbrParticlesBand0, this->MaxNbrParticlesBand1, this->MaxNbrParticlesBand2);
   char* TmpName2 = ReplaceExtensionToFileName(TmpName, ".hil", TmpExtension);
   delete[] TmpExtension;
   delete[] TmpName;

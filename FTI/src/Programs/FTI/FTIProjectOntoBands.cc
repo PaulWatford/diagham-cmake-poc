@@ -16,6 +16,7 @@
 
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
 
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
@@ -158,13 +159,44 @@ int main(int argc, char** argv)
     {
       if (Statistics == true)
 	{
-	  if ((NbrSitesX * NbrSitesY) <= 32)
+	  if ((MaxBand0 >= 0) || (MaxBand1 >= 0))
 	    {
-	      InitialSpace = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+	      if (MaxBand0 < 0)
+		{
+		  MaxBand0 = 2 * NbrSitesX * NbrSitesY;
+		}
+	      if (MaxBand1 < 0)
+		{
+		  MaxBand1 = 2 * NbrSitesX * NbrSitesY;
+		}
+	      if (MinBand0 > (2 * NbrSitesX * NbrSitesY))
+		{
+		  MinBand0 = 2 * NbrSitesX * NbrSitesY;
+		}
+	      if (MinBand1 > (2 * NbrSitesX * NbrSitesY))
+		{
+		  MinBand1 = 2 * NbrSitesX * NbrSitesY;
+		}
+	      if ((NbrSitesX * NbrSitesY) <= 32)
+		{
+		  InitialSpace = new FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MinBand0, MinBand1, MaxBand0, MaxBand1, TotalKx, TotalKy);
+		}
+	      else
+		{
+		  cout << "--max-band0 and --max-band1 options without valley and more than 32 unit cells is not yet implemented" << endl;
+		  return 0;
+		}
 	    }
 	  else
 	    {
-	     InitialSpace  = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+	      if ((NbrSitesX * NbrSitesY) <= 32)
+		{
+		  InitialSpace = new FermionOnSquareLatticeWithSpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		}
+	      else
+		{
+		  InitialSpace  = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		}
 	    }
 	}
       else

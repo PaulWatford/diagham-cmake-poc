@@ -261,7 +261,7 @@ int main(int argc, char** argv)
 	}
     }
 
-  int Max = (LzMax * (NbrUp+NbrDown));
+  int Max = (((LzMax - NbrUp + 1) * NbrUp) + ((LzMax - NbrDown + 1) * NbrDown));
   cout << "maximum Ky value = " << Max << endl;
   int LSign = 1;
   if (Manager.GetBoolean("negative-lz"))

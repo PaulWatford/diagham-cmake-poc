@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
 
 
-  OptionManager Manager ("FQHETorusFermionsTwoBodyGeneric" , "0.01");
+  OptionManager Manager ("FQHECylinderFermionsTwoBodyGeneric" , "0.01");
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

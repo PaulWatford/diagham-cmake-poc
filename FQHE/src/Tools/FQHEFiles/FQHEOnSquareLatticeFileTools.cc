@@ -306,6 +306,10 @@ bool FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(char* filename,
     {
       StrNbrParticles += 4;
       int SizeString = 0;
+      if (StrNbrParticles[SizeString] == '-')
+	{
+	  ++SizeString;
+	}
       while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
 	     && (StrNbrParticles[SizeString] <= '9'))
 	++SizeString;
@@ -328,6 +332,10 @@ bool FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(char* filename,
 	{
 	  StrNbrParticles += 4;
 	  int SizeString = 0;
+	  if (StrNbrParticles[SizeString] == '-')
+	    {
+	      ++SizeString;
+	    }
 	  while ((StrNbrParticles[SizeString] != '\0') && (StrNbrParticles[SizeString] != '.') && (StrNbrParticles[SizeString] != '_') && (StrNbrParticles[SizeString] >= '0') 
 		 && (StrNbrParticles[SizeString] <= '9'))
 	    ++SizeString;

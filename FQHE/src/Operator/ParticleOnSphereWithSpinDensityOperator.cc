@@ -124,7 +124,7 @@ int ParticleOnSphereWithSpinDensityOperator::GetHilbertSpaceDimension ()
 Complex ParticleOnSphereWithSpinDensityOperator::PartialMatrixElement (RealVector& V1, RealVector& V2, long firstComponent, long nbrComponent)
 {
   int Dim = (int) (firstComponent + nbrComponent);
-  int FullDim = this->Particle->GetHilbertSpaceDimension();
+  int FullDim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   double Element = 0.0;
   int SymmetryIndex = (this->CreationSymmetryIndex << 1) | this->AnnihilationSymmetryIndex;
@@ -207,7 +207,7 @@ RealVector& ParticleOnSphereWithSpinDensityOperator::LowLevelAddMultiply(RealVec
 									 int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
-  int Dim = this->Particle->GetHilbertSpaceDimension();
+  int Dim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   int SymmetryIndex = (this->CreationSymmetryIndex << 1) | this->AnnihilationSymmetryIndex;
   switch (SymmetryIndex)
@@ -287,7 +287,7 @@ RealVector& ParticleOnSphereWithSpinDensityOperator::LowLevelAddMultiply(RealVec
 Complex ParticleOnSphereWithSpinDensityOperator::PartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
 {
   int Dim = (int) (firstComponent + nbrComponent);
-  int FullDim = this->Particle->GetHilbertSpaceDimension();
+  int FullDim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   Complex Element = 0.0;
   int SymmetryIndex = (this->CreationSymmetryIndex << 1) | this->AnnihilationSymmetryIndex;
@@ -370,7 +370,7 @@ ComplexVector& ParticleOnSphereWithSpinDensityOperator::LowLevelAddMultiply(Comp
 									    int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
-  int Dim = this->Particle->GetHilbertSpaceDimension();
+  int Dim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   int SymmetryIndex = (this->CreationSymmetryIndex << 1) | this->AnnihilationSymmetryIndex;
   switch (SymmetryIndex)

@@ -231,6 +231,8 @@ int main(int argc, char** argv)
 			}
 		      Q2y %= NbrSitesY;
 		      ComplexVector EigenstateOutput(SpaceDestination->GetHilbertSpaceDimension(), true);
+		      // cout << "creation x=" << Q1x << " y=" << Q1y << " " << TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y) << endl;
+		      // cout << "annihilation x=" << Q2x << " y=" << Q2y << " " << TightBindingModel->GetLinearizedMomentumIndex(Q2x, Q2y) << endl;
 		      ParticleOnSphereWithSpinDensityOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), CreationSpinIndex,
 									TightBindingModel->GetLinearizedMomentumIndex(Q2x, Q2y), AnnihilationSpinIndex);
 		      VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);

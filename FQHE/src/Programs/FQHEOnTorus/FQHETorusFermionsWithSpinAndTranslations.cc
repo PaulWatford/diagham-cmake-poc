@@ -8,6 +8,7 @@
 #include "HilbertSpace/FermionOnTorusWithSpinAndMagneticTranslations.h"
 #include "HilbertSpace/FermionOnTorusWithSpinAndMagneticTranslationsLong.h"
 #include "HilbertSpace/FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslations.h"
+#include "HilbertSpace/FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslationsLong.h"
 #include "HilbertSpace/SubspaceSpaceConverter.h"
 
 #include "Hamiltonian/ParticleOnTorusCoulombHamiltonian.h"
@@ -487,7 +488,18 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  TotalSpace = new FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslations (NbrFermions, TotalSpin, MaxMomentum, XMomentum, YMomentum);
+#ifdef __64_BITS__
+	  if (MaxMomentum < 31)
+#else
+	    if (MaxMomentum < 15)
+#endif
+	      {
+		TotalSpace = new FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslations (NbrFermions, TotalSpin, MaxMomentum, XMomentum, YMomentum);
+	      }
+	    else
+	      {
+		TotalSpace = new FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslationsLong (NbrFermions, TotalSpin, MaxMomentum, XMomentum, YMomentum);
+	      }
 	}
       cout << " Total Hilbert space dimension = " << TotalSpace->GetHilbertSpaceDimension() << endl;
       cout << "momentum = (" << XMomentum << "," << YMomentum << ")" << endl;

@@ -1532,6 +1532,17 @@ long FermionOnSphereWithSU3Spin::EvaluatePartialDensityMatrixParticlePartitionCo
 	  if ((TmpState & TmpState2) == 0x0ul)
 	    {
 	      int TmpLzMax = (3 * this->LzMax) + 2;
+#ifdef  __64_BITS__
+	      if (TmpLzMax > 63)
+		{
+		  TmpLzMax = 63;
+		}
+#else
+	      if (TmpLzMax > 31)
+		{
+		  TmpLzMax = 31;
+		}
+#endif
 	      unsigned long TmpState3 = TmpState | TmpState2;
 	      while ((TmpState3 >> TmpLzMax) == 0x0ul)
 		--TmpLzMax;
@@ -1541,6 +1552,17 @@ long FermionOnSphereWithSU3Spin::EvaluatePartialDensityMatrixParticlePartitionCo
  		  double Coefficient = TmpInvBinomial;
 		  unsigned long Sign = 0x0ul;
 		  int Pos2 = (TmpDestinationHilbertSpace->LzMax * 3) + 2;
+#ifdef  __64_BITS__
+		  if (Pos2 > 63)
+		    {
+		      Pos2 = 63;
+		    }
+#else
+		  if (Pos2 > 31)
+		    {
+		      Pos2 = 31;
+		    }
+#endif
 		  while ((Pos2 > 0) && (TmpState2 != 0x0ul))
 		    {
 		      while (((TmpState2 >> Pos2) & 0x1ul) == 0x0ul)

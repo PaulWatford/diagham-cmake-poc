@@ -8,6 +8,7 @@
 //                                                                            //
 //                 class of fermion with spin on a torus with time            //
 //         reversal symmetry, taking into account magnetic translations       //
+//                         for more than 31 flux quanta                       //
 //                                                                            //
 //                        last modification : 04/03/2025                      //
 //                                                                            //

@@ -83,11 +83,11 @@ FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslationsLong::FermionO
   this->StateShift = 2 * this->MaxMomentum / this->MomentumModulo;
   this->MomentumIncrement = (this->NbrFermions * this->StateShift / 2) % this->MomentumModulo;
   this->ComplementaryStateShift = 2 * this->MaxMomentum - this->StateShift;
-  this->MomentumMask = 0x1ul;
+  this->MomentumMask = ((ULONGLONG) 0x1ul);
   for (int i = 1; i < this->StateShift; ++i)
     {
       this->MomentumMask <<= 1;
-      this->MomentumMask |= 0x1ul;
+      this->MomentumMask |= ((ULONGLONG) 0x1ul);
     }
 
   
@@ -362,7 +362,7 @@ long FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslationsLong::Raw
   // enter recursion, here:
   // put two particles
   long TmpPos = this->RawGenerateStates(nbrFermions - 2, lzMax - 1, totalMomentum, totalSpinUp - 1,  pos);
-  unsigned long Mask = ((ULONGLONG) 0x3ul) << (lzMax << 1);
+  ULONGLONG Mask = ((ULONGLONG) 0x3ul) << (lzMax << 1);
   for (; pos < TmpPos; ++pos)
     this->StateDescription[pos] |= Mask;
   // put one particle with spin up

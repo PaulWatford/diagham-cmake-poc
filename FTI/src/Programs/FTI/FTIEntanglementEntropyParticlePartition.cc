@@ -950,7 +950,7 @@ int main(int argc, char** argv)
 						      if (NbrGroundStatePerMomentumSector[TmpIndex] == 1)
 							{
 							  HermitianMatrix TmpMatrix;
-							  if ((NbrSitesX * NbrSitesY) <= 32)
+							  if ((NbrSitesX * NbrSitesY) <= 21)
 							    {					  
 							      TmpMatrix = ((FermionOnSquareLatticeWithSU3SpinMomentumSpace*) Spaces[TmpIndex])->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalKx, SubsystemTotalKy, GroundStatePerMomentumSector[TmpIndex][0], Architecture.GetArchitecture());
 							    }
@@ -964,7 +964,7 @@ int main(int argc, char** argv)
 						      else
 							{
 							  HermitianMatrix TmpMatrix;
-							  if ((NbrSitesX * NbrSitesY) <= 32)
+							  if ((NbrSitesX * NbrSitesY) <= 21)
 							    {					  
 							      TmpMatrix = ((FermionOnSquareLatticeWithSU3SpinMomentumSpace*) Spaces[TmpIndex])->EvaluatePartialDensityMatrixParticlePartition(SubsystemNbrParticles, SubsystemTotalKx, SubsystemTotalKy, NbrGroundStatePerMomentumSector[TmpIndex], GroundStatePerMomentumSector[TmpIndex], CoefficientPerMomentumSector[TmpIndex], Architecture.GetArchitecture());
 							    }

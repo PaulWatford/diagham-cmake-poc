@@ -280,17 +280,18 @@ FermionOnTorusWithSpinAndMagneticTranslationsLong::~FermionOnTorusWithSpinAndMag
 {
   if ((this->Flag.Shared() == false) && (this->Flag.Used() == true))
     {
-      delete[] this->StateDescription;
-      delete[] this->StateHighestBit;
-      delete[] this->NbrStateInOrbit;      
-      delete[] this->ReorderingSign;
 
       delete[] this->SignLookUpTable;
-      delete[] this->NbrParticleLookUpTable;
       delete[] this->SignLookUpTableMask;      
   
       if (this->HilbertSpaceDimension != 0)
 	{
+	  delete[] this->StateDescription;
+	  delete[] this->StateHighestBit;
+	  delete[] this->NbrStateInOrbit;      
+	  delete[] this->ReorderingSign;
+	  delete[] this->NbrParticleLookUpTable;
+	  
 	  delete[] this->LookUpTableShift;
 	  for (int i = 0; i < this->NbrFermionStates; ++i)
 	    delete[] this->LookUpTable[i];

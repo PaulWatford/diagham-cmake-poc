@@ -100,25 +100,27 @@ FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslationsLong::FermionO
   
   cout << "Hilbert space dimension = "<< HilbertSpaceDimension << endl;
   this->Flag.Initialize();
-
-  if (this->HilbertSpaceDimension !=0)
-    this->GenerateLookUpTable(1000000);
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+
+  if (this->HilbertSpaceDimension != 0)
+    {
+      this->GenerateLookUpTable(1000000);
 #ifdef __DEBUG__
-  int UsedMemory = 0;
-  UsedMemory += 2 * this->HilbertSpaceDimension * sizeof(int);
-  UsedMemory += this->NbrMomentum * sizeof(int);
-  //  UsedMemory += this->NbrMomentum * this->LookUpTableMemorySize * sizeof(int);
-  UsedMemory +=  (1 << MaximumSignLookUp) * sizeof(double);
-  cout << "memory requested for Hilbert space = ";
-  if (UsedMemory >= 1024)
-    if (UsedMemory >= 1048576)
-      cout << (UsedMemory >> 20) << "Mo" << endl;
-    else
-      cout << (UsedMemory >> 10) << "ko" <<  endl;
-  else
-    cout << UsedMemory << endl;
-#endif    
+      int UsedMemory = 0;
+      UsedMemory += 2 * this->HilbertSpaceDimension * sizeof(int);
+      UsedMemory += this->NbrMomentum * sizeof(int);
+      //  UsedMemory += this->NbrMomentum * this->LookUpTableMemorySize * sizeof(int);
+      UsedMemory +=  (1 << MaximumSignLookUp) * sizeof(double);
+      cout << "memory requested for Hilbert space = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+#endif
+    }
 }
 
 // copy constructor (without duplicating datas)

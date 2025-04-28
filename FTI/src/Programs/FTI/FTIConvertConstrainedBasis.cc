@@ -70,6 +70,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption  ('\0', "ground-file", "name of the file corresponding to the state to be projected");
   (*SystemGroup) += new SingleStringOption  ('\n', "degenerated-groundstate", "single column file describing a degenerated ground state (all should be defined in the same source Hilbert space)");
   (*SystemGroup) += new SingleIntegerOption  ('s', "nbr-subbands", "number of subbands", 1);
+  (*SystemGroup) += new BooleanOption ('\n', "decoupled", "assume that the FTI states are made of two decoupled FCI copies");
   (*SystemGroup) += new SingleStringOption ('\n', "source-allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed for the source Hilbert space");
   (*SystemGroup) += new SingleStringOption ('\n', "target-allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed for the target Hilbert space");
   (*SystemGroup) += new SingleIntegerOption  ('\n', "target-max-band0", "maximum number of particles in band 0 for the target Hilbert space (negative if this number should be equal to the number of orbitals)", -1);
@@ -124,7 +125,7 @@ int main(int argc, char** argv)
   int TargetMinBand3 = Manager.GetInteger("target-min-band3");
   bool Statistics = true;
   int NbrBands = Manager.GetInteger("nbr-subbands");
-  bool FlagDecoupled = false;
+  bool FlagDecoupled = Manager.GetBoolean("decoupled");
   int NbrSpaces = 1;
   
   if (Manager.GetString("degenerated-groundstate") == 0)
@@ -155,13 +156,26 @@ int main(int argc, char** argv)
       TotalKx = 0;
       TotalKy = 0;
       double Mass = 0.0;
-      if (FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(GroundStateFiles[i],
-							      NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Mass, Statistics) == false)
+      if (FlagDecoupled == false)
 	{
-	  cout << "error while retrieving system parameters from file name " << GroundStateFiles[i] << endl;
-	  return -1;
+	  if (FQHEOnSquareLatticeFindSystemInfoFromVectorFileName(GroundStateFiles[i],
+								  NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, Mass, Statistics) == false)
+	    {
+	      cout << "error while retrieving system parameters from file name " << GroundStateFiles[i] << endl;
+	      return -1;
+	    }
+	  cout << GroundStateFiles[i] << " N=" << NbrParticles << " Nx=" << NbrSitesX << " Ny=" << NbrSitesY << " kx=" << TotalKx << " ky=" << TotalKy << endl;
 	}
-      cout << GroundStateFiles[i] << " N=" << NbrParticles << " Nx=" << NbrSitesX << " Ny=" << NbrSitesY << " kx=" << TotalKx << " ky=" << TotalKy << endl;
+      else
+	{
+	  if (FQHEOnSquareLatticeWithSpinFindSystemInfoFromVectorFileName(GroundStateFiles[i],
+									  NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy, TotalSpin, Statistics) == false)
+	    {
+	      cout << "error while retrieving system parameters from file name " << GroundStateFiles[i] << endl;
+	      return -1;
+	    }
+	  cout << GroundStateFiles[i] << " N=" << NbrParticles << " Nx=" << NbrSitesX << " Ny=" << NbrSitesY << " kx=" << TotalKx << " ky=" << TotalKy << " Sz=" << TotalSpin << endl;
+	}
       FQHEOnSquareLatticeFindMaxBandOccupationFromVectorFileName(GroundStateFiles[i], SourceMaxBand0, SourceMaxBand1, SourceMaxBand2, SourceMaxBand3);
       FQHEOnSquareLatticeFindMinBandOccupationFromVectorFileName(GroundStateFiles[i], SourceMinBand0, SourceMinBand1, SourceMinBand2, SourceMinBand3);
     }

@@ -624,6 +624,13 @@ class FermionOnSphereWithSU4Spin :  public ParticleOnSphereWithSU4Spin
   // return value = projection matrix
   virtual ComplexMatrix TransformationMatrixSU4ToSU2(ParticleOnSphereWithSpin* targetSpace, int spinUp = 0, int spinDown = 1);
 
+  // convert a given state from a generic basis to the current Sz subspace basis
+  //
+  // state = reference on the vector to convert
+  // basis = reference on the basis associated to state
+  // return value = converted vector
+  virtual ComplexVector ConvertFromNbodyBasis(ComplexVector& state, ParticleOnSphereWithSpin& basis);
+  
   protected:
 
   // factorized code for any a^+_m_x a_n_y operator 

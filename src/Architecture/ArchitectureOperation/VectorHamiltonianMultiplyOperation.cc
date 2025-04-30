@@ -322,8 +322,11 @@ bool VectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOperation(SMP
 bool VectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOperation(SimpleMPIArchitecture* architecture)
 {
 #ifdef __MPI__
+   timeval TotalStartingTime;
    if (architecture->IsMasterNode())
      {
+       if (architecture->VerboseMode())
+	 gettimeofday (&TotalStartingTime, 0);
        if (architecture->RequestOperation(this->OperationType) == false)
  	{
  	  return false;
@@ -355,13 +358,22 @@ bool VectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOperation(Sim
 	       architecture->BroadcastVectorType(this->DestinationVector);  
 	     }
 	 }
+       if (architecture->VerboseMode())
+	 {
+	   timeval TotalEndingTime;
+	   gettimeofday (&TotalEndingTime, 0);
+	   double  Dt = (((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec)) + 
+			 (((double) (TotalEndingTime.tv_usec - TotalStartingTime.tv_usec)) / 1000000.0));		      
+	   char TmpString[256];
+	   sprintf (TmpString, "VectorHamiltonianMultiply scatter/broadcast operation done in %.3f seconds", Dt);
+	   architecture->AddToLog(TmpString, true);
+	 }
      }
    long TmpMinimumIndex = 0;
    long TmpMaximumIndex = 0;
    architecture->GetTypicalRange(TmpMinimumIndex, TmpMaximumIndex);
    this->FirstComponent = (int) TmpMinimumIndex;  
    this->NbrComponent = (int) (TmpMaximumIndex - TmpMinimumIndex + 1l);
-   timeval TotalStartingTime;
    if (architecture->VerboseMode())
      gettimeofday (&TotalStartingTime, 0);
    if (architecture->GetLocalArchitecture()->GetArchitectureID() == AbstractArchitecture::SMP)

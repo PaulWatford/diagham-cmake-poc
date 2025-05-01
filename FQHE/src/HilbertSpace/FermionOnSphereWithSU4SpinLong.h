@@ -602,6 +602,13 @@ class FermionOnSphereWithSU4SpinLong :  public ParticleOnSphereWithSU4Spin
   // return value = resulting SU(2) state
   virtual RealVector ForgeSU2FromSU4(RealVector& state, FermionOnSphereWithSpin& su2Space);
 
+  // convert a given state from a generic basis to the current Sz subspace basis
+  //
+  // state = reference on the vector to convert
+  // basis = reference on the basis associated to state
+  // return value = converted vector
+  virtual ComplexVector ConvertFromNbodyBasis(ComplexVector& state, ParticleOnSphereWithSpin& basis);
+ 
   protected:
 
   // factorized code for any a^+_m_x a_n_y operator 

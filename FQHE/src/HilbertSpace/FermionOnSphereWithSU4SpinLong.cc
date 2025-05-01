@@ -1853,3 +1853,24 @@ RealVector FermionOnSphereWithSU4SpinLong::ForgeSU2FromSU4(RealVector& state, Fe
   FinalState /= FinalState.Norm();
   return FinalState;  
 }
+
+// convert a given state from a generic basis to the current Sz subspace basis
+//
+// state = reference on the vector to convert
+// basis = reference on the basis associated to state
+// return value = converted vector
+
+ComplexVector FermionOnSphereWithSU4SpinLong::ConvertFromNbodyBasis(ComplexVector& state, ParticleOnSphereWithSpin& basis)
+{
+  FermionOnSphereWithSU4SpinLong* TmpBasis = (FermionOnSphereWithSU4SpinLong*) &basis;
+  ComplexVector TmpState (this->LargeHilbertSpaceDimension, true);
+  for (long i = 0l; i < TmpBasis->LargeHilbertSpaceDimension; ++i)
+    {
+      int TmpIndex = this->FindStateIndex(TmpBasis->StateDescription[i], TmpBasis->StateHighestBit[i]);
+      if (TmpIndex < this->HilbertSpaceDimension)
+	{
+	  TmpState[TmpIndex] = state[i];
+	}
+    }
+  return TmpState;
+}

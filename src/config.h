@@ -62,6 +62,10 @@
 #define __MPI__
 #endif
 
+// avoid broadcast calls in MPI for large arrays
+#ifdef HAVE_MPI
+//#define __MPI_NOBROADCAST__
+#endif
 
 // LAPACK flag
 #ifdef HAVE_LAPACK

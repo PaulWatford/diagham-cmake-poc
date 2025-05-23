@@ -318,6 +318,9 @@ ComplexVector::ComplexVector(const MPI_Comm& communicator, int id, bool broadcas
   this->VectorType = Vector::ComplexDatas;
   int TmpArray[3];
   MPI_Status TmpMPIStatus;
+#ifdef __MPI_NOBROADCAST__
+  broadcast = false;
+#endif  
   if (broadcast == true)
     {
       MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
@@ -3018,7 +3021,19 @@ Vector& ComplexVector::BroadcastVector(const MPI_Comm& communicator,  int id)
     {
       this->Resize(TmpDimension);      
     }
+#ifdef __MPI_NOBROADCAST_
+  int NbrMPINodes = 0;
+  MPI_Comm_size(communicator, &NbrMPINodes);
+   for (int i = 0; i < NbrMPINodes; ++i)
+    {
+      if (id != i)
+	{
+	  MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
+	}
+    }  
+#else_
   MPI_Bcast(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, communicator); 
+#endif
   return *this;
 }
 
@@ -3227,8 +3242,21 @@ Vector* ComplexVector::BroadcastClone(const MPI_Comm& communicator, int id)
       TmpArray[0] = this->Dimension;
       TmpArray[1] = this->VectorId;
       TmpArray[2] = 2;
-      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
-      MPI_Bcast(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, communicator);      
+#ifdef __MPI_NOBROADCAST__
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
+      for (int i = 0; i < NbrMPINodes; ++i)
+	{
+	  if (id != i)
+	    {
+	      MPI_Send(TmpArray, 3, MPI_INT, i, 1, communicator);  
+	      MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
+	    }
+	}  
+#else      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
+      MPI_Bcast(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, communicator);
+#endif      
     }
   else
     {
@@ -3331,7 +3359,19 @@ Vector* ComplexVector::BroadcastEmptyClone(const MPI_Comm& communicator, int id,
 	{
 	  TmpArray[2] = 1;
 	}
-      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);      
+#ifdef __MPI_NOBROADCAST__
+      int NbrMPINodes = 0;
+      MPI_Comm_size(communicator, &NbrMPINodes);
+      for (int i = 0; i < NbrMPINodes; ++i)
+	{
+	  if (id != i)
+	    {
+	      MPI_Send(TmpArray, 3, MPI_INT, i, 1, communicator);  
+	    }
+	}  
+#else      
+      MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
+#endif
     }
   else
     {

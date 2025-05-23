@@ -709,18 +709,10 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
 	     this->ComplexDestinationPartialVectors[i].ClearVector();
 	 }
 
-       if (architecture->VerboseMode())
-	 {
-	   timeval TotalEndingTime;
-	   gettimeofday (&TotalEndingTime, 0);
-	   double  Dt = (((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec)) + 
-			 (((double) (TotalEndingTime.tv_usec - TotalStartingTime.tv_usec)) / 1000000.0));		      
-	   char TmpString[256];
-	   sprintf (TmpString, "MultipleVectorHamiltonianMultiply scatter/broadcast part 1 operation done in %.3f seconds", Dt);
-	   architecture->AddToLog(TmpString, true);
-	 }       
-       if (architecture->VerboseMode())
-	 gettimeofday (&TotalStartingTime, 0);
+      if (architecture->VerboseMode())
+	{
+	  gettimeofday (&TotalStartingTime, 0);
+	}
        if (this->UseConjugateFlag == true)
 	 {
 	   if (this->RealDestinationVectors != 0)
@@ -745,31 +737,7 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
 		 }
 	       else
 		 {
-		   if (architecture->VerboseMode())
-		     {
-		       timeval TotalEndingTime;
-		       gettimeofday (&TotalEndingTime, 0);
-		       double  Dt = (((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec)) + 
-				     (((double) (TotalEndingTime.tv_usec - TotalStartingTime.tv_usec)) / 1000000.0));		      
-		       char TmpString[256];
-		       sprintf (TmpString, "MultipleVectorHamiltonianMultiply scatter/broadcast part 2a operation done in %.3f seconds", Dt);
-		       architecture->AddToLog(TmpString, true);
-		     }       
-		   if (architecture->VerboseMode())
-		     gettimeofday (&TotalStartingTime, 0);
 		   architecture->BroadcastVectorArray(this->NbrVectors, this->ComplexSourceVectors);
-		   if (architecture->VerboseMode())
-		     {
-		       timeval TotalEndingTime;
-		       gettimeofday (&TotalEndingTime, 0);
-		       double  Dt = (((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec)) + 
-				     (((double) (TotalEndingTime.tv_usec - TotalStartingTime.tv_usec)) / 1000000.0));		      
-		       char TmpString[256];
-		       sprintf (TmpString, "MultipleVectorHamiltonianMultiply scatter/broadcast part 2b operation done in %.3f seconds", Dt);
-		       architecture->AddToLog(TmpString, true);
-		     }       
-		   if (architecture->VerboseMode())
-		     gettimeofday (&TotalStartingTime, 0);
 		   architecture->BroadcastVectorTypeArray(this->NbrVectors, this->ComplexDestinationVectors);  
 		 }
 	     }
@@ -782,31 +750,7 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
 		 }
 	       else
 		 {
-		   if (architecture->VerboseMode())
-		     {
-		       timeval TotalEndingTime;
-		       gettimeofday (&TotalEndingTime, 0);
-		       double  Dt = (((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec)) + 
-				     (((double) (TotalEndingTime.tv_usec - TotalStartingTime.tv_usec)) / 1000000.0));		      
-		       char TmpString[256];
-		       sprintf (TmpString, "MultipleVectorHamiltonianMultiply scatter/broadcast part 2c operation done in %.3f seconds", Dt);
-		       architecture->AddToLog(TmpString, true);
-		     }       
-		   if (architecture->VerboseMode())
-		     gettimeofday (&TotalStartingTime, 0);
 		   architecture->ScatterVectorArray(this->NbrVectors, this->ComplexSourceVectors);
-		   if (architecture->VerboseMode())
-		     {
-		       timeval TotalEndingTime;
-		       gettimeofday (&TotalEndingTime, 0);
-		       double  Dt = (((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec)) + 
-				     (((double) (TotalEndingTime.tv_usec - TotalStartingTime.tv_usec)) / 1000000.0));		      
-		       char TmpString[256];
-		       sprintf (TmpString, "MultipleVectorHamiltonianMultiply scatter/broadcast part 2d operation done in %.3f seconds", Dt);
-		       architecture->AddToLog(TmpString, true);
-		     }       
-		   if (architecture->VerboseMode())
-		     gettimeofday (&TotalStartingTime, 0);
 		   architecture->BroadcastVectorTypeArray(this->NbrVectors, this->ComplexDestinationVectors);  
 		 }
 	     }

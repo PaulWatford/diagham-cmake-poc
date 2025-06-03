@@ -1028,11 +1028,13 @@ int main(int argc, char** argv)
 		    {
 		      if (PzParityValues1[SymmetrySectorIndex] == 0)
 			{
-			  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-										      PzValues[SymmetrySectorIndex], 10000000ul);
+			  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (NbrParticles + PzValues[SymmetrySectorIndex]) / 2, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+										      10000000ul);
 			}
 		      else
 			{
+			  cout << "pz parity is not implemented" << endl; 
+			  return 0;
 			  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
 			  // 									    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
 			  // 									    PzValues[SymmetrySectorIndex],
@@ -1045,7 +1047,7 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
-		      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex], 10000000ul);
+		      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, (NbrParticles + PzValues[SymmetrySectorIndex]) / 2, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], 10000000ul);
 		    }
 		}
 	    }
@@ -1058,11 +1060,13 @@ int main(int argc, char** argv)
 		    {
 		      if (SzParityValues1[SymmetrySectorIndex] == 0)
 			{
-			  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-										      SzValues[SymmetrySectorIndex], 10000000ul);
+			  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (NbrParticles + SzValues[SymmetrySectorIndex]) / 2, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+										      10000000ul);
 			}
 		      else
 			{
+			  cout << "sz parity is not implemented" << endl;
+			  return 0;
 			  // Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzSymmetry (NbrParticles, NbrSitesX, NbrSitesY,
 			  // 									    KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
 			  // 									    SzValues[SymmetrySectorIndex],
@@ -1071,7 +1075,7 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
-		      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex], 10000000ul);
+		      Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, (NbrParticles + SzValues[SymmetrySectorIndex]) / 2, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], 10000000ul);
 		    }
 		}
 	      else

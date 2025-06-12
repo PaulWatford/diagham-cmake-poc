@@ -154,6 +154,12 @@ class AbstractQHEHamiltonian : public AbstractHamiltonian
   // return value = true if no error occurs
   virtual bool SavePrecalculation (char* fileName);
 
+  // save the many-body matrix elements in an ASCII file
+  // 
+  // fileName = pointer to a string containg the name of the file where matrix elements have to be stored
+  // return value = true if no error occurs
+  virtual bool SaveManyBodyMatrixElements (char* fileName);
+
  protected:
  
   // evaluate all interaction factors

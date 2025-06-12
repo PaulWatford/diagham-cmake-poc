@@ -261,6 +261,18 @@ void AbstractQHEHamiltonian::PartialEnableFastMultiplication(int jobIndex, int n
 
 bool AbstractQHEHamiltonian::LoadPrecalculation (char* fileName)
 {
+  cout << "using dummy AbstractQHEHamiltonian::LoadPrecalculation" << endl;
+  return false;
+}
+
+// save the many-body matrix elements in an ASCII file
+// 
+// fileName = pointer to a string containg the name of the file where matrix elements have to be stored
+// return value = true if no error occurs
+
+bool AbstractQHEHamiltonian::SaveManyBodyMatrixElements (char* fileName)
+{
+  cout << "using dummy AbstractQHEHamiltonian::SaveManyBodyMatrixElements" << endl;
   return false;
 }
 

@@ -107,6 +107,12 @@ class ParticleOnTorusGenericHamiltonian : public AbstractQHEOnTorusHamiltonian
   // hilbertSpace = pointer to Hilbert space to use
   virtual void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
 
+  // save the many-body matrix elements in an ASCII file
+  // 
+  // fileName = pointer to a string containg the name of the file where matrix elements have to be stored
+  // return value = true if no error occurs
+  virtual bool SaveManyBodyMatrixElements (char* fileName);
+
  protected:
  
   // evaluate all interaction factors

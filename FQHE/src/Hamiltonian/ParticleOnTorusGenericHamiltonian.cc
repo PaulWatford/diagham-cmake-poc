@@ -51,6 +51,8 @@
 using std::cout;
 using std::endl;
 using std::ostream;
+using std::ios;
+using std::ofstream;
 
 
 #define M1_12 0.08333333333333333
@@ -401,5 +403,77 @@ double ParticleOnTorusGenericHamiltonian::EvaluateInteractionCoefficient(int m1,
       N2 -= this->NbrLzValue;
     }
   return (Sum / this->NbrLzValue);
+}
+
+// save the many-body matrix elements in an ASCII file
+// 
+// fileName = pointer to a string containg the name of the file where matrix elements have to be stored
+// return value = true if no error occurs
+
+bool ParticleOnTorusGenericHamiltonian::SaveManyBodyMatrixElements (char* fileName)
+{
+  ofstream File;
+  File.open(fileName, ios::binary | ios::out);
+  File.precision(14);
+  File << "# ky1 ky2 ky3 ky4 M_{ky1,ky2;ky3,ky4}" << endl;
+  if (this->Particles->GetParticleStatistic() == ParticleOnTorus::FermionicStatistic)
+    {
+      this->GetIndices();
+      for (int i = 0; i < this->NbrSectorSums; ++i)
+	{
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->SectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->SectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->SectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->SectorIndicesPerSum[i][(j2 << 1) + 1];
+		  File << m1 << " " << m2 << " " << m3 << " " << m4 << " " << this->EvaluateInteractionCoefficient(m1, m2, m3, m4) << endl;
+		  File << m2 << " " << m1 << " " << m4 << " " << m3 << " " << this->EvaluateInteractionCoefficient(m2, m1, m4, m3) << endl;
+		  File << m1 << " " << m2 << " " << m4 << " " << m3 << " " << this->EvaluateInteractionCoefficient(m1, m2, m4, m3) << endl;
+		  File << m2 << " " << m1 << " " << m3 << " " << m4 << " " << this->EvaluateInteractionCoefficient(m2, m1, m3, m4) << endl;
+		}
+	    }
+	}
+    }
+  else
+    {
+      this->GetIndices();
+      for (int i = 0; i < this->NbrSectorSums; ++i)
+	{
+	  this->InteractionFactors[i] = new double[this->NbrSectorIndicesPerSum[i] * this->NbrSectorIndicesPerSum[i]];
+	  int Index = 0;
+	  for (int j1 = 0; j1 < this->NbrSectorIndicesPerSum[i]; ++j1)
+	    {
+	      int m1 = this->SectorIndicesPerSum[i][j1 << 1];
+	      int m2 = this->SectorIndicesPerSum[i][(j1 << 1) + 1];
+	      for (int j2 = 0; j2 < this->NbrSectorIndicesPerSum[i]; ++j2)
+		{
+		  int m3 = this->SectorIndicesPerSum[i][j2 << 1];
+		  int m4 = this->SectorIndicesPerSum[i][(j2 << 1) + 1];
+		  File << m1 << " " << m2 << " " << m3 << " " << m4 << " " << this->EvaluateInteractionCoefficient(m1, m2, m3, m4) << endl;
+		  if (m3 != m4)
+		    {
+		      File << m1 << " " << m2 << " " << m4 << " " << m3 << " " << this->EvaluateInteractionCoefficient(m1, m2, m4, m3) << endl;
+		      if (m1 != m2)
+			{
+			  File << m2 << " " << m1 << " " << m4 << " " << m3 << " " << this->EvaluateInteractionCoefficient(m2, m1, m4, m3) << endl;
+			}
+		    }
+		  else
+		    {
+		      if (m1 != m2)
+			{
+			  File << m2 << " " << m1 << " " << m3 << " " << m4 << " " << this->EvaluateInteractionCoefficient(m2, m1, m3, m4) << endl;
+			}
+		    }
+		}
+	    }
+	}
+    }
+  File.close();
+  return true;
 }
 

@@ -93,6 +93,7 @@ int main(int argc, char** argv)
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 500);
   (*PrecalculationGroup) += new SingleStringOption  ('\n', "load-precalculation", "load precalculation from a file",0);
   (*PrecalculationGroup) += new SingleStringOption  ('\n', "save-precalculation", "save precalculation in a file",0);
+  (*PrecalculationGroup) += new BooleanOption  ('\n', "export-matrixelements", "export the many-body matrix elements in an ASCII file");
 
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
@@ -233,7 +234,20 @@ int main(int argc, char** argv)
 									      Architecture.GetArchitecture(), Memory);
 	}
 
-      if (Manager.GetString("energy-expectation") != 0 )
+      if (Manager.GetBoolean("export-matrixelements"))
+	{
+	  int TmpLength = strlen(OutputNamePrefix) + 16;
+	  char* ExportFileName = new char [TmpLength];
+	  snprintf (ExportFileName, TmpLength, "%s.matel", OutputNamePrefix);
+	  if (Hamiltonian->SaveManyBodyMatrixElements(ExportFileName) == false)
+	    {
+	      cout << "error while writing " << ExportFileName << endl;
+	      return 0;
+	    }
+	  delete[] ExportFileName;
+	}
+      
+      if (Manager.GetString("energy-expectation") != 0)
 	{
           cout<<"Warning: assumes input vector is complex, while Hamiltonian is real."<<endl;
 

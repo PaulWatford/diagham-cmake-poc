@@ -111,13 +111,13 @@ FermionOnTorusWithMagneticTranslations::FermionOnTorusWithMagneticTranslations (
   this->GenerateSignLookUpTable();
   long TmpDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->MaxMomentum);
   cout << "Max dimension: " << TmpDimension << endl;
-  if (TmpDimension>INT_MAX)
-    cout << "Max-Dimension surpasses integer representation..."<<endl;
+  // if (TmpDimension>INT_MAX)
+  //   cout << "Max-Dimension surpasses integer representation..."<<endl;
   this->StateDescription = new unsigned long [TmpDimension];
   this->StateMaxMomentum = new int [TmpDimension];
   this->LargeHilbertSpaceDimension = this->RawGenerateStates(this->NbrFermions, this->MaxMomentum - 1, this->MaxMomentum - 1, 0l, 0);
   this->LargeHilbertSpaceDimension = this->GenerateStates();
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+  if (this->LargeHilbertSpaceDimension >= (1l << 31))
     this->HilbertSpaceDimension = 0;
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
@@ -992,10 +992,10 @@ long FermionOnTorusWithMagneticTranslations::RawGenerateStates(int nbrFermions, 
 // 
 // memory = memory size that can be allocated for the look-up table
 
-void FermionOnTorusWithMagneticTranslations::GenerateLookUpTable(int memory)
+void FermionOnTorusWithMagneticTranslations::GenerateLookUpTable(long memory)
 {
   // evaluate look-up table size
-  memory /= (4 * this->NbrMomentum);
+  memory /= (4l * this->NbrMomentum);
   this->MaximumLookUpShift = 1;
   while (memory > 0)
     {

@@ -399,7 +399,7 @@ class FermionOnTorusWithMagneticTranslations :  public ParticleOnTorusWithMagnet
   // generate look-up table associated to current Hilbert space
   // 
   // memeory = memory size that can be allocated for the look-up table
-  void GenerateLookUpTable(int memory);
+  void GenerateLookUpTable(long memory);
 
   // generate look-up table associated to sign calculations
   // 

@@ -412,7 +412,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpaceLong::GenerateStates(int nbrFerm
       currentKx--;
     }
 
-  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions))
+  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions) || (nbrSpinUp > ((currentKx * this->NbrSiteY) + currentKy + 1)) ||  ((nbrFermions - nbrSpinUp) > ((currentKx * this->NbrSiteY) + currentKy + 1)))
     return 0l;
 
   if (nbrFermions == 0)
@@ -563,7 +563,9 @@ long FermionOnSquareLatticeWithSpinMomentumSpaceLong::EvaluateHilbertSpaceDimens
       currentKy = this->NbrSiteY - 1;
       currentKx--;
     }
-  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions))
+  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions) || (nbrSpinUp > ((currentKx * this->NbrSiteY) + currentKy + 1))
+      ||  ((nbrFermions - nbrSpinUp) > ((currentKx * this->NbrSiteY) + currentKy + 1)))
+    //  if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions))
     return 0l;
 
   if (nbrFermions == 0)

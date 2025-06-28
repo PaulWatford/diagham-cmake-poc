@@ -4,6 +4,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinFilteredMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
@@ -1853,7 +1854,14 @@ int main(int argc, char** argv)
 			    }
 			  else
 			    {
-			      Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			      if (Manager.GetBoolean("3band-convention"))
+				{
+				  Space = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
+			      else
+				{
+				  Space = new FermionOnSquareLatticeWithSpinMomentumSpaceLong (NbrParticles, NbrParticlesBand1UpPlus[SymmetrySectorIndex], NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+				}
 			    }
 			}
 		    }

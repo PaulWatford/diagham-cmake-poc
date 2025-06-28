@@ -49,6 +49,7 @@
 #include <math.h>
 #include <cstdlib>
 #include <fstream>
+#include <sys/time.h>
 
 using std::cout;
 using std::endl;
@@ -91,7 +92,14 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
+  timeval TotalStartingTime;
+  gettimeofday (&(TotalStartingTime), 0);
   this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0);
+  timeval TotalEndingTime;
+  gettimeofday (&(TotalEndingTime), 0);
+  double Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	       ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));                   
+  cout << "Hilbert space dimension computed in " << Dt << "s" << endl;
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
@@ -102,7 +110,12 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
       this->TargetSpace = this;
       this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
       this->StateHighestBit = new int [this->HilbertSpaceDimension];  
+      gettimeofday (&(TotalStartingTime), 0);
       this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
+      gettimeofday (&(TotalEndingTime), 0);
+      Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));                   
+      cout << "Hilbert space generated in " << Dt << "s" << endl;
       this->GenerateLookUpTable(memory);
       
 #ifdef __DEBUG__
@@ -156,6 +169,8 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
+  timeval TotalStartingTime;
+  gettimeofday (&(TotalStartingTime), 0);
   if (this->NbrFermions <= (this->NbrSiteX * this->NbrSiteY))
     {
       this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp);
@@ -164,6 +179,11 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
     {
       this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((2 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, (this->NbrSiteX * (this->NbrSiteX - 1)) * this->NbrSiteY, (this->NbrSiteY * (this->NbrSiteY - 1)) * this->NbrSiteX, (this->NbrSiteX * this->NbrSiteY) - this->NbrFermionsUp);      
     }
+  timeval TotalEndingTime;
+  gettimeofday (&(TotalEndingTime), 0);
+  double Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	       ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));                   
+  cout << "Hilbert space dimension computed in " << Dt << "s" << endl;
   if (this->LargeHilbertSpaceDimension >= (1l << 30))
     this->HilbertSpaceDimension = 0;
   else
@@ -175,6 +195,7 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
       this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];
       long TmpLargeHilbertSpaceDimension = 0l;
+      gettimeofday (&(TotalStartingTime), 0);
       if (this->NbrFermions <= (this->NbrSiteX * this->NbrSiteY))
 	{
 	   TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp, 0l);
@@ -188,6 +209,10 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
 	{
 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
 	}
+      gettimeofday (&(TotalEndingTime), 0);
+      Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+	    ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));                   
+      cout << "Hilbert space generated in " << Dt << "s" << endl;
       this->GenerateLookUpTable(memory);
       
 #ifdef __DEBUG__

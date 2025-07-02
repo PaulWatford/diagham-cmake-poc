@@ -425,7 +425,7 @@ int main(int argc, char** argv)
   StringMaxLength = strlen(FilePrefix);
   if (StringMaxLength > 220)
     {
-      cout << "Error, the file prefix created from the interaction name " << StringMaxLength << " might exceed the number of characters allowed for a file name, please shorten the interaction name" << endl;
+      cout << "Error, the file prefix created from the interaction name " << FilePrefix << " (" << StringMaxLength << " characters) might exceed the number of characters allowed for a file name, please shorten the interaction name" << endl;
       return 0;
     }
   char* EigenvalueOutputFile = 0;

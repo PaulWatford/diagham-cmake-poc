@@ -325,16 +325,8 @@ int main(int argc, char** argv)
   char* BandMinCapPrefix = 0;
   if ((Manager.GetInteger("min-band0") < 0) && (Manager.GetInteger("min-band1") < 0) && (Manager.GetInteger("min-band2") < 0))
     {
-      if (Manager.GetString("allowed-orbitals") == 0)
-	{
-	  BandMinCapPrefix = new char [2];
-	  sprintf (BandMinCapPrefix, "");
-	}
-      else
-	{
-	  BandMinCapPrefix = new char [32];
-	  sprintf (BandMinCapPrefix, "_allowed_orbs");	  
-	}
+      BandMinCapPrefix = new char [2];
+      sprintf (BandMinCapPrefix, "");
     }
   else
     {
@@ -366,28 +358,13 @@ int main(int argc, char** argv)
 	  sprintf (BandCapPrefix2, "_minband2_%ld", Manager.GetInteger("min-band2"));
 	}
       BandMinCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1) + strlen(BandCapPrefix2)];
-      if (Manager.GetString("allowed-orbitals") == 0)
-	{
-	  sprintf (BandMinCapPrefix, "%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
-	}
-      else
-	{
-	  sprintf (BandMinCapPrefix, "_allowed_orbs%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
-	}
-    }
+      sprintf (BandMinCapPrefix, "%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
+   }
   char* BandMaxCapPrefix = 0;
   if ((Manager.GetInteger("max-band0") < 0) && (Manager.GetInteger("max-band1") < 0) && (Manager.GetInteger("max-band2") < 0))
     {
-      if (Manager.GetString("allowed-orbitals") == 0)
-	{
-	  BandMaxCapPrefix = new char [2];
-	  sprintf (BandMaxCapPrefix, "");
-	}
-      else
-	{
-	  BandMaxCapPrefix = new char [32];
-	  sprintf (BandMaxCapPrefix, "_allowed_orbs");	  
-	}
+      BandMaxCapPrefix = new char [2];
+      sprintf (BandMaxCapPrefix, "");
     }
   else
     {
@@ -419,35 +396,50 @@ int main(int argc, char** argv)
 	  sprintf (BandCapPrefix2, "_maxband2_%ld", Manager.GetInteger("max-band2"));
 	}
       BandMaxCapPrefix = new char [256 + strlen(BandCapPrefix0) + strlen(BandCapPrefix1) + strlen(BandCapPrefix2)];
-      if (Manager.GetString("allowed-orbitals") == 0)
-	{
-	  sprintf (BandMaxCapPrefix, "%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
-	}
-      else
-	{
-	  sprintf (BandMaxCapPrefix, "_allowed_orbs%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
-	}
+      sprintf (BandMaxCapPrefix, "%s%s%s", BandCapPrefix0, BandCapPrefix1, BandCapPrefix2);
     }
-  char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandMaxCapPrefix) + strlen(BandMinCapPrefix) +  strlen(Manager.GetString("interaction-name"))];
+  char* AllowedOrbitalPrefix = 0;
+  if (Manager.GetString("allowed-orbitals") == 0)
+    {
+     AllowedOrbitalPrefix  = new char [2];
+     sprintf (AllowedOrbitalPrefix, "");
+    }
+  else
+    {
+      AllowedOrbitalPrefix = new char [32];
+      sprintf (AllowedOrbitalPrefix, "_allowed_orbs");	  
+    }
+  int StringMaxLength = 512 + strlen(FileSystemGeometry) + strlen(AllowedOrbitalPrefix) + strlen(BandMaxCapPrefix) + strlen(BandMinCapPrefix) +  strlen(Manager.GetString("interaction-name"));
+  char* FilePrefix = new char [StringMaxLength];
   if (Manager.GetBoolean("flat-band"))
     {
-      sprintf (FilePrefix, "%s_threeband_flatband_%s%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
+      snprintf (FilePrefix, StringMaxLength, "%s_threeband_flatband_%s%s%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), AllowedOrbitalPrefix, BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
     }
   else
     {
-      sprintf (FilePrefix, "%s_threeband_u_%.3f_%s%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
-	       Manager.GetString("interaction-name"), BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
+      snprintf (FilePrefix, StringMaxLength, "%s_threeband_u_%.3f_%s%s%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
+	       Manager.GetString("interaction-name"), AllowedOrbitalPrefix, BandMinCapPrefix, BandMaxCapPrefix, FileSystemGeometry);
     }
   
-  char* EigenvalueOutputFile = new char [512 + strlen(FilePrefix)];
   
+  StringMaxLength = strlen(FilePrefix);
+  if (StringMaxLength > 220)
+    {
+      cout << "Error, the file prefix created from the interaction name " << StringMaxLength << " might exceed the number of characters allowed for a file name, please shorten the interaction name" << endl;
+      return 0;
+    }
+  char* EigenvalueOutputFile = 0;
   if (Manager.GetString("eigenvalue-file") != 0)
     {
-      strcpy(EigenvalueOutputFile, Manager.GetString("eigenvalue-file"));
+      StringMaxLength = strlen(Manager.GetString("eigenvalue-file"));
+      EigenvalueOutputFile = new char [StringMaxLength + 1];
+      strncpy(EigenvalueOutputFile, Manager.GetString("eigenvalue-file"), StringMaxLength + 1);
     }
   else
     {
-      sprintf (EigenvalueOutputFile, "%s.dat", FilePrefix);
+      StringMaxLength += 512;
+      EigenvalueOutputFile = new char [StringMaxLength];
+      snprintf (EigenvalueOutputFile, StringMaxLength, "%s.dat", FilePrefix);
     }
   
 

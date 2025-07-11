@@ -25,6 +25,7 @@
 
 #include "Operator/ParticleOnSphereCreationOperator.h"
 #include "Operator/ParticleOnSphereAnnihilationOperator.h"
+#include "Operator/ParticleOnSphereDensityOperator.h"
 
 #include "Tools/FQHEFiles/QHEOnSphereFileTools.h"
 
@@ -73,6 +74,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption  ('\n', "input-reference", "use a haldane basis with the given reference file for the input file");
   (*SystemGroup) += new SingleStringOption  ('\n', "output-reference", "use a haldane basis with the given reference file for the output file");
   (*SystemGroup) += new BooleanOption  ('\n', "annihilate-particle", "annihilate particle instead of creating it");
+  (*SystemGroup) += new BooleanOption  ('\n', "compute-lzvalue", "compute <Lz> for the state");
 
   (*DataGroup) += new SingleStringOption  ('i', "input-file", "input vector file name");
   (*DataGroup) += new SingleStringOption  ('o', "output-file", "output vector file name");
@@ -170,6 +172,20 @@ int main(int argc, char** argv)
     {
       IntialSpace = new BosonOnSphereShort(NbrParticles, Lz, LzMax);
     }
+
+  if (Manager.GetBoolean("compute-lzvalue") == true)
+   {
+      cout << "Compute <Lz> for initial dim= " << IntialSpace->GetHilbertSpaceDimension() << endl;
+      Architecture.GetArchitecture()->SetDimension(IntialSpace->GetHilbertSpaceDimension());
+
+	  double TmpLz = 0;	
+      for (int i = 0; i < IntialSpace->GetHilbertSpaceDimension(); i++)
+ 	       TmpLz += IntialSpace->GetLzValue(i) * pow(InitialVector[i], 2.0);
+      cout << "<Lz>= " << TmpLz << endl;
+  
+      delete IntialSpace;
+      return 0;
+   } 
 
 
   if (Manager.GetBoolean("annihilate-particle") == false)

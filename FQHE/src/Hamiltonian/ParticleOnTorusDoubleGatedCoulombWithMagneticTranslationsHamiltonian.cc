@@ -183,10 +183,21 @@ double ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::Get
 {
   double Result;
   double Q2 = 2.0 * Q2_half;
-  if ((this->HaveCoulomb) && (Q2_half != 0.0))
+  if (this->HaveCoulomb)
     {
-      double TmpSqrtQ2 = sqrt(Q2);
-      Result = GETSQR(this->FormFactor(Q2_half)) * tanh(TmpSqrtQ2 * this->GateDistance) / (TmpSqrtQ2  * (1.0 + (TmpSqrtQ2 * this->DielectricScreening)));
+      if (Q2_half != 0.0)
+	{
+	  double TmpSqrtQ2 = sqrt(Q2);
+	  Result = GETSQR(this->FormFactor(Q2_half)) * tanh(0.5 * TmpSqrtQ2 * this->GateDistance) / (TmpSqrtQ2  * (1.0 + (TmpSqrtQ2 * this->DielectricScreening)));
+	}
+      else
+	{
+	  Result = (this->FormFactor(Q2_half) * this->FormFactor(Q2_half) * (0.5 * this->GateDistance));
+	}
+      if (this->GateDistance > 0)
+	{
+	  Result *= 2.0;
+	}
     }
   else
     Result = 0.0;

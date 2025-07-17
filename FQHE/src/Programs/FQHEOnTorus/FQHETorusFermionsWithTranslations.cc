@@ -119,8 +119,10 @@ int main(int argc, char** argv)
   char *LoadPrecalculationFile=Manager.GetString("load-precalculation");
   int LandauLevel=0;
   int NbrPseudopotentials=0;
-  double *Pseudopotentials=NULL;
-  double HaveCoulomb=false;
+  double *Pseudopotentials = NULL;
+  double HaveCoulomb = false;
+  double DoubleGatedCoulombScreeningLength = Manager.GetDouble("double-gate");
+  bool HaveDoubleGatedCoulomb = false;  
   double DielectricScreening = 0.0;
   double FiniteWidth = 0.0;
   int FiniteWidthAnsatz = 0;
@@ -147,7 +149,21 @@ int main(int argc, char** argv)
 	  FiniteWidth = atof(InteractionDefinition["FiniteWidth"]);
 	  FiniteWidthAnsatz = atoi(InteractionDefinition["FiniteWidthAnsatz"]); //1 for Zhang-Das Sarma, 2 for Fang-Howard, 3 for Infinite Well
 	}
-
+      if (InteractionDefinition["DoubleGatedCoulombLandauLevel"] != NULL)
+	{
+	  LandauLevel = atoi(InteractionDefinition["DoubleGatedCoulombLandauLevel"]);
+	  HaveDoubleGatedCoulomb = true;
+	  if (InteractionDefinition["DoubleGatedCoulombScreeningLength"] == NULL)
+	    {
+	      cout << "DoubleGatedCoulombScreeningLength option should be provided in " << Manager.GetString("interaction-file") << endl;
+	      return 0; 
+	    }
+	  if (InteractionDefinition.GetAsSingleDouble("DoubleGatedCoulombScreeningLength", DoubleGatedCoulombScreeningLength) == false)
+	    {
+	      InteractionDefinition.DumpErrors(cout) << endl;
+	      return 0;
+	    }
+	}
       if (InteractionDefinition["Name"] == NULL)
 	{
 	  if ((InteractionDefinition["CoulombLandauLevel"] != NULL) && (InteractionDefinition["Pseudopotentials"] == NULL))
@@ -216,7 +232,10 @@ int main(int argc, char** argv)
     {
       XRatio = Manager.GetDouble("ratio");
     }
-
+  if (DoubleGatedCoulombScreeningLength > 0.0)
+    {
+      HaveDoubleGatedCoulomb = true;
+    }
   double Angle = Manager.GetDouble("angle");
 
   long Memory = ((unsigned long) Manager.GetInteger("memory")) << 20;
@@ -443,10 +462,10 @@ int main(int argc, char** argv)
 	{
 	  if (Manager.GetBoolean("mass-anisotropy") == false)
 	    {
-	      if (Manager.GetDouble("double-gate") != 0.0)
+	      if (HaveDoubleGatedCoulomb == true)
 		{
 		  Hamiltonian = new ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
-													 XRatio, Manager.GetDouble("double-gate"), HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
+													 XRatio, DoubleGatedCoulombScreeningLength, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
 													 !Manager.GetBoolean("add-wigner"), DielectricScreening,
 													 Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 		}

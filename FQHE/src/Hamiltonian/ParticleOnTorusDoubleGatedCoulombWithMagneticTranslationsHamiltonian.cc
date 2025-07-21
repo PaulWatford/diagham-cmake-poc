@@ -78,6 +78,7 @@ ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::ParticleOn
 // pseudopotentials = pseudopotential coefficients
 // noWignerEnergy = do not consider the energy contribution from the Wigner crystal 
 // dielectricScreening = dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
+// disableZeroMode = disable V(q=0) in the interaction for the double gated interaction
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
@@ -86,7 +87,7 @@ ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::ParticleOn
 																	   int nbrParticles, int maxMomentum, 
 																	   int xMomentum, double ratio, double gateDistance, bool haveCoulomb, int landauLevel,
 																	   int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
-																	   double dielectricScreening, AbstractArchitecture* architecture, long memory, 
+																	   double dielectricScreening, bool disableZeroMode, AbstractArchitecture* architecture, long memory, 
 																	   char* precalculationFileName)
 {
   this->Particles = particles;
@@ -103,6 +104,7 @@ ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::ParticleOn
   this->InvRatio = 1.0 / ratio;
   this->LandauLevel = landauLevel;
   this->DielectricScreening = dielectricScreening;
+  this->DisableZeroMode = disableZeroMode;
   this->NbrPseudopotentials = nbrPseudopotentials;  
   if (this->NbrPseudopotentials>0)
     {
@@ -192,7 +194,10 @@ double ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian::Get
 	}
       else
 	{
-	  Result = (this->FormFactor(Q2_half) * this->FormFactor(Q2_half) * (0.5 * this->GateDistance));
+	  if (this->DisableZeroMode == false)
+	    {
+	      Result = (this->FormFactor(Q2_half) * this->FormFactor(Q2_half) * (0.5 * this->GateDistance));
+	    }
 	}
       if (this->GateDistance > 0)
 	{

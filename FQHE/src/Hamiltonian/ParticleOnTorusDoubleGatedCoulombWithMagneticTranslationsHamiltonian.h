@@ -55,7 +55,10 @@ class ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian : pub
 
   // distance of any of the two gates to the electron gas
   double GateDistance;
-
+  
+  // disable V(q=0) in the interaction for the double gated interaction
+  bool DisableZeroMode;
+  
  public:
 
   // default constructor
@@ -76,12 +79,13 @@ class ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian : pub
   // pseudopotentials = pseudopotential coefficients
   // noWignerEnergy = do not consider the energy contribution from the Wigner crystal 
   // dielectricScreening = dielectric screening of the Coulomb interaction, i.e. 1 / ( q (1 + DielectricScreening q))
+  // disableZeroMode = disable V(q=0) in the interaction for the double gated interaction
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
   ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian(ParticleOnTorusWithMagneticTranslations* particles, int nbrParticles, int maxMomentum, int xMomentum,
 								       double ratio, double gateDistance, bool haveCoulomb, int landauLevel, int nbrPseudopotentials, double* pseudopotentials, bool noWignerEnergy,
-								       double dielectricScreening, AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
+								       double dielectricScreening, bool disableZeroMode, AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
 
   // destructor
   //

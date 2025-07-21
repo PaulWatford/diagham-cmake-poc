@@ -81,7 +81,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "all-points", "calculate all points", false);
   (*SystemGroup) += new BooleanOption  ('\n', "full-reducedbz", "calculate all points within the full reduced Brillouin zone", false);
   (*SystemGroup) += new BooleanOption  ('\n', "add-wigner", "consider the energy contribution from the Wigner crystal", false);
-  (*SystemGroup) += new BooleanOption  ('\n', "mass-anisotropy", "use a mass anisotropy for the system");
+   (*SystemGroup) += new BooleanOption  ('\n', "discard-zeromode", "discard V(q=0) for the double gated interaction", false);
+ (*SystemGroup) += new BooleanOption  ('\n', "mass-anisotropy", "use a mass anisotropy for the system");
   (*SystemGroup) += new SingleDoubleOption  ('\n', "anisotropy", "value of the anisotropy parameter alpha (i.e. q_g^2 = alpha q_x^2 + q_y^2 / alpha)", 1.0);
   (*SystemGroup) += new SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
   (*SystemGroup) += new SingleStringOption  ('\n', "eigenvalue-file", "filename for eigenvalues output");
@@ -213,6 +214,7 @@ int main(int argc, char** argv)
 	    {
 	      sprintf(InteractionName,"graphene_l_%d_dgate_%.6f", -LandauLevel, Manager.GetDouble("double-gate"));
 	    }
+	  HaveDoubleGatedCoulomb = true;
 	}
       else
 	{
@@ -466,7 +468,7 @@ int main(int argc, char** argv)
 		{
 		  Hamiltonian = new ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
 													 XRatio, DoubleGatedCoulombScreeningLength, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
-													 !Manager.GetBoolean("add-wigner"), DielectricScreening,
+													 !Manager.GetBoolean("add-wigner"), DielectricScreening, Manager.GetBoolean("discard-zeromode"), 
 													 Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
 		}
 	      else

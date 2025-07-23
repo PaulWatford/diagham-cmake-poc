@@ -200,6 +200,10 @@ double ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsRealHamiltonian:
 	    {
 	      Result = (this->FormFactor(Q2_half) * this->FormFactor(Q2_half) * (0.5 * this->GateDistance));
 	    }
+	  else
+	    {
+	      Result = 0.0;
+	    }
 	}
       if (this->GateDistance > 0)
 	{
@@ -207,10 +211,16 @@ double ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsRealHamiltonian:
 	}
     }
   else
-    Result = 0.0;
+    {
+      Result = 0.0;
+    }
   for (int i = 0; i < NbrPseudopotentials; ++i)
-    if (this->Pseudopotentials[i]!=0.0)
-      Result += 2.0*this->Pseudopotentials[i]*this->LaguerreM[i].PolynomialEvaluate(Q2);
+    {
+      if (this->Pseudopotentials[i] != 0.0)
+	{
+	  Result += 2.0 * this->Pseudopotentials[i] * this->LaguerreM[i].PolynomialEvaluate(Q2);
+	}
+    }
   return (Result * exp(-Q2_half));
 }
 

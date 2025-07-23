@@ -9,6 +9,7 @@
 #include "Hamiltonian/ParticleOnTorusCoulombWithMagneticTranslationsHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusCoulombWithMagneticTranslationsRealHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian.h"
+#include "Hamiltonian/ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsRealHamiltonian.h"
 #include "Hamiltonian/ParticleOnTorusCoulombMassAnisotropyWithMagneticTranslationsHamiltonian.h"
 #include "Hamiltonian/ParticleOnTwistedTorusCoulombWithMagneticTranslationsHamiltonian.h"
 
@@ -466,10 +467,26 @@ int main(int argc, char** argv)
 	    {
 	      if (HaveDoubleGatedCoulomb == true)
 		{
-		  Hamiltonian = new ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
-													 XRatio, DoubleGatedCoulombScreeningLength, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
-													 !Manager.GetBoolean("add-wigner"), DielectricScreening, Manager.GetBoolean("discard-zeromode"), 
-													 Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
+		  if ((Manager.GetBoolean("enable-realhamiltonian") == true) &&
+		      (((XMomentum % MomentumModulo) == 0) || (((MomentumModulo & 1) == 0) && ((XMomentum % MomentumModulo) == (MomentumModulo / 2)))) &&
+		      (((YMomentum % MomentumModulo) == 0) || (((MomentumModulo & 1) == 0) && ((YMomentum % MomentumModulo) == (MomentumModulo / 2)))))
+		    {
+		      cout << "using real hamiltonian" << endl;
+		      ForceRealFlag = true;
+		      Lanczos.SetRealAlgorithms();
+		      Hamiltonian = new ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsRealHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
+														 XRatio, DoubleGatedCoulombScreeningLength, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
+														 !Manager.GetBoolean("add-wigner"), DielectricScreening, Manager.GetBoolean("discard-zeromode"), 
+														 Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
+		    }
+		  else
+		    {
+		      cout << "using complex hamiltonian" << endl;
+		      Hamiltonian = new ParticleOnTorusDoubleGatedCoulombWithMagneticTranslationsHamiltonian(TotalSpace, NbrFermions, MaxMomentum, XMomentum, 
+													     XRatio, DoubleGatedCoulombScreeningLength, HaveCoulomb, LandauLevel, NbrPseudopotentials, Pseudopotentials,
+													     !Manager.GetBoolean("add-wigner"), DielectricScreening, Manager.GetBoolean("discard-zeromode"), 
+													     Architecture.GetArchitecture(), Memory, LoadPrecalculationFile);
+		    }
 		}
 	      else
 		{
@@ -550,14 +567,14 @@ int main(int argc, char** argv)
 	  Complex EnergyValue = InputState * TmpState;
           cout << "<Energy>= " << EnergyValue.Re << " " << EnergyValue.Im << endl;
 
-      if (Manager.GetBoolean("energy-variance") != 0 )
-       {
-   	     ComplexVector TmpState2(TotalSpace->GetHilbertSpaceDimension(), true);
-	     VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
-	     Operation2.ApplyOperation(Architecture.GetArchitecture());
-	     Complex varH = InputState * TmpState2 - EnergyValue * EnergyValue;
-	     cout << "(varH)^2 = " << varH.Re << " " << varH.Im << endl;
-       }   
+	  if (Manager.GetBoolean("energy-variance") != 0 )
+	    {
+	      ComplexVector TmpState2(TotalSpace->GetHilbertSpaceDimension(), true);
+	      VectorHamiltonianMultiplyOperation Operation2 (Hamiltonian, &TmpState, &TmpState2);
+	      Operation2.ApplyOperation(Architecture.GetArchitecture());
+	      Complex varH = InputState * TmpState2 - EnergyValue * EnergyValue;
+	      cout << "(varH)^2 = " << varH.Re << " " << varH.Im << endl;
+	    }   
 
 	  return 0;
 	}

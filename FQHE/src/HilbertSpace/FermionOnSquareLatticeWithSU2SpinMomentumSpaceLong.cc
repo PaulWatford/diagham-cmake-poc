@@ -190,7 +190,6 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong::FermionOnSquareLatticeWithSU
       this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
       gettimeofday (&(TotalStartingTime), 0);
-      cout << "test " << this->LargeHilbertSpaceDimension << endl;
       this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp, 0l);
       gettimeofday (&(TotalEndingTime), 0);
       Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 

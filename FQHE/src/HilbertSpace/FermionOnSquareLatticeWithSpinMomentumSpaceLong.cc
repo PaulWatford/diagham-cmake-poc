@@ -413,7 +413,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpaceLong::GenerateStates(int nbrFerm
     }
 
   if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions) || (nbrSpinUp > ((currentKx * this->NbrSiteY) + currentKy + 1)) ||  ((nbrFermions - nbrSpinUp) > ((currentKx * this->NbrSiteY) + currentKy + 1)))
-    return 0l;
+    return pos;
 
   if (nbrFermions == 0)
     {

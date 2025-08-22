@@ -431,7 +431,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStates(int nbrFermions
     }
 
   if ((nbrSpinUp < 0) || (nbrSpinUp > nbrFermions))
-    return 0l;
+    return pos;
 
   if (nbrFermions == 0)
     {
@@ -528,7 +528,7 @@ long FermionOnSquareLatticeWithSpinMomentumSpace::GenerateStatesHoles(int nbrHol
     }
 
   if ((nbrSpinUp < 0) || (nbrSpinUp > nbrHoles))
-    return 0l;
+    return pos;
 
   if (nbrHoles == 0)
     {

@@ -4394,16 +4394,16 @@ Vector* RealVector::BroadcastClone(const MPI_Comm& communicator, int id)
 
 Vector& RealVector::SendPartialClone(const MPI_Comm& communicator, int id, int firstComponent, int nbrComponent)
 {
-  cout << " send " << firstComponent << " " << (firstComponent + nbrComponent) << " components of vectors with dimension " << this->Dimension << endl;
-  for (int i = firstComponent; i < (firstComponent + nbrComponent); ++i)
-    {
-      cout << this->Components[i] << endl;
-    }
+  // cout << " send " << firstComponent << " " << (firstComponent + nbrComponent) << " components of vectors with dimension " << this->Dimension << endl;
+  // for (int i = firstComponent; i < (firstComponent + nbrComponent); ++i)
+  //   {
+  //     cout << this->Components[i] << endl;
+  //   }
   if ((firstComponent + nbrComponent) > this->Dimension)
     {
       int ErrorInt = -1;
       MPI_Send(&ErrorInt, 1, MPI_INT, id, 1, communicator);
-      cout << "Cannot send " << (firstComponent + nbrComponent) << " components of vectors with dimension " << this->Dimension << endl;
+      //      cout << "Cannot send " << (firstComponent + nbrComponent) << " components of vectors with dimension " << this->Dimension << endl;
       return *this;      
     }
   MPI_Send(&this->VectorType, 1, MPI_INT, id, 1, communicator);

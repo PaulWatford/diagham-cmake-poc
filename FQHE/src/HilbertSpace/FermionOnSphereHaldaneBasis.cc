@@ -1380,12 +1380,12 @@ void FermionOnSphereHaldaneBasis::GenerateLookUpTable(unsigned long memory)
   else
     {
       this->LargeLookUpTable = 0;
-      this->LookUpTable = new int* [this->NbrLzValue];
+      this->LookUpTable = new long* [this->NbrLzValue];
       this->LookUpTableShift = new int [this->NbrLzValue];
       for (int i = 0; i < this->NbrLzValue; ++i)
-	this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+	this->LookUpTable[i] = new long [this->LookUpTableMemorySize + 1];
       int CurrentLzMax = this->StateLzMax[0];
-      int* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
+      long* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
       if (CurrentLzMax < this->MaximumLookUpShift)
 	this->LookUpTableShift[CurrentLzMax] = 0;
       else
@@ -1445,10 +1445,10 @@ void FermionOnSphereHaldaneBasis::GenerateLookUpTable(unsigned long memory)
 	}
       while (CurrentLookUpTableValue > 0)
 	{
-	  TmpLookUpTable[CurrentLookUpTableValue] = this->HilbertSpaceDimension - 1;
+	  TmpLookUpTable[CurrentLookUpTableValue] = this->LargeHilbertSpaceDimension - 1l;
 	  --CurrentLookUpTableValue;
 	}
-      TmpLookUpTable[0] = this->HilbertSpaceDimension - 1;
+      TmpLookUpTable[0] = this->LargeHilbertSpaceDimension - 1l;
     }
   /*  for (unsigned long j = 0; j <= this->LookUpTableMemorySize; ++j)
     cout << TmpLookUpTable[j] << " ";

@@ -176,7 +176,7 @@ class FermionOnSphere :  public ParticleOnSphere
   // shift used in each lzmax sector
   int* LookUpTableShift;
   // look-up table with two entries : the first one used lzmax value of the state an the second 
-  int** LookUpTable;
+  long** LookUpTable;
   // look-up table for hilbert space larger than 2^31 with two entries : the first one used lzmax value of the state an the second 
   long** LargeLookUpTable;
 
@@ -1034,6 +1034,18 @@ class FermionOnSphere :  public ParticleOnSphere
   // return value = corresponding index, -1 if an error occured
   virtual int FindStateIndex(int* stateDescription);
 
+ // find state index from a string when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = string describing the state
+  // return value = corresponding index, -1 if an error occured
+  virtual long FindStateLargeIndex(char* stateDescription);
+
+  // find state index from an array of occupied orbitals when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = array describing the state (stored as k1,k2,k3,...)
+  // return value = corresponding index, -1 if an error occured
+  virtual long FindStateLargeIndex(int* stateDescription);
+
   // carefully test whether state is in Hilbert-space and find corresponding state index
   //
   // stateDescription = unsigned integer describing the state
@@ -1269,6 +1281,13 @@ class FermionOnSphere :  public ParticleOnSphere
   // lzmax = maximum Lz value reached by a fermion in the state
   // return value = corresponding index
   virtual int FindStateIndex(unsigned long stateDescription, int lzmax);
+
+  // find state index when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = unsigned integer describing the state
+  // lzmax = maximum Lz value reached by a fermion in the state
+  // return value = corresponding index
+  virtual long FindStateLargeIndex(unsigned long stateDescription, int lzmax);
 
   // evaluate Hilbert space dimension
   //

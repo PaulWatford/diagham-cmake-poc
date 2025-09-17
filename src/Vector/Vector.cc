@@ -172,6 +172,27 @@ Vector& Vector::AddLinearCombination (double x, Vector& V, int firstComponent, i
   return *this;
 }
 
+// add a linear combination to a given vector, for a given range of indices
+//
+// x = multiplicative coefficient
+// V = vector to add
+// return value = reference on current vector
+
+Vector& Vector::AddLinearCombination (double x, Vector& V, long firstComponent, long nbrComponent)
+{
+  switch ((V.VectorType & this->VectorType)  & Vector::DataTypeMask)
+    {
+    case (Vector::RealDatas):
+      return ((RealVector&) (*this)).AddLinearCombination (x, (RealVector&) V, firstComponent, nbrComponent);
+      break;
+    case (Vector::ComplexDatas):
+      return ((ComplexVector&) (*this)).AddLinearCombination (x, (ComplexVector&) V, firstComponent, nbrComponent);      break;
+    default:
+      return *this;
+    }
+  return *this;
+}
+
 // add a linear combination of two vectors to a given vector
 //
 // x1 = multiplicative coefficient of first vector
@@ -208,6 +229,33 @@ Vector& Vector::AddLinearCombination (double x1, Vector& v1, double x2, Vector& 
 
 Vector& Vector::AddLinearCombination (double x1, Vector& v1, double x2, 
 				      Vector& v2, int firstComponent, int nbrComponent)
+{
+  switch (((v1.VectorType & this->VectorType) & v2.VectorType)  & Vector::DataTypeMask)
+    {
+    case (Vector::RealDatas):
+      return ((RealVector&) (*this)).AddLinearCombination (x1, (RealVector&) v1, x1, (RealVector&) v2, firstComponent, nbrComponent);
+      break;
+    case (Vector::ComplexDatas):
+      return ((ComplexVector&) (*this)).AddLinearCombination (x1, (ComplexVector&) v1, x1, (ComplexVector&) v2, firstComponent, nbrComponent);
+      break;
+    default:
+      return *this;
+    }
+  return *this;
+}
+
+// add a linear combination of two vectors to a given vector, for a given range of indices
+//
+// x1 = multiplicative coefficient of first vector
+// v1 = first vector to add
+// x2 = multiplicative coefficient of first vector
+// v2 = first vector to add
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on current vector
+
+Vector& Vector::AddLinearCombination (double x1, Vector& v1, double x2, 
+				      Vector& v2, long firstComponent, long nbrComponent)
 {
   switch (((v1.VectorType & this->VectorType) & v2.VectorType)  & Vector::DataTypeMask)
     {

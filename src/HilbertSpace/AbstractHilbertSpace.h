@@ -85,6 +85,11 @@ class AbstractHilbertSpace
   // return value = Hilbert space dimension
   virtual long GetLargeHilbertSpaceDimension();
 
+  // test if the Hilbert space is larger than 2^31
+  //
+  // return value = true if the Hilbert space is larger than 2^31
+  virtual bool IsLargeHilbertSpace ();
+  
   // return a list of all possible quantum numbers 
   //
   // return value = pointer to corresponding quantum number
@@ -150,6 +155,15 @@ inline long AbstractHilbertSpace::GetLargeHilbertSpaceDimension()
 /*     return (long)this->HilbertSpaceDimension; */
 }
 
+// test if the Hilbert space is larger than 2^31
+//
+// return value = true if the Hilbert space is larger than 2^31
+
+inline bool AbstractHilbertSpace::IsLargeHilbertSpace ()
+{
+  return !(this->LargeHilbertSpaceDimension != ((long) this->HilbertSpaceDimension));
+}
+  
 // test that all states can be found
 //
 // Str = reference on current output stream 

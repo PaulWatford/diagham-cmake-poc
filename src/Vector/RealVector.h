@@ -310,6 +310,13 @@ class RealVector : public Vector
   // return value = reference on current vector
   RealVector& AddLinearCombination (double x, RealVector& V, int firstComponent, int nbrComponent);
 
+  // add a linear combination to a given vector, for a given range of indices
+  //
+  // x = multiplicative coefficient
+  // V = vector to add
+  // return value = reference on current vector
+  RealVector& AddLinearCombination (double x, RealVector& V, long firstComponent, long nbrComponent);
+
   // add a linear combination of two vectors to a given vector
   //
   // x1 = multiplicative coefficient of first vector
@@ -330,6 +337,18 @@ class RealVector : public Vector
   // return value = reference on current vector
   RealVector& AddLinearCombination (double x1, RealVector& v1, double x2, 
 				    RealVector& v2, int firstComponent, int nbrComponent);
+
+  // add a linear combination of two vectors to a given vector, for a given range of indices
+  //
+  // x1 = multiplicative coefficient of first vector
+  // v1 = first vector to add
+  // x2 = multiplicative coefficient of first vector
+  // v2 = first vector to add
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on current vector
+  RealVector& AddLinearCombination (double x1, RealVector& v1, double x2, 
+				    RealVector& v2, long firstComponent, long nbrComponent);
 
   // multiply a vector with a real number on the right hand side
   //

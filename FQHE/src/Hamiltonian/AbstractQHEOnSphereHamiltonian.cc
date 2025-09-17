@@ -58,11 +58,14 @@ using std::ostream;
 AbstractQHEOnSphereHamiltonian::AbstractQHEOnSphereHamiltonian()
 {
   this->NbrM12Indices = 0;
-  this->NbrInteractionPerComponent=0;
-  this->LoadBalancingArray=0;
-  this->NbrBalancedTasks=0;
-  this->FastMultiplicationStep=0;
-  this->HermitianSymmetryFlag=false;
+  this->NbrInteractionPerComponent = 0;
+  this->LoadBalancingArray = 0;
+  this->NbrBalancedTasks = 0;
+  this->FastMultiplicationStep = 0;
+  this->HermitianSymmetryFlag = false;
+  this->InteractionPerComponentIndex = 0;
+  this->InteractionPerComponentLargeIndex = 0;
+  
 }
 
 // destructor
@@ -88,12 +91,24 @@ AbstractQHEOnSphereHamiltonian::~AbstractQHEOnSphereHamiltonian()
 	  int ReducedDim = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
 	  if ((ReducedDim * this->FastMultiplicationStep) != EffectiveHilbertSpaceDimension)
 	    ++ReducedDim;
-	  for (int i = 0; i < ReducedDim; ++i)
+	  if (this->InteractionPerComponentLargeIndex == 0)
 	    {
-	      delete[] this->InteractionPerComponentIndex[i];
-	      delete[] this->InteractionPerComponentCoefficient[i];
+	      for (int i = 0; i < ReducedDim; ++i)
+		{
+		  delete[] this->InteractionPerComponentIndex[i];
+		  delete[] this->InteractionPerComponentCoefficient[i];
+		}
+	      delete[] this->InteractionPerComponentIndex;
 	    }
-	  delete[] this->InteractionPerComponentIndex;
+	  else
+	    {
+	      for (int i = 0; i < ReducedDim; ++i)
+		{
+		  delete[] this->InteractionPerComponentLargeIndex[i];
+		  delete[] this->InteractionPerComponentCoefficient[i];
+		}
+	      delete[] this->InteractionPerComponentLargeIndex;
+	    }
 	  delete[] this->InteractionPerComponentCoefficient;
 	}
       else
@@ -126,15 +141,6 @@ void AbstractQHEOnSphereHamiltonian::SetHilbertSpace (AbstractHilbertSpace* hilb
 AbstractHilbertSpace* AbstractQHEOnSphereHamiltonian::GetHilbertSpace ()
 {
   return this->Particles;
-}
-
-// return dimension of Hilbert space where Hamiltonian acts
-//
-// return value = corresponding matrix elementdimension
-
-int AbstractQHEOnSphereHamiltonian::GetHilbertSpaceDimension ()
-{
-  return this->Particles->GetHilbertSpaceDimension();
 }
 
 // shift Hamiltonian from a given energy

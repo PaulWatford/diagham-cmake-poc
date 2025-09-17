@@ -73,7 +73,7 @@ class BasicLanczosAlgorithmWithGroundStateDiskStorage : public AbstractLanczosAl
   int NbrIterationsGroundState;
 
   // internally stored dimension, to be used if re-read from disk for vector calculation only
-  int VectorDimension;
+  long VectorDimension;
 
  public:
 

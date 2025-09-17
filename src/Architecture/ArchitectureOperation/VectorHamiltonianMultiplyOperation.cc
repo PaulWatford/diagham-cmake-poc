@@ -59,6 +59,8 @@ VectorHamiltonianMultiplyOperation::VectorHamiltonianMultiplyOperation (Abstract
 {
   this->FirstComponent = 0;
   this->NbrComponent = sourceVector->GetVectorDimension();
+  this->FirstComponentLarge = 0;
+  this->NbrComponentLarge = sourceVector->GetLargeVectorDimension();
   this->Hamiltonian = hamiltonian;
   this->SourceVector = sourceVector;
   this->DestinationVector = destinationVector;
@@ -111,6 +113,8 @@ VectorHamiltonianMultiplyOperation::VectorHamiltonianMultiplyOperation(const Vec
 {
   this->FirstComponent = operation.FirstComponent;
   this->NbrComponent = operation.NbrComponent;
+  this->FirstComponentLarge = operation.FirstComponentLarge;
+  this->NbrComponentLarge = operation.NbrComponentLarge;
   this->Hamiltonian = operation.Hamiltonian;
   this->SourceVector = operation.SourceVector;
   this->DestinationVector = operation.DestinationVector;  
@@ -134,6 +138,8 @@ VectorHamiltonianMultiplyOperation::VectorHamiltonianMultiplyOperation(AbstractH
   architecture->GetTypicalRange(TmpMinimumIndex, TmpMaximumIndex);
   this->FirstComponent = (int) TmpMinimumIndex;  
   this->NbrComponent = (int) (TmpMaximumIndex - TmpMinimumIndex + 1l);
+  this->FirstComponentLarge = TmpMinimumIndex;  
+  this->NbrComponentLarge = (TmpMaximumIndex - TmpMinimumIndex + 1l);
   int TmpFlag = 0;
   architecture->BroadcastToSlaves(TmpFlag);
   if (TmpFlag == 1)
@@ -182,6 +188,21 @@ void VectorHamiltonianMultiplyOperation::SetIndicesRange (const int& firstCompon
 {
   this->FirstComponent = firstComponent;
   this->NbrComponent = nbrComponent;
+  this->FirstComponentLarge = (long) firstComponent;
+  this->NbrComponentLarge = (long) nbrComponent;
+}
+
+// set range of indices
+// 
+// firstComponent = index of the first component
+// nbrComponent = number of component
+
+void VectorHamiltonianMultiplyOperation::SetIndicesRange (const long& firstComponent, const long& nbrComponent)
+{
+  this->FirstComponent = (int) firstComponent;
+  this->NbrComponent = (int) nbrComponent;
+  this->FirstComponentLarge = firstComponent;
+  this->NbrComponentLarge = nbrComponent;
 }
 
 // set destination vector 
@@ -212,20 +233,41 @@ bool VectorHamiltonianMultiplyOperation::RawApplyOperation()
   timeval TotalEndingTime2;
   gettimeofday (&(TotalStartingTime2), 0);
 
-  if (this->UseConjugateFlag == true)
+  if (this->Hamiltonian->IsLargeHilbertSpace() == false)
     {
-      this->Hamiltonian->ConjugateMultiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponent, 
-					   this->NbrComponent);
-    }
-  else if (this->UseHermitianFlag == true)
-    {
-      this->Hamiltonian->HermitianMultiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponent, 
-					   this->NbrComponent);
+      if (this->UseConjugateFlag == true)
+	{
+	  this->Hamiltonian->ConjugateMultiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponent, 
+					       this->NbrComponent);
+	}
+      else if (this->UseHermitianFlag == true)
+	{
+	  this->Hamiltonian->HermitianMultiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponent, 
+					       this->NbrComponent);
+	}
+      else
+	{ 
+	  this->Hamiltonian->Multiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponent, 
+				      this->NbrComponent);
+	}
     }
   else
-    { 
-      this->Hamiltonian->Multiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponent, 
-				  this->NbrComponent);
+    {
+      if (this->UseConjugateFlag == true)
+	{
+	  this->Hamiltonian->ConjugateMultiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponentLarge, 
+					       this->NbrComponentLarge);
+	}
+      else if (this->UseHermitianFlag == true)
+	{
+	  this->Hamiltonian->HermitianMultiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponentLarge, 
+					       this->NbrComponentLarge);
+	}
+      else
+	{ 
+	  this->Hamiltonian->Multiply((*(this->SourceVector)), (*(this->DestinationVector)), this->FirstComponentLarge, 
+				      this->NbrComponentLarge);
+	}
     }
   gettimeofday (&(TotalEndingTime2), 0);
   this->ExecutionTime = (double) (TotalEndingTime2.tv_sec - TotalStartingTime2.tv_sec) + 
@@ -255,16 +297,20 @@ bool VectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOperation(SMP
     {
       this->FirstComponent = (int) TmpMinimumIndex;  
       this->NbrComponent = (int) (TmpMaximumIndex - TmpMinimumIndex + 1l);
+      this->FirstComponentLarge = TmpMinimumIndex;  
+      this->NbrComponentLarge = (TmpMaximumIndex - TmpMinimumIndex + 1l);
     }
   if (Hamiltonian->GetLoadBalancing(TmpNbrThreads, SegmentIndices) == false)
     {
       SegmentIndices = new long[TmpNbrThreads+1];
       CleanUp = true;
-      int Step = this->NbrComponent / TmpNbrThreads;
-      SegmentIndices[0] = this->FirstComponent;
+      long Step = this->NbrComponentLarge / ((long) TmpNbrThreads);
+      SegmentIndices[0] = this->FirstComponentLarge;
       for (int i = 0; i < TmpNbrThreads; ++i)
-	SegmentIndices[i] = this->FirstComponent + i * Step;
-      SegmentIndices[TmpNbrThreads] = this->FirstComponent + this->NbrComponent;
+	{
+	  SegmentIndices[i] = this->FirstComponentLarge + ((long) i) * Step;
+	}
+      SegmentIndices[TmpNbrThreads] = this->FirstComponentLarge + this->NbrComponentLarge;
     }
 //   else
 //     {
@@ -279,7 +325,7 @@ bool VectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOperation(SMP
     {
       TmpOperations[i] = (VectorHamiltonianMultiplyOperation*) this->Clone();
       architecture->SetThreadOperation(TmpOperations[i], i);
-      TmpOperations[i]->SetIndicesRange(SegmentIndices[i], SegmentIndices[i+1]-SegmentIndices[i]);
+      TmpOperations[i]->SetIndicesRange(SegmentIndices[i], SegmentIndices[i+1] - SegmentIndices[i]);
     }
   if (this->UseConjugateFlag == false)
     {
@@ -374,6 +420,8 @@ bool VectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOperation(Sim
    architecture->GetTypicalRange(TmpMinimumIndex, TmpMaximumIndex);
    this->FirstComponent = (int) TmpMinimumIndex;  
    this->NbrComponent = (int) (TmpMaximumIndex - TmpMinimumIndex + 1l);
+   this->FirstComponentLarge = TmpMinimumIndex;  
+   this->NbrComponentLarge = (TmpMaximumIndex - TmpMinimumIndex + 1l);
    if (architecture->VerboseMode())
      gettimeofday (&TotalStartingTime, 0);
    if (architecture->GetLocalArchitecture()->GetArchitectureID() == AbstractArchitecture::SMP)

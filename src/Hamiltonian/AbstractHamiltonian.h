@@ -97,6 +97,16 @@ class AbstractHamiltonian
   // return value = corresponding matrix elementdimension
   virtual int GetHilbertSpaceDimension () = 0;
   
+  // return dimension of Hilbert space where Hamiltonian acts
+  //
+  // return value = corresponding matrix elementdimension
+  virtual long GetLargeHilbertSpaceDimension ();
+  
+  // test if the Hilbert space is larger than 2^31
+  //
+  // return value = true if the Hilbert space is larger than 2^31
+  virtual bool IsLargeHilbertSpace ();
+  
   // shift Hamiltonian from a given energy
   //
   // shift = shift value
@@ -249,6 +259,17 @@ class AbstractHamiltonian
   //
   // vSource = vector to be multiplied
   // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
+				       long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
   // sourceStart = source vector first index
   // sourceStep = step to add to go to the following source vector index
   // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
@@ -261,6 +282,24 @@ class AbstractHamiltonian
   virtual RealVector& LowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
 				       int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 				       int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
+				       long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+				       long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -282,6 +321,17 @@ class AbstractHamiltonian
 					  int firstComponent, int nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+					  long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result in another vector, low level function (no architecture optimization)
   //
   // vSource = vector to be multiplied
@@ -298,6 +348,24 @@ class AbstractHamiltonian
   virtual RealVector& LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
 					  int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 					  int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+					  long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+					  long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian and store result in another set of vectors
   // low level function (no architecture optimization)
@@ -320,6 +388,18 @@ class AbstractHamiltonian
   virtual RealVector* LowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 					       int firstComponent, int nbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+					       long firstComponent, long nbrComponent);
+
   // multiply a set of vector by the current hamiltonian for a given range of indices 
   // and store result in another set of vector, low level function (no architecture optimization)
   //
@@ -338,6 +418,25 @@ class AbstractHamiltonian
   virtual RealVector* LowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 					       int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 					       int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a set of vector by the current hamiltonian for a given range of indices 
+  // and store result in another set of vector, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+					       long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+					       long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -361,6 +460,18 @@ class AbstractHamiltonian
 						  int firstComponent, int nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+						  long firstComponent, long nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result in another set of vectors, low level function (no architecture optimization)
   //
   // vSource = array of vectors to be multiplied
@@ -378,6 +489,25 @@ class AbstractHamiltonian
   virtual RealVector* LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors,
 						  int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						  int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors,
+						  long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						  long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian and store result in another vector
   // low level function (no architecture optimization)
@@ -403,6 +533,17 @@ class AbstractHamiltonian
   //
   // vSource = vector to be multiplied
   // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& LowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+					  long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
   // sourceStart = source vector first index
   // sourceStep = step to add to go to the following source vector index
   // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
@@ -415,6 +556,24 @@ class AbstractHamiltonian
   virtual ComplexVector& LowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
 					  int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 					  int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& LowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+					  long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+					  long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -435,6 +594,17 @@ class AbstractHamiltonian
   virtual ComplexVector& LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
 					     int firstComponent, int nbrComponent);
  
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+					     long firstComponent, long nbrComponent);
+ 
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -453,6 +623,24 @@ class AbstractHamiltonian
   virtual ComplexVector& LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
 					     int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 					     int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+					     long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+					     long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian and store result in another set of vectors
   // low level function (no architecture optimization)
@@ -481,6 +669,18 @@ class AbstractHamiltonian
   // vSources = array of vectors to be multiplied
   // vDestinations = array of vectors where result has to be stored
   // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* LowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+						  long firstComponent, long nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
   // sourceStart = source vector first index
   // sourceStep = step to add to go to the following source vector index
   // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
@@ -493,6 +693,25 @@ class AbstractHamiltonian
   virtual ComplexVector* LowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
 						  int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						  int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+  
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* LowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+						  long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						  long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
   
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -515,6 +734,18 @@ class AbstractHamiltonian
   virtual ComplexVector* LowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
 						     int firstComponent, int nbrComponent);
  
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* LowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+						     long firstComponent, long nbrComponent);
+ 
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -535,6 +766,25 @@ class AbstractHamiltonian
 						     int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						     int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* LowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+						     long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						     long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
+
   // multiply a vector by the current hamiltonian and store result in another vector
   // low level function (no architecture optimization)
   //
@@ -552,7 +802,18 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual RealVector& ConjugateLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
-				       int firstComponent, int nbrComponent);
+						int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
+						long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and store result in another vector, low level function (no architecture optimization)
@@ -571,6 +832,24 @@ class AbstractHamiltonian
   virtual RealVector& ConjugateLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
 						int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
+						long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -592,6 +871,17 @@ class AbstractHamiltonian
 						   int firstComponent, int nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+						   long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result in another vector, low level function (no architecture optimization)
   //
   // vSource = vector to be multiplied
@@ -608,6 +898,24 @@ class AbstractHamiltonian
   virtual RealVector& ConjugateLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
 						   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+						   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian and store result in another set of vectors
   // low level function (no architecture optimization)
@@ -630,6 +938,18 @@ class AbstractHamiltonian
   virtual RealVector* ConjugateLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 							int firstComponent, int nbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							long firstComponent, long nbrComponent);
+
   // multiply a set of vector by the current hamiltonian for a given range of indices 
   // and store result in another set of vector, low level function (no architecture optimization)
   //
@@ -648,6 +968,25 @@ class AbstractHamiltonian
   virtual RealVector* ConjugateLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 							int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 							int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a set of vector by the current hamiltonian for a given range of indices 
+  // and store result in another set of vector, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -671,6 +1010,18 @@ class AbstractHamiltonian
 							   int firstComponent, int nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							   long firstComponent, long nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result in another set of vectors, low level function (no architecture optimization)
   //
   // vSource = array of vectors to be multiplied
@@ -688,6 +1039,25 @@ class AbstractHamiltonian
   virtual RealVector* ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors,
 							   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 							   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors,
+							   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian and store result in another vector
   // low level function (no architecture optimization)
@@ -713,6 +1083,17 @@ class AbstractHamiltonian
   //
   // vSource = vector to be multiplied
   // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& ConjugateLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						   long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
   // sourceStart = source vector first index
   // sourceStep = step to add to go to the following source vector index
   // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
@@ -725,6 +1106,24 @@ class AbstractHamiltonian
   virtual ComplexVector& ConjugateLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
 						   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& ConjugateLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -743,7 +1142,18 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual ComplexVector& ConjugateLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-					     int firstComponent, int nbrComponent);
+						      int firstComponent, int nbrComponent);
+ 
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& ConjugateLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						      long firstComponent, long nbrComponent);
  
 
   // multiply a vector by the current hamiltonian for a given range of indices 
@@ -765,6 +1175,24 @@ class AbstractHamiltonian
 						      int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian and store result in another set of vectors
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& ConjugateLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						      long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						      long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
+
   // low level function (no architecture optimization)
   //
   // vSources = array of vectors to be multiplied
@@ -791,6 +1219,18 @@ class AbstractHamiltonian
   // vSources = array of vectors to be multiplied
   // vDestinations = array of vectors where result has to be stored
   // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* ConjugateLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							   long firstComponent, long nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
   // sourceStart = source vector first index
   // sourceStep = step to add to go to the following source vector index
   // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
@@ -803,6 +1243,25 @@ class AbstractHamiltonian
   virtual ComplexVector* ConjugateLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
 							   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 							   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+  
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* ConjugateLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
   
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -825,6 +1284,18 @@ class AbstractHamiltonian
   virtual ComplexVector* ConjugateLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
 							      int firstComponent, int nbrComponent);
  
+ // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* ConjugateLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							      long firstComponent, long nbrComponent);
+ 
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -842,8 +1313,27 @@ class AbstractHamiltonian
   // destinationNbrComponent = number of component to take into account in the destination vector
   // return value = pointer to the array of vectors where result has been stored
   virtual ComplexVector* ConjugateLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
-						     int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
-						     int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+							      int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
+							      int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* ConjugateLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							      long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							      long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian and store result in another vector
   // low level function (no architecture optimization)
@@ -869,6 +1359,17 @@ class AbstractHamiltonian
   //
   // vSource = vector to be multiplied
   // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& HermitianLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
+						long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
   // sourceStart = source vector first index
   // sourceStep = step to add to go to the following source vector index
   // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
@@ -881,6 +1382,24 @@ class AbstractHamiltonian
   virtual RealVector& HermitianLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
 						int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual RealVector& HermitianLowLevelMultiply(RealVector& vSource, RealVector& vDestination, 
+						long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -902,6 +1421,17 @@ class AbstractHamiltonian
 						   int firstComponent, int nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& HermitianLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+						   long firstComponent, long nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result in another vector, low level function (no architecture optimization)
   //
   // vSource = vector to be multiplied
@@ -918,6 +1448,24 @@ class AbstractHamiltonian
   virtual RealVector& HermitianLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
 						   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 						   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual RealVector& HermitianLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+						   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian and store result in another set of vectors
   // low level function (no architecture optimization)
@@ -940,6 +1488,18 @@ class AbstractHamiltonian
   virtual RealVector* HermitianLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 							int firstComponent, int nbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* HermitianLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							long firstComponent, long nbrComponent);
+
   // multiply a set of vector by the current hamiltonian for a given range of indices 
   // and store result in another set of vector, low level function (no architecture optimization)
   //
@@ -958,6 +1518,25 @@ class AbstractHamiltonian
   virtual RealVector* HermitianLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 							int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 							int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+ // multiply a set of vector by the current hamiltonian for a given range of indices 
+  // and store result in another set of vector, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* HermitianLowLevelMultipleMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -981,6 +1560,18 @@ class AbstractHamiltonian
 							   int firstComponent, int nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* HermitianLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							   long firstComponent, long nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result in another set of vectors, low level function (no architecture optimization)
   //
   // vSource = array of vectors to be multiplied
@@ -999,6 +1590,25 @@ class AbstractHamiltonian
 							   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 							   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* HermitianLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors,
+							   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
+
   // multiply a vector by the current hamiltonian and store result in another vector
   // low level function (no architecture optimization)
   //
@@ -1016,7 +1626,18 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual ComplexVector& HermitianLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-					  int firstComponent, int nbrComponent);
+						   int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& HermitianLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						   long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and store result in another vector, low level function (no architecture optimization)
@@ -1033,8 +1654,26 @@ class AbstractHamiltonian
   // destinationNbrComponent = number of component to take into account in the destination vector
   // return value = reference on vector where result has been stored
   virtual ComplexVector& HermitianLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-					  int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
-					  int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+						   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
+						   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& HermitianLowLevelMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -1053,8 +1692,18 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual ComplexVector& HermitianLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-					     int firstComponent, int nbrComponent);
+						      int firstComponent, int nbrComponent);
  
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& HermitianLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						      long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -1071,8 +1720,26 @@ class AbstractHamiltonian
   // destinationNbrComponent = number of component to take into account in the destination vector
   // return value = reference on vector where result has been stored
   virtual ComplexVector& HermitianLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-					     int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
-					     int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+						      int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
+						      int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& HermitianLowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+						      long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+						      long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a set of vectors by the current hamiltonian and store result in another set of vectors
   // low level function (no architecture optimization)
@@ -1093,7 +1760,19 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = pointer to the array of vectors where result has been stored
   virtual ComplexVector* HermitianLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
-						  int firstComponent, int nbrComponent);
+							   int firstComponent, int nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* HermitianLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							   long firstComponent, long nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and store result in another set of vectors, low level function (no architecture optimization)
@@ -1111,8 +1790,27 @@ class AbstractHamiltonian
   // destinationNbrComponent = number of component to take into account in the destination vector
   // return value = pointer to the array of vectors where result has been stored
   virtual ComplexVector* HermitianLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
-						  int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
-						  int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+							   int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
+							   int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
+  
+ // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and store result in another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* HermitianLowLevelMultipleMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							   long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							   long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
   
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -1135,6 +1833,17 @@ class AbstractHamiltonian
   virtual ComplexVector* HermitianLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
 							      int firstComponent, int nbrComponent);
  
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* HermitianLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							      long firstComponent, long nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -1155,6 +1864,24 @@ class AbstractHamiltonian
 							      int sourceStart, int sourceStep, int sourceShift, int sourceNbrComponent,
 							      int destinationStart, int destinationStep, int destinationShift, int destinationNbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // sourceStart = source vector first index
+  // sourceStep = step to add to go to the following source vector index
+  // sourceShift = shift to apply when directly accessing source vector component (must be substracted to the real index)
+  // sourceNbrComponent = number of component to take into account in the source vector
+  // destinationStart = destination vector first index
+  // destinationStep = step to add to go to the following destination vector index
+  // destinationShift = shift to apply when directly accessing destination vector component (must be substracted to the real index)
+  // destinationNbrComponent = number of component to take into account in the destination vector
+  // return value = pointer to the array of vectors where result has been stored
+  virtual ComplexVector* HermitianLowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
+							      long sourceStart, long sourceStep, long sourceShift, long sourceNbrComponent,
+							      long destinationStart, long destinationStep, long destinationShift, long destinationNbrComponent);
 
   // multiply a vector by the current hamiltonian and store result in another vector
   //
@@ -1174,7 +1901,18 @@ class AbstractHamiltonian
   virtual Vector& Multiply(Vector& vSource, Vector& vDestination, 
 			   int firstComponent, int nbrComponent);
 
-  // multiply a vector by the current hamiltonian for a given range of indices 
+   // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual Vector& Multiply(Vector& vSource, Vector& vDestination, 
+			   long firstComponent, long nbrComponent);
+
+ // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
   //
   // vSource = vector to be multiplied
@@ -1194,6 +1932,18 @@ class AbstractHamiltonian
   virtual Vector& AddMultiply(Vector& vSource, Vector& vDestination, 
 			      int firstComponent, int nbrComponent);
 
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual Vector& AddMultiply(Vector& vSource, Vector& vDestination, 
+			      long firstComponent, long nbrComponent);
+
   // multiply a set of vectors by the current hamiltonian
   //
   // vSource = array of vectors to be multiplied
@@ -1211,6 +1961,17 @@ class AbstractHamiltonian
   // return value = pointer to the array of vectors where result has been stored
   virtual Vector* MultipleMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors, 
 				   int firstComponent, int nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual Vector* MultipleMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors, 
+				   long firstComponent, long nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -1233,6 +1994,17 @@ class AbstractHamiltonian
   virtual Vector* MultipleAddMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors,
 				      int firstComponent, int nbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual Vector* MultipleAddMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors,
+				      long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian and store result in another vector
   //
@@ -1250,7 +2022,18 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual Vector& ConjugateMultiply(Vector& vSource, Vector& vDestination, 
-			   int firstComponent, int nbrComponent);
+				    int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual Vector& ConjugateMultiply(Vector& vSource, Vector& vDestination, 
+				    long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -1270,7 +2053,19 @@ class AbstractHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual Vector& ConjugateAddMultiply(Vector& vSource, Vector& vDestination, 
-			      int firstComponent, int nbrComponent);
+				       int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual Vector& ConjugateAddMultiply(Vector& vSource, Vector& vDestination, 
+				       long firstComponent, long nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian
   //
@@ -1289,6 +2084,17 @@ class AbstractHamiltonian
   // return value = pointer to the array of vectors where result has been stored
   virtual Vector* ConjugateMultipleMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors, 
 					    int firstComponent, int nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual Vector* ConjugateMultipleMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors, 
+					    long firstComponent, long nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -1311,6 +2117,17 @@ class AbstractHamiltonian
   virtual Vector* ConjugateMultipleAddMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors,
 					       int firstComponent, int nbrComponent);
 
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual Vector* ConjugateMultipleAddMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors,
+					       long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian and store result in another vector
   //
@@ -1329,6 +2146,17 @@ class AbstractHamiltonian
   // return value = reference on vector where result has been stored
   virtual Vector& HermitianMultiply(Vector& vSource, Vector& vDestination, 
 				    int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and store result in another vector
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector where result has to be stored
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual Vector& HermitianMultiply(Vector& vSource, Vector& vDestination, 
+				    long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -1350,6 +2178,18 @@ class AbstractHamiltonian
   virtual Vector& HermitianAddMultiply(Vector& vSource, Vector& vDestination, 
 				       int firstComponent, int nbrComponent);
 
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual Vector& HermitianAddMultiply(Vector& vSource, Vector& vDestination, 
+				       long firstComponent, long nbrComponent);
+
   // multiply a set of vectors by the current hamiltonian
   //
   // vSource = array of vectors to be multiplied
@@ -1367,6 +2207,17 @@ class AbstractHamiltonian
   // return value = pointer to the array of vectors where result has been stored
   virtual Vector* HermitianMultipleMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors, 
 					    int firstComponent, int nbrComponent);
+
+  // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  //
+  // vSource = array of vectors to be multiplied
+  // vDestination = array of vectors where result has to be stored
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual Vector* HermitianMultipleMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors, 
+					    long firstComponent, long nbrComponent);
 
   // multiply a set of vectors by the current hamiltonian for a given range of indices 
   // and add result to another set of vectors, low level function (no architecture optimization)
@@ -1389,6 +2240,18 @@ class AbstractHamiltonian
   virtual Vector* HermitianMultipleAddMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors,
 					       int firstComponent, int nbrComponent);
 
+   // multiply a set of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another set of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual Vector* HermitianMultipleAddMultiply(Vector* vSources, Vector* vDestinations, int nbrVectors,
+					       long firstComponent, long nbrComponent);
+
   // test if the hamiltonian is compatible with the hamiltonian-vector multiplication operations
   //
   // return value = true if compatible (otherwise, any parallelization will be disable for these operations)
@@ -1408,6 +2271,13 @@ class AbstractHamiltonian
   // return value = number of non-zero matrix elements that have to be stored
   virtual long PartialFastMultiplicationMemory(int firstComponent, int nbrComponent);
 
+  // test the amount of memory needed for fast multiplication algorithm (partial evaluation)
+  //
+  // firstComponent = index of the first component that has to be precalcualted
+  // nbrComponent  = number of components that has to be precalcualted
+  // return value = number of non-zero matrix elements that have to be stored
+  virtual long PartialFastMultiplicationMemory(long firstComponent, long nbrComponent);
+
   // enable fast multiplication algorithm
   //
   virtual void EnableFastMultiplication();
@@ -1418,8 +2288,12 @@ class AbstractHamiltonian
   // nbrComponent  = number of components that has to be precalcualted
   virtual void PartialEnableFastMultiplication(int firstComponent, int nbrComponent);
   
-
-  
+  // enable fast multiplication algorithm (partial evaluation)
+  //
+  // firstComponent = index of the first component that has to be precalcualted
+  // nbrComponent  = number of components that has to be precalcualted
+  virtual void PartialEnableFastMultiplication(long firstComponent, long nbrComponent);
+    
 };
 
 // test if the hamiltonian is compatible with the hamiltonian-vector multiplication operations
@@ -1429,6 +2303,31 @@ class AbstractHamiltonian
 inline bool AbstractHamiltonian::IsHamiltonianVectorOperationCompatible()
 {
   return true;
+}
+  
+// return dimension of Hilbert space where Hamiltonian acts
+//
+// return value = corresponding matrix elementdimension
+
+inline long AbstractHamiltonian::GetLargeHilbertSpaceDimension ()
+{
+  return ((long) this->GetHilbertSpaceDimension());
+}
+  
+// test if the Hilbert space is larger than 2^31
+//
+// return value = true if the Hilbert space is larger than 2^31
+
+inline bool AbstractHamiltonian::IsLargeHilbertSpace ()
+{
+  if (this->GetLargeHilbertSpaceDimension() != ((long) this->GetHilbertSpaceDimension()))
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
 }
   
 #endif

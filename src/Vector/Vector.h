@@ -186,6 +186,13 @@ class Vector
   // return value = reference on current vector
   Vector& AddLinearCombination (double x, Vector& V, int firstComponent, int nbrComponent);
 
+  // add a linear combination to a given vector, for a given range of indices
+  //
+  // x = multiplicative coefficient
+  // V = vector to add
+  // return value = reference on current vector
+  Vector& AddLinearCombination (double x, Vector& V, long firstComponent, long nbrComponent);
+
   // add a linear combination of two vectors to a given vector
   //
   // x1 = multiplicative coefficient of first vector
@@ -206,6 +213,18 @@ class Vector
   // return value = reference on current vector
   Vector& AddLinearCombination (double x1, Vector& v1, double x2, 
 				Vector& v2, int firstComponent, int nbrComponent);
+
+  // add a linear combination of two vectors to a given vector, for a given range of indices
+  //
+  // x1 = multiplicative coefficient of first vector
+  // v1 = first vector to add
+  // x2 = multiplicative coefficient of first vector
+  // v2 = first vector to add
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on current vector
+  Vector& AddLinearCombination (double x1, Vector& v1, double x2, 
+				Vector& v2, long firstComponent, long nbrComponent);
 
   // Output Stream overload
   //

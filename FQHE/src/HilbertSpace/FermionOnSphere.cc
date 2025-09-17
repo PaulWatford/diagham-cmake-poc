@@ -1540,6 +1540,45 @@ int FermionOnSphere::FindStateIndex(unsigned long stateDescription, int lzmax)
   //   return PosMin;
 }
 
+// find state index when the Hilbert space is larger than 2^31
+//
+// stateDescription = unsigned integer describing the state
+// lzmax = maximum Lz value reached by a fermion in the state
+// return value = corresponding index
+
+long FermionOnSphere::FindStateLargeIndex(unsigned long stateDescription, int lzmax)
+{
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->LargeHilbertSpaceDimension - 1]))
+    {
+      return this->HilbertSpaceDimension;
+    }
+  long PosMax = stateDescription >> this->LookUpTableShift[lzmax];
+  long PosMin = this->LookUpTable[lzmax][PosMax];
+  PosMax = this->LookUpTable[lzmax][PosMax + 1];
+  long PosMid = (PosMin + PosMax) >> 1;
+  unsigned long CurrentState = this->StateDescription[PosMid];
+  while ((PosMax != PosMid) && (CurrentState != stateDescription))
+    {
+      if (CurrentState > stateDescription)
+	{
+	  PosMax = PosMid;
+	}
+      else
+	{
+	  PosMin = PosMid;
+	} 
+      PosMid = (PosMin + PosMax) >> 1;
+      CurrentState = this->StateDescription[PosMid];
+    }
+  if (CurrentState == stateDescription)
+    return PosMid;
+  else
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
+}
+
 // find state index from a string
 //
 // stateDescription = string describing the state
@@ -1584,6 +1623,52 @@ int FermionOnSphere::FindStateIndex(int* stateDescription)
   while ((TmpState >> TmpLzMax) == 0x0ul)
     --TmpLzMax;
   return this->FindStateIndex(TmpState, TmpLzMax);
+}
+
+// find state index from a strings when the Hilbert space is larger than 2^31
+//
+// stateDescription = string describing the state
+// return value = corresponding index, -1 if an error occured
+
+long FermionOnSphere::FindStateLargeIndex(char* stateDescription)
+{
+  char** TmpDescription;
+  if (SplitLine(stateDescription, TmpDescription, ' ') != (this->LzMax + 1))
+    return -1;
+  unsigned long TmpState = 0x0ul;
+  int TmpNbrParticles = 0;
+  int TmpTotalLz = 0;
+  for (int i = 0; i <= this->LzMax; ++i)
+    {
+      int Tmp = atoi(TmpDescription[i]);
+      TmpState |= ((unsigned long)  Tmp) << i;
+      TmpTotalLz += (i * Tmp);
+      TmpNbrParticles += Tmp;
+      delete[] TmpDescription[i];
+    }
+  delete[] TmpDescription;
+  if ((TmpNbrParticles != this->NbrFermions) || (TmpTotalLz != ((this->TotalLz + this->NbrFermions * this->LzMax) >> 1)))
+    return -1;
+  int TmpLzMax = this->LzMax;
+  while (((TmpState >> TmpLzMax) & 0x1ul) == 0x0ul)
+    --TmpLzMax;
+  return this->FindStateLargeIndex(TmpState, TmpLzMax);
+}
+
+// find state index from an array of occupied orbitals when the Hilbert space is larger than 2^31
+//
+// stateDescription = array describing the state (stored as k1,k2,k3,...)
+// return value = corresponding index, -1 if an error occured
+
+long FermionOnSphere::FindStateLargeIndex(int* stateDescription)
+{
+  unsigned long TmpState = 0x0ul;
+  for (int i = 0; i < this->NbrFermions; ++i)
+    TmpState |= 0x1ul << (stateDescription[i]);
+  int TmpLzMax = this->LzMax;
+  while ((TmpState >> TmpLzMax) == 0x0ul)
+    --TmpLzMax;
+  return this->FindStateLargeIndex(TmpState, TmpLzMax);
 }
 
 // carefully test whether state is in Hilbert-space and find corresponding state index
@@ -1756,13 +1841,13 @@ void FermionOnSphere::GenerateLookUpTable(unsigned long memory)
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
-  this->LookUpTable = new int* [this->NbrLzValue];
+  this->LookUpTable = new long* [this->NbrLzValue];
   this->LargeLookUpTable = 0;
   this->LookUpTableShift = new int [this->NbrLzValue];
   for (int i = 0; i < this->NbrLzValue; ++i)
-    this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+    this->LookUpTable[i] = new long [this->LookUpTableMemorySize + 1];
   int CurrentLzMax = this->StateLzMax[0];
-  int* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
+  long* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
   if (CurrentLzMax < this->MaximumLookUpShift)
     this->LookUpTableShift[CurrentLzMax] = 0;
   else
@@ -1772,11 +1857,11 @@ void FermionOnSphere::GenerateLookUpTable(unsigned long memory)
   unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
   while (CurrentLookUpTableValue > TmpLookUpTableValue)
     {
-      TmpLookUpTable[CurrentLookUpTableValue] = 0;
+      TmpLookUpTable[CurrentLookUpTableValue] = 0l;
       --CurrentLookUpTableValue;
     }
-  TmpLookUpTable[CurrentLookUpTableValue] = 0;
-  for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+  TmpLookUpTable[CurrentLookUpTableValue] = 0l;
+  for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
     {
       if (CurrentLzMax != this->StateLzMax[i])
 	{
@@ -1820,10 +1905,10 @@ void FermionOnSphere::GenerateLookUpTable(unsigned long memory)
     }
   while (CurrentLookUpTableValue > 0)
     {
-      TmpLookUpTable[CurrentLookUpTableValue] = this->HilbertSpaceDimension - 1;
+      TmpLookUpTable[CurrentLookUpTableValue] = this->LargeHilbertSpaceDimension - 1l;
       --CurrentLookUpTableValue;
     }
-  TmpLookUpTable[0] = this->HilbertSpaceDimension - 1;
+  TmpLookUpTable[0] = this->LargeHilbertSpaceDimension - 1l;
   this->GenerateSignLookUpTable();
 }
 
@@ -2208,8 +2293,8 @@ RealSymmetricMatrix  FermionOnSphere::EvaluatePartialDensityMatrix (int subsytem
   int ShiftedLzComplementarySector = ShiftedTotalLz - ShiftedLzSector;
   int NbrFermionsComplementarySector = this->NbrFermions - nbrFermionSector;
   int TmpStateMaxLz = ShiftedLzComplementarySector - (((NbrFermionsComplementarySector - 2 + (subsytemSize << 1)) * (NbrFermionsComplementarySector - 1)) >> 1);
-  int MinIndex = 0;
-  int MaxIndex = this->HilbertSpaceDimension - 1;
+  int MinIndex = 0l;
+  int MaxIndex = this->HilbertSpaceDimension - 1l;
   if ((NbrFermionsComplementarySector > 0) && ((NbrFermionsComplementarySector + subsytemSize - 2) > this->StateLzMax[MaxIndex]))
     MaxIndex = this->LookUpTable[NbrFermionsComplementarySector + subsytemSize - 2][0];
   if ((TmpStateMaxLz < this->StateLzMax[0]) && ((TmpStateMaxLz + 1) >  this->StateLzMax[MaxIndex]) && (TmpStateMaxLz >= subsytemSize))
@@ -2411,7 +2496,7 @@ HermitianMatrix FermionOnSphere::EvaluatePartialDensityMatrix (int subsytemSize,
   int NbrFermionsComplementarySector = this->NbrFermions - nbrFermionSector;
   int TmpStateMaxLz = ShiftedLzComplementarySector - (((NbrFermionsComplementarySector - 2 + (subsytemSize << 1)) * (NbrFermionsComplementarySector - 1)) >> 1);
   int MinIndex = 0;
-  int MaxIndex = this->HilbertSpaceDimension - 1;
+  int MaxIndex = this->HilbertSpaceDimension - 1l;
   if ((NbrFermionsComplementarySector > 0) && ((NbrFermionsComplementarySector + subsytemSize - 2) > this->StateLzMax[MaxIndex]))
     MaxIndex = this->LookUpTable[NbrFermionsComplementarySector + subsytemSize - 2][0];
   if ((TmpStateMaxLz < this->StateLzMax[0]) && ((TmpStateMaxLz + 1) >  this->StateLzMax[MaxIndex]) && (TmpStateMaxLz >= subsytemSize))

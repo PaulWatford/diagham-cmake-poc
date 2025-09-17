@@ -50,6 +50,11 @@ class VectorHamiltonianMultiplyOperation: public AbstractArchitectureOperation
   // number of component 
   int NbrComponent;
 
+  // index of the first component when the Hilbert space is larger than 2^31
+  int FirstComponentLarge;
+  // number of component when the Hilbert space is larger than 2^31
+  int NbrComponentLarge;
+
   // pointer to the hamiltonian
   AbstractHamiltonian* Hamiltonian;
 
@@ -99,6 +104,12 @@ class VectorHamiltonianMultiplyOperation: public AbstractArchitectureOperation
   // firstComponent = index of the first component
   // nbrComponent = number of component
   void SetIndicesRange (const int& firstComponent, const int& nbrComponent);
+
+  // set range of indices
+  // 
+  // firstComponent = index of the first component
+  // nbrComponent = number of component
+  void SetIndicesRange (const long& firstComponent, const long& nbrComponent);
 
   // set destination vector 
   // 

@@ -111,6 +111,8 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   int* NbrInteractionPerComponent;
   // index of the state obtained for each term of the hamiltonian when applying on a given state
   int** InteractionPerComponentIndex;
+  // index of the state obtained for each term of the hamiltonian when applying on a given state, for Hilbert spaces larger than 2^31
+  long** InteractionPerComponentLargeIndex;
   // multiplicative coefficient obtained for each term of the hamiltonian when applying on a given state and with a given destination state
   double** InteractionPerComponentCoefficient;
 
@@ -162,6 +164,11 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // return value = corresponding matrix elementdimension
   virtual int GetHilbertSpaceDimension ();
   
+  // return Hilbert space dimension for large Hilbert space
+  //
+  // return value = Hilbert space dimension
+  virtual long GetLargeHilbertSpaceDimension();
+
   // shift Hamiltonian from a given energy
   //
   // shift = shift value
@@ -519,6 +526,24 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
 						    int* indexArray, double* coefficientArray, long& position);
 
 };
+
+// return dimension of Hilbert space where Hamiltonian acts
+//
+// return value = corresponding matrix elementdimension
+
+inline int AbstractQHEOnSphereHamiltonian::GetHilbertSpaceDimension ()
+{
+  return this->Particles->GetHilbertSpaceDimension();
+}
+
+// return dimension of Hilbert space where Hamiltonian acts
+//
+// return value = corresponding matrix elementdimension
+
+inline long AbstractQHEOnSphereHamiltonian::GetLargeHilbertSpaceDimension ()
+{
+  return this->Particles->GetLargeHilbertSpaceDimension();
+}
 
 // core part of the FastMultiplication method involving 2-body term
 // 

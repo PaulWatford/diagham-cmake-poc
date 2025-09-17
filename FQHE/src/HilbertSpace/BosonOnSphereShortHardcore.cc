@@ -944,12 +944,12 @@ void BosonOnSphereShortHardcore::GenerateLookUpTable(unsigned long memory)
   this->LookUpTableMemorySize = 1 << this->MaximumLookUpShift;
 
   // construct  look-up tables for searching states
-  this->LookUpTable = new int* [this->NbrLzValue];
+  this->LookUpTable = new long* [this->NbrLzValue];
   this->LookUpTableShift = new int [this->NbrLzValue];
   for (int i = 0; i < this->NbrLzValue; ++i)
-    this->LookUpTable[i] = new int [this->LookUpTableMemorySize + 1];
+    this->LookUpTable[i] = new long [this->LookUpTableMemorySize + 1];
   int CurrentLzMax = this->StateLzMax[0];
-  int* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
+  long* TmpLookUpTable = this->LookUpTable[CurrentLzMax];
   if (CurrentLzMax < this->MaximumLookUpShift)
     this->LookUpTableShift[CurrentLzMax] = 0;
   else
@@ -959,15 +959,15 @@ void BosonOnSphereShortHardcore::GenerateLookUpTable(unsigned long memory)
   unsigned long TmpLookUpTableValue = this->StateDescription[0] >> CurrentShift;
   while (CurrentLookUpTableValue > TmpLookUpTableValue)
     {
-      TmpLookUpTable[CurrentLookUpTableValue] = 0;
+      TmpLookUpTable[CurrentLookUpTableValue] = 0l;
       --CurrentLookUpTableValue;
     }
-  TmpLookUpTable[CurrentLookUpTableValue] = 0;
+  TmpLookUpTable[CurrentLookUpTableValue] = 0l;
   for (long i = 0; i < this->LargeHilbertSpaceDimension; ++i)
     {
       if (CurrentLzMax != this->StateLzMax[i])
 	{
-	  while (CurrentLookUpTableValue > 0)
+	  while (CurrentLookUpTableValue > 0l)
 	    {
 	      TmpLookUpTable[CurrentLookUpTableValue] = i;
 	      --CurrentLookUpTableValue;
@@ -1005,7 +1005,7 @@ void BosonOnSphereShortHardcore::GenerateLookUpTable(unsigned long memory)
     }
   while (CurrentLookUpTableValue > 0)
     {
-      TmpLookUpTable[CurrentLookUpTableValue] = this->HilbertSpaceDimension - 1;
+      TmpLookUpTable[CurrentLookUpTableValue] = this->LargeHilbertSpaceDimension - 1l;
       --CurrentLookUpTableValue;
     }
 

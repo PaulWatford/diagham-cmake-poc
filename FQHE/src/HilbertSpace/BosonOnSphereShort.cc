@@ -726,6 +726,7 @@ int BosonOnSphereShort::FindStateIndex(char* stateDescription)
 //
 // stateDescription = array describing the state (stored as k1,k2,k3,...)
 // return value = corresponding index, -1 if an error occured
+
 int BosonOnSphereShort::FindStateIndex(int* stateDescription)
 {
   for (int i = 0; i <= this->LzMax; ++i)
@@ -761,6 +762,77 @@ int BosonOnSphereShort::FindStateIndexFromOccupationNumber(unsigned long* stateD
   while ((NewLzMax > 0) && (stateDescription[NewLzMax] == 0x0ul))
     --NewLzMax;
   return this->FermionBasis->FindStateIndex(this->BosonToFermion(stateDescription, NewLzMax), NewLzMax + this->NbrBosons - 1);  
+}
+
+// find state index from a string when the Hilbert space is larger than 2^31
+//
+// stateDescription = string describing the state
+// return value = corresponding index, -1 if an error occured
+
+long BosonOnSphereShort::FindStateLargeIndex(char* stateDescription)
+{
+   char** TmpDescription;
+  if (SplitLine(stateDescription, TmpDescription, ' ') != (this->LzMax + 1))
+    return -1;
+  int TmpNbrParticles = 0;
+  int TmpTotalLz = 0;
+  for (int i = 0; i <= this->LzMax; ++i)
+    {
+      int Tmp = atoi(TmpDescription[i]);
+      this->TemporaryState[i] = Tmp;
+      TmpTotalLz += (i * Tmp);
+      TmpNbrParticles += Tmp;
+      delete[] TmpDescription[i];
+    }
+  delete[] TmpDescription;
+  if ((TmpNbrParticles != this->NbrBosons) || (TmpTotalLz != ((this->TotalLz + this->NbrBosons * this->LzMax) >> 1)))
+    return -1;
+  int NewLzMax = this->LzMax;
+  while (this->TemporaryState[NewLzMax] == 0)
+    --NewLzMax;
+ return this->FermionBasis->FindStateLargeIndex(this->BosonToFermion(this->TemporaryState, NewLzMax), NewLzMax + this->NbrBosons - 1);
+}
+
+// find state index from an array of occupied orbitals when the Hilbert space is larger than 2^31
+//
+// stateDescription = array describing the state (stored as k1,k2,k3,...)
+// return value = corresponding index, -1 if an error occured
+
+long BosonOnSphereShort::FindStateLargeIndex(int* stateDescription)
+{
+  for (int i = 0; i <= this->LzMax; ++i)
+    this->TemporaryState[i] = 0l;
+  for (int i = 0; i < this->NbrBosons; ++i)
+    ++this->TemporaryState[stateDescription[i]];
+  unsigned long TmpState = this->BosonToFermion(this->TemporaryState, this->LzMax);
+  int TmpLzMax = this->FermionBasis->LzMax;
+  while ((TmpState >> TmpLzMax) == 0x0ul)
+    --TmpLzMax;
+  return this->FermionBasis->FindStateLargeIndex(TmpState, TmpLzMax);
+}
+
+// find state index from unsigned long representation when the Hilbert space is larger than 2^31
+//
+// stateDescription = integer describint the state
+// lzMax = the lzmax of the state
+// return value = corresponding index, -1 if an error occured
+
+long BosonOnSphereShort::FindStateLargeIndex(unsigned long int stateDescription, int lzMax)
+{
+  return this->FermionBasis->FindStateLargeIndex(stateDescription, lzMax);
+}
+
+// find state index from its occupation number description when the Hilbert space is larger than 2^31
+//
+// stateDescription = array that describes the state in the occupation number basis
+// return value = corresponding index, -1 if an error occured
+
+long BosonOnSphereShort::FindStateIndexFromOccupationNumberLarge(unsigned long* stateDescription)
+{
+  int NewLzMax =  this->LzMax;
+  while ((NewLzMax > 0) && (stateDescription[NewLzMax] == 0x0ul))
+    --NewLzMax;
+  return this->FermionBasis->FindStateLargeIndex(this->BosonToFermion(stateDescription, NewLzMax), NewLzMax + this->NbrBosons - 1);  
 }
 
 // evaluate wave function in real space using a given basis and only for a given range of components

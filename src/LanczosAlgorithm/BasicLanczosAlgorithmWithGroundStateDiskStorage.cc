@@ -82,7 +82,7 @@ BasicLanczosAlgorithmWithGroundStateDiskStorage::BasicLanczosAlgorithmWithGround
   this->EigenvaluePrecision = MACHINE_PRECISION;
   this->NbrEigenvalue = 1;
   this->GroundStateEvaluationFlag = 0;
-  this->VectorDimension = 0;
+  this->VectorDimension = 0l;
 }
 
 // copy constructor
@@ -126,13 +126,13 @@ void BasicLanczosAlgorithmWithGroundStateDiskStorage::InitializeLanczosAlgorithm
       cout << "A Hamiltonian has to be declared before initializing a Lanczos Algorithm"<<endl;
       exit(-1);
     }
-  this->VectorDimension = this->Hamiltonian->GetHilbertSpaceDimension();
+  this->VectorDimension = this->Hamiltonian->GetLargeHilbertSpaceDimension();
   this->V1 = RealVector (this->VectorDimension);
   this->V2 = RealVector (this->VectorDimension);
   this->V3 = RealVector (this->VectorDimension);
   int Shift = RAND_MAX / 2;
   double Scale = 1.0 / ((double) Shift);
-  for (int i = 0; i < this->VectorDimension; i++)
+  for (long i = 0l; i < this->VectorDimension; i++)
     {
       this->V1[i] = Scale * ((double) (rand() - Shift));
     }
@@ -154,8 +154,8 @@ void BasicLanczosAlgorithmWithGroundStateDiskStorage::InitializeLanczosAlgorithm
       cout << "A Hamiltonian has to be declared before initializing a Lanczos Algorithm"<<endl;
       exit(-1);
     }
-  this->VectorDimension = this->Hamiltonian->GetHilbertSpaceDimension();
-  if (VectorDimension != vector.GetVectorDimension())
+  this->VectorDimension = this->Hamiltonian->GetLargeHilbertSpaceDimension();
+  if (VectorDimension != vector.GetLargeVectorDimension())
     {
       cout << "initial vector does not match dimension of Hilbert-space"<<endl;
     }
@@ -176,10 +176,10 @@ void BasicLanczosAlgorithmWithGroundStateDiskStorage::ResumeLanczosAlgorithm()
 {
   this->ReadState();
   this->V1.ReadVector("vector.1");
-  this->VectorDimension = this->V1.GetVectorDimension();
+  this->VectorDimension = this->V1.GetLargeVectorDimension();
   if (this->Hamiltonian != NULL)
     {
-      if (this->Hamiltonian->GetHilbertSpaceDimension() != this->VectorDimension)
+      if (this->Hamiltonian->GetLargeHilbertSpaceDimension() != this->VectorDimension)
 	{
 	  cout << "Hamiltonian does not match dimension of stored vectors in resuming"<<endl;
 	  exit(-1);

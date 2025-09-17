@@ -74,6 +74,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation (Comp
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = sourceVector;
   this->RealSourceVector = 0;
@@ -98,6 +100,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation(Compl
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = 0;
   this->SourceVectorMatrix = sourceVector;
@@ -123,6 +127,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation (Comp
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = sourceVector;
   this->SourceVectorByPointers = 0;
   this->RealSourceVector = 0;
@@ -147,6 +153,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation (Comp
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = sourceVector;
   this->RealSourceVector = 0;
@@ -171,6 +179,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation(Compl
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = 0;
   this->SourceVectorMatrix = sourceVector;
@@ -196,6 +206,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation (Comp
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = 0;
   this->RealSourceVector = sourceVector;
@@ -220,6 +232,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation (Comp
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = 0;
   this->RealSourceVector = 0;
@@ -244,6 +258,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation(Compl
 {
   this->FirstComponent = 0;
   this->NbrComponent = destinationVector->GetVectorDimension();
+  this->FirstComponentLarge = 0l;
+  this->NbrComponentLarge = destinationVector->GetLargeVectorDimension();
   this->SourceVector = 0;
   this->SourceVectorByPointers = 0;
   this->RealSourceVector = 0;
@@ -265,6 +281,8 @@ AddComplexLinearCombinationOperation::AddComplexLinearCombinationOperation(const
 {
   this->FirstComponent = operation.FirstComponent;
   this->NbrComponent = operation.NbrComponent;
+  this->FirstComponentLarge = operation.FirstComponentLarge;
+  this->NbrComponentLarge = operation.NbrComponentLarge;
   this->NbrVector = operation.NbrVector;
   this->Coefficients = operation.Coefficients;
   this->RealCoefficients = operation.RealCoefficients;
@@ -297,6 +315,17 @@ void AddComplexLinearCombinationOperation::SetIndicesRange (const int& firstComp
   this->NbrComponent = nbrComponent;
 }
 
+// set range of indices
+// 
+// firstComponent = index of the first component
+// nbrComponent = number of component
+
+void AddComplexLinearCombinationOperation::SetIndicesRange (const long& firstComponent, const long& nbrComponent)
+{
+  this->FirstComponentLarge = firstComponent;
+  this->NbrComponentLarge = nbrComponent;
+}
+
 // clone operation
 //
 // return value = pointer to cloned operation
@@ -315,73 +344,148 @@ bool AddComplexLinearCombinationOperation::RawApplyOperation()
   timeval TotalStartingTime2;
   timeval TotalEndingTime2;
   gettimeofday (&(TotalStartingTime2), 0);
-  if ((this->RealSourceVector != 0) || (this->RealSourceVectorByPointers != 0) || (this->RealSourceVectorMatrix.GetNbrRow() != 0))
+  if (this->DestinationVector->IsLargeVector() == false)
     {
-      if (this->RealSourceVector != 0)
-	for (int i = 0; i < this->NbrVector; ++i)
-	  {
-	    this->DestinationVector->AddLinearCombination(Coefficients[i], (this->RealSourceVector[i]), this->FirstComponent, 
-							  this->NbrComponent);
-	  }
-      else
-	if (this->RealSourceVectorByPointers != 0)
-	  for (int i = 0; i < this->NbrVector; ++i)
-	    {
-	      this->DestinationVector->AddLinearCombination(Coefficients[i], *(this->RealSourceVectorByPointers[i]), this->FirstComponent, 
-							    this->NbrComponent);
-	    }
-	else
-	  for (int i = 0; i < this->NbrVector; ++i)
-	    {
-	      this->DestinationVector->AddLinearCombination(Coefficients[i], (this->RealSourceVectorMatrix[i]), this->FirstComponent, 
-							    this->NbrComponent);
-	    }     
-    }
-  else
-    {
-      if (this->RealCoefficients == 0)
+      if ((this->RealSourceVector != 0) || (this->RealSourceVectorByPointers != 0) || (this->RealSourceVectorMatrix.GetNbrRow() != 0))
 	{
-	  if (this->SourceVector != 0)
+	  if (this->RealSourceVector != 0)
 	    for (int i = 0; i < this->NbrVector; ++i)
 	      {
-		this->DestinationVector->AddLinearCombination(Coefficients[i], (this->SourceVector[i]), this->FirstComponent, 
+		this->DestinationVector->AddLinearCombination(Coefficients[i], (this->RealSourceVector[i]), this->FirstComponent, 
 							      this->NbrComponent);
 	      }
 	  else
-	    if (this->SourceVectorByPointers != 0)
+	    if (this->RealSourceVectorByPointers != 0)
 	      for (int i = 0; i < this->NbrVector; ++i)
 		{
-		  this->DestinationVector->AddLinearCombination(Coefficients[i], *(this->SourceVectorByPointers[i]), this->FirstComponent, 
+		  this->DestinationVector->AddLinearCombination(Coefficients[i], *(this->RealSourceVectorByPointers[i]), this->FirstComponent, 
 								this->NbrComponent);
 		}
 	    else
 	      for (int i = 0; i < this->NbrVector; ++i)
 		{
-		  this->DestinationVector->AddLinearCombination(Coefficients[i], (this->SourceVectorMatrix[i]), this->FirstComponent, 
+		  this->DestinationVector->AddLinearCombination(Coefficients[i], (this->RealSourceVectorMatrix[i]), this->FirstComponent, 
 								this->NbrComponent);
-		}
+		}     
 	}
       else
 	{
-	  if (this->SourceVector != 0)
+	  if (this->RealCoefficients == 0)
+	    {
+	      if (this->SourceVector != 0)
+		for (int i = 0; i < this->NbrVector; ++i)
+		  {
+		    this->DestinationVector->AddLinearCombination(Coefficients[i], (this->SourceVector[i]), this->FirstComponent, 
+								  this->NbrComponent);
+		  }
+	      else
+		if (this->SourceVectorByPointers != 0)
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(Coefficients[i], *(this->SourceVectorByPointers[i]), this->FirstComponent, 
+								    this->NbrComponent);
+		    }
+		else
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(Coefficients[i], (this->SourceVectorMatrix[i]), this->FirstComponent, 
+								    this->NbrComponent);
+		    }
+	    }
+	  else
+	    {
+	      if (this->SourceVector != 0)
+		for (int i = 0; i < this->NbrVector; ++i)
+		  {
+		    this->DestinationVector->AddLinearCombination(RealCoefficients[i], (this->SourceVector[i]), this->FirstComponent, 
+								  this->NbrComponent);
+		  }
+	      else
+		if (this->SourceVectorByPointers != 0)
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(RealCoefficients[i], *(this->SourceVectorByPointers[i]), this->FirstComponent, 
+								    this->NbrComponent);
+		    }
+		else
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(RealCoefficients[i], (this->SourceVectorMatrix[i]), this->FirstComponent, 
+								    this->NbrComponent);
+		    }
+	    }
+	}
+    }
+  else
+    {
+      if ((this->RealSourceVector != 0) || (this->RealSourceVectorByPointers != 0) || (this->RealSourceVectorMatrix.GetNbrRow() != 0))
+	{
+	  if (this->RealSourceVector != 0)
 	    for (int i = 0; i < this->NbrVector; ++i)
 	      {
-		this->DestinationVector->AddLinearCombination(RealCoefficients[i], (this->SourceVector[i]), this->FirstComponent, 
-							      this->NbrComponent);
+		this->DestinationVector->AddLinearCombination(Coefficients[i], (this->RealSourceVector[i]), this->FirstComponentLarge, 
+							      this->NbrComponentLarge);
 	      }
 	  else
-	    if (this->SourceVectorByPointers != 0)
+	    if (this->RealSourceVectorByPointers != 0)
 	      for (int i = 0; i < this->NbrVector; ++i)
 		{
-		  this->DestinationVector->AddLinearCombination(RealCoefficients[i], *(this->SourceVectorByPointers[i]), this->FirstComponent, 
-								this->NbrComponent);
+		  this->DestinationVector->AddLinearCombination(Coefficients[i], *(this->RealSourceVectorByPointers[i]), this->FirstComponentLarge, 
+								this->NbrComponentLarge);
 		}
 	    else
 	      for (int i = 0; i < this->NbrVector; ++i)
 		{
-		  this->DestinationVector->AddLinearCombination(RealCoefficients[i], (this->SourceVectorMatrix[i]), this->FirstComponent, 
-								this->NbrComponent);
-		}
+		  this->DestinationVector->AddLinearCombination(Coefficients[i], (this->RealSourceVectorMatrix[i]), this->FirstComponentLarge, 
+								this->NbrComponentLarge);
+		}     
+	}
+      else
+	{
+	  if (this->RealCoefficients == 0)
+	    {
+	      if (this->SourceVector != 0)
+		for (int i = 0; i < this->NbrVector; ++i)
+		  {
+		    this->DestinationVector->AddLinearCombination(Coefficients[i], (this->SourceVector[i]), this->FirstComponentLarge, 
+								  this->NbrComponentLarge);
+		  }
+	      else
+		if (this->SourceVectorByPointers != 0)
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(Coefficients[i], *(this->SourceVectorByPointers[i]), this->FirstComponentLarge, 
+								    this->NbrComponentLarge);
+		    }
+		else
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(Coefficients[i], (this->SourceVectorMatrix[i]), this->FirstComponentLarge, 
+								    this->NbrComponentLarge);
+		    }
+	    }
+	  else
+	    {
+	      if (this->SourceVector != 0)
+		for (int i = 0; i < this->NbrVector; ++i)
+		  {
+		    this->DestinationVector->AddLinearCombination(RealCoefficients[i], (this->SourceVector[i]), this->FirstComponentLarge, 
+								  this->NbrComponentLarge);
+		  }
+	      else
+		if (this->SourceVectorByPointers != 0)
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(RealCoefficients[i], *(this->SourceVectorByPointers[i]), this->FirstComponentLarge, 
+								    this->NbrComponentLarge);
+		    }
+		else
+		  for (int i = 0; i < this->NbrVector; ++i)
+		    {
+		      this->DestinationVector->AddLinearCombination(RealCoefficients[i], (this->SourceVectorMatrix[i]), this->FirstComponentLarge, 
+								    this->NbrComponentLarge);
+		    }
+	    }
 	}
     }
   gettimeofday (&(TotalEndingTime2), 0);
@@ -397,19 +501,36 @@ bool AddComplexLinearCombinationOperation::RawApplyOperation()
 
 bool AddComplexLinearCombinationOperation::ArchitectureDependentApplyOperation(SMPArchitecture* architecture)
 {
-  int Step = this->DestinationVector->GetVectorDimension() / architecture->GetNbrThreads();
-  int FirstComponent = 0;
   int ReducedNbrThreads = architecture->GetNbrThreads() - 1;
   AddComplexLinearCombinationOperation** TmpOperations = new AddComplexLinearCombinationOperation* [architecture->GetNbrThreads()];
-  for (int i = 0; i < ReducedNbrThreads; ++i)
+  if (this->DestinationVector->IsLargeVector() == false)
     {
-      TmpOperations[i] = (AddComplexLinearCombinationOperation*) this->Clone();
-      TmpOperations[i]->SetIndicesRange(FirstComponent, Step);
-      architecture->SetThreadOperation(TmpOperations[i], i);
-      FirstComponent += Step;
+      int Step = this->DestinationVector->GetVectorDimension() / architecture->GetNbrThreads();
+      int FirstComponent = 0;
+      for (int i = 0; i < ReducedNbrThreads; ++i)
+	{
+	  TmpOperations[i] = (AddComplexLinearCombinationOperation*) this->Clone();
+	  TmpOperations[i]->SetIndicesRange(FirstComponent, Step);
+	  architecture->SetThreadOperation(TmpOperations[i], i);
+	  FirstComponent += Step;
+	}
+      TmpOperations[ReducedNbrThreads] = (AddComplexLinearCombinationOperation*) this->Clone();
+      TmpOperations[ReducedNbrThreads]->SetIndicesRange(FirstComponent, this->DestinationVector->GetVectorDimension() - FirstComponent);
     }
-  TmpOperations[ReducedNbrThreads] = (AddComplexLinearCombinationOperation*) this->Clone();
-  TmpOperations[ReducedNbrThreads]->SetIndicesRange(FirstComponent, this->DestinationVector->GetVectorDimension() - FirstComponent);  
+  else
+    {
+      long Step = this->DestinationVector->GetLargeVectorDimension() / ((long) architecture->GetNbrThreads());
+      long TmpFirstComponent = 0l;
+      for (int i = 0; i < ReducedNbrThreads; ++i)
+	{
+	  TmpOperations[i] = (AddComplexLinearCombinationOperation*) this->Clone();
+	  TmpOperations[i]->SetIndicesRange(TmpFirstComponent, Step);
+	  architecture->SetThreadOperation(TmpOperations[i], i);
+	  TmpFirstComponent += Step;
+	}
+      TmpOperations[ReducedNbrThreads] = (AddComplexLinearCombinationOperation*) this->Clone();
+      TmpOperations[ReducedNbrThreads]->SetIndicesRange(TmpFirstComponent, this->DestinationVector->GetLargeVectorDimension() - TmpFirstComponent);
+    }
   architecture->SetThreadOperation(TmpOperations[ReducedNbrThreads], ReducedNbrThreads);
   architecture->SendJobs();
   if (architecture->VerboseMode() == true)

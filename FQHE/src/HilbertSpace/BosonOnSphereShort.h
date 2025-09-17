@@ -774,6 +774,31 @@ class BosonOnSphereShort :  public ParticleOnSphere
   // return value = corresponding index, -1 if an error occured
   virtual int FindStateIndexFromOccupationNumber(unsigned long* stateDescription);
 
+  // find state index from a string when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = string describing the state
+  // return value = corresponding index, -1 if an error occured
+  virtual long FindStateLargeIndex(char* stateDescription);
+
+  // find state index from an array of occupied orbitals when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = array describing the state (stored as k1,k2,k3,...)
+  // return value = corresponding index, -1 if an error occured
+  virtual long FindStateLargeIndex(int* stateDescription);
+  
+  // find state index from unsigned long representation when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = integer describint the state
+  // lzMax = the lzmax of the state
+  // return value = corresponding index, -1 if an error occured
+  virtual long FindStateLargeIndex(unsigned long int stateDescription, int lzMax);
+
+  // find state index from its occupation number description when the Hilbert space is larger than 2^31
+  //
+  // stateDescription = array that describes the state in the occupation number basis
+  // return value = corresponding index, -1 if an error occured
+  virtual long FindStateIndexFromOccupationNumberLarge(unsigned long* stateDescription);
+
   // get Lz component of a component
   //
   // j = index of the component in Hilbert space

@@ -58,6 +58,8 @@ MultipleVectorHamiltonianMultiplyOperation::MultipleVectorHamiltonianMultiplyOpe
 {
   this->FirstComponent = 0;
   this->NbrComponent = sourceVectors[0].GetVectorDimension();
+  this->FirstComponentLarge = 0;
+  this->NbrComponentLarge = sourceVectors[0].GetLargeVectorDimension();
   this->Hamiltonian = hamiltonian;
   this->RealSourceVectors = sourceVectors;
   this->RealDestinationVectors = destinationVectors;
@@ -125,7 +127,9 @@ MultipleVectorHamiltonianMultiplyOperation::MultipleVectorHamiltonianMultiplyOpe
 
   this->FirstComponent = 0;
   this->NbrComponent = sourceVectors[0].GetVectorDimension();
-  this->Hamiltonian = hamiltonian;
+  this->FirstComponentLarge = 0;
+  this->NbrComponentLarge = sourceVectors[0].GetLargeVectorDimension();
+   this->Hamiltonian = hamiltonian;
   this->RealSourceVectors = 0;
   this->RealDestinationVectors = 0;
   this->ComplexSourceVectors = sourceVectors;
@@ -186,6 +190,8 @@ MultipleVectorHamiltonianMultiplyOperation::MultipleVectorHamiltonianMultiplyOpe
 {
   this->FirstComponent = operation.FirstComponent;
   this->NbrComponent = operation.NbrComponent;
+  this->FirstComponentLarge = operation.FirstComponentLarge;
+  this->NbrComponentLarge = operation.NbrComponentLarge;
   this->Hamiltonian = operation.Hamiltonian;
   this->RealSourceVectors = operation.RealSourceVectors;
   this->RealDestinationVectors = operation.RealDestinationVectors;  
@@ -216,6 +222,8 @@ MultipleVectorHamiltonianMultiplyOperation::MultipleVectorHamiltonianMultiplyOpe
   architecture->GetTypicalRange(TmpMinimumIndex, TmpMaximumIndex);
   this->FirstComponent = (int) TmpMinimumIndex;  
   this->NbrComponent = (int) (TmpMaximumIndex - TmpMinimumIndex + 1l);
+  this->FirstComponentLarge = TmpMinimumIndex;  
+  this->NbrComponentLarge = (TmpMaximumIndex - TmpMinimumIndex + 1l);
   // copied from VectorHamiltonianMultiplyOperation, please check!
   int TmpFlag = 0;
   architecture->BroadcastToSlaves(TmpFlag);
@@ -371,6 +379,21 @@ void MultipleVectorHamiltonianMultiplyOperation::SetIndicesRange (const int& fir
 {
   this->FirstComponent = firstComponent;
   this->NbrComponent = nbrComponent;
+  this->FirstComponentLarge = (long) firstComponent;
+  this->NbrComponentLarge = (long) nbrComponent;
+}
+
+// set range of indices
+// 
+// firstComponent = index of the first component
+// nbrComponent = number of component
+
+void MultipleVectorHamiltonianMultiplyOperation::SetIndicesRange (const long& firstComponent, const long& nbrComponent)
+{
+  this->FirstComponent = (int) firstComponent;
+  this->NbrComponent = (int) nbrComponent;
+  this->FirstComponentLarge = firstComponent;
+  this->NbrComponentLarge = nbrComponent;
 }
 
 // set destination vectors 
@@ -429,112 +452,229 @@ bool MultipleVectorHamiltonianMultiplyOperation::RawApplyOperation()
   timeval TotalStartingTime2;
   timeval TotalEndingTime2;
   gettimeofday (&(TotalStartingTime2), 0);
-  if (this->RealSourceVectors != 0)
+  if (this->Hamiltonian->IsLargeHilbertSpace() == false)
     {
-      if (this->UseConjugateFlag == true)
+      if (this->RealSourceVectors != 0)
 	{
-	  this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors, this->NbrVectors,
-							       this->FirstComponent, this->NbrComponent);
-	}
-      else if (this->UseHermitianFlag == true)
-	{
-	  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors,
-							       this->NbrVectors, this->FirstComponent, this->NbrComponent);
-	}
-      else 
-	{
-	  this->Hamiltonian->LowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors, this->NbrVectors,
-						      this->FirstComponent, this->NbrComponent);
-	}
-    }
-  else
-    {
-      if (this->UseConjugateFlag == true)
-	{
-	  if (this->ComplexSourceVectors != 0)
+	  if (this->UseConjugateFlag == true)
 	    {
-	      if (this->ComplexDestinationVectors != 0)
-		{
-		  this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors, this->NbrVectors,
-								       this->FirstComponent, this->NbrComponent);
-		}
-	      else
-		{
-		  this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors, this->NbrVectors,
-								       this->FirstComponent, this->NbrComponent);
-		}
+	      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors, this->NbrVectors,
+								   this->FirstComponent, this->NbrComponent);
 	    }
-	  else
+	  else if (this->UseHermitianFlag == true)
 	    {
-	      if (this->ComplexDestinationVectors != 0)
-		{
-		  this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors, this->NbrVectors,
-								       this->FirstComponent, this->NbrComponent);
-		}
-	      else
-		{
-		  this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors, this->NbrVectors,
-								       this->FirstComponent, this->NbrComponent);
-		}
+	      this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors,
+								   this->NbrVectors, this->FirstComponent, this->NbrComponent);
+	    }
+	  else 
+	    {
+	      this->Hamiltonian->LowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors, this->NbrVectors,
+							  this->FirstComponent, this->NbrComponent);
 	    }
 	}
-      else 
+      else
 	{
-	  if (this->UseHermitianFlag == true)
+	  if (this->UseConjugateFlag == true)
 	    {
 	      if (this->ComplexSourceVectors != 0)
 		{
 		  if (this->ComplexDestinationVectors != 0)
 		    {
-		      this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors,
-									   this->NbrVectors, this->FirstComponent, this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors, this->NbrVectors,
+									   this->FirstComponent, this->NbrComponent);
 		    }
 		  else
 		    {
-		      this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors,
-									   this->NbrVectors, this->FirstComponent, this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors, this->NbrVectors,
+									   this->FirstComponent, this->NbrComponent);
 		    }
 		}
 	      else
 		{
 		  if (this->ComplexDestinationVectors != 0)
 		    {
-		      this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors,
-									   this->NbrVectors, this->FirstComponent, this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors, this->NbrVectors,
+									   this->FirstComponent, this->NbrComponent);
 		    }
 		  else
 		    {
-		      this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors,
-									   this->NbrVectors, this->FirstComponent, this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors, this->NbrVectors,
+									   this->FirstComponent, this->NbrComponent);
 		    }
 		}
 	    }
 	  else 
 	    {
+	      if (this->UseHermitianFlag == true)
+		{
+		  if (this->ComplexSourceVectors != 0)
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors,
+									       this->NbrVectors, this->FirstComponent, this->NbrComponent);
+			}
+		      else
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors,
+									       this->NbrVectors, this->FirstComponent, this->NbrComponent);
+			}
+		    }
+		  else
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors,
+									       this->NbrVectors, this->FirstComponent, this->NbrComponent);
+			}
+		      else
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors,
+									       this->NbrVectors, this->FirstComponent, this->NbrComponent);
+			}
+		    }
+		}
+	      else 
+		{
+		  if (this->ComplexSourceVectors != 0)
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors, this->NbrVectors, this->FirstComponent, 
+								      this->NbrComponent);
+			}
+		      else
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors, this->NbrVectors, this->FirstComponent, 
+								      this->NbrComponent);
+			}
+		    }
+		  else
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors, this->NbrVectors, this->FirstComponent, 
+								      this->NbrComponent);
+			}
+		      else
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors, this->NbrVectors, this->FirstComponent, 
+								      this->NbrComponent);
+			}
+		    }
+		}
+	    }
+	}
+    }
+  else
+    {
+      if (this->RealSourceVectors != 0)
+	{
+	  if (this->UseConjugateFlag == true)
+	    {
+	      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors, this->NbrVectors,
+								   this->FirstComponentLarge, this->NbrComponentLarge);
+	    }
+	  else if (this->UseHermitianFlag == true)
+	    {
+	      this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors,
+								   this->NbrVectors, this->FirstComponentLarge, this->NbrComponentLarge);
+	    }
+	  else 
+	    {
+	      this->Hamiltonian->LowLevelMultipleMultiply(this->RealSourceVectors, this->RealDestinationVectors, this->NbrVectors,
+							  this->FirstComponentLarge, this->NbrComponentLarge);
+	    }
+	}
+      else
+	{
+	  if (this->UseConjugateFlag == true)
+	    {
 	      if (this->ComplexSourceVectors != 0)
 		{
 		  if (this->ComplexDestinationVectors != 0)
 		    {
-		      this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors, this->NbrVectors, this->FirstComponent, 
-								  this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors, this->NbrVectors,
+									   this->FirstComponentLarge, this->NbrComponentLarge);
 		    }
 		  else
 		    {
-		      this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors, this->NbrVectors, this->FirstComponent, 
-								  this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors, this->NbrVectors,
+									   this->FirstComponentLarge, this->NbrComponentLarge);
 		    }
 		}
 	      else
 		{
 		  if (this->ComplexDestinationVectors != 0)
 		    {
-		      this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors, this->NbrVectors, this->FirstComponent, 
-								  this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors, this->NbrVectors,
+									   this->FirstComponentLarge, this->NbrComponentLarge);
 		    }
 		  else
 		    {
-		      this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors, this->NbrVectors, this->FirstComponent, 
-								  this->NbrComponent);
+		      this->Hamiltonian->ConjugateLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors, this->NbrVectors,
+									   this->FirstComponentLarge, this->NbrComponentLarge);
+		    }
+		}
+	    }
+	  else 
+	    {
+	      if (this->UseHermitianFlag == true)
+		{
+		  if (this->ComplexSourceVectors != 0)
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors,
+									       this->NbrVectors, this->FirstComponentLarge, this->NbrComponentLarge);
+			}
+		      else
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors,
+									       this->NbrVectors, this->FirstComponentLarge, this->NbrComponentLarge);
+			}
+		    }
+		  else
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors,
+									       this->NbrVectors, this->FirstComponentLarge, this->NbrComponentLarge);
+			}
+		      else
+			{
+			  this->Hamiltonian->HermitianLowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors,
+									       this->NbrVectors, this->FirstComponentLarge, this->NbrComponentLarge);
+			}
+		    }
+		}
+	      else 
+		{
+		  if (this->ComplexSourceVectors != 0)
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationVectors, this->NbrVectors, this->FirstComponentLarge, 
+								      this->NbrComponentLarge);
+			}
+		      else
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourceVectors, this->ComplexDestinationPartialVectors, this->NbrVectors, this->FirstComponentLarge, 
+								      this->NbrComponentLarge);
+			}
+		    }
+		  else
+		    {
+		      if (this->ComplexDestinationVectors != 0)
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationVectors, this->NbrVectors, this->FirstComponentLarge, 
+								      this->NbrComponentLarge);
+			}
+		      else
+			{
+			  this->Hamiltonian->LowLevelMultipleMultiply(this->ComplexSourcePartialVectors, this->ComplexDestinationPartialVectors, this->NbrVectors, this->FirstComponentLarge, 
+								      this->NbrComponentLarge);
+			}
 		    }
 		}
 	    }
@@ -557,18 +697,18 @@ bool MultipleVectorHamiltonianMultiplyOperation::ArchitectureDependentApplyOpera
   bool RealFlag = false;
   if (this->ComplexDestinationVectors == 0)
     RealFlag = true;
-  long *SegmentIndices=0;
+  long* SegmentIndices = 0;
   bool CleanUp = false;
   int TmpNbrThreads = architecture->GetNbrThreads();
   if (Hamiltonian->GetLoadBalancing(TmpNbrThreads, SegmentIndices) == false)
     {
       SegmentIndices = new long[TmpNbrThreads+1];
-      CleanUp=true;
-      int Step = this->NbrComponent / TmpNbrThreads;
-      SegmentIndices[0] = this->FirstComponent;
+      CleanUp = true;
+      long Step = this->NbrComponentLarge / TmpNbrThreads;
+      SegmentIndices[0] = this->FirstComponentLarge;
       for (int i = 0; i < TmpNbrThreads; ++i)
-	SegmentIndices[i] = this->FirstComponent+i*Step;
-      SegmentIndices[TmpNbrThreads] = this->FirstComponent + this->NbrComponent;
+	SegmentIndices[i] = this->FirstComponentLarge + ((long) i) * Step;
+      SegmentIndices[TmpNbrThreads] = this->FirstComponentLarge + this->NbrComponentLarge;
     }
 
   MultipleVectorHamiltonianMultiplyOperation** TmpOperations = new MultipleVectorHamiltonianMultiplyOperation* [architecture->GetNbrThreads()];

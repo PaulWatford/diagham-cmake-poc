@@ -46,8 +46,13 @@ class AddRealLinearCombinationOperation: public AbstractArchitectureOperation
 
   // index of the first component
   int FirstComponent;
-  // number of component 
+  // number of components
   int NbrComponent;
+
+  // index of the first component when the Hilbert space is larger than 2^31
+  long FirstComponentLarge;
+  // number of components  when the Hilbert space is larger than 2^31
+  long NbrComponentLarge;
 
   // vector array containing the vectors that have to be added
   RealVector* SourceVector;
@@ -108,6 +113,12 @@ class AddRealLinearCombinationOperation: public AbstractArchitectureOperation
   // firstComponent = index of the first component
   // nbrComponent = number of component
   void SetIndicesRange (const int& firstComponent, const int& nbrComponent);
+
+  // set range of indices
+  // 
+  // firstComponent = index of the first component
+  // nbrComponent = number of component
+  void SetIndicesRange (const long& firstComponent, const long& nbrComponent);
 
   // get destination vector 
   // 

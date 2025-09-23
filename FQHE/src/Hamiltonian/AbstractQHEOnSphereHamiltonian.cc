@@ -65,7 +65,7 @@ AbstractQHEOnSphereHamiltonian::AbstractQHEOnSphereHamiltonian()
   this->HermitianSymmetryFlag = false;
   this->InteractionPerComponentIndex = 0;
   this->InteractionPerComponentLargeIndex = 0;
-  
+  this->LargePrecalculationShift = 0l;
 }
 
 // destructor
@@ -167,7 +167,9 @@ bool AbstractQHEOnSphereHamiltonian::IsConjugate()
 }
 
 // symmetrize interaction factors to enable hermitian matrix multiplication
+//
 // return = true upon success
+
 bool AbstractQHEOnSphereHamiltonian::HermitianSymmetrizeInteractionFactors()
 {
   if (HermitianSymmetryFlag)
@@ -3681,6 +3683,7 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
   if (this->Architecture->GetOptimizedTypicalRange(this->NbrInteractionPerComponent, MinIndex, MaxIndex) == true)
     {
       this->PrecalculationShift = (int) MinIndex;
+      this->LargePrecalculationShift = MinIndex;
       EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
       cout << "distributed calculations have been reoptimized" << endl;
     }

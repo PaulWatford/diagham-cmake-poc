@@ -96,6 +96,9 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
 
   // shift to apply to go from precalculation index to the corresponding index in the HilbertSpace
   int PrecalculationShift;
+  
+  // shift to apply to go from precalculation index to the corresponding index in the Hilbert space (for spaces larger than 2^31)
+  long LargePrecalculationShift;
 
   // amount of memory (in bytes) that can be used to store precalculated matrix elements
   long Memory;
@@ -525,6 +528,16 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   void EvaluateMNTwoBodyFastMultiplicationComponent(ParticleOnSphere* particles, int index, 
 						    int* indexArray, double* coefficientArray, long& position);
 
+  // core part of the FastMultiplication method involving 2-body term
+  // 
+  // particles = pointer to the Hilbert space
+  // index = index of the component on which the Hamiltonian has to act on
+  // indexArray = array where indices connected to the index-th component through the Hamiltonian
+  // coefficientArray = array of the numerical coefficients related to the indexArray
+  // position = reference on the current position in arrays indexArray and coefficientArray
+  void EvaluateMNTwoBodyFastMultiplicationComponent(ParticleOnSphere* particles, long index, 
+						    long* indexArray, double* coefficientArray, long& position);
+
 };
 
 // return dimension of Hilbert space where Hamiltonian acts
@@ -647,6 +660,119 @@ inline void AbstractQHEOnSphereHamiltonian::EvaluateMNTwoBodyFastMultiplicationC
 	      m2 = this->OneBodyNValues[j];
 	      Index = particles->AdA(AbsoluteIndex, m1, m2, Coefficient);
 	      if (Index < particles->GetHilbertSpaceDimension())
+		{
+		  indexArray[Pos] = Index;
+		  coefficientArray[Pos] = Coefficient * this->OneBodyInteractionFactors[j];
+		  ++Pos;
+		}
+	    }
+	}
+      ++position;
+    }      
+}
+
+// core part of the FastMultiplication method involving 2-body term
+// 
+// particles = pointer to the Hilbert space
+// index = index of the component on which the Hamiltonian has to act on
+// indexArray = array where indices connected to the index-th component through the Hamiltonian
+// coefficientArray = array of the numerical coefficients related to the indexArray
+// position = reference on the current position in arrays indexArray and coefficientArray
+
+inline void AbstractQHEOnSphereHamiltonian::EvaluateMNTwoBodyFastMultiplicationComponent(ParticleOnSphere* particles, long index, 
+											 long* indexArray, double* coefficientArray, long& position)
+{
+  if (this->NbrM12Indices == 0)
+    {
+      //      indexArray = this->InteractionPerComponentIndex[position];
+      //      coefficientArray = this->InteractionPerComponentCoefficient[position];
+      int Pos = 0;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      long Index = 0;
+      double Coefficient = 0.0;
+      for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+	{
+	  m1 = this->M1Value[j];
+	  m2 = this->M2Value[j];
+	  m3 = this->M3Value[j];
+	  m4 = m1 + m2 - m3;
+	  Index = particles->AdAdAA(index, m1, m2, m3, m4, Coefficient);
+	  if (Index < particles->GetLargeHilbertSpaceDimension())
+	    {
+	      indexArray[Pos] = Index;
+	      coefficientArray[Pos] = Coefficient * this->InteractionFactors[j];
+	      ++Pos;
+	    }
+	}
+      if (this->OneBodyTermFlag == true)
+	{
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      Index = particles->AdA(index, m1, m2, Coefficient);
+	      if (Index < particles->GetLargeHilbertSpaceDimension())
+		{
+		  indexArray[Pos] = Index;
+		  coefficientArray[Pos] = Coefficient * this->OneBodyInteractionFactors[j];
+		  ++Pos;
+		}
+	    }
+	}
+      ++position;
+    }
+  else
+    {
+      double Coefficient2;
+      int SumIndices;
+      int TmpNbrM3Values;
+      int* TmpM3Values;
+      int ReducedNbrInteractionFactors;
+      //      indexArray = this->InteractionPerComponentIndex[position];
+      //      coefficientArray = this->InteractionPerComponentCoefficient[position];
+      int Pos = 0;
+      long Index = 0l;
+      double Coefficient = 0.0;
+      ReducedNbrInteractionFactors = 0;
+      long AbsoluteIndex = index + this->LargePrecalculationShift;
+      for (int m1 = 0; m1 < this->NbrM12Indices; ++m1)
+	{
+	  Coefficient = particles->AA(AbsoluteIndex, this->M1Value[m1], this->M2Value[m1]);	  
+	  if (Coefficient != 0.0)
+	    {
+	      SumIndices = this->M1Value[m1] + this->M2Value[m1];
+	      TmpM3Values = this->M3Values[m1];
+	      TmpNbrM3Values = this->NbrM3Values[m1];
+	      for (int m3 = 0; m3 < TmpNbrM3Values; ++m3)
+		{
+		  Index = particles->AdAd(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+		  if (Index < particles->GetLargeHilbertSpaceDimension())
+		    {
+		      indexArray[Pos] = Index;
+		      coefficientArray[Pos] = Coefficient * Coefficient2 * this->InteractionFactors[ReducedNbrInteractionFactors];
+// 		      cout << (this->M1Value[m1]*2 - this->LzMax) << " " << (this->M2Value[m1]*2 - this->LzMax) << " " << (m3*2 - this->LzMax) << " " << (this->M1Value[m1] + this->M2Value[m1] - m3) << " " << coefficientArray[Pos] << endl;
+	      //cout << index << " -> " << (this->M1Value[m1]) << " " << (this->M2Value[m1]) << " " << (TmpM3Values[m3]) << " " << (SumIndices - TmpM3Values[m3]) << " : " << (Coefficient) << " " << (Coefficient2) << endl;
+		      ++Pos;
+		    }		      
+		  ++ReducedNbrInteractionFactors;
+		}    
+	    }
+	  else
+	    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+	}
+      if (this->OneBodyTermFlag == true)
+	{
+	  int m1;
+	  int m2;
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      Index = particles->AdA(AbsoluteIndex, m1, m2, Coefficient);
+	      if (Index < particles->GetLargeHilbertSpaceDimension())
 		{
 		  indexArray[Pos] = Index;
 		  coefficientArray[Pos] = Coefficient * this->OneBodyInteractionFactors[j];

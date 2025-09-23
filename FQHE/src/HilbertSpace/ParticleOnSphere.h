@@ -183,6 +183,14 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // return value =  multiplicative factor 
   virtual double AA (int index, int n1, int n2);
 
+  // apply a_n1 a_n2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be kept in cache until next AdAd call
+  //
+  // index = index of the state on which the operator has to be applied
+  // n1 = first index for annihilation operator
+  // n2 = second index for annihilation operator
+  // return value =  multiplicative factor 
+  virtual double AALarge (long index, int n1, int n2);
+
   // apply a_n1 a_n2 operator to a given state without keeping it in cache
   //
   // index = index of the state on which the operator has to be applied
@@ -191,6 +199,15 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AA (int index, int n1, int n2, double& coefficient);
+
+  // apply a_n1 a_n2 operator to a given state without keeping it in cache
+  //
+  // index = index of the state on which the operator has to be applied
+  // n1 = first index for annihilation operator
+  // n2 = second index for annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual long AALarge (long index, int n1, int n2, double& coefficient);
 
   // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
   //
@@ -202,6 +219,16 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // return value =  multiplicative factor 
   virtual double AsigmaAsigma (int index, int n1, int n2, int sigma1, int sigma2);
 
+  // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
+  //
+  // index = index of the state on which the operator has to be applied
+  // n1 = first index for annihilation operator
+  // n2 = second index for annihilation operator
+  // sigma1 = SU(2) index for the first annihilation operator
+  // sigma2 = SU(2) index for the second annihilation operator
+  // return value =  multiplicative factor 
+  virtual double AsigmaAsigmaLarge (long index, int n1, int n2, int sigma1, int sigma2);
+
   // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be kept in cache until next ProdA call
   //
   // index = index of the state on which the operator has to be applied
@@ -209,6 +236,14 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // nbrIndices = number of creation (or annihilation) operators
   // return value =  multiplicative factor 
   virtual double ProdA (int index, int* n, int nbrIndices);
+
+  // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be kept in cache until next ProdA call
+  //
+  // index = index of the state on which the operator has to be applied
+  // n = array containg the indices of the annihilation operators (first index corresponding to the leftmost operator)
+  // nbrIndices = number of creation (or annihilation) operators
+  // return value =  multiplicative factor 
+  virtual double ProdALarge (long index, int* n, int nbrIndices);
 
   // apply Prod_i a_mi operator to the state produced using ProdA method (without destroying it)
   // use double when calculating normalization factors to avoid overflow
@@ -236,6 +271,14 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // return value = index of the destination state 
   virtual int AdAd (int m1, int m2, double& coefficient);
 
+  // apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
+  //
+  // m1 = first index for creation operator
+  // m2 = second index for creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual long AdAdLarge (int m1, int m2, double& coefficient);
+
   // apply a^+_m1 a^+_m2 operator to the state 
   //
   // index = index of the state on which the operator has to be applied
@@ -244,6 +287,15 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AdAd (int index, int m1, int m2, double& coefficient);
+
+  // apply a^+_m1 a^+_m2 operator to the state 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m1 = first index for creation operator
+  // m2 = second index for creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual long AdAdLarge (long index, int m1, int m2, double& coefficient);
 
   // apply a^+_m1_sigma1 a^+_m2_sigma2 operator to the state produced using A*A* method (without destroying it). Sigma is is 0 for up and 1 for down
   //
@@ -254,6 +306,16 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient);
+
+  // apply a^+_m1_sigma1 a^+_m2_sigma2 operator to the state produced using A*A* method (without destroying it). Sigma is is 0 for up and 1 for down
+  //
+  // m1 = first index for creation operator
+  // m2 = second index for creation operator
+  // sigma1 = SU(2) index for the first creation operator
+  // sigma2 = SU(2) index for the second creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual long AdsigmaAdsigmaLarge (int m1, int m2, int sigma1, int sigma2, double& coefficient);
 
   // apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
   //
@@ -269,10 +331,29 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // m1 = first index for creation operator
   // m2 = second index for creation operator
   // coefficient = reference on the double where the multiplicative factor has to be stored
+  // nbrTranslation = reference on the number of translations to apply to the resulting state to obtain the return orbit describing state
+  // return value = index of the destination state 
+  virtual long AdAdLarge (int m1, int m2, double& coefficient, int& nbrTranslation);
+
+  // apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
+  //
+  // m1 = first index for creation operator
+  // m2 = second index for creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
   // nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
   // nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
   // return value = index of the destination state 
   virtual int AdAd (int m1, int m2, double& coefficient, int& nbrTranslationX, int& nbrTranslationY);
+
+  // apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
+  //
+  // m1 = first index for creation operator
+  // m2 = second index for creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
+  // nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
+  // return value = index of the destination state 
+  virtual long AdAdLarge (int m1, int m2, double& coefficient, int& nbrTranslationX, int& nbrTranslationY);
 
   // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
   //
@@ -281,6 +362,14 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int ProdAd (int* m, int nbrIndices, double& coefficient);
+
+  // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
+  //
+  // m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
+  // nbrIndices = number of creation (or annihilation) operators
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual long ProdAdLarge (int* m, int nbrIndices, double& coefficient);
 
   // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
   //
@@ -296,10 +385,29 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
   // nbrIndices = number of creation (or annihilation) operators
   // coefficient = reference on the double where the multiplicative factor has to be stored
+  // nbrTranslation = reference on the number of translations to apply to the resulting state to obtain the return orbit describing state
+  // return value = index of the destination state 
+  virtual long ProdAdLarge (int* m, int nbrIndices, double& coefficient, int& nbrTranslation);
+
+  // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
+  //
+  // m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
+  // nbrIndices = number of creation (or annihilation) operators
+  // coefficient = reference on the double where the multiplicative factor has to be stored
   // nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
   // nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
   // return value = index of the destination state 
   virtual int ProdAd (int* m, int nbrIndices, double& coefficient, int& nbrTranslationX, int& nbrTranslationY);
+
+  // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
+  //
+  // m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
+  // nbrIndices = number of creation (or annihilation) operators
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
+  // nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
+  // return value = index of the destination state 
+  virtual long ProdAdLarge (int* m, int nbrIndices, double& coefficient, int& nbrTranslationX, int& nbrTranslationY);
 
   // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
   // use double when calculating normalization factors to avoid overflow
@@ -378,6 +486,25 @@ class ParticleOnSphere :  public AbstractQHEParticle
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual long AdA (long index, int m, int n, Complex& coefficient);
+
+  // apply a^+_m_s a_m_s operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index of the creation and annihilation operator
+  // sigma = internal degree of freedom label of the creation and annihilation operator
+  // return value = coefficient obtained when applying a^+_m a_m
+  virtual double AdsigmaAsigma (long index, int m, int sigma);
+
+  // apply a^+_m1_s1 a_m2_s2 operator to a given state
+  //
+  // index = index of the state on which the operator has to be applied
+  // m1 = index of the creation operator
+  // sigma1 = internal degree of freedom label of the creation operator
+  // m2 = index of the annihilation operator
+  // sigma2 = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value = index of the destination state 
+  virtual long AdsigmaAsigma (long index, int m1, int sigma1, int m2, int sigma2, double& coefficient);
 
   // apply creation operator to a word, using the conventions
   // for state-coding and quantum numbers of this space
@@ -1384,6 +1511,20 @@ inline double ParticleOnSphere::AsigmaAsigma (int index, int n1, int n2, int sig
   return this->AA(index, n1, n2);
 }
 
+// apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
+//
+// index = index of the state on which the operator has to be applied
+// n1 = first index for annihilation operator
+// n2 = second index for annihilation operator
+// sigma1 = SU(2) index for the first annihilation operator
+// sigma2 = SU(2) index for the second annihilation operator
+// return value =  multiplicative factor 
+
+inline double ParticleOnSphere::AsigmaAsigmaLarge (long index, int n1, int n2, int sigma1, int sigma2)
+{
+  return this->AALarge(index, n1, n2);
+}
+
 // apply a^+_m1_sigma1 a^+_m2_sigma2 operator to the state produced using A*A* method (without destroying it). Sigma is is 0 for up and 1 for down
 //
 // m1 = first index for creation operator
@@ -1398,6 +1539,20 @@ inline int ParticleOnSphere::AdsigmaAdsigma (int m1, int m2, int sigma1, int sig
   return this->AdAd(m1, m2, coefficient);
 }
 
+// apply a^+_m1_sigma1 a^+_m2_sigma2 operator to the state produced using A*A* method (without destroying it). Sigma is is 0 for up and 1 for down
+//
+// m1 = first index for creation operator
+// m2 = second index for creation operator
+// sigma1 = SU(2) index for the first creation operator
+// sigma2 = SU(2) index for the second creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline long ParticleOnSphere::AdsigmaAdsigmaLarge (int m1, int m2, int sigma1, int sigma2, double& coefficient)
+{
+  return this->AdAdLarge(m1, m2, coefficient);
+}
+
 // apply a^+_m_s a_m_s operator to a given state
 //
 // index = index of the state on which the operator has to be applied
@@ -1406,6 +1561,18 @@ inline int ParticleOnSphere::AdsigmaAdsigma (int m1, int m2, int sigma1, int sig
 // return value = coefficient obtained when applying a^+_m a_m
 
 inline double ParticleOnSphere::AdsigmaAsigma (int index, int m, int sigma)
+{
+  return this->AdA(index, m);
+}
+
+// apply a^+_m_s a_m_s operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m = index of the creation and annihilation operator
+// sigma = internal degree of freedom label of the creation and annihilation operator
+// return value = coefficient obtained when applying a^+_m a_m
+
+inline double ParticleOnSphere::AdsigmaAsigma (long index, int m, int sigma)
 {
   return this->AdA(index, m);
 }
@@ -1421,6 +1588,21 @@ inline double ParticleOnSphere::AdsigmaAsigma (int index, int m, int sigma)
 // return value = index of the destination state 
 
 inline int ParticleOnSphere::AdsigmaAsigma (int index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
+{
+  return this->AdA(index, m1, m2, coefficient);
+}
+
+// apply a^+_m1_s1 a_m2_s2 operator to a given state
+//
+// index = index of the state on which the operator has to be applied
+// m1 = index of the creation operator
+// sigma1 = internal degree of freedom label of the creation operator
+// m2 = index of the annihilation operator
+// sigma2 = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+inline long ParticleOnSphere::AdsigmaAsigma (long index, int m1, int sigma1, int m2, int sigma2, double& coefficient)
 {
   return this->AdA(index, m1, m2, coefficient);
 }

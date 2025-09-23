@@ -94,11 +94,11 @@ ParticleOnLatticeFromFileInteractionOneBandWithSpinHamiltonian::ParticleOnLattic
   this->AdditionalSpinFlag = additionalSpinFlag;
   if (this->AdditionalSpinFlag == true)
     {
-      this->NbrInternalIndices = 12;
+      this->NbrInternalIndices = 4;
     }
   else
     {
-      this->NbrInternalIndices = 6;
+      this->NbrInternalIndices = 2;
     }
   
   this->MatrixElementsInteractionFile = new char[strlen(matrixElementsInteractionFile) + 1];

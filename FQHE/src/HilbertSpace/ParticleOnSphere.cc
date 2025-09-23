@@ -141,7 +141,10 @@ int ParticleOnSphere::AdAdAA (int index, int m1, int m2, int n1, int n2, double&
 
 long ParticleOnSphere::AdAdAA (long index, int m1, int m2, int n1, int n2, double& coefficient)
 {
-  return this->LargeHilbertSpaceDimension;
+  double Coefficient = this->AALarge(index, n1, n2);
+  long Index = this->AdAdLarge(m1, m2, coefficient);
+  coefficient *= Coefficient;
+  return Index;
 }
 
 // apply a^+_m1 a^+_m2 a^+_m3 a_n1 a_n2 a_n3 operator to a given state (with m1+m2+m3=n1+n2+n3)
@@ -236,6 +239,18 @@ double ParticleOnSphere::AA (int index, int n1, int n2)
   return 0.0;
 }
 
+// apply a_n1 a_n2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next AdAd call
+//
+// index = index of the state on which the operator has to be applied
+// n1 = first index for annihilation operator
+// n2 = second index for annihilation operator
+// return value =  multiplicative factor 
+
+double ParticleOnSphere::AALarge (long index, int n1, int n2)
+{
+  return 0.0;
+}
+
 // apply a_n1 a_n2 operator to a given state without keeping it in cache
 //
 // index = index of the state on which the operator has to be applied
@@ -249,6 +264,19 @@ int ParticleOnSphere::AA (int index, int n1, int n2, double& coefficient)
   return this->HilbertSpaceDimension;
 }
 
+// apply a_n1 a_n2 operator to a given state without keeping it in cache
+//
+// index = index of the state on which the operator has to be applied
+// n1 = first index for annihilation operator
+// n2 = second index for annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+long ParticleOnSphere::AALarge (long index, int n1, int n2, double& coefficient)
+{
+  return this->LargeHilbertSpaceDimension;
+}
+
 
 // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call
 //
@@ -258,6 +286,18 @@ int ParticleOnSphere::AA (int index, int n1, int n2, double& coefficient)
 // return value =  multiplicative factor 
 
 double ParticleOnSphere::ProdA (int index, int* n, int nbrIndices)
+{
+  return 0.0;
+}
+
+// apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call
+//
+// index = index of the state on which the operator has to be applied
+// n = array containg the indices of the annihilation operators (first index corresponding to the leftmost operator)
+// nbrIndices = number of creation (or annihilation) operators
+// return value =  multiplicative factor 
+
+double ParticleOnSphere::ProdALarge (long index, int* n, int nbrIndices)
 {
   return 0.0;
 }
@@ -300,6 +340,18 @@ int ParticleOnSphere::AdAd (int m1, int m2, double& coefficient)
   return this->HilbertSpaceDimension;
 }
 
+// apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
+//
+// m1 = first index for creation operator
+// m2 = second index for creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+long ParticleOnSphere::AdAdLarge (int m1, int m2, double& coefficient)
+{
+  return this->LargeHilbertSpaceDimension;
+}
+
 // apply a^+_m1 a^+_m2 operator to the state 
 //
 // index = index of the state on which the operator has to be applied
@@ -311,6 +363,19 @@ int ParticleOnSphere::AdAd (int m1, int m2, double& coefficient)
 int ParticleOnSphere::AdAd (int index, int m1, int m2, double& coefficient)
 {
   return this->HilbertSpaceDimension;
+}
+
+// apply a^+_m1 a^+_m2 operator to the state 
+//
+// index = index of the state on which the operator has to be applied
+// m1 = first index for creation operator
+// m2 = second index for creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+long ParticleOnSphere::AdAdLarge (long index, int m1, int m2, double& coefficient)
+{
+  return this->LargeHilbertSpaceDimension;
 }
 
 // apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
@@ -332,6 +397,20 @@ int ParticleOnSphere::AdAd (int m1, int m2, double& coefficient, int& nbrTransla
 // m1 = first index for creation operator
 // m2 = second index for creation operator
 // coefficient = reference on the double where the multiplicative factor has to be stored
+// nbrTranslation = reference on the number of translations to applied to the resulting state to obtain the return orbit describing state
+// return value = index of the destination state 
+
+long ParticleOnSphere::AdAdLarge (int m1, int m2, double& coefficient, int& nbrTranslation)
+{
+  nbrTranslation = 0;
+  return this->AdAd(m1, m2, coefficient);
+}
+
+// apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
+//
+// m1 = first index for creation operator
+// m2 = second index for creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
 // nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
 // nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
 // return value = index of the destination state 
@@ -339,7 +418,22 @@ int ParticleOnSphere::AdAd (int m1, int m2, double& coefficient, int& nbrTransla
 int ParticleOnSphere::AdAd (int m1, int m2, double& coefficient, int& nbrTranslationX, int& nbrTranslationY)
 {
   nbrTranslationY = 0;
-  return this->AdAd(m1, m2, coefficient, nbrTranslationX);
+  return this->AdAdLarge(m1, m2, coefficient, nbrTranslationX);
+}
+
+// apply a^+_m1 a^+_m2 operator to the state produced using AA method (without destroying it)
+//
+// m1 = first index for creation operator
+// m2 = second index for creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
+// nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
+// return value = index of the destination state 
+
+long ParticleOnSphere::AdAdLarge (int m1, int m2, double& coefficient, int& nbrTranslationX, int& nbrTranslationY)
+{
+  nbrTranslationY = 0;
+  return this->AdAdLarge(m1, m2, coefficient, nbrTranslationX);
 }
 
 // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
@@ -352,6 +446,18 @@ int ParticleOnSphere::AdAd (int m1, int m2, double& coefficient, int& nbrTransla
 int ParticleOnSphere::ProdAd (int* m, int nbrIndices, double& coefficient)
 {
   return this->HilbertSpaceDimension;
+}
+
+// apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
+//
+// m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
+// nbrIndices = number of creation (or annihilation) operators
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value = index of the destination state 
+
+long ParticleOnSphere::ProdAdLarge (int* m, int nbrIndices, double& coefficient)
+{
+  return this->LargeHilbertSpaceDimension;
 }
 
 // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
@@ -373,6 +479,20 @@ int ParticleOnSphere::ProdAd (int* m, int nbrIndices, double& coefficient, int& 
 // m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
 // nbrIndices = number of creation (or annihilation) operators
 // coefficient = reference on the double where the multiplicative factor has to be stored
+// nbrTranslation = reference on the number of translations to applied to the resulting state to obtain the return orbit describing state
+// return value = index of the destination state 
+
+long ParticleOnSphere::ProdAdLarge (int* m, int nbrIndices, double& coefficient, int& nbrTranslation)
+{
+  nbrTranslation = 0;
+  return this->ProdAdLarge(m, nbrIndices, coefficient);
+}
+
+// apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
+//
+// m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
+// nbrIndices = number of creation (or annihilation) operators
+// coefficient = reference on the double where the multiplicative factor has to be stored
 // nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
 // nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
 // return value = index of the destination state 
@@ -381,6 +501,21 @@ int ParticleOnSphere::ProdAd (int* m, int nbrIndices, double& coefficient, int& 
 {
   nbrTranslationY = 0;
   return this->ProdAd(m, nbrIndices, coefficient, nbrTranslationX);
+}
+
+// apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
+//
+// m = array containg the indices of the creation operators (first index corresponding to the leftmost operator)
+// nbrIndices = number of creation (or annihilation) operators
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// nbrTranslationX = reference on the number of translations in the x direction to obtain the canonical form of the resulting state
+// nbrTranslationY = reference on the number of translations in the y direction to obtain the canonical form of the resulting state
+// return value = index of the destination state 
+
+long ParticleOnSphere::ProdAdLarge (int* m, int nbrIndices, double& coefficient, int& nbrTranslationX, int& nbrTranslationY)
+{
+  nbrTranslationY = 0;
+  return this->ProdAdLarge(m, nbrIndices, coefficient, nbrTranslationX);
 }
 
 // apply Prod_i a^+_mi operator to the state produced using ProdA method (without destroying it)
@@ -461,7 +596,7 @@ double ParticleOnSphere::AdA (long index, int m)
 long ParticleOnSphere::AdA (long index, int m, int n, double& coefficient)
 {
   if (m != n)
-    return this->HilbertSpaceDimension;
+    return this->LargeHilbertSpaceDimension;
   else
     {
       coefficient = this->AdA(index, m);

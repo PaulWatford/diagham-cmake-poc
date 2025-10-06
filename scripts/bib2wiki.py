@@ -1,10 +1,16 @@
 #!/usr/bin/env python3
 import argparse
 import re
+import os
 import logging
 from typing import List, Optional, Dict
 import bibtexparser
 import codecs
+import requests
+import feedparser
+import time
+from pathlib import Path
+
 
 logger = logging.getLogger("bib2wiki")
 
@@ -297,8 +303,80 @@ def format_authors(authors_raw: str) -> str:
         return ""
 
 
+def format_entry(e: dict, index: Optional[int] = None, show_notes: bool = False) -> str:
+    """Format a single BibTeX entry into MediaWiki markup."""
+    # --- Author list ---
+    authors = e.get("author", "")
+    if authors:
+        names = [a.strip() for a in re.split(r"\s+and\s+", authors)]
+        formatted_authors = []
+        for n in names:
+            parts = n.replace(",", "").split()
+            if len(parts) == 1:
+                formatted_authors.append(parts[0])
+            else:
+                formatted_authors.append(f"{parts[-1]}, {' '.join(parts[:-1])}")
+        if len(formatted_authors) == 1:
+            author_str = formatted_authors[0]
+        elif len(formatted_authors) == 2:
+            author_str = " and ".join(formatted_authors)
+        else:
+            author_str = ", ".join(formatted_authors[:-1]) + ", and " + formatted_authors[-1]
+    else:
+        author_str = ""
 
-def format_entry(e: Dict, number: int, show_notes: bool = False) -> str:
+    # --- Core metadata ---
+    title = e.get("title", "[untitled]").strip().rstrip(".")
+    journal = e.get("journal", "").strip()
+    vol = e.get("volume", "").strip()
+    pages = e.get("pages", "").strip()
+    year = e.get("year", "").strip()
+    doi = e.get("doi", "").strip()
+    url = e.get("url", "").strip()
+    arxiv_id = e.get("_arxiv_id") or e.get("eprint", "")
+    note = e.get("note", "").strip()
+
+    # --- Build main citation line ---
+    line = f"{author_str}, ''{title}''"
+    if journal:
+        line += f", {journal}"
+    if vol:
+        line += f" '''{vol}'''"
+    if pages:
+        line += f", {pages}"
+    if year:
+        line += f" ({year})"
+
+    # --- Build link list ---
+    links = []
+    has_publisher = bool(doi or (url and "arxiv.org" not in url.lower()))
+
+    # DOI link
+    if doi:
+        links.append(f"[https://doi.org/{doi} doi]")
+
+    # Publisher link (only if it's *not* arXiv)
+    if url and "arxiv.org" not in url.lower():
+        links.append(f"[{url} pub]")
+
+    # arXiv link (avoid duplicate 'pub' pointing to arxiv)
+    if arxiv_id:
+        display_id = re.sub(r"(?i)^arxiv:", "", arxiv_id).strip()
+        clean_id = re.sub(r"v\d+$", "", display_id)
+        arxiv_link = f"https://arxiv.org/abs/{clean_id}"
+        links.append(f"[{arxiv_link} arXiv:{display_id}]")
+
+    # --- Combine into final output ---
+    out = f"# {line}"
+    if links:
+        out += " " + " ".join(links)
+    if show_notes and note:
+        out += f" ({note})"
+
+    return out
+
+
+def format_entry_old(e: Dict, number: int, show_notes: bool = False) -> str:
     """Format one entry for MediaWiki output (APS style)."""
     authors = latex_to_unicode(format_authors(e.get("author", "")))
     title = latex_to_unicode(e.get("title", ""))
@@ -322,17 +400,29 @@ def format_entry(e: Dict, number: int, show_notes: bool = False) -> str:
     else:
         if year:
             ref += f", arXiv.org ({year})"
-
+    # --- Build link list ---
     links = []
+
+    doi = e.get("doi", "").strip()
+    url = e.get("url", "").strip()
+    arxiv_id = e.get("_arxiv_id") or e.get("eprint", "")
+    is_arxiv = e.get("journal", "").lower() in ["arxiv", "arxiv.org"]
+
+    # Add DOI if available
     if doi:
         links.append(f"[https://doi.org/{doi} doi]")
-    elif url and "doi.org" in url:
-        links.append(f"[{url} doi]")
-    if url and "doi.org" not in url:
+
+    # Add publisher URL only if it's not the same as the arXiv link
+    if url and ("arxiv.org" not in url.lower()):
         links.append(f"[{url} pub]")
-    if "_arxiv_id" in e:
-        arxiv_id = e["_arxiv_id"]
-        links.append(f"[https://arxiv.org/abs/{arxiv_id} arXiv:{arxiv_id}]")
+
+    # Add arXiv link
+    if arxiv_id:
+        # canonicalize the ID
+        arxiv_id = re.sub(r"(?i)^arxiv:", "", arxiv_id).strip()
+        arxiv_id = re.sub(r"v\d+$", "", arxiv_id)  # strip version
+        arxiv_link = f"https://arxiv.org/abs/{arxiv_id}"
+        links.append(f"[{arxiv_link} arXiv:{arxiv_id}]")
 
     if links:
         ref += " " + " ".join(links)
@@ -346,13 +436,9 @@ def format_entry(e: Dict, number: int, show_notes: bool = False) -> str:
 # -------------------------------
 # Processing
 # -------------------------------
-def process_bibtex(
-    filename: str,
-    merge_arxiv_with_published: bool = True,
-    show_notes: bool = False,
-    reverse: bool = True,
-    year_headings: bool = True
-) -> List[str]:
+def process_bibtex(filename: str, merge_arxiv_with_published: bool = True,
+                   show_notes: bool = False, reverse: bool = True,
+                   year_headings: bool = True, extra_entries: Optional[List[Dict]] = None) -> List[str]:
     with open(filename) as bibfile:
         db = bibtexparser.load(bibfile)
 
@@ -401,6 +487,12 @@ def process_bibtex(
     published_entries = list(seen_published.values())
     arxiv_entries = list(seen_arxiv.values())
 
+    # after reading and categorizing db.entries:
+    if extra_entries:
+        for e in extra_entries:
+            e["_from_arxiv_import"] = True
+            arxiv_entries.append(e)
+
     # after building published_entries + arxiv_entries
     for arx in arxiv_entries:
         arxiv_id = arx.get("_arxiv_id")
@@ -411,30 +503,43 @@ def process_bibtex(
 
     # ---- existing merge stage: attach arXiv to published if requested ----
     if merge_arxiv_with_published:
-    	still_unmatched = []
-    	for arx in arxiv_entries:
-    		matched = False
-    		arxiv_title = normalize_title(arx.get("title", ""))
-    		arxiv_id = arx.get("_arxiv_id")
+        still_unmatched = []
+        for arx in arxiv_entries:
+            matched = False
+            arxiv_title = normalize_title(arx.get("title", ""))
+            arxiv_id = arx.get("_arxiv_id")
 
-    		for i, pub in enumerate(published_entries):
-    			pub_title_norm = normalize_title(pub.get("title", ""))
-    			# match by DOI if pub has DOI and arx has doi, OR by normalized title OR by preprint field
-    			if (
-    				(pub.get("doi") and arx.get("doi") and pub["doi"].lower() == arx["doi"].lower())
-    				or (pub_title_norm and pub_title_norm == arxiv_title)
-    				or (pub.get("preprint") and arxiv_id and arxiv_id in pub.get("preprint", ""))
-    			):
-    				# merge arXiv into published record
-    				published_entries[i] = merge_records(pub, arx)
-    				logger.info("Merged arXiv:%s into published '%s'", arxiv_id, pub.get("title", "[untitled]"))
-    				matched = True
-    				break
+            for pub in published_entries:
+                if (
+                    pub.get("doi")
+                    and normalize_title(pub.get("title", "")) == arxiv_title
+                ):
+                    # --- Merge arXiv info into the published record ---
+                    if arxiv_id and not pub.get("_arxiv_id"):
+                        pub["_arxiv_id"] = arxiv_id
+                        # Preserve cross-links
+                        if "note" in pub:
+                            pub["note"] += f" Includes arXiv preprint {arxiv_id}."
+                        else:
+                            pub["note"] = f"Includes arXiv preprint {arxiv_id}."
+                        # Always keep arXiv URL reference
+                        if "url" not in pub and arx.get("url"):
+                            pub["url"] = arx["url"]
+                        if "eprint" not in pub and arx.get("eprint"):
+                            pub["eprint"] = arx["eprint"]
 
-    		if not matched:
-    			still_unmatched.append(arx)
+                    logger.info(
+                        "Merged arXiv:%s into published '%s'",
+                        arxiv_id,
+                        pub.get("title", "[untitled]"),
+                    )
+                    matched = True
+                    break
 
-    	arxiv_entries = still_unmatched
+            if not matched:
+                still_unmatched.append(arx)
+
+        arxiv_entries = still_unmatched
 
     # warn about standalone arXiv
     for arx in arxiv_entries:
@@ -475,9 +580,330 @@ def process_bibtex(
     	line = format_entry(e, i, show_notes=show_notes)
     	output_lines.append(line)
     	output_lines.append("")  # small space between papers
-    return output_lines
+    return output_lines, all_entries
 
 
+
+
+# add arxiv import functionality
+
+import requests
+import bibtexparser
+from xml.etree import ElementTree as ET
+
+def fetch_arxiv_metadata(arxiv_ids: list[str]) -> dict:
+    """Fetch metadata for one or more arXiv records and enrich with Crossref if DOI present."""
+    import requests
+    import xml.etree.ElementTree as ET
+
+    if not arxiv_ids:
+        return {}
+
+    # Build proper comma-separated list for the arXiv API
+    id_list_str = ",".join(arxiv_ids)
+    url = f"https://export.arxiv.org/api/query?id_list={id_list_str}"
+
+    r = requests.get(url, timeout=20)
+    r.raise_for_status()
+
+    root = ET.fromstring(r.text)
+    ns = {"atom": "http://www.w3.org/2005/Atom", "arxiv": "http://arxiv.org/schemas/atom"}
+
+    results = {}
+    for entry in root.findall("atom:entry", ns):
+        arxiv_id = entry.find("atom:id", ns).text.split("/")[-1]
+
+        def get(tag):
+            el = entry.find(f"atom:{tag}", ns)
+            if el is not None and el.text:
+                return el.text.strip()
+            el = entry.find(f"arxiv:{tag}", ns)
+            return el.text.strip() if el is not None and el.text else ""
+
+        authors = [
+            a.find("atom:name", ns).text
+            for a in entry.findall("atom:author", ns)
+            if a.find("atom:name", ns) is not None
+        ]
+
+        doi = get("doi")
+        published = get("published")
+        year = published[:4] if published else ""
+
+        bib = {
+            "ID": f"arxiv:{arxiv_id}",
+            "ENTRYTYPE": "article",
+            "title": get("title").replace("\n", " ").strip(),
+            "author": " and ".join(authors),
+            "year": year,
+            "journal": "arXiv.org",
+            "eprint": arxiv_id,
+            "url": f"https://arxiv.org/abs/{arxiv_id}",
+        }
+
+        # --- Crossref enrichment if DOI present ---
+        if doi:
+            bib["doi"] = doi
+            # Enrich from Crossref
+            try:
+                cr = requests.get(f"https://api.crossref.org/works/{doi}", timeout=10)
+                cr.raise_for_status()
+                data = cr.json().get("message", {})
+
+                # Journal title
+                bib["journal"] = data.get("container-title", ["arXiv.org"])[0]
+
+                # Volume
+                volume = data.get("volume")
+                if not volume:
+                    logger.warning(f"Attention – no 'volume' info for DOI {doi}")
+                else:
+                    bib["volume"] = volume
+
+                # Pages / Article number (varies by publisher)
+                pages = (
+                    data.get("page")
+                    or data.get("article-number")
+                    or data.get("article_number")
+                    or None
+                )
+                if not pages:
+                    logger.warning(f"Attention – no 'page' or 'article-number' info for DOI {doi}")
+                else:
+                    bib["pages"] = pages
+
+                # Year
+                issued = data.get("issued", {}).get("date-parts", [[None]])
+                if issued and issued[0][0]:
+                    bib["year"] = str(issued[0][0])
+
+            except Exception as e:
+                logger.warning(f"Crossref lookup failed for DOI {doi}: {e}")
+        results[arxiv_id] = bib
+
+    return results
+
+
+def fetch_crossref_metadata(doi):
+    """Fetch metadata from Crossref."""
+    try:
+        r = requests.get(f"https://api.crossref.org/works/{doi}", timeout=10)
+        if r.status_code != 200:
+            return None
+        data = r.json().get("message", {})
+        meta = {
+            "title": data.get("title", [""])[0],
+            "authors": [
+                f"{a.get('given','')} {a.get('family','')}".strip()
+                for a in data.get("author", [])
+            ],
+            "journal": data.get("container-title", [""])[0],
+            "volume": data.get("volume"),
+            "year": data.get("issued", {}).get("date-parts", [[None]])[0][0],
+            "doi": doi,
+            "url": data.get("URL"),
+        }
+        return meta
+    except Exception as e:
+        print(f"Attention: Crossref fetch failed for {doi}: {e}")
+        return None
+
+def merge_metadata(arxiv_meta, publisher_meta):
+    """Combine arXiv and publisher records, preferring publisher values."""
+    merged = arxiv_meta.copy()
+    merged.update({k: v for k, v in publisher_meta.items() if v})
+    return merged
+
+def to_bibtex(entry, arxiv_id):
+    """Format metadata dict into BibTeX."""
+    authors = " and ".join(entry["authors"])
+    key = entry.get("doi", f"arXiv:{arxiv_id}").replace("/", "_")
+    bibtex = f"""@article{{{key},
+  title = {{{entry['title']}}},
+  author = {{{authors}}},
+  journal = {{{entry.get('journal', 'arXiv.org')}}},
+  year = {{{entry.get('year', entry.get('published', '')[:4])}}},
+  doi = {{{entry.get('doi', '')}}},
+  url = {{{entry.get('url', entry.get('arxiv_url', ''))}}}
+}}\n"""
+    return bibtex
+
+def import_arxiv_records(arxiv_in: str, arxiv_2_bib_out: Optional[str] = None) -> List[Dict]:
+    """Import arXiv records from a file, fetch metadata in batch, and optionally save to BibTeX."""
+    if not arxiv_in or not os.path.exists(arxiv_in):
+        logger.warning("No valid arXiv input file specified: %s", arxiv_in)
+        return []
+
+    with open(arxiv_in, "r", encoding="utf-8") as f:
+        arxiv_ids = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+    if not arxiv_ids:
+        logger.warning("No arXiv identifiers found in %s", arxiv_in)
+        return []
+
+    logger.info("Fetching metadata for %d arXiv records...", len(arxiv_ids))
+    arxiv_data = fetch_arxiv_metadata(arxiv_ids)
+
+    # Convert results to a flat list of BibTeX-style dicts
+    records = list(arxiv_data.values())
+    logger.info("Fetched %d valid arXiv entries.", len(records))
+
+    # Optionally write fetched records to a separate BibTeX file
+    if arxiv_2_bib_out:
+        with open(arxiv_2_bib_out, "w", encoding="utf-8") as f:
+            for e in records:
+                f.write(f"@article{{e['ID']}},\n")
+                for k, v in e.items():
+                    if k in ["ID", "ENTRYTYPE"]:
+                        continue
+                    f.write(f"  {k} = {{{v}}},\n")
+                f.write("}\n\n")
+        logger.info("Wrote arXiv BibTeX data to %s", arxiv_2_bib_out)
+
+    return records
+
+# bulk arxiv import
+def import_arxiv_records(arxiv_in: str, arxiv_2_bib_out: Optional[str] = None) -> List[Dict]:
+    """Import arXiv records from a file, fetch metadata in batch, and optionally save to BibTeX."""
+    if not arxiv_in or not os.path.exists(arxiv_in):
+        logger.warning("No valid arXiv input file specified: %s", arxiv_in)
+        return []
+
+    with open(arxiv_in, "r", encoding="utf-8") as f:
+        arxiv_ids = [line.strip() for line in f if line.strip() and not line.startswith("#")]
+
+    if not arxiv_ids:
+        logger.warning("No arXiv identifiers found in %s", arxiv_in)
+        return []
+
+    logger.info("Fetching metadata for %d arXiv records...", len(arxiv_ids))
+    arxiv_data = fetch_arxiv_metadata(arxiv_ids)
+
+    # Convert results to a flat list of BibTeX-style dicts
+    records = list(arxiv_data.values())
+    logger.info("Fetched %d valid arXiv entries.", len(records))
+
+    # Optionally write fetched records to a separate BibTeX file
+    if arxiv_2_bib_out:
+        with open(arxiv_2_bib_out, "w", encoding="utf-8") as f:
+            for e in records:
+                f.write(f"@article{{{e['ID']}}},\n")
+                for k, v in e.items():
+                    if k in ["ID", "ENTRYTYPE"]:
+                        continue
+                    f.write(f"  {k} = {{{v}}},\n")
+                f.write("}\n\n")
+        logger.info("Wrote arXiv BibTeX data to %s", arxiv_2_bib_out)
+
+    return records
+
+
+def import_arxiv_records_old(arxiv_ids: list[str], bib_filename: str, wiki_output: str, append: bool = False):
+    """Import arXiv records, merge into BibTeX, and regenerate Wiki output."""
+    print(f"Fetching {len(arxiv_ids)} arXiv records...")
+    arxiv_data = fetch_arxiv_metadata(arxiv_ids)
+    out_bib = Path("arxiv_imports.bib")
+    mode = "a" if append else "w"
+    with open(out_bib, mode, encoding="utf-8") as f:
+        for aid, a_meta in arxiv_data.items():
+            doi = a_meta.get("doi")
+            if doi:
+                p_meta = fetch_crossref_metadata(doi)
+                if p_meta:
+                    merged = merge_metadata(a_meta, p_meta)
+                    print(f"OK {aid}: merged with {p_meta['journal']} ({p_meta['year']})")
+                else:
+                    print(f"Attention️ {aid}: no publisher data, keeping arXiv metadata.")
+                    merged = a_meta
+            else:
+                print(f"Info️ {aid}: no DOI, arXiv only.")
+                merged = a_meta
+            bib_entry = to_bibtex(merged, aid)
+            f.write(bib_entry)
+            time.sleep(0.5)  # be kind to APIs
+
+    print(f"📚 Saved fetched records to {out_bib}")
+
+    # Merge with existing bib file for Wiki export
+    print("🔧 Merging with existing BibTeX and regenerating wiki output...")
+    combined_bib = Path("combined_import.bib")
+    with open(combined_bib, "w", encoding="utf-8") as fout:
+        fout.write(open(bib_filename, "r", encoding="utf-8").read())
+        fout.write("\n")
+        fout.write(open(out_bib, "r", encoding="utf-8").read())
+
+    output_lines = process_bibtex(
+        str(combined_bib),
+        merge_arxiv_with_published=True,
+        show_notes=False,
+        reverse=True,
+        year_headings=True,
+    )
+    with open(wiki_output, "w", encoding="utf-8") as f:
+        f.write("\n".join(output_lines))
+
+    print(f"✅ Wiki bibliography updated → {wiki_output}")
+
+import unicodedata
+
+def bibtex_entry(entry: dict, latex_output: bool = False) -> str:
+    """
+    Convert a Python dict representing a BibTeX entry into a formatted record.
+    - latex_output: if True, converts UTF-8 diacritics to LaTeX escape sequences.
+    """
+    e = dict(entry)
+    key = e.pop("ID", "unnamed")
+    entry_type = e.pop("ENTRYTYPE", "article")
+
+    # --- Helper: UTF-8 → LaTeX accent conversion ---
+    def unicode_to_latex(text: str) -> str:
+        """Convert common accented characters to LaTeX equivalents."""
+        replacements = {
+            "ä": r"{\"a}", "ö": r"{\"o}", "ü": r"{\"u}",
+            "Ä": r"{\"A}", "Ö": r"{\"O}", "Ü": r"{\"U}",
+            "é": r"\'{e}", "è": r"\`{e}", "ê": r"\^{e}", "ë": r"\"{e}",
+            "É": r"\'{E}", "È": r"\`{E}", "Ê": r"\^{E}", "Ë": r"\"{E}",
+            "á": r"\'{a}", "à": r"\`{a}", "â": r"\^{a}", "å": r"\r{a}",
+            "Á": r"\'{A}", "À": r"\`{A}", "Â": r"\^{A}", "Å": r"\r{A}",
+            "ó": r"\'{o}", "ò": r"\`{o}", "ô": r"\^{o}", "õ": r"\~{o}",
+            "Ó": r"\'{O}", "Ò": r"\`{O}", "Ô": r"\^{O}", "Õ": r"\~{O}",
+            "í": r"\'{i}", "ì": r"\`{i}", "î": r"\^{i}", "ï": r"\"{i}",
+            "Í": r"\'{I}", "Ì": r"\`{I}", "Î": r"\^{I}", "Ï": r"\"{I}",
+            "ñ": r"\~{n}", "Ñ": r"\~{N}",
+            "ç": r"\c{c}", "Ç": r"\c{C}",
+            "ß": r"\ss{}"
+        }
+        return "".join(replacements.get(c, c) for c in text)
+
+    def bib_escape(value: str) -> str:
+        """Escape special characters for BibTeX."""
+        if not isinstance(value, str):
+            return str(value)
+        value = value.replace("\\", "\\\\")
+        value = value.replace("\"", "{\\textquotedbl}")
+        value = value.replace("%", "\\%")
+        value = value.replace("&", "\\&")
+        value = value.replace("_", "\\_")
+        value = value.replace("#", "\\#")
+        value = value.replace("$", "\\$")
+        if latex_output:
+            value = unicode_to_latex(value)
+        return value.strip()
+
+    # --- Order fields for readability ---
+    order = ["title", "author", "year", "journal", "volume", "pages", "doi", "url", "eprint", "note"]
+    fields = []
+    for k, v in e.items():
+        if v:
+            fields.append((k, v))
+    fields.sort(key=lambda kv: (order.index(kv[0]) if kv[0] in order else 99, kv[0]))
+
+    # --- Construct entry string ---
+    field_lines = [f"  {k} = {{{bib_escape(v)}}}" for k, v in fields]
+    bib_str = f"@{entry_type}{{{key},\n" + ",\n".join(field_lines) + "\n}"
+    return bib_str
+
+    
 # -------------------------------
 # CLI
 # -------------------------------
@@ -486,14 +912,23 @@ def main():
     parser.add_argument("bibfile", help="Input .bib file")
     parser.add_argument("--no-merge-arxiv", action="store_true", help="Do not merge arXiv with published")
     parser.add_argument("--show-notes", action="store_true", help="Show notes if present")
-    parser.add_argument( "--reverse", action="store_false", help="Sort bibliography in reverse chronological order (newest first)")
-    parser.add_argument( "--year-headings", action="store_false", help="Insert year headings in the output")
+    parser.add_argument("--reverse", action="store_false", help="Sort bibliography in reverse chronological order (newest first)")
+    parser.add_argument("--year-headings", action="store_false", help="Insert year headings in the output")
 
-    parser.add_argument("--output", "-o", help="Output file (default: same name as input, with .wiki extension; use '-' for stdout)", default=None)
+    parser.add_argument("--output", "-o",
+                        help="Output file (default: same name as input, with .wiki extension; use '-' for stdout)",
+                        default=None)
 
-    parser.add_argument("--verbose", type=int, default=1, choices=[0, 1, 2], help="Verbosity level (0=warnings only, 1=info, 2=debug)")
+    parser.add_argument("--arxiv-in", help="Optional text file containing arXiv IDs to import and merge", default=None)
+    parser.add_argument("--arxiv-2-bib-out", help="Optional output file for BibTeX generated from arXiv imports", default=None)
+    parser.add_argument("--all-bib-out", help="Optional output file for full merged BibTeX (existing + arXiv imports)", default=None)
+    parser.add_argument("--latex-output", action="store_true", help="Escape non-ASCII characters for LaTeX-compatible BibTeX output")
+
+    parser.add_argument("--verbose", type=int, default=1, choices=[0, 1, 2],
+                        help="Verbosity level (0=warnings only, 1=info, 2=debug)")
     args = parser.parse_args()
 
+    # --- Logging setup ---
     level = logging.WARNING
     if args.verbose == 1:
         level = logging.INFO
@@ -501,28 +936,43 @@ def main():
         level = logging.DEBUG
     logging.basicConfig(level=level, format="%(levelname)s: %(message)s")
 
-    refs = process_bibtex(
+    # ---- Step 1 (Optional): import arXiv records ----
+    imported_arxiv_records = []
+    if args.arxiv_in:
+        imported_arxiv_records = import_arxiv_records(
+            args.arxiv_in,
+            arxiv_2_bib_out=args.arxiv_2_bib_out
+        )
+        logger.info(f"Imported {len(imported_arxiv_records)} new arXiv records from {args.arxiv_in}")
+
+
+    # --- Process main BibTeX, merging optional imported arXiv entries ---
+    refs, all_entries = process_bibtex(
         args.bibfile,
         merge_arxiv_with_published=not args.no_merge_arxiv,
         show_notes=args.show_notes,
         reverse=args.reverse,
-        year_headings=args.year_headings
-        )
-
+        year_headings=args.year_headings,
+        extra_entries=imported_arxiv_records,  # <—— integrate imported records
+    )
     output_text = "\n\n".join(refs)
 
+    # --- Step 3 (Optional): write merged BibTeX output ---
+    if args.all_bib_out:
+        with open(args.all_bib_out, "w", encoding="utf-8") as f:
+            for entry in all_entries:
+                f.write(bibtex_entry(entry, latex_output=args.latex_output) + "\n\n")
+                f.write("\n\n")
+        logger.info(f"Wrote merged BibTeX output to {args.all_bib_out}")
+        
+    # --- Step 4: Write Wiki output ---
     if args.output == "-" or (args.output is None and args.bibfile == "-"):
-        # force stdout
         print(output_text)
     else:
-        if args.output:
-            outfile = args.output
-        else:
-            outfile = re.sub(r"\.bib$", ".wiki", args.bibfile)
+        outfile = args.output or re.sub(r"\.bib$", ".wiki", args.bibfile)
         with open(outfile, "w", encoding="utf-8") as f:
             f.write(output_text + "\n")
-        logger.info("Wrote output to %s", outfile)
-
+        logger.info("Wrote wiki output → %s", outfile)
 
 if __name__ == "__main__":
     main()

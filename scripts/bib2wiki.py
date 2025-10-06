@@ -855,25 +855,45 @@ def bibtex_entry(entry: dict, latex_output: bool = False) -> str:
     key = e.pop("ID", "unnamed")
     entry_type = e.pop("ENTRYTYPE", "article")
 
-    # --- Helper: UTF-8 → LaTeX accent conversion ---
+    # --- Helper: UTF-8 → LaTeX accent / spaces conversion ---
+    # --- Character mappings for LaTeX escapes ---
+    accent_map = {
+        "ä": r"{\"a}", "ö": r"{\"o}", "ü": r"{\"u}",
+        "Ä": r"{\"A}", "Ö": r"{\"O}", "Ü": r"{\"U}",
+        "é": r"\'{e}", "è": r"\`{e}", "ê": r"\^{e}", "ë": r"\"{e}",
+        "É": r"\'{E}", "È": r"\`{E}", "Ê": r"\^{E}", "Ë": r"\"{E}",
+        "á": r"\'{a}", "à": r"\`{a}", "â": r"\^{a}", "å": r"\r{a}",
+        "Á": r"\'{A}", "À": r"\`{A}", "Â": r"\^{A}", "Å": r"\r{A}",
+        "ó": r"\'{o}", "ò": r"\`{o}", "ô": r"\^{o}", "õ": r"\~{o}",
+        "Ó": r"\'{O}", "Ò": r"\`{O}", "Ô": r"\^{O}", "Õ": r"\~{O}",
+        "í": r"\'{i}", "ì": r"\`{i}", "î": r"\^{i}", "ï": r"\"{i}",
+        "Í": r"\'{I}", "Ì": r"\`{I}", "Î": r"\^{I}", "Ï": r"\"{I}",
+        "ñ": r"\~{n}", "Ñ": r"\~{N}",
+        "ç": r"\c{c}", "Ç": r"\c{C}",
+        "ß": r"\ss{}",
+        "ø": r"\o{}", "Ø": r"\O{}", "å": r"\r{a}", "Å": r"\r{A}"
+    }
+
+    # Smart quotes, dashes, ellipsis, spaces
+    smart_punct_map = {
+        "“": "``", "”": "''",  # smart double quotes
+        "‘": "`",  "’": "'",   # smart single quotes
+        "–": "--", "—": "---", # en/em dash
+        "…": r"\ldots{}",      # ellipsis
+        "\u00A0": "~",         # non-breaking space
+    }
+
     def unicode_to_latex(text: str) -> str:
-        """Convert common accented characters to LaTeX equivalents."""
-        replacements = {
-            "ä": r"{\"a}", "ö": r"{\"o}", "ü": r"{\"u}",
-            "Ä": r"{\"A}", "Ö": r"{\"O}", "Ü": r"{\"U}",
-            "é": r"\'{e}", "è": r"\`{e}", "ê": r"\^{e}", "ë": r"\"{e}",
-            "É": r"\'{E}", "È": r"\`{E}", "Ê": r"\^{E}", "Ë": r"\"{E}",
-            "á": r"\'{a}", "à": r"\`{a}", "â": r"\^{a}", "å": r"\r{a}",
-            "Á": r"\'{A}", "À": r"\`{A}", "Â": r"\^{A}", "Å": r"\r{A}",
-            "ó": r"\'{o}", "ò": r"\`{o}", "ô": r"\^{o}", "õ": r"\~{o}",
-            "Ó": r"\'{O}", "Ò": r"\`{O}", "Ô": r"\^{O}", "Õ": r"\~{O}",
-            "í": r"\'{i}", "ì": r"\`{i}", "î": r"\^{i}", "ï": r"\"{i}",
-            "Í": r"\'{I}", "Ì": r"\`{I}", "Î": r"\^{I}", "Ï": r"\"{I}",
-            "ñ": r"\~{n}", "Ñ": r"\~{N}",
-            "ç": r"\c{c}", "Ç": r"\c{C}",
-            "ß": r"\ss{}"
-        }
-        return "".join(replacements.get(c, c) for c in text)
+        """Convert accented & special Unicode characters to LaTeX equivalents."""
+        out = []
+        for c in text:
+            if c in accent_map:
+                out.append(accent_map[c])
+            elif c in smart_punct_map:
+                out.append(smart_punct_map[c])
+            else:
+                out.append(c)
+        return "".join(out)
 
     def bib_escape(value: str) -> str:
         """Escape special characters for BibTeX."""
@@ -913,6 +933,8 @@ def main():
     parser.add_argument("--no-merge-arxiv", action="store_true", help="Do not merge arXiv with published")
     parser.add_argument("--show-notes", action="store_true", help="Show notes if present")
     parser.add_argument("--reverse", action="store_false", help="Sort bibliography in reverse chronological order (newest first)")
+    parser.add_argument("--numbering", choices=["none", "global", "reverse"], default="none",
+                            help="Add global numbering of all entries (global = ascending, reverse = descending).")
     parser.add_argument("--year-headings", action="store_false", help="Insert year headings in the output")
 
     parser.add_argument("--output", "-o",
@@ -955,7 +977,36 @@ def main():
         year_headings=args.year_headings,
         extra_entries=imported_arxiv_records,  # <—— integrate imported records
     )
-    output_text = "\n\n".join(refs)
+    # fix some output formatting - changing to global enumeration if desired.
+    if args.numbering != "none":
+        numbered_refs = []
+        # Filter only actual entries (lines starting with "#")
+        numbered_entries = [r for r in refs if r.strip().startswith("#")]
+        n_total = len(numbered_entries)
+        count = 0
+
+        for ref in refs:
+            ref_stripped = ref.strip()
+            if not ref_stripped:
+                # skip empty lines entirely
+                continue
+            if ref_stripped.startswith("#"):
+                count += 1
+                if args.numbering == "global":
+                    num = count
+                else:  # reverse
+                    num = n_total - count + 1
+                clean_ref = ref_stripped.lstrip("#").strip()
+                numbered_refs.append(f"  {num}. {clean_ref}")
+            else:
+                # Year headings, keep unnumbered and unindented
+                numbered_refs.append(ref_stripped)
+
+        output_text = "\n".join(numbered_refs)
+    else:
+        # fallback: join non-empty refs without extra blank lines
+        output_text = "\n".join([r.strip() for r in refs if r.strip()])
+
 
     # --- Step 3 (Optional): write merged BibTeX output ---
     if args.all_bib_out:

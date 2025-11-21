@@ -3088,7 +3088,7 @@ Vector& ComplexVector::SendVector(const MPI_Comm& communicator, int id)
 // return value = reference on the current vector
 
 Vector& ComplexVector::BroadcastVector(const MPI_Comm& communicator,  int id)
-{  
+{
   int TmpVectorType = this->VectorType;
   int TmpDimension = this->Dimension;
   int Acknowledge = 0;
@@ -3129,7 +3129,7 @@ Vector& ComplexVector::BroadcastVector(const MPI_Comm& communicator,  int id)
     {
       this->Resize(TmpDimension);      
     }
-#ifdef __MPI_NOBROADCAST_
+#ifdef __MPI_NOBROADCAST__
   int NbrMPINodes = 0;
   MPI_Comm_size(communicator, &NbrMPINodes);
    for (int i = 0; i < NbrMPINodes; ++i)
@@ -3139,8 +3139,8 @@ Vector& ComplexVector::BroadcastVector(const MPI_Comm& communicator,  int id)
 	  MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
 	}
     }  
-#else_
-  MPI_Bcast(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, communicator); 
+#else
+   MPI_Bcast(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, communicator); 
 #endif
   return *this;
 }

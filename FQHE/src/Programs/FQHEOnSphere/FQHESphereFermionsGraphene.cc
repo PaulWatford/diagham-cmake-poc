@@ -203,21 +203,39 @@ int main(int argc, char** argv)
       if (InteractionDefinition.GetAsDoubleArray("Pseudopotentials", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
 	{
 	  Flag = true;
-	  if (TmpNbrPseudoPotentials != (LzMax +1))
+	  cout << TmpNbrPseudoPotentials << endl;
+	  if (TmpNbrPseudoPotentials <= (LzMax +1))
+	    {
+	      if (TmpNbrPseudoPotentials != (LzMax +1))
+		{
+		  cout << "number of pseudo-potentials in Pseudopotentials lower than the number of rbitals, padding with zeroes" << endl;
+		}
+	      for (int i = 0; i < 10; ++i)
+		{
+		  for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
+		    {
+		      PseudoPotentials[i][j] = TmpPseudoPotentials[j];
+		    }
+		  for (int j = TmpNbrPseudoPotentials; j <= LzMax; ++j)
+		    {
+		      PseudoPotentials[i][j] = 0.0;
+		    }
+		}
+	    }
+	  else
 	    {
 	      cout << "Invalid number of pseudo-potentials in Pseudopotentials" << endl;
 	      return -1;	  
 	    }
-	  for (int i = 0; i < 10; ++i)
-	    for (int j = 0; j < TmpNbrPseudoPotentials; ++j)
-	      PseudoPotentials[i][j] = TmpPseudoPotentials[j];
 	}
       else
-	if (InteractionDefinition["Pseudopotentials"] != 0)
-	  {
-	    cout << "Pseudopotentials has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
+	{
+	  if (InteractionDefinition["Pseudopotentials"] != 0)
+	    {
+	      cout << "Pseudopotentials has a wrong value in " << ((SingleStringOption*) Manager["interaction-file"])->GetString() << endl;
 	    return -1;
-	  }
+	    }
+	}
       if (InteractionDefinition.GetAsDoubleArray("PseudopotentialsUpUp", ' ', TmpPseudoPotentials, TmpNbrPseudoPotentials) == true)
 	{
 	  Flag = true;

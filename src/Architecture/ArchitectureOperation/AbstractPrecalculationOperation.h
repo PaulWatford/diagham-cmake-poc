@@ -73,6 +73,11 @@ class AbstractPrecalculationOperation: public AbstractArchitectureOperation
   // return value = hilbert space dimension  
   virtual int GetHilbertSpaceDimension () = 0;
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  virtual long GetLargeHilbertSpaceDimension () = 0;
+
  protected:
 
   // apply operation for SMP architecture

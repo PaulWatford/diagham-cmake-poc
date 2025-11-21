@@ -148,6 +148,11 @@ class FQHETorusParticleEntanglementSpectrumOperation: public AbstractPrecalculat
   // return value = hilbert space dimension  
   int GetHilbertSpaceDimension ();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  long GetLargeHilbertSpaceDimension ();
+
   // upper bound on the number of non zero matrix element in the reduced density matrix
   //
   // return value = upper bound
@@ -191,6 +196,18 @@ inline int FQHETorusParticleEntanglementSpectrumOperation::GetHilbertSpaceDimens
     return this->ComplementaryHilbertSpace->GetHilbertSpaceDimension();
   else
     return this->SpinfulComplementaryHilbertSpace->GetHilbertSpaceDimension();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension
+
+inline long FQHETorusParticleEntanglementSpectrumOperation::GetLargeHilbertSpaceDimension ()
+{
+  if (this->SpinfulComplementaryHilbertSpace == 0)
+    return this->ComplementaryHilbertSpace->GetLargeHilbertSpaceDimension();
+  else
+    return this->SpinfulComplementaryHilbertSpace->GetLargeHilbertSpaceDimension();
 }
 
 // upper bound on the number of non zero matrix element in the reduced density matrix

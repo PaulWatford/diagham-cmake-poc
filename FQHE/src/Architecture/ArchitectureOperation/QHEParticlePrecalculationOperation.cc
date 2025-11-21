@@ -42,6 +42,8 @@ QHEParticlePrecalculationOperation::QHEParticlePrecalculationOperation (Abstract
   this->FirstComponent = 0;
   this->Hamiltonian = hamiltonian;
   this->NbrComponent = this->Hamiltonian->GetHilbertSpaceDimension();
+  this->LargeFirstComponent = 0l;
+  this->LargeNbrComponent = this->Hamiltonian->GetLargeHilbertSpaceDimension();
   this->OperationType = AbstractArchitectureOperation::QHEParticlePrecalculation;
   this->FirstPass = firstPass;
   this->RequiredMemory = 0;
@@ -55,6 +57,8 @@ QHEParticlePrecalculationOperation::QHEParticlePrecalculationOperation(const QHE
 {
   this->FirstComponent = operation.FirstComponent;
   this->NbrComponent = operation.NbrComponent;
+  this->LargeFirstComponent = operation.LargeFirstComponent;
+  this->LargeNbrComponent = operation.LargeNbrComponent;
   this->Hamiltonian = operation.Hamiltonian;
   this->OperationType = AbstractArchitectureOperation::QHEParticlePrecalculation;
   this->FirstPass = operation.FirstPass;
@@ -79,6 +83,17 @@ void QHEParticlePrecalculationOperation::SetIndicesRange (const int& firstCompon
   this->NbrComponent = nbrComponent;
 }
 
+// set range of indices
+// 
+// firstComponent = index of the first component
+// nbrComponent = number of component
+
+void QHEParticlePrecalculationOperation::SetIndicesRange (const long& firstComponent, const long& nbrComponent)
+{
+  this->LargeFirstComponent = firstComponent;
+  this->LargeNbrComponent = nbrComponent;
+}
+
 // clone operation
 //
 // return value = pointer to cloned operation
@@ -94,13 +109,27 @@ AbstractArchitectureOperation* QHEParticlePrecalculationOperation::Clone()
 
 bool QHEParticlePrecalculationOperation::RawApplyOperation()
 {
-  if (this->FirstPass ==  true)
+  if (this->Hamiltonian->IsLargeHilbertSpace() == false)
     {
-      this->RequiredMemory = this->Hamiltonian->PartialFastMultiplicationMemory(this->FirstComponent, this->NbrComponent);
+      if (this->FirstPass ==  true)
+	{
+	  this->RequiredMemory = this->Hamiltonian->PartialFastMultiplicationMemory(this->FirstComponent, this->NbrComponent);
+	}
+      else
+	{
+	  this->Hamiltonian->PartialEnableFastMultiplication(this->FirstComponent, this->NbrComponent);
+	}
     }
   else
     {
-      this->Hamiltonian->PartialEnableFastMultiplication(this->FirstComponent, this->NbrComponent);
+      if (this->FirstPass ==  true)
+	{
+	  this->RequiredMemory = this->Hamiltonian->PartialFastMultiplicationMemory(this->LargeFirstComponent, this->LargeNbrComponent);
+	}
+      else
+	{
+	  this->Hamiltonian->PartialEnableFastMultiplication(this->LargeFirstComponent, this->LargeNbrComponent);
+	}
     }
   return true;
 }
@@ -114,23 +143,42 @@ bool QHEParticlePrecalculationOperation::RawApplyOperation()
 
 bool QHEParticlePrecalculationOperation::ArchitectureDependentApplyOperation(SMPArchitecture* architecture, int mpiNodeNbr)
 {
-  long *SegmentIndices=0;
+  long* SegmentIndices = 0;
   int TmpNbrThreads = architecture->GetNbrThreads();
   if (Hamiltonian->GetLoadBalancing(TmpNbrThreads, SegmentIndices) == false)
     {
-      SegmentIndices = new long[TmpNbrThreads+1];
-      int Step = this->NbrComponent / TmpNbrThreads;
-      SegmentIndices[0] = this->FirstComponent;
-      for (int i = 1; i < TmpNbrThreads; ++i)
-	SegmentIndices[i] = this->FirstComponent+i*Step;
-      SegmentIndices[TmpNbrThreads] = this->FirstComponent + this->NbrComponent;
+      if (this->Hamiltonian->IsLargeHilbertSpace() == false)
+	{
+	  SegmentIndices = new long[TmpNbrThreads+1];
+	  int Step = this->NbrComponent / TmpNbrThreads;
+	  SegmentIndices[0] = this->FirstComponent;
+	  for (int i = 1; i < TmpNbrThreads; ++i)
+	    SegmentIndices[i] = this->FirstComponent+i*Step;
+	  SegmentIndices[TmpNbrThreads] = this->FirstComponent + this->NbrComponent;
+	}
+      else
+	{
+	  SegmentIndices = new long[TmpNbrThreads + 1];
+	  long Step = this->LargeNbrComponent / ((long) TmpNbrThreads);
+	  SegmentIndices[0] = this->LargeFirstComponent;
+	  for (int i = 1; i < TmpNbrThreads; ++i)
+	    SegmentIndices[i] = this->LargeFirstComponent + (((long) i) * Step);
+	  SegmentIndices[TmpNbrThreads] = this->LargeFirstComponent + this->LargeNbrComponent;
+	}
     }
   QHEParticlePrecalculationOperation** TmpOperations = new QHEParticlePrecalculationOperation* [architecture->GetNbrThreads()];
   for (int i = 0; i < TmpNbrThreads; ++i)
     {
       TmpOperations[i] = (QHEParticlePrecalculationOperation*) this->Clone();
       architecture->SetThreadOperation(TmpOperations[i], i);
-      TmpOperations[i]->SetIndicesRange(SegmentIndices[i], SegmentIndices[i+1]-SegmentIndices[i]);
+      if (this->Hamiltonian->IsLargeHilbertSpace() == false)
+	{
+	  TmpOperations[i]->SetIndicesRange((int) SegmentIndices[i], (int) (SegmentIndices[i+1] - SegmentIndices[i]));
+	}
+      else
+	{
+	  TmpOperations[i]->SetIndicesRange(SegmentIndices[i], SegmentIndices[i+1]-SegmentIndices[i]);
+	}	
     }
   architecture->SendJobs();
   for (int i = 0; i < architecture->GetNbrThreads(); ++i)

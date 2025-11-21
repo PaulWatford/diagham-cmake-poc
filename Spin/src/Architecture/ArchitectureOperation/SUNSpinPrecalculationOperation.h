@@ -79,6 +79,11 @@ class SUNSpinPrecalculationOperation: public AbstractPrecalculationOperation
   // return value = hilbert space dimension  
   int GetHilbertSpaceDimension ();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  long GetLargeHilbertSpaceDimension ();
+
   // clone operation
   //
   // return value = pointer to cloned operation
@@ -98,6 +103,15 @@ class SUNSpinPrecalculationOperation: public AbstractPrecalculationOperation
 inline int SUNSpinPrecalculationOperation::GetHilbertSpaceDimension ()
 {
   return this->Hamiltonian->GetHilbertSpaceDimension();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension
+
+inline long SUNSpinPrecalculationOperation::GetLargeHilbertSpaceDimension ()
+{
+  return this->Hamiltonian->GetLargeHilbertSpaceDimension();
 }
 
 #endif

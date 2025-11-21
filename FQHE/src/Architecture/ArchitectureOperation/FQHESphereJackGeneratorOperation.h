@@ -113,6 +113,11 @@ class FQHESphereJackGeneratorOperation: public AbstractPrecalculationOperation
   // return value = hilbert space dimension  
   int GetHilbertSpaceDimension ();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  long GetLargeHilbertSpaceDimension ();
+
  protected:
 
   // apply operation for SMP architecture
@@ -135,6 +140,15 @@ class FQHESphereJackGeneratorOperation: public AbstractPrecalculationOperation
 inline int FQHESphereJackGeneratorOperation::GetHilbertSpaceDimension ()
 {
   return this->HilbertSpace->GetHilbertSpaceDimension();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension
+
+inline long FQHESphereJackGeneratorOperation::GetLargeHilbertSpaceDimension ()
+{
+  return this->HilbertSpace->GetLargeHilbertSpaceDimension();
 }
 
 #endif

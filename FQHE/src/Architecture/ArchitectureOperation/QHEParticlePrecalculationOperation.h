@@ -77,10 +77,21 @@ class QHEParticlePrecalculationOperation: public AbstractPrecalculationOperation
   // nbrComponent = number of component
   void SetIndicesRange (const int& firstComponent, const int& nbrComponent);
 
+  // set range of indices
+  // 
+  // firstComponent = index of the first component
+  // nbrComponent = number of component
+  void SetIndicesRange (const long& firstComponent, const long& nbrComponent);
+
   // get hilbert space dimension
   // 
   // return value = hilbert space dimension  
   int GetHilbertSpaceDimension ();
+
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  long GetLargeHilbertSpaceDimension ();
 
   // clone operation
   //
@@ -110,6 +121,15 @@ class QHEParticlePrecalculationOperation: public AbstractPrecalculationOperation
 inline int QHEParticlePrecalculationOperation::GetHilbertSpaceDimension ()
 {
   return this->Hamiltonian->GetHilbertSpaceDimension();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension  
+
+inline long QHEParticlePrecalculationOperation::GetLargeHilbertSpaceDimension ()
+{
+  return this->Hamiltonian->GetLargeHilbertSpaceDimension();
 }
 
 #endif

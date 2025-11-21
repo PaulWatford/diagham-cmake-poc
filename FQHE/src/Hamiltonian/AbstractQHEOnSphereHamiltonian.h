@@ -110,6 +110,8 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   bool FastMultiplicationFlag;
   // step between each precalculated index (main part: start at 0, FastMultiplicationStep, 2*FastMultiplicationStep, ...)
   int FastMultiplicationStep;
+  // step between each precalculated index (main part: start at 0, FastMultiplicationStep, 2*FastMultiplicationStep, ...), for Hilbert spaces larger than 2^31
+  long FastMultiplicationLargeStep;
   // number of non-null term in the hamiltonian for each state
   int* NbrInteractionPerComponent;
   // index of the state obtained for each term of the hamiltonian when applying on a given state
@@ -214,6 +216,17 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   virtual RealVector& LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
                                           int firstComponent, int nbrComponent);
 
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+                                          long firstComponent, long nbrComponent);
+
   // multiply a et of vectors by the current hamiltonian for a given range of indices 
   // and add result to another et of vectors, low level function (no architecture optimization)
   //
@@ -226,6 +239,18 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   virtual RealVector* LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
                                                   int firstComponent, int nbrComponent);
   
+  // multiply a et of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another et of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+                                                  long firstComponent, long nbrComponent);
+  
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
   //
@@ -233,6 +258,14 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // vDestination = vector at which result has to be added
   // return value = reference on vectorwhere result has been stored
   virtual ComplexVector& LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // return value = reference on vectorwhere result has been stored
+  virtual ComplexVector& LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, long firstComponent, long nbrComponent);
 
 
   // multiply a vector by the current hamiltonian for a given range of indices 
@@ -246,6 +279,17 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   virtual RealVector& ConjugateLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
 						   int firstComponent, int nbrComponent);
 
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+						   long firstComponent, long nbrComponent);
+
   // multiply a et of vectors by the current hamiltonian for a given range of indices 
   // and add result to another et of vectors, low level function (no architecture optimization)
   //
@@ -257,6 +301,18 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // return value = pointer to the array of vectors where result has been stored
   virtual RealVector* ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
 							   int firstComponent, int nbrComponent);
+
+  // multiply a et of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another et of vectors, low level function (no architecture optimization)
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+							   long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -321,8 +377,32 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // firstComponent = index of the first component to evaluate
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
+                                                             long firstComponent, long nbrComponent);
+  
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  // using partial fast multiply option
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
   virtual ComplexVector& LowLevelAddMultiplyPartialFastMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-                                                             int firstComponent, int nbrComponent);
+								int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  // using partial fast multiply option
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& LowLevelAddMultiplyPartialFastMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+								long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -345,8 +425,32 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // firstComponent = index of the first component to evaluate
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
+  virtual RealVector& LowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, 
+                                                     long firstComponent, long nbrComponent);
+  
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  // using disk storage option
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
   virtual ComplexVector& LowLevelAddMultiplyDiskStorage(ComplexVector& vSource, ComplexVector& vDestination, 
-                                                     int firstComponent, int nbrComponent);
+							int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  // using disk storage option
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual ComplexVector& LowLevelAddMultiplyDiskStorage(ComplexVector& vSource, ComplexVector& vDestination, 
+							long firstComponent, long nbrComponent);
 
   // multiply a et of vectors by the current hamiltonian for a given range of indices 
   // and add result to another et of vectors, low level function (no architecture optimization)
@@ -363,6 +467,19 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
 
   // multiply a et of vectors by the current hamiltonian for a given range of indices 
   // and add result to another et of vectors, low level function (no architecture optimization)
+  // using partial fast multiply option
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleAddMultiplyPartialFastMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+                                                                     long firstComponent, long nbrComponent);
+
+  // multiply a et of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another et of vectors, low level function (no architecture optimization)
   // using disk storage option
   //
   // vSources = array of vectors to be multiplied
@@ -374,6 +491,19 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   virtual RealVector* LowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
                                                              int firstComponent, int nbrComponent);
 
+  // multiply a et of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another et of vectors, low level function (no architecture optimization)
+  // using disk storage option
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* LowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+                                                             long firstComponent, long nbrComponent);
+
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
   // using partial fast multiply option
@@ -384,7 +514,19 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual RealVector& ConjugateLowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
-                                                             int firstComponent, int nbrComponent);
+								      int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  // using partial fast multiply option
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
+								      long firstComponent, long nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -397,6 +539,18 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // return value = reference on vector where result has been stored
   virtual RealVector& ConjugateLowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, 
 							      int firstComponent, int nbrComponent);
+
+  // multiply a vector by the current hamiltonian for a given range of indices 
+  // and add result to another vector, low level function (no architecture optimization)
+  // using disk storage option
+  //
+  // vSource = vector to be multiplied
+  // vDestination = vector at which result has to be added
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = reference on vector where result has been stored
+  virtual RealVector& ConjugateLowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, 
+							      long firstComponent, long nbrComponent);
 
   // multiply a et of vectors by the current hamiltonian for a given range of indices 
   // and add result to another et of vectors, low level function (no architecture optimization)
@@ -413,6 +567,19 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
 
   // multiply a et of vectors by the current hamiltonian for a given range of indices 
   // and add result to another et of vectors, low level function (no architecture optimization)
+  // using partial fast multiply option
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleAddMultiplyPartialFastMultiply(RealVector* vSources, RealVector* vDestinations,
+									      int nbrVectors, long firstComponent, long nbrComponent);
+
+  // multiply a et of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another et of vectors, low level function (no architecture optimization)
   // using disk storage option
   //
   // vSources = array of vectors to be multiplied
@@ -422,7 +589,20 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = pointer to the array of vectors where result has been stored
   virtual RealVector* ConjugateLowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
-                                                             int firstComponent, int nbrComponent);
+								      int firstComponent, int nbrComponent);
+
+  // multiply a et of vectors by the current hamiltonian for a given range of indices 
+  // and add result to another et of vectors, low level function (no architecture optimization)
+  // using disk storage option
+  //
+  // vSources = array of vectors to be multiplied
+  // vDestinations = array of vectors at which result has to be added
+  // nbrVectors = number of vectors that have to be evaluated together
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = pointer to the array of vectors where result has been stored
+  virtual RealVector* ConjugateLowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+								      long firstComponent, long nbrComponent);
 
 
   // multiply a vector by the current hamiltonian for a given range of indices 
@@ -435,7 +615,7 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // nbrComponent = number of components to evaluate
   // return value = reference on vector where result has been stored
   virtual RealVector& HermitianLowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
-                                                             int firstComponent, int nbrComponent);
+								      int firstComponent, int nbrComponent);
 
   // multiply a vector by the current hamiltonian for a given range of indices 
   // and add result to another vector, low level function (no architecture optimization)
@@ -499,13 +679,28 @@ class AbstractQHEOnSphereHamiltonian : public AbstractQHEHamiltonian
   // return value = number of non-zero matrix element
   virtual long PartialFastMultiplicationMemory(int firstComponent, int nbrComponent);
 
+  // test the amount of memory needed for fast multiplication algorithm (partial evaluation)
+  //
+  // firstComponent = index of the first component that has to be precalcualted
+  // nbrComponent  = number of components that has to be precalcualted
+  // return value = number of non-zero matrix element
+  virtual long PartialFastMultiplicationMemory(long firstComponent, long nbrComponent);
+
   // enable fast multiplication algorithm
   //
   virtual void EnableFastMultiplication();
 
+  // enable fast multiplication algorithm (partial evaluation)
+  //
   // firstComponent = index of the first component that has to be precalcualted
   // nbrComponent  = number of components that has to be precalcualted
   virtual void PartialEnableFastMultiplication(int firstComponent, int nbrComponent);
+  
+  // enable fast multiplication algorithm (partial evaluation)
+  //
+  // firstComponent = index of the first component that has to be precalcualted
+  // nbrComponent  = number of components that has to be precalcualted
+  virtual void PartialEnableFastMultiplication(long firstComponent, long nbrComponent);
   
   // enable fast multiplication algorithm using on disk cache 
   //
@@ -691,7 +886,7 @@ inline void AbstractQHEOnSphereHamiltonian::EvaluateMNTwoBodyFastMultiplicationC
       int m2;
       int m3;
       int m4;
-      long Index = 0;
+      long Index = 0l;
       double Coefficient = 0.0;
       for (int j = 0; j < this->NbrInteractionFactors; ++j) 
 	{
@@ -740,7 +935,7 @@ inline void AbstractQHEOnSphereHamiltonian::EvaluateMNTwoBodyFastMultiplicationC
       long AbsoluteIndex = index + this->LargePrecalculationShift;
       for (int m1 = 0; m1 < this->NbrM12Indices; ++m1)
 	{
-	  Coefficient = particles->AA(AbsoluteIndex, this->M1Value[m1], this->M2Value[m1]);	  
+	  Coefficient = particles->AALarge(AbsoluteIndex, this->M1Value[m1], this->M2Value[m1]);	  
 	  if (Coefficient != 0.0)
 	    {
 	      SumIndices = this->M1Value[m1] + this->M2Value[m1];
@@ -748,7 +943,7 @@ inline void AbstractQHEOnSphereHamiltonian::EvaluateMNTwoBodyFastMultiplicationC
 	      TmpNbrM3Values = this->NbrM3Values[m1];
 	      for (int m3 = 0; m3 < TmpNbrM3Values; ++m3)
 		{
-		  Index = particles->AdAd(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+		  Index = particles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
 		  if (Index < particles->GetLargeHilbertSpaceDimension())
 		    {
 		      indexArray[Pos] = Index;
@@ -761,7 +956,9 @@ inline void AbstractQHEOnSphereHamiltonian::EvaluateMNTwoBodyFastMultiplicationC
 		}    
 	    }
 	  else
-	    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+	    {
+	      ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+	    }
 	}
       if (this->OneBodyTermFlag == true)
 	{

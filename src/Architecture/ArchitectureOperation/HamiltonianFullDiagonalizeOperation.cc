@@ -328,6 +328,10 @@ bool HamiltonianFullDiagonalizeOperation::ArchitectureDependentApplyOperation(Si
       doublecomplex TmpElement;
       ComplexVector InputVector (this->Hamiltonian->GetHilbertSpaceDimension());
       ComplexVector OutputVector (this->Hamiltonian->GetHilbertSpaceDimension());
+      if (this->Hamiltonian->IsHermitian() == true)
+	{
+	  cout << "hermitian hamiltonian detected" << endl;
+	}
       for (int j = 1; j <= TmpGlobalNbrRow; ++j)
 	{
 	  int TmpNode = architecture->GetNodeIDFromIndex(j - 1);
@@ -595,6 +599,7 @@ bool HamiltonianFullDiagonalizeOperation::ArchitectureDependentApplyOperation(Si
     }
   else
     {
+      // real matrix
       timeval TotalStartingTime;
       if (architecture->IsMasterNode())
 	gettimeofday (&TotalStartingTime, 0);

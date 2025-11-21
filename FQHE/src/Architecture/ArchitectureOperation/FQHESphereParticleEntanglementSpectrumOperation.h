@@ -148,6 +148,11 @@ class FQHESphereParticleEntanglementSpectrumOperation: public AbstractPrecalcula
   // return value = hilbert space dimension  
   int GetHilbertSpaceDimension ();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  long GetLargeHilbertSpaceDimension ();
+
   // upper bound on the number of non zero matrix element in the reduced density matrix
   //
   // return value = upper bound
@@ -175,6 +180,15 @@ class FQHESphereParticleEntanglementSpectrumOperation: public AbstractPrecalcula
 inline int FQHESphereParticleEntanglementSpectrumOperation::GetHilbertSpaceDimension ()
 {
   return this->ComplementaryHilbertSpace->GetHilbertSpaceDimension();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension
+
+inline long FQHESphereParticleEntanglementSpectrumOperation::GetLargeHilbertSpaceDimension ()
+{
+  return this->ComplementaryHilbertSpace->GetLargeHilbertSpaceDimension();
 }
 
 // upper bound on the number of non zero matrix element in the reduced density matrix

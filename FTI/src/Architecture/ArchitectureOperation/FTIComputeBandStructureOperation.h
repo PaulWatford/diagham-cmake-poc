@@ -71,6 +71,11 @@ class FTIComputeBandStructureOperation: public AbstractPrecalculationOperation
   // return value = hilbert space dimension  
   virtual int GetHilbertSpaceDimension();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  virtual long GetLargeHilbertSpaceDimension();
+
   
  protected:
 
@@ -100,6 +105,15 @@ class FTIComputeBandStructureOperation: public AbstractPrecalculationOperation
 int FTIComputeBandStructureOperation::GetHilbertSpaceDimension ()
 {
   return this->TightBindingModel->GetNbrStatePerBand();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension  
+
+long FTIComputeBandStructureOperation::GetLargeHilbertSpaceDimension ()
+{
+  return ((long) this->TightBindingModel->GetNbrStatePerBand());
 }
 
 

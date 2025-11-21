@@ -87,13 +87,13 @@ AbstractQHEOnSphereHamiltonian::~AbstractQHEOnSphereHamiltonian()
 	  long MinIndex;
 	  long MaxIndex;
 	  this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
-	  int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
-	  int ReducedDim = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
-	  if ((ReducedDim * this->FastMultiplicationStep) != EffectiveHilbertSpaceDimension)
+	  long EffectiveHilbertSpaceDimension = (MaxIndex - MinIndex) + 1l;
+	  long ReducedDim = EffectiveHilbertSpaceDimension / this->FastMultiplicationLargeStep;
+	  if ((ReducedDim * this->FastMultiplicationLargeStep) != EffectiveHilbertSpaceDimension)
 	    ++ReducedDim;
 	  if (this->InteractionPerComponentLargeIndex == 0)
 	    {
-	      for (int i = 0; i < ReducedDim; ++i)
+	      for (long i = 0l; i < ReducedDim; ++i)
 		{
 		  delete[] this->InteractionPerComponentIndex[i];
 		  delete[] this->InteractionPerComponentCoefficient[i];
@@ -102,7 +102,7 @@ AbstractQHEOnSphereHamiltonian::~AbstractQHEOnSphereHamiltonian()
 	    }
 	  else
 	    {
-	      for (int i = 0; i < ReducedDim; ++i)
+	      for (long i = 0l; i < ReducedDim; ++i)
 		{
 		  delete[] this->InteractionPerComponentLargeIndex[i];
 		  delete[] this->InteractionPerComponentCoefficient[i];
@@ -561,8 +561,156 @@ RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply(RealVector& vSou
 // nbrComponent = number of components to evaluate
 // return value = reference on vector where result has been stored
 
+RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+								long firstComponent, long nbrComponent)
+{
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  if (this->FastMultiplicationFlag == false)
+    {
+      //cout << "AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply, FastMultiplicationFlag == false"<<endl;
+      long Index;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      double TmpInteraction;
+      int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;
+      ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+      if (this->NbrM12Indices == 0)
+	{
+	  for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      TmpInteraction = this->InteractionFactors[j];
+	      m4 = m1 + m2 - m3;
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		  if (Index < Dim)
+		    vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+		}
+	    }
+	  m1 = this->M1Value[ReducedNbrInteractionFactors];
+	  m2 = this->M2Value[ReducedNbrInteractionFactors];
+	  m3 = this->M3Value[ReducedNbrInteractionFactors];
+	  TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+	  m4 = m1 + m2 - m3;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+	      if (Index < Dim)
+		vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+	      vDestination[i] += this->HamiltonianShift * vSource[i];
+	    }
+	}
+      else
+	{
+	  double Coefficient2;
+	  int SumIndices;
+	  int TmpNbrM3Values;
+	  int* TmpM3Values;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      ReducedNbrInteractionFactors = 0;
+	      for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		{
+		  Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		  if (Coefficient != 0.0)
+		    {
+		      SumIndices = this->M1Value[m1] + this->M2Value[m1];
+		      Coefficient *= vSource[i];
+		      TmpNbrM3Values = this->NbrM3Values[m1];
+		      TmpM3Values = this->M3Values[m1];
+		      for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			{
+			  Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			  if (Index < Dim)			
+			    vDestination[Index] += Coefficient * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			  ++ReducedNbrInteractionFactors;
+			}
+		    }
+		  else
+		    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		}
+	    }
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      vDestination[i] += this->HamiltonianShift * vSource[i];
+	    }
+	}
+
+      if (this->OneBodyTermFlag == true)
+	{
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      TmpInteraction = this->OneBodyInteractionFactors[j];
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < Dim)
+		    vDestination[Index] += Coefficient * TmpInteraction * vSource[i];		  
+		}
+	    }
+	}
+      delete TmpParticles;
+    }
+  else
+    {
+      if (this->FastMultiplicationStep == 1)
+	{
+	  long* TmpIndexArray;
+	  double* TmpCoefficientArray; 
+	  int j;
+	  int TmpNbrInteraction;
+	  long k = firstComponent;
+	  firstComponent -= this->LargePrecalculationShift;
+	  LastComponent -= this->LargePrecalculationShift;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
+	      TmpIndexArray = this->InteractionPerComponentLargeIndex[i];
+	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
+	      Coefficient = vSource[k];
+	      for (j = 0; j < TmpNbrInteraction; ++j)
+		vDestination[TmpIndexArray[j]] +=  TmpCoefficientArray[j] * Coefficient;
+	      vDestination[k++] += this->HamiltonianShift * Coefficient;
+	    }
+	}
+      else
+	{
+	  if (this->DiskStorageFlag == false)
+	    {
+	      this->LowLevelAddMultiplyPartialFastMultiply(vSource, vDestination, firstComponent, nbrComponent);
+	    }
+	  else
+	    {
+	      this->LowLevelAddMultiplyDiskStorage(vSource, vDestination, firstComponent, nbrComponent);
+	    }
+	}
+    }
+  if (this->L2Operator != 0)
+    this->L2Operator->LowLevelAddMultiply(vSource, vDestination, firstComponent, nbrComponent);
+  return vDestination;
+}
+
+
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
 ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-								int firstComponent, int nbrComponent)
+								   int firstComponent, int nbrComponent)
 {
   int LastComponent = firstComponent + nbrComponent;
   int Dim = this->Particles->GetHilbertSpaceDimension();
@@ -675,6 +823,156 @@ ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply(ComplexVector
 	    {
 	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
 	      TmpIndexArray = this->InteractionPerComponentIndex[i];
+	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
+	      Coefficient = vSource[k];
+	      for (j = 0; j < TmpNbrInteraction; ++j)
+		vDestination[TmpIndexArray[j]] +=  TmpCoefficientArray[j] * Coefficient;
+	      vDestination[k++] += this->HamiltonianShift * Coefficient;
+	    }
+	}
+      else
+	{
+	  if (this->DiskStorageFlag == false)
+	    {
+	      this->LowLevelAddMultiplyPartialFastMultiply(vSource, vDestination, firstComponent, nbrComponent);
+	    }
+	  else
+	    {
+	      this->LowLevelAddMultiplyDiskStorage(vSource, vDestination, firstComponent, nbrComponent);
+	    }
+	}
+    }
+  if (this->L2Operator != 0)
+  {
+    cout << "Warning, using method LowLevelAddMultiply, which is not implemented for L2 operators" << endl;
+    this->L2Operator->LowLevelAddMultiply(vSource, vDestination, firstComponent, nbrComponent);
+  }
+  return vDestination;
+}
+
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+								   long firstComponent, long nbrComponent)
+{
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  Complex Coefficient1;
+  if (this->FastMultiplicationFlag == false)
+    {
+      //cout << "AbstractQHEOnSphereHamiltonian::LowLevelAddMultiply, FastMultiplicationFlag == false"<<endl;
+      long Index;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      double TmpInteraction;
+      int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;
+      ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+      if (this->NbrM12Indices == 0)
+	{
+	  for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      TmpInteraction = this->InteractionFactors[j];
+	      m4 = m1 + m2 - m3;
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		  if (Index < Dim)
+		    vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+		}
+	    }
+	  m1 = this->M1Value[ReducedNbrInteractionFactors];
+	  m2 = this->M2Value[ReducedNbrInteractionFactors];
+	  m3 = this->M3Value[ReducedNbrInteractionFactors];
+	  TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+	  m4 = m1 + m2 - m3;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+	      if (Index < Dim)
+		vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+	      vDestination[i] += this->HamiltonianShift * vSource[i];
+	    }
+	}
+      else
+	{
+	  double Coefficient2;
+	  int SumIndices;
+	  int TmpNbrM3Values;
+	  int* TmpM3Values;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      ReducedNbrInteractionFactors = 0;
+	      for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		{
+		  Coefficient1 = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		  if (Coefficient1 != 0.0)
+		    {
+		      SumIndices = this->M1Value[m1] + this->M2Value[m1];
+		      Coefficient1 = Coefficient1 * vSource[i];
+		      TmpNbrM3Values = this->NbrM3Values[m1];
+		      TmpM3Values = this->M3Values[m1];
+		      for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			{
+			  Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			  if (Index < Dim)			
+			    vDestination[Index] += Coefficient1 * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			  ++ReducedNbrInteractionFactors;
+			}
+		    }
+		  else
+		    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		}
+	    }
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    vDestination[i] += this->HamiltonianShift * vSource[i];
+	}
+
+      if (this->OneBodyTermFlag == true)
+	{
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      TmpInteraction = this->OneBodyInteractionFactors[j];
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < Dim)
+		    vDestination[Index] += Coefficient * TmpInteraction * vSource[i];		  
+		}
+	    }
+	}
+      delete TmpParticles;
+    }
+  else
+    {
+      if (this->FastMultiplicationStep == 1)
+	{
+	  long* TmpIndexArray;
+	  double* TmpCoefficientArray; 
+	  int j;
+	  int TmpNbrInteraction;
+	  long k = firstComponent;
+	  firstComponent -= this->LargePrecalculationShift;
+	  LastComponent -= this->LargePrecalculationShift;
+	  Complex Coefficient;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
+	      TmpIndexArray = this->InteractionPerComponentLargeIndex[i];
 	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
 	      Coefficient = vSource[k];
 	      for (j = 0; j < TmpNbrInteraction; ++j)
@@ -842,6 +1140,145 @@ RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyPartialFastMultip
 }
 
 
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+// using partial fast multiply option
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
+										   long firstComponent, long nbrComponent)
+{
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+  long* TmpIndexArray;
+  double* TmpCoefficientArray; 
+  int j;
+  int TmpNbrInteraction;
+  firstComponent -= this->LargePrecalculationShift;
+  LastComponent -= this->LargePrecalculationShift;
+  int Pos = firstComponent / this->FastMultiplicationLargeStep; 
+  int PosMod = firstComponent % this->FastMultiplicationLargeStep;
+  if (PosMod != 0)
+    {
+      ++Pos;
+      PosMod = this->FastMultiplicationLargeStep - PosMod;
+    }
+  long l =  PosMod + firstComponent + this->PrecalculationShift;
+  for (long i = PosMod + firstComponent; i < LastComponent; i += this->FastMultiplicationLargeStep)
+    {
+      TmpNbrInteraction = this->NbrInteractionPerComponent[Pos];
+      TmpIndexArray = this->InteractionPerComponentLargeIndex[Pos];
+      TmpCoefficientArray = this->InteractionPerComponentCoefficient[Pos];
+      Coefficient = vSource[l];
+      for (j = 0; j < TmpNbrInteraction; ++j)
+	vDestination[TmpIndexArray[j]] +=  TmpCoefficientArray[j] * Coefficient;
+      vDestination[l] += this->HamiltonianShift * Coefficient;
+      l += this->FastMultiplicationLargeStep;
+      ++Pos;
+    }
+  long Index;
+  int m1;
+  int m2;
+  int m3;
+  int m4;
+  double TmpInteraction;
+  int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;  
+  firstComponent += this->LargePrecalculationShift;
+  LastComponent += this->LargePrecalculationShift;
+  for (long k = 0l; k < this->FastMultiplicationLargeStep; ++k)
+    if (PosMod != k)
+      {
+	if (this->NbrM12Indices == 0)
+	  {
+	    for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+	      {
+		m1 = this->M1Value[j];
+		m2 = this->M2Value[j];
+		m3 = this->M3Value[j];
+		TmpInteraction = this->InteractionFactors[j];
+		m4 = m1 + m2 - m3;
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		    if (Index < Dim)
+		      vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+		  }
+	      }
+	    m1 = this->M1Value[ReducedNbrInteractionFactors];
+	    m2 = this->M2Value[ReducedNbrInteractionFactors];
+	    m3 = this->M3Value[ReducedNbrInteractionFactors];
+	    TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+	    m4 = m1 + m2 - m3;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		if (Index < Dim)
+		  vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+		vDestination[i] += this->HamiltonianShift * vSource[i];
+	      }
+	  }
+	else
+	  {
+	    double Coefficient2;
+	    int SumIndices;
+	    int TmpNbrM3Values;
+	    int* TmpM3Values;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		ReducedNbrInteractionFactors = 0;
+		for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		  {
+		    Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		    if (Coefficient != 0.0)
+		      {
+			SumIndices = this->M1Value[m1] + this->M2Value[m1];
+			Coefficient *= vSource[i];
+			TmpNbrM3Values = this->NbrM3Values[m1];
+			TmpM3Values = this->M3Values[m1];
+			for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			  {
+			    Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			    if (Index < Dim)			
+			      vDestination[Index] += Coefficient * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			    ++ReducedNbrInteractionFactors;
+			  }
+		      }
+		    else
+		      ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		  }
+		vDestination[i] += this->HamiltonianShift * vSource[i];
+	      }
+	    
+	  }
+	if (this->OneBodyTermFlag == true)
+	  {
+	    for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	      {
+		m1 = this->OneBodyMValues[j];
+		m2 = this->OneBodyNValues[j];
+		TmpInteraction = this->OneBodyInteractionFactors[j];
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		    if (Index < Dim)
+		      vDestination[Index] += Coefficient * TmpInteraction * vSource[i];		  
+		  }
+	      }
+	  }
+      }
+
+  delete TmpParticles;
+  return vDestination;
+}
+
+
 
 
 // multiply a vector by the current hamiltonian for a given range of indices 
@@ -855,7 +1292,7 @@ RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyPartialFastMultip
 // return value = reference on vector where result has been stored
 
 ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyPartialFastMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-										   int firstComponent, int nbrComponent)
+										      int firstComponent, int nbrComponent)
 {
   int LastComponent = firstComponent + nbrComponent;
   int Dim = this->Particles->GetHilbertSpaceDimension();
@@ -970,6 +1407,145 @@ ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyPartialFastMul
 		m2 = this->OneBodyNValues[j];
 		TmpInteraction = this->OneBodyInteractionFactors[j];
 		for (int i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationStep)
+		  {
+		    Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		    if (Index < Dim)
+		      vDestination[Index] += Coefficient * TmpInteraction * vSource[i];		  
+		  }
+	      }
+	  }
+      }
+
+  delete TmpParticles;
+  return vDestination;
+}
+
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+// using partial fast multiply option
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyPartialFastMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
+										      long firstComponent, long nbrComponent)
+{
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  Complex Coefficient1;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+  long* TmpIndexArray;
+  double* TmpCoefficientArray; 
+  int j;
+  int TmpNbrInteraction;
+  firstComponent -= this->LargePrecalculationShift;
+  LastComponent -= this->LargePrecalculationShift;
+  long Pos = firstComponent / this->FastMultiplicationLargeStep; 
+  long PosMod = firstComponent % this->FastMultiplicationLargeStep;
+  if (PosMod != 0l)
+    {
+      ++Pos;
+      PosMod = this->FastMultiplicationLargeStep - PosMod;
+    }
+  long l =  PosMod + firstComponent + this->LargePrecalculationShift;
+  for (long i = PosMod + firstComponent; i < LastComponent; i += this->FastMultiplicationLargeStep)
+    {
+      TmpNbrInteraction = this->NbrInteractionPerComponent[Pos];
+      TmpIndexArray = this->InteractionPerComponentLargeIndex[Pos];
+      TmpCoefficientArray = this->InteractionPerComponentCoefficient[Pos];
+      Coefficient1 = vSource[l];
+      for (j = 0; j < TmpNbrInteraction; ++j)
+	vDestination[TmpIndexArray[j]] +=  TmpCoefficientArray[j] * Coefficient1;
+      vDestination[l] += this->HamiltonianShift * Coefficient1;
+      l += this->FastMultiplicationLargeStep;
+      ++Pos;
+    }
+  long Index;
+  int m1;
+  int m2;
+  int m3;
+  int m4;
+  double TmpInteraction;
+  int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;  
+  firstComponent += this->LargePrecalculationShift;
+  LastComponent += this->LargePrecalculationShift;
+  for (int k = 0; k < this->FastMultiplicationLargeStep; ++k)
+    if (PosMod != k)
+      {
+	if (this->NbrM12Indices == 0)
+	  {
+	    for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+	      {
+		m1 = this->M1Value[j];
+		m2 = this->M2Value[j];
+		m3 = this->M3Value[j];
+		TmpInteraction = this->InteractionFactors[j];
+		m4 = m1 + m2 - m3;
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		    if (Index < Dim)
+		      vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+		  }
+	      }
+	    m1 = this->M1Value[ReducedNbrInteractionFactors];
+	    m2 = this->M2Value[ReducedNbrInteractionFactors];
+	    m3 = this->M3Value[ReducedNbrInteractionFactors];
+	    TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+	    m4 = m1 + m2 - m3;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		if (Index < Dim)
+		  vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+		vDestination[i] += this->HamiltonianShift * vSource[i];
+	      }
+	  }
+	else
+	  {
+	    double Coefficient2;
+	    int SumIndices;
+	    int TmpNbrM3Values;
+	    int* TmpM3Values;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		ReducedNbrInteractionFactors = 0;
+		for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		  {
+		    Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		    if (Coefficient != 0.0)
+		      {
+			SumIndices = this->M1Value[m1] + this->M2Value[m1];
+			Coefficient1 *= Coefficient * vSource[i];
+			TmpNbrM3Values = this->NbrM3Values[m1];
+			TmpM3Values = this->M3Values[m1];
+			for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			  {
+			    Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			    if (Index < Dim)			
+			      vDestination[Index] += Coefficient1 * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			    ++ReducedNbrInteractionFactors;
+			  }
+		      }
+		    else
+		      ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		  }
+		vDestination[i] += this->HamiltonianShift * vSource[i];
+	      }
+	    
+	  }
+	if (this->OneBodyTermFlag == true)
+	  {
+	    for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	      {
+		m1 = this->OneBodyMValues[j];
+		m2 = this->OneBodyNValues[j];
+		TmpInteraction = this->OneBodyInteractionFactors[j];
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
 		  {
 		    Index = TmpParticles->AdA(i, m1, m2, Coefficient);
 		    if (Index < Dim)
@@ -1107,8 +1683,25 @@ RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(RealV
 // nbrComponent = number of components to evaluate
 // return value = reference on vector where result has been stored
 
+RealVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, 
+									   long firstComponent, long nbrComponent)
+{
+  cout << "AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, ...) is not implemented for large Hilbert spaces" << endl;
+  return vDestination;
+}
+
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+// using disk storage option
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
 ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(ComplexVector& vSource, ComplexVector& vDestination, 
-									   int firstComponent, int nbrComponent)
+									      int firstComponent, int nbrComponent)
 {
   Complex Coefficient;
   int* BufferIndexArray = new int [this->BufferSize * this->MaxNbrInteractionPerComponent];
@@ -1208,6 +1801,24 @@ ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(Co
   File.close();
   delete[] BufferIndexArray;
   delete[] BufferCoefficientArray;
+  return vDestination;
+}
+
+
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+// using disk storage option
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+ComplexVector& AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(ComplexVector& vSource, ComplexVector& vDestination, 
+									      long firstComponent, long nbrComponent)
+{
+  cout << "AbstractQHEOnSphereHamiltonian::LowLevelAddMultiplyDiskStorage(ComplexVector& vSource, ComplexVector& vDestination, ...) is not implemented for large Hilbert spaces" << endl;
   return vDestination;
 }
 
@@ -1339,6 +1950,168 @@ RealVector* AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiply(RealVect
 	    {
 	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
 	      TmpIndexArray = this->InteractionPerComponentIndex[i];
+	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
+	      for (int l = 0; l < nbrVectors; ++l)
+		{
+		  Coefficient2[l] = vSources[l][k];
+		  vDestinations[l][k] += this->HamiltonianShift * Coefficient2[l];
+		}
+	      for (j = 0; j < TmpNbrInteraction; ++j)
+		{
+		  Pos = TmpIndexArray[j];
+		  Coefficient = TmpCoefficientArray[j];
+		  for (int l = 0; l < nbrVectors; ++l)
+		    vDestinations[l][Pos] +=  Coefficient * Coefficient2[l];
+		}
+	      ++k;
+	    }
+	  delete[] Coefficient2;
+	}
+      else
+	{
+	  if (this->DiskStorageFlag == false)
+	    {
+	      this->LowLevelMultipleAddMultiplyPartialFastMultiply(vSources, vDestinations, nbrVectors, firstComponent, nbrComponent);
+	    }
+	  else
+	    {
+	      this->LowLevelMultipleAddMultiplyDiskStorage(vSources, vDestinations, nbrVectors, firstComponent, nbrComponent);
+	    }
+	}
+   }
+  if (this->L2Operator != 0)
+    for (int l = 0; l < nbrVectors; ++l)
+      this->L2Operator->LowLevelAddMultiply(vSources[l], vDestinations[l], firstComponent, nbrComponent);
+  return vDestinations;
+}
+
+// multiply a et of vectors by the current hamiltonian for a given range of indices 
+// and add result to another et of vectors, low level function (no architecture optimization)
+//
+// vSources = array of vectors to be multiplied
+// vDestinations = array of vectors at which result has to be added
+// nbrVectors = number of vectors that have to be evaluated together
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = pointer to the array of vectors where result has been stored
+
+RealVector* AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+									long firstComponent, long nbrComponent)
+{
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  if (this->FastMultiplicationFlag == false)
+    {
+      long Index;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      double TmpInteraction;
+      ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+      if (this->NbrM12Indices == 0)
+	{
+	  for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      TmpInteraction = this->InteractionFactors[j];
+	      m4 = m1 + m2 - m3;
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = this->Particles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		  if (Index < Dim)
+		    {
+		      Coefficient *= TmpInteraction;
+		      for (int l = 0; l < nbrVectors; ++l)
+			vDestinations[l][Index] += Coefficient * vSources[l][i];
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  double Coefficient2;
+	  int SumIndices;
+	  int TmpNbrM3Values;
+	  int* TmpM3Values;
+	  double* TmpCoefficients = new double[nbrVectors];
+	  int ReducedNbrInteractionFactors;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      ReducedNbrInteractionFactors = 0;
+	      for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		{
+		  Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		  if (Coefficient != 0.0)
+		    {
+		      SumIndices = this->M1Value[m1] + this->M2Value[m1];
+		      TmpNbrM3Values = this->NbrM3Values[m1];
+		      TmpM3Values = this->M3Values[m1];
+		      for (int l = 0; l < nbrVectors; ++l)
+			TmpCoefficients[l] = Coefficient * vSources[l][i];
+		      for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			{
+			  Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			  if (Index < Dim)
+			    for (int l = 0; l < nbrVectors; ++l)
+			      vDestinations[l][Index] += TmpCoefficients[l] * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			  ++ReducedNbrInteractionFactors;
+			}
+		    }
+		  else
+		    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		}
+	    }
+	  delete[] TmpCoefficients;
+	}
+      for (int l = 0; l < nbrVectors; ++l)
+	{
+	  RealVector& TmpSourceVector = vSources[l];
+	  RealVector& TmpDestinationVector = vDestinations[l];
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    TmpDestinationVector[i] += this->HamiltonianShift * TmpSourceVector[i];
+	}
+      if (this->OneBodyTermFlag == true)
+	{
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      TmpInteraction = this->OneBodyInteractionFactors[j];
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < Dim)
+		    {
+		      Coefficient *= TmpInteraction;
+		      for (int l = 0; l < nbrVectors; ++l)
+			vDestinations[l][Index] += Coefficient * vSources[l][i];
+		    }
+		}
+	    }
+	}
+      delete TmpParticles;
+    }
+  else
+    {
+      if (this->FastMultiplicationStep == 1)
+	{
+	  double* Coefficient2 = new double [nbrVectors];
+	  long* TmpIndexArray;
+	  double* TmpCoefficientArray; 
+	  int j;
+	  int Pos;
+	  int TmpNbrInteraction;
+	  long k = firstComponent;
+	  firstComponent -= this->LargePrecalculationShift;
+	  LastComponent -= this->LargePrecalculationShift;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
+	      TmpIndexArray = this->InteractionPerComponentLargeIndex[i];
 	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
 	      for (int l = 0; l < nbrVectors; ++l)
 		{
@@ -1528,6 +2301,162 @@ RealVector* AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiplyPartialFa
   return vDestinations;
 }
 
+// multiply a set of vectors by the current hamiltonian for a given range of indices 
+// and add result to another et of vectors, low level function (no architecture optimization)
+// using partial fast multiply option
+//
+// vSources = array of vectors to be multiplied
+// vDestinations = array of vectors at which result has to be added
+// nbrVectors = number of vectors that have to be evaluated together
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = pointer to the array of vectors where result has been stored
+
+RealVector* AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiplyPartialFastMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+											   long firstComponent, long nbrComponent)
+{
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetHilbertSpaceDimension();
+  double Coefficient;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+  long* TmpIndexArray;
+  double* TmpCoefficientArray; 
+  double* Coefficient2 = new double [nbrVectors];
+  int j;
+  int TmpNbrInteraction;
+  firstComponent -= this->LargePrecalculationShift;
+  LastComponent -= this->LargePrecalculationShift;
+  long Pos2;
+  long Pos = firstComponent / this->FastMultiplicationLargeStep; 
+  long PosMod = firstComponent % this->FastMultiplicationLargeStep;
+  if (PosMod != 0l)
+    {
+      ++Pos;
+      PosMod = this->FastMultiplicationLargeStep - PosMod;
+    }
+  long l =  PosMod + firstComponent + this->PrecalculationShift;
+  for (long i = PosMod + firstComponent; i < LastComponent; i += this->FastMultiplicationLargeStep)
+    {
+      TmpNbrInteraction = this->NbrInteractionPerComponent[Pos];
+      TmpIndexArray = this->InteractionPerComponentLargeIndex[Pos];
+      TmpCoefficientArray = this->InteractionPerComponentCoefficient[Pos];
+      for (int k = 0; k < nbrVectors; ++k)
+	{
+	  Coefficient2[k] = vSources[k][l];
+	  vDestinations[k][l] += this->HamiltonianShift * Coefficient2[k];
+	}
+      for (j = 0; j < TmpNbrInteraction; ++j)
+	{
+	  Pos2 = TmpIndexArray[j];
+	  Coefficient = TmpCoefficientArray[j];
+	  for (int k = 0; k < nbrVectors; ++k)
+	    {
+	      vDestinations[k][Pos2] += Coefficient  * Coefficient2[k];
+	    }
+	}
+      l += this->FastMultiplicationLargeStep;
+      ++Pos;
+    }
+  long Index;
+  int m1;
+  int m2;
+  int m3;
+  int m4;
+  double TmpInteraction;
+  firstComponent += this->LargePrecalculationShift;
+  LastComponent += this->LargePrecalculationShift;
+  for (long k = 0l; k < this->FastMultiplicationLargeStep; ++k)
+    {
+      if (PosMod != k)
+	{	
+	  if (this->NbrM12Indices == 0)
+	    for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+	      {
+		m1 = this->M1Value[j];
+		m2 = this->M2Value[j];
+		m3 = this->M3Value[j];
+		TmpInteraction = this->InteractionFactors[j];
+		m4 = m1 + m2 - m3;
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		    if (Index < Dim)
+		      {
+			Coefficient *= TmpInteraction;
+			for (int l = 0; l < nbrVectors; ++l)
+			  vDestinations[l][Index] += Coefficient * vSources[l][i];
+		      }
+		  }
+	      }
+	  else
+	    {
+	      double Coefficient2;
+	      int SumIndices;
+	      int TmpNbrM3Values;
+	      int* TmpM3Values;
+	      double* TmpCoefficients = new double[nbrVectors];
+	      int ReducedNbrInteractionFactors;
+	      for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		{
+		  ReducedNbrInteractionFactors = 0;
+		  for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		    {
+		      Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		      if (Coefficient != 0.0)
+			{
+			  SumIndices = this->M1Value[m1] + this->M2Value[m1];
+			  TmpNbrM3Values = this->NbrM3Values[m1];
+			  TmpM3Values = this->M3Values[m1];
+			  for (int l = 0; l < nbrVectors; ++l)
+			    TmpCoefficients[l] = Coefficient * vSources[l][i];
+			  for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			    {
+			      Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			      if (Index < Dim)
+				for (int l = 0; l < nbrVectors; ++l)
+				  vDestinations[l][Index] += TmpCoefficients[l] * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			      ++ReducedNbrInteractionFactors;
+			    }
+			}
+		      else
+			ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		    }
+		}
+	      delete[] TmpCoefficients;
+	    }
+	  for (int l = 0; l < nbrVectors; ++l)
+	    {
+	      RealVector& TmpSourceVector = vSources[l];
+	      RealVector& TmpDestinationVector = vDestinations[l];
+	      for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		TmpDestinationVector[i] += this->HamiltonianShift * TmpSourceVector[i];
+	    }
+	  if (this->OneBodyTermFlag == true)
+	    {
+	      for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+		{
+		  m1 = this->OneBodyMValues[j];
+		  m2 = this->OneBodyNValues[j];
+		  TmpInteraction = this->OneBodyInteractionFactors[j];
+		  for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		    {
+		      Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		      if (Index < Dim)
+			{
+			  Coefficient *= TmpInteraction;
+			  for (int l = 0; l < nbrVectors; ++l)
+			    vDestinations[l][Index] += Coefficient * vSources[l][i];
+			}
+		    }
+		}
+	    }
+	}
+    }
+  delete[] Coefficient2;
+  delete TmpParticles;
+  return vDestinations;
+}
+
 // multiply a et of vectors by the current hamiltonian for a given range of indices 
 // and add result to another et of vectors, low level function (no architecture optimization)
 // using disk storage option
@@ -1666,7 +2595,26 @@ RealVector* AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiplyDiskStora
   return vDestinations;
 }
 
-// low level classes applying conjugate Hamiltonian
+// multiply a et of vectors by the current hamiltonian for a given range of indices 
+// and add result to another et of vectors, low level function (no architecture optimization)
+// using disk storage option
+//
+// vSources = array of vectors to be multiplied
+// vDestinations = array of vectors at which result has to be added
+// nbrVectors = number of vectors that have to be evaluated together
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = pointer to the array of vectors where result has been stored
+
+RealVector* AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+										   long firstComponent, long nbrComponent)
+{
+  cout << "AbstractQHEOnSphereHamiltonian::LowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, ...) is not implemented for large Hilbert spaces" << endl;
+  return vDestinations;
+}
+
+
+  // low level classes applying conjugate Hamiltonian
 
 
 // multiply a vector by the current hamiltonian for a given range of indices 
@@ -1823,6 +2771,160 @@ RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiply(RealVec
   return vDestination;
 }
 
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
+									 long firstComponent, long nbrComponent)
+{
+  //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiply"<<endl;
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  if (this->FastMultiplicationFlag == false)
+    {
+      //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiply, FastMultiplicationFlag == false"<<endl;
+      long Index;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      double TmpInteraction;
+      int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;
+      ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+      if (this->NbrM12Indices == 0)
+	{
+	  for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      TmpInteraction = this->InteractionFactors[j];
+	      m4 = m1 + m2 - m3;
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		  if (Index < Dim)
+		    vDestination[i] += Coefficient * TmpInteraction * vSource[Index];
+		}
+	    }
+	  m1 = this->M1Value[ReducedNbrInteractionFactors];
+	  m2 = this->M2Value[ReducedNbrInteractionFactors];
+	  m3 = this->M3Value[ReducedNbrInteractionFactors];
+	  TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+	  m4 = m1 + m2 - m3;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+	      if (Index < Dim)
+		vDestination[i] += Coefficient * TmpInteraction * vSource[Index];
+	      vDestination[i] += this->HamiltonianShift * vSource[i];
+	    }
+	}
+      else
+	{
+	  double Coefficient2;
+	  double TmpSum;
+	  int SumIndices;
+	  int TmpNbrM3Values;
+	  int* TmpM3Values; 
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      ReducedNbrInteractionFactors = 0;
+	      TmpSum=0.0;
+	      for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		{
+		  Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		  if (Coefficient != 0.0)
+		    {
+		      SumIndices = this->M1Value[m1] + this->M2Value[m1];
+		      // previously at this point:
+		      // Coefficient *= vSource[i];
+		      // to optimize memory access at this point, would require implementation of
+		      // a method AdAd, which returns the intermediate state, and AA which returns an index
+		      // however, this also entails a different storage of the matrix elements, so for now, we avoid doing this.
+		      TmpNbrM3Values = this->NbrM3Values[m1];
+		      TmpM3Values = this->M3Values[m1];
+		      for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			{
+			  Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			  if (Index < Dim)			
+			    TmpSum += vSource[Index] * Coefficient * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			  ++ReducedNbrInteractionFactors;
+			}
+		    }
+		  else
+		    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		}
+	      vDestination[i] += TmpSum;
+	    }
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    vDestination[i] += this->HamiltonianShift * vSource[i];
+	}
+
+      if (this->OneBodyTermFlag == true)
+	{
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      TmpInteraction = this->OneBodyInteractionFactors[j];
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < Dim)
+		    vDestination[i] += Coefficient * TmpInteraction * vSource[Index];
+		}
+	    }
+	}
+      delete TmpParticles;
+    }
+  else
+    {
+      if (this->FastMultiplicationStep == 1)
+	{
+	  long* TmpIndexArray;
+	  double* TmpCoefficientArray; 
+	  int j;
+	  int TmpNbrInteraction;
+	  long k = firstComponent; 
+	  firstComponent -= this->LargePrecalculationShift;
+	  LastComponent -= this->LargePrecalculationShift;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
+	      TmpIndexArray = this->InteractionPerComponentLargeIndex[i];
+	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
+	      double TmpSum = 0.0;
+	      for (j = 0; j < TmpNbrInteraction; ++j)
+		TmpSum +=  TmpCoefficientArray[j] * vSource[TmpIndexArray[j]];
+	      vDestination[k] += TmpSum + this->HamiltonianShift * vSource[k];
+	      k++;
+	    }
+	}
+      else
+	{
+	  if (this->DiskStorageFlag == false)
+	    {
+	      this->ConjugateLowLevelAddMultiplyPartialFastMultiply(vSource, vDestination, firstComponent, nbrComponent);
+	    }
+	  else
+	    {
+	      this->ConjugateLowLevelAddMultiplyDiskStorage(vSource, vDestination, firstComponent, nbrComponent);
+	    }
+	}
+    }
+  if (this->L2Operator != 0)
+    this->L2Operator->ConjugateLowLevelAddMultiply(vSource, vDestination, firstComponent, nbrComponent);
+  return vDestination;
+}
+
 
 // multiply a vector by the current hamiltonian for a given range of indices 
 // and add result to another vector, low level function (no architecture optimization)
@@ -1835,7 +2937,7 @@ RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiply(RealVec
 // return value = reference on vector where result has been stored
 
 RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
-										   int firstComponent, int nbrComponent)
+											    int firstComponent, int nbrComponent)
 {
   //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyPartialFastMultiply"<<endl;
   int LastComponent = firstComponent + nbrComponent;
@@ -1965,6 +3067,145 @@ RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyPartialF
 
 // multiply a vector by the current hamiltonian for a given range of indices 
 // and add result to another vector, low level function (no architecture optimization)
+// using partial fast multiply option
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyPartialFastMultiply(RealVector& vSource, RealVector& vDestination, 
+											    long firstComponent, long nbrComponent)
+{
+  //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyPartialFastMultiply"<<endl;
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+  long* TmpIndexArray;
+  double* TmpCoefficientArray; 
+  int j;
+  int TmpNbrInteraction;
+  firstComponent -= this->LargePrecalculationShift;
+  LastComponent -= this->LargePrecalculationShift;
+  long Pos = firstComponent / this->FastMultiplicationLargeStep; 
+  long PosMod = firstComponent % this->FastMultiplicationLargeStep;
+  if (PosMod != 0l)
+    {
+      ++Pos;
+      PosMod = this->FastMultiplicationLargeStep - PosMod;
+    }
+  long l =  PosMod + firstComponent + this->PrecalculationShift;
+  for (long i = PosMod + firstComponent; i < LastComponent; i += this->FastMultiplicationLargeStep)
+    {
+      TmpNbrInteraction = this->NbrInteractionPerComponent[Pos];
+      TmpIndexArray = this->InteractionPerComponentLargeIndex[Pos];
+      TmpCoefficientArray = this->InteractionPerComponentCoefficient[Pos];
+      double TmpSum=0.0;
+      for (j = 0; j < TmpNbrInteraction; ++j)
+	TmpSum +=  TmpCoefficientArray[j] * vSource[TmpIndexArray[j]];
+      vDestination[l] += TmpSum + this->HamiltonianShift * vSource[l];
+      l += this->FastMultiplicationLargeStep;
+      ++Pos;
+    }
+  long Index;
+  int m1;
+  int m2;
+  int m3;
+  int m4;
+  double TmpInteraction;
+  int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;  
+  firstComponent += this->LargePrecalculationShift;
+  LastComponent += this->LargePrecalculationShift;
+  for (long k = 0; k < this->FastMultiplicationLargeStep; ++k)
+    if (PosMod != k)
+      {		
+	if (this->NbrM12Indices == 0)
+	  {
+	    for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+	      {
+		m1 = this->M1Value[j];
+		m2 = this->M2Value[j];
+		m3 = this->M3Value[j];
+		TmpInteraction = this->InteractionFactors[j];
+		m4 = m1 + m2 - m3;
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		    if (Index < Dim)
+		      vDestination[i] += Coefficient * TmpInteraction * vSource[Index];
+		  }
+	      }
+	    m1 = this->M1Value[ReducedNbrInteractionFactors];
+	    m2 = this->M2Value[ReducedNbrInteractionFactors];
+	    m3 = this->M3Value[ReducedNbrInteractionFactors];
+	    TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+	    m4 = m1 + m2 - m3;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		if (Index < Dim)
+		  vDestination[i] += Coefficient * TmpInteraction * vSource[Index];
+		vDestination[i] += this->HamiltonianShift * vSource[i];
+	      }
+	  }
+	else
+	  {
+	    double Coefficient2;
+	    int SumIndices;
+	    int TmpNbrM3Values;
+	    int* TmpM3Values;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		double TmpSum=0.0;
+		ReducedNbrInteractionFactors = 0;
+		for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		  {
+		    Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		    if (Coefficient != 0.0)
+		      {
+			SumIndices = this->M1Value[m1] + this->M2Value[m1];
+			TmpNbrM3Values = this->NbrM3Values[m1];
+			TmpM3Values = this->M3Values[m1];
+			for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			  {
+			    Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			    if (Index < Dim)			
+			      TmpSum += vSource[Index] * Coefficient * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+			    ++ReducedNbrInteractionFactors;
+			  }
+		      }
+		    else
+		      ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		  }
+		vDestination[i] += TmpSum + this->HamiltonianShift * vSource[i];
+	      }
+	    
+	  }
+	if (this->OneBodyTermFlag == true)
+	  {
+	    for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	      {
+		m1 = this->OneBodyMValues[j];
+		m2 = this->OneBodyNValues[j];
+		TmpInteraction = this->OneBodyInteractionFactors[j];
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		    if (Index < Dim)
+		      vDestination[i] += Coefficient * TmpInteraction * vSource[Index];
+		  }
+	      }
+	  }
+      }
+
+  delete TmpParticles;
+  return vDestination;
+}
+
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
 // using disk storage option
 //
 // vSource = vector to be multiplied
@@ -1974,7 +3215,7 @@ RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyPartialF
 // return value = reference on vector where result has been stored
 
 RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, 
-									   int firstComponent, int nbrComponent)
+										    int firstComponent, int nbrComponent)
 {
   int* BufferIndexArray = new int [this->BufferSize * this->MaxNbrInteractionPerComponent];
   double* BufferCoefficientArray  = new double [this->BufferSize * this->MaxNbrInteractionPerComponent];
@@ -2076,6 +3317,22 @@ RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyDiskStor
   return vDestination;
 }
 
+// multiply a vector by the current hamiltonian for a given range of indices 
+// and add result to another vector, low level function (no architecture optimization)
+// using disk storage option
+//
+// vSource = vector to be multiplied
+// vDestination = vector at which result has to be added
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = reference on vector where result has been stored
+
+RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, 
+										    long firstComponent, long nbrComponent)
+{
+  cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyDiskStorage(RealVector& vSource, RealVector& vDestination, ...) is not implemented for large Hilbert spaces" << endl;
+  return vDestination;
+}
 
 // multiply a et of vectors by the current hamiltonian for a given range of indices 
 // and add result to another et of vectors, low level function (no architecture optimization)
@@ -2088,7 +3345,7 @@ RealVector& AbstractQHEOnSphereHamiltonian::ConjugateLowLevelAddMultiplyDiskStor
 // return value = pointer to the array of vectors where result has been stored
 
 RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
-									int firstComponent, int nbrComponent)
+										 int firstComponent, int nbrComponent)
 {
   //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply"<<endl;
   int LastComponent = firstComponent + nbrComponent;
@@ -2266,6 +3523,190 @@ RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply
   return vDestinations;
 }
 
+// multiply a et of vectors by the current hamiltonian for a given range of indices 
+// and add result to another et of vectors, low level function (no architecture optimization)
+//
+// vSources = array of vectors to be multiplied
+// vDestinations = array of vectors at which result has to be added
+// nbrVectors = number of vectors that have to be evaluated together
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = pointer to the array of vectors where result has been stored
+
+RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+										 long firstComponent, long nbrComponent)
+{
+  //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply"<<endl;
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  if (this->FastMultiplicationFlag == false)
+    {
+      long Index;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      double TmpInteraction;
+      ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+      if (this->NbrM12Indices == 0)
+	{
+	  for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      TmpInteraction = this->InteractionFactors[j];
+	      m4 = m1 + m2 - m3;
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = this->Particles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		  if (Index < Dim)
+		    {
+		      Coefficient *= TmpInteraction;
+		      for (int l = 0; l < nbrVectors; ++l)
+			vDestinations[l][i] += Coefficient * vSources[l][Index];
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  double Coefficient2;
+	  int SumIndices;
+	  int TmpNbrM3Values;
+	  int* TmpM3Values;
+	  double* TmpSum = new double[nbrVectors];
+	  int ReducedNbrInteractionFactors;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      ReducedNbrInteractionFactors = 0;
+	      for (int l = 0; l < nbrVectors; ++l)
+		{
+		  TmpSum[l] = 0.0;
+		}
+	      for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		{
+		  Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		  if (Coefficient != 0.0)
+		    {
+		      SumIndices = this->M1Value[m1] + this->M2Value[m1];
+		      TmpNbrM3Values = this->NbrM3Values[m1];
+		      TmpM3Values = this->M3Values[m1];
+		      for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			{
+			  Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			  if (Index < Dim)
+			    {
+			      Coefficient2 *= this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient;
+			      for (int l = 0; l < nbrVectors; ++l)
+				TmpSum[l] += Coefficient2 * vSources[l][Index];
+			      ++ReducedNbrInteractionFactors;
+			    }
+			}
+		    }
+		  else
+		    {
+		      ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		    }
+		}
+	      for (int l = 0; l < nbrVectors; ++l)
+		{
+		  vDestinations[l][i] += TmpSum[l];
+		}
+	    }
+	  delete[] TmpSum;
+	}
+      for (int l = 0; l < nbrVectors; ++l)
+	{
+	  RealVector& TmpSourceVector = vSources[l];
+	  RealVector& TmpDestinationVector = vDestinations[l];
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    TmpDestinationVector[i] += this->HamiltonianShift * TmpSourceVector[i];
+	}
+      if (this->OneBodyTermFlag == true)
+	{
+	  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	    {
+	      m1 = this->OneBodyMValues[j];
+	      m2 = this->OneBodyNValues[j];
+	      TmpInteraction = this->OneBodyInteractionFactors[j];
+	      for (long i = firstComponent; i < LastComponent; ++i)
+		{
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < Dim)
+		    {
+		      Coefficient *= TmpInteraction;
+		      for (int l = 0; l < nbrVectors; ++l)
+			vDestinations[l][i] += Coefficient * vSources[l][Index];
+		    }
+		}
+	    }
+	}
+      delete TmpParticles;
+    }
+  else
+    {
+      if (this->FastMultiplicationStep == 1)
+	{
+	  double* TmpSum = new double [nbrVectors];
+	  long* TmpIndexArray;
+	  double* TmpCoefficientArray; 
+	  int j;
+	  int Index;
+	  int TmpNbrInteraction;
+	  long k = firstComponent;
+	  firstComponent -= this->LargePrecalculationShift;
+	  LastComponent -= this->LargePrecalculationShift;
+	  for (long i = firstComponent; i < LastComponent; ++i)
+	    {
+	      for (int l = 0; l < nbrVectors; ++l)
+		TmpSum[l] = 0.0;
+	      TmpNbrInteraction = this->NbrInteractionPerComponent[i];
+	      TmpIndexArray = this->InteractionPerComponentLargeIndex[i];
+	      TmpCoefficientArray = this->InteractionPerComponentCoefficient[i];
+	      for (j = 0; j < TmpNbrInteraction; ++j)
+		{
+		  Index = TmpIndexArray[j];
+		  Coefficient = TmpCoefficientArray[j];
+		  for (int l = 0; l < nbrVectors; ++l)
+		    TmpSum[l] +=  Coefficient * vSources[l][Index];
+		}
+	      for (int l = 0; l < nbrVectors; ++l)
+		vDestinations[l][k] += TmpSum[l] + this->HamiltonianShift * vSources[l][k];
+	      ++k;
+	    }
+	  delete[] TmpSum;
+	  // cout << "after " << k << "  ; ";
+	  // for (int i = firstComponent; i < (firstComponent + 10); ++i)
+	  //   {
+	  //     cout << (i + this->PrecalculationShift) << " : ";
+	  //     for (int l = 0; l < nbrVectors; ++l)
+	  // 	{
+	  // 	  cout << vDestinations[l][i + this->PrecalculationShift] << " ";
+	  // 	}
+	  //     cout << "| ";
+	  //   }
+	  // cout << endl;
+	}
+      else
+	{
+	  if (this->DiskStorageFlag == false)
+	    {
+	      this->LowLevelMultipleAddMultiplyPartialFastMultiply(vSources, vDestinations, nbrVectors, firstComponent, nbrComponent);
+	    }
+	  else
+	    {
+	      this->LowLevelMultipleAddMultiplyDiskStorage(vSources, vDestinations, nbrVectors, firstComponent, nbrComponent);
+	    }
+	}
+   }
+  if (this->L2Operator != 0)
+    for (int l = 0; l < nbrVectors; ++l)
+      this->L2Operator->LowLevelAddMultiply(vSources[l], vDestinations[l], firstComponent, nbrComponent);
+  return vDestinations;
+}
+
 // multiply a set of vectors by the current hamiltonian for a given range of indices 
 // and add result to another et of vectors, low level function (no architecture optimization)
 // using partial fast multiply option
@@ -2278,7 +3719,7 @@ RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply
 // return value = pointer to the array of vectors where result has been stored
 
 RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiplyPartialFastMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
-											   int firstComponent, int nbrComponent)
+												    int firstComponent, int nbrComponent)
 {
   //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiplyPartialFastMultiply"<<endl;
   int LastComponent = firstComponent + nbrComponent;
@@ -2424,6 +3865,165 @@ RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply
   return vDestinations;
 }
 
+// multiply a set of vectors by the current hamiltonian for a given range of indices 
+// and add result to another et of vectors, low level function (no architecture optimization)
+// using partial fast multiply option
+//
+// vSources = array of vectors to be multiplied
+// vDestinations = array of vectors at which result has to be added
+// nbrVectors = number of vectors that have to be evaluated together
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = pointer to the array of vectors where result has been stored
+
+RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiplyPartialFastMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+												    long firstComponent, long nbrComponent)
+{
+  //cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiplyPartialFastMultiply"<<endl;
+  long LastComponent = firstComponent + nbrComponent;
+  long Dim = this->Particles->GetLargeHilbertSpaceDimension();
+  double Coefficient;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+  double *TmpSum = new double[nbrVectors];
+  long* TmpIndexArray;
+  double* TmpCoefficientArray; 
+  // double* Coefficient2 = new double [nbrVectors];
+  int j;
+  int TmpNbrInteraction;
+  firstComponent -= this->LargePrecalculationShift;
+  LastComponent -= this->LargePrecalculationShift;
+  long Pos = firstComponent / this->FastMultiplicationLargeStep; 
+  long PosMod = firstComponent % this->FastMultiplicationLargeStep;
+  long Pos2;
+  if (PosMod != 0)
+    {
+      ++Pos;
+      PosMod = this->FastMultiplicationLargeStep - PosMod;
+    }
+  long l =  PosMod + firstComponent + this->PrecalculationShift;
+  for (long i = PosMod + firstComponent; i < LastComponent; i += this->FastMultiplicationLargeStep)
+    {
+      for (int n = 0; n < nbrVectors; ++n)
+	TmpSum[n] = 0.0;
+      TmpNbrInteraction = this->NbrInteractionPerComponent[Pos];
+      TmpIndexArray = this->InteractionPerComponentLargeIndex[Pos];
+      TmpCoefficientArray = this->InteractionPerComponentCoefficient[Pos];
+      for (j = 0; j < TmpNbrInteraction; ++j)
+	{
+	  Pos2 = TmpIndexArray[j];
+	  Coefficient = TmpCoefficientArray[j];
+	  for (int k = 0; k < nbrVectors; ++k)
+	    TmpSum[k] += Coefficient  * vSources[k][Pos2];
+	}
+      for (int k = 0; k < nbrVectors; ++k)
+	vDestinations[k][l] += TmpSum[k] + this->HamiltonianShift * vSources[k][l];
+      l += this->FastMultiplicationLargeStep;
+      ++Pos;
+    }
+  int Index;
+  int m1;
+  int m2;
+  int m3;
+  int m4;
+  double TmpInteraction;
+  firstComponent += this->LargePrecalculationShift;
+  LastComponent += this->LargePrecalculationShift;
+  for (long k = 0; k < this->FastMultiplicationLargeStep; ++k)
+    if (PosMod != k)
+      {	
+	if (this->NbrM12Indices == 0)
+	  for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      TmpInteraction = this->InteractionFactors[j];
+	      m4 = m1 + m2 - m3;
+	      for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		{
+		  Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		  if (Index < Dim)
+		    {
+		      Coefficient *= TmpInteraction;
+		      for (int l = 0; l < nbrVectors; ++l)
+			vDestinations[l][i] += Coefficient * vSources[l][Index];
+		    }
+		}
+	    }
+	else
+	  {
+	    double Coefficient2;
+	    int SumIndices;
+	    int TmpNbrM3Values;
+	    int* TmpM3Values;
+	    int ReducedNbrInteractionFactors;
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      {
+		ReducedNbrInteractionFactors = 0;
+		for (int l = 0; l < nbrVectors; ++l)
+		  TmpSum[l] = 0.0; 
+		for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		  {
+		    Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+		    if (Coefficient != 0.0)
+		      {
+			SumIndices = this->M1Value[m1] + this->M2Value[m1];
+			TmpNbrM3Values = this->NbrM3Values[m1];
+			TmpM3Values = this->M3Values[m1];
+			
+			for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			  {
+			    Index = TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			    if (Index < Dim)
+			      {
+				Coefficient2 *= this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient;
+				for (int l = 0; l < nbrVectors; ++l)
+				  TmpSum[l] += Coefficient2 * vSources[l][Index];
+			      }
+			    ++ReducedNbrInteractionFactors;
+			  }
+		      }
+		    else
+		      ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		  }
+		for (int l = 0; l < nbrVectors; ++l)
+		  vDestinations[l][i]+=TmpSum[l];
+	      }
+	    delete[] TmpSum;
+	  }
+	for (int l = 0; l < nbrVectors; ++l)
+	  {
+	    RealVector& TmpSourceVector = vSources[l];
+	    RealVector& TmpDestinationVector = vDestinations[l];
+	    for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+	      TmpDestinationVector[i] += this->HamiltonianShift * TmpSourceVector[i];
+	  }
+	if (this->OneBodyTermFlag == true)
+	  {
+	    for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+	      {
+		m1 = this->OneBodyMValues[j];
+		m2 = this->OneBodyNValues[j];
+		TmpInteraction = this->OneBodyInteractionFactors[j];
+		for (long i = firstComponent + k; i < LastComponent; i += this->FastMultiplicationLargeStep)
+		  {
+		    Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		    if (Index < Dim)
+		      {
+			Coefficient *= TmpInteraction;
+			for (int l = 0; l < nbrVectors; ++l)
+			  vDestinations[l][i] += Coefficient * vSources[l][Index];
+		      }
+		  }
+	      }
+	  }
+      }
+  delete[] TmpSum;
+  delete TmpParticles;
+  return vDestinations;
+}
+
+
 // multiply a et of vectors by the current hamiltonian for a given range of indices 
 // and add result to another et of vectors, low level function (no architecture optimization)
 // using disk storage option
@@ -2557,6 +4157,27 @@ RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply
   return vDestinations;
 }
 
+// multiply a et of vectors by the current hamiltonian for a given range of indices 
+// and add result to another et of vectors, low level function (no architecture optimization)
+// using disk storage option
+//
+// vSources = array of vectors to be multiplied
+// vDestinations = array of vectors at which result has to be added
+// nbrVectors = number of vectors that have to be evaluated together
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = pointer to the array of vectors where result has been stored
+
+RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
+											    long firstComponent, long nbrComponent)
+{
+  cout << "AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, ...) is not implemented for large Hilbert spaces" << endl;
+  return vSources;
+}
+
+// continue here
+
+
 // Methods applying both the Hamiltonian and its Hermitian conjugate at the same time
 
 // multiply a vector by the current hamiltonian for a given range of indices 
@@ -2569,7 +4190,7 @@ RealVector* AbstractQHEOnSphereHamiltonian::ConjugateLowLevelMultipleAddMultiply
 // return value = reference on vector where result has been stored
 
 RealVector& AbstractQHEOnSphereHamiltonian::HermitianLowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
-								int firstComponent, int nbrComponent)
+									 int firstComponent, int nbrComponent)
 {
   int LastComponent = firstComponent + nbrComponent;
   int Dim = this->Particles->GetHilbertSpaceDimension();
@@ -3390,7 +5011,7 @@ RealVector* AbstractQHEOnSphereHamiltonian::HermitianLowLevelMultipleAddMultiply
 // return value = pointer to the array of vectors where result has been stored
 
 RealVector* AbstractQHEOnSphereHamiltonian::HermitianLowLevelMultipleAddMultiplyDiskStorage(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
-										   int firstComponent, int nbrComponent)
+											    int firstComponent, int nbrComponent)
 {
   double Coefficient;
   int* BufferIndexArray = new int [this->BufferSize * this->MaxNbrInteractionPerComponent];
@@ -3557,18 +5178,18 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
   long MinIndex;
   long MaxIndex;
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
-  int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
+  long EffectiveHilbertSpaceDimension = (MaxIndex - MinIndex) + 1l;
   if ((this->NbrInteractionPerComponent != 0) &&
-      ((this->FastMultiplicationStep != 0) || (this->Architecture->HasAutoLoadBalancing() == true)))
+      ((this->FastMultiplicationLargeStep != 0l) || (this->Architecture->HasAutoLoadBalancing() == true)))
     {
-      int TmpFastMultiplicationStep = this->FastMultiplicationStep;
-      if (TmpFastMultiplicationStep == 0)
+      long TmpFastMultiplicationStep = this->FastMultiplicationLargeStep;
+      if (TmpFastMultiplicationStep == 0l)
 	{
-	  TmpFastMultiplicationStep = 1;
+	  TmpFastMultiplicationStep = 1l;
 	}
-      int ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / TmpFastMultiplicationStep;
+      long ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / TmpFastMultiplicationStep;
       long TmpTotalNbrElement = 0l;
-      for (int i = 0; i < ReducedSpaceDimension; ++i)
+      for (long i = 0; i < ReducedSpaceDimension; ++i)
 	{
 	  TmpTotalNbrElement += this->NbrInteractionPerComponent[i];
 	}
@@ -3579,16 +5200,16 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	      if (LoadBalancingArray!=0)
 		delete [] LoadBalancingArray;
 	      long* SegmentSize = new long[nbrTasks];
-	      this->LoadBalancingArray = new long[nbrTasks+1];
+	      this->LoadBalancingArray = new long[nbrTasks + 1];
 	      this->NbrBalancedTasks = nbrTasks;
 	      long TmpNbrElement = 0;
-	      for (int i=0; i < ReducedSpaceDimension; ++i)
+	      for (long i = 0l; i < ReducedSpaceDimension; ++i)
 		TmpNbrElement += this->NbrInteractionPerComponent[i];
 	      long TmpNbrPerSegment = TmpNbrElement / nbrTasks;
-	      TmpNbrElement = 0;
-	      int Pos=0;
+	      TmpNbrElement = 0l;
+	      long Pos = 0l;
 	      this->LoadBalancingArray[0] = MinIndex;
-	      for (int i = 0; i < ReducedSpaceDimension; ++i)
+	      for (long i = 0l; i < ReducedSpaceDimension; ++i)
 		{
 		  TmpNbrElement += this->NbrInteractionPerComponent[i];
 		  if (TmpNbrElement > TmpNbrPerSegment)
@@ -3602,7 +5223,7 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	      while (Pos < (nbrTasks - 1))
 		{
 		  LoadBalancingArray[Pos + 1] = MaxIndex + 1;
-		  SegmentSize[Pos] = 0;
+		  SegmentSize[Pos] = 0l;
 		  ++Pos;
 		}
 	      LoadBalancingArray[nbrTasks] = MaxIndex + 1;
@@ -3618,10 +5239,10 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	{
 	  this->LoadBalancingArray = new long[nbrTasks + 1];
 	  this->NbrBalancedTasks = nbrTasks;
-	  int Step = EffectiveHilbertSpaceDimension / nbrTasks;
+	  long Step = EffectiveHilbertSpaceDimension / nbrTasks;
 	  this->LoadBalancingArray[0] = MinIndex;
 	  for (int i = 1; i < nbrTasks; ++i)
-	    LoadBalancingArray[i]= MinIndex + (i * Step);
+	    LoadBalancingArray[i]= MinIndex + (((long) i) * Step);
 	  LoadBalancingArray[nbrTasks] = MaxIndex + 1;
 	  NbrBalancedTasks = nbrTasks;
 	  cout << "LoadBalancingArray=[ ("<< LoadBalancingArray[1] - LoadBalancingArray[0] <<")";
@@ -3664,10 +5285,10 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
   long MinIndex;
   long MaxIndex;
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
-  int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
-  
-  this->NbrInteractionPerComponent = new int [EffectiveHilbertSpaceDimension];
-  for (int i = 0; i < EffectiveHilbertSpaceDimension; ++i)
+  int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;  
+  int EffectiveLargeHilbertSpaceDimension = (MaxIndex - MinIndex) + 1l;  
+  this->NbrInteractionPerComponent = new int [EffectiveLargeHilbertSpaceDimension];
+  for (long i = 0l; i < EffectiveLargeHilbertSpaceDimension; ++i)
     this->NbrInteractionPerComponent[i] = 0;
   timeval TotalStartingTime2;
   timeval TotalEndingTime2;
@@ -3685,6 +5306,7 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
       this->PrecalculationShift = (int) MinIndex;
       this->LargePrecalculationShift = MinIndex;
       EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
+      EffectiveLargeHilbertSpaceDimension = (MaxIndex - MinIndex) + 1l;
       cout << "distributed calculations have been reoptimized" << endl;
     }
   if (this->LoadBalancingArray != 0)
@@ -3694,7 +5316,7 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
   
 
   long Memory = 0;
-  for (int i = 0; i < EffectiveHilbertSpaceDimension; ++i)
+  for (long i = 0l; i < EffectiveLargeHilbertSpaceDimension; ++i)
     Memory += this->NbrInteractionPerComponent[i];  
 
   cout << "nbr interaction = " << Memory << endl;
@@ -3703,59 +5325,121 @@ long AbstractQHEOnSphereHamiltonian::FastMultiplicationMemory(long allowedMemory
     {
       return 0l;
     }
-  
-  long TmpMemory = allowedMemory - (sizeof (int*) + sizeof (int) + sizeof(double*)) * EffectiveHilbertSpaceDimension;
-  if ((TmpMemory < 0) || ((TmpMemory / ((int) (sizeof (int) + sizeof(double)))) < Memory))
-    {
-      this->FastMultiplicationStep = 1;
-      int ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
-      while ((TmpMemory < 0) || ((TmpMemory / ((int) (sizeof (int) + sizeof(double)))) < Memory))
+  if (this->Particles->IsLargeHilbertSpace() == false)
+    {  
+      long TmpMemory = allowedMemory - (sizeof (int*) + sizeof (int) + sizeof(double*)) * EffectiveHilbertSpaceDimension;
+      if ((TmpMemory < 0) || ((TmpMemory / ((int) (sizeof (int) + sizeof(double)))) < Memory))
 	{
-	  ++this->FastMultiplicationStep;
-	  ReducedSpaceDimension = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
-	  if (EffectiveHilbertSpaceDimension != (ReducedSpaceDimension * this->FastMultiplicationStep))
-	    ++ReducedSpaceDimension;
-	  TmpMemory = allowedMemory - (sizeof (int*) + sizeof (int) + sizeof(double*)) * ReducedSpaceDimension;
-	  Memory = 0;
-	  for (int i = 0; i < EffectiveHilbertSpaceDimension; i += this->FastMultiplicationStep)
-	    Memory += this->NbrInteractionPerComponent[i];
-	}
-      Memory = ((sizeof (int*) + sizeof (int) + sizeof(double*)) * ReducedSpaceDimension) + (Memory * (sizeof (int) + sizeof(double)));
-      long ResidualMemory = allowedMemory - Memory;
-      if (ResidualMemory > 0)
-	{
-	  if (this->DiskStorageFlag == false)
+	  this->FastMultiplicationStep = 1;
+	  int ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
+	  while ((TmpMemory < 0) || ((TmpMemory / ((int) (sizeof (int) + sizeof(double)))) < Memory))
 	    {
-	      int TotalReducedSpaceDimension = ReducedSpaceDimension;
-	      int* TmpNbrInteractionPerComponent = new int [TotalReducedSpaceDimension];
-	      int i = 0;
-	      int Pos = 0;
-	      for (; i < ReducedSpaceDimension; ++i)
+	      ++this->FastMultiplicationStep;
+	      ReducedSpaceDimension = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
+	      if (EffectiveHilbertSpaceDimension != (ReducedSpaceDimension * this->FastMultiplicationStep))
+		++ReducedSpaceDimension;
+	      TmpMemory = allowedMemory - (sizeof (int*) + sizeof (int) + sizeof(double*)) * ReducedSpaceDimension;
+	      Memory = 0;
+	      for (int i = 0; i < EffectiveHilbertSpaceDimension; i += this->FastMultiplicationStep)
+		Memory += this->NbrInteractionPerComponent[i];
+	    }
+	  Memory = ((sizeof (int*) + sizeof (int) + sizeof(double*)) * ReducedSpaceDimension) + (Memory * (sizeof (int) + sizeof(double)));
+	  long ResidualMemory = allowedMemory - Memory;
+	  if (ResidualMemory > 0)
+	    {
+	      if (this->DiskStorageFlag == false)
 		{
-		  TmpNbrInteractionPerComponent[i] = this->NbrInteractionPerComponent[Pos];
-		  Pos += this->FastMultiplicationStep;
+		  int TotalReducedSpaceDimension = ReducedSpaceDimension;
+		  int* TmpNbrInteractionPerComponent = new int [TotalReducedSpaceDimension];
+		  int i = 0;
+		  int Pos = 0;
+		  for (; i < ReducedSpaceDimension; ++i)
+		    {
+		      TmpNbrInteractionPerComponent[i] = this->NbrInteractionPerComponent[Pos];
+		      Pos += this->FastMultiplicationStep;
+		    }
+		  delete[] this->NbrInteractionPerComponent;
+		  this->NbrInteractionPerComponent = TmpNbrInteractionPerComponent;
 		}
-	      delete[] this->NbrInteractionPerComponent;
-	      this->NbrInteractionPerComponent = TmpNbrInteractionPerComponent;
+	    }
+	  else
+	    {
+	      if (this->DiskStorageFlag == false)
+		{
+		  int* TmpNbrInteractionPerComponent = new int [ReducedSpaceDimension];
+		  for (int i = 0; i < ReducedSpaceDimension; ++i)
+		    TmpNbrInteractionPerComponent[i] = this->NbrInteractionPerComponent[i * this->FastMultiplicationStep];
+		  delete[] this->NbrInteractionPerComponent;
+		  this->NbrInteractionPerComponent = TmpNbrInteractionPerComponent;
+		}
 	    }
 	}
       else
-	if (this->DiskStorageFlag == false)
-	  {
-	    int* TmpNbrInteractionPerComponent = new int [ReducedSpaceDimension];
-	    for (int i = 0; i < ReducedSpaceDimension; ++i)
-	      TmpNbrInteractionPerComponent[i] = this->NbrInteractionPerComponent[i * this->FastMultiplicationStep];
-	    delete[] this->NbrInteractionPerComponent;
-	    this->NbrInteractionPerComponent = TmpNbrInteractionPerComponent;
-	  }
+	{
+	  Memory = ((sizeof (int*) + sizeof (int) + sizeof(double*)) * EffectiveHilbertSpaceDimension) + (Memory * (sizeof (int) + sizeof(double)));
+	  this->FastMultiplicationStep = 1;
+	}
+      this->FastMultiplicationLargeStep = (long) this->FastMultiplicationStep;
+      cout << "reduction factor=" << this->FastMultiplicationStep << endl;
     }
   else
     {
-      Memory = ((sizeof (int*) + sizeof (int) + sizeof(double*)) * EffectiveHilbertSpaceDimension) + (Memory * (sizeof (int) + sizeof(double)));
-      this->FastMultiplicationStep = 1;
+      long TmpMemory = allowedMemory - (sizeof (long*) + sizeof (int) + sizeof(double*)) * EffectiveLargeHilbertSpaceDimension;
+      if ((TmpMemory < 0) || ((TmpMemory / ((long) (sizeof (long) + sizeof(double)))) < Memory))
+	{
+	  this->FastMultiplicationLargeStep = 1;
+	  long ReducedSpaceDimension  = EffectiveLargeHilbertSpaceDimension / this->FastMultiplicationLargeStep;
+	  while ((TmpMemory < 0) || ((TmpMemory / ((long) (sizeof (long) + sizeof(double)))) < Memory))
+	    {
+	      ++this->FastMultiplicationLargeStep;
+	      ReducedSpaceDimension = EffectiveLargeHilbertSpaceDimension / this->FastMultiplicationLargeStep;
+	      if (EffectiveLargeHilbertSpaceDimension != (ReducedSpaceDimension * this->FastMultiplicationLargeStep))
+		++ReducedSpaceDimension;
+	      TmpMemory = allowedMemory - (sizeof (long*) + sizeof (int) + sizeof(double*)) * ReducedSpaceDimension;
+	      Memory = 0l;
+	      for (int i = 0; i < EffectiveLargeHilbertSpaceDimension; i += this->FastMultiplicationLargeStep)
+		Memory += this->NbrInteractionPerComponent[i];
+	    }
+	  Memory = ((sizeof (long*) + sizeof (int) + sizeof(double*)) * ReducedSpaceDimension) + (Memory * (sizeof (long) + sizeof(double)));
+	  long ResidualMemory = allowedMemory - Memory;
+	  if (ResidualMemory > 0)
+	    {
+	      if (this->DiskStorageFlag == false)
+		{
+		  int TotalReducedSpaceDimension = ReducedSpaceDimension;
+		  int* TmpNbrInteractionPerComponent = new int [TotalReducedSpaceDimension];
+		  long i = 0l;
+		  long Pos = 0l;
+		  for (; i < ReducedSpaceDimension; ++i)
+		    {
+		      TmpNbrInteractionPerComponent[i] = this->NbrInteractionPerComponent[Pos];
+		      Pos += this->FastMultiplicationLargeStep;
+		    }
+		  delete[] this->NbrInteractionPerComponent;
+		  this->NbrInteractionPerComponent = TmpNbrInteractionPerComponent;
+		}
+	    }
+	  else
+	    {
+	      if (this->DiskStorageFlag == false)
+		{
+		  int* TmpNbrInteractionPerComponent = new int [ReducedSpaceDimension];
+		  for (long i = 0l; i < ReducedSpaceDimension; ++i)
+		    TmpNbrInteractionPerComponent[i] = this->NbrInteractionPerComponent[i * this->FastMultiplicationLargeStep];
+		  delete[] this->NbrInteractionPerComponent;
+		  this->NbrInteractionPerComponent = TmpNbrInteractionPerComponent;
+		}
+	    }
+	}
+      else
+	{
+	  Memory = ((sizeof (long*) + sizeof (int) + sizeof(double*)) * EffectiveLargeHilbertSpaceDimension) + (Memory * (sizeof (long) + sizeof(double)));
+	  this->FastMultiplicationLargeStep = 1;
+	}
+      this->FastMultiplicationStep = (int) this->FastMultiplicationLargeStep;
+      cout << "reduction factor=" << this->FastMultiplicationLargeStep << endl;
     }
-
-  cout << "reduction factor=" << this->FastMultiplicationStep << endl;
+  
   gettimeofday (&(TotalEndingTime2), 0);
   cout << "------------------------------------------------------------------" << endl << endl;;
   Dt2 = (double) (TotalEndingTime2.tv_sec - TotalStartingTime2.tv_sec) + 
@@ -3860,6 +5544,102 @@ long AbstractQHEOnSphereHamiltonian::PartialFastMultiplicationMemory(int firstCo
   return Memory;
 }
 
+// test the amount of memory needed for fast multiplication algorithm (partial evaluation)
+//
+// firstComponent = index of the first component that has to be precalcualted
+// nbrComponent  = number of components that has to be precalcualted
+// return value = number of non-zero matrix element
+
+long AbstractQHEOnSphereHamiltonian::PartialFastMultiplicationMemory(long firstComponent, long nbrComponent)
+{
+  long Index;
+  double Coefficient;
+  long Memory = 0;
+  int m1;
+  int m2;
+  int m3;
+  int m4;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+  long LastComponent = nbrComponent + firstComponent;
+  if (this->NbrM12Indices == 0)
+    {
+      for (long i = firstComponent; i < LastComponent; ++i)
+	{
+	  for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+	    {
+	      m1 = this->M1Value[j];
+	      m2 = this->M2Value[j];
+	      m3 = this->M3Value[j];
+	      m4 = m1 + m2 - m3;
+	      Index = TmpParticles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+	      if (Index < this->Particles->GetLargeHilbertSpaceDimension())
+		{
+		  ++Memory;
+		  ++this->NbrInteractionPerComponent[i - this->LargePrecalculationShift];
+		}
+	    }    
+	  if (this->OneBodyTermFlag == true)
+	    {
+	      for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+		{
+		  m1 = this->OneBodyMValues[j];
+		  m2 = this->OneBodyNValues[j];
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < this->Particles->GetLargeHilbertSpaceDimension())
+		    {
+		      ++Memory;
+		      ++this->NbrInteractionPerComponent[i - this->LargePrecalculationShift];
+		    }
+		}
+	    }
+	}
+    }
+  else
+    {
+      int SumIndices;
+      int TmpNbrM3Values;
+      int* TmpM3Values;
+      for (long i = firstComponent; i < LastComponent; ++i)
+	{
+	  for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+	    {
+	      Coefficient = TmpParticles->AALarge(i, this->M1Value[m1], this->M2Value[m1]);	  
+	      if (Coefficient != 0.0)
+		{
+		  SumIndices = this->M1Value[m1] + this->M2Value[m1];
+		  TmpM3Values = this->M3Values[m1];
+		  TmpNbrM3Values = this->NbrM3Values[m1];
+		  for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+		    {
+		      if (TmpParticles->AdAdLarge(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient) < this->Particles->GetLargeHilbertSpaceDimension())
+			{
+			  ++Memory;
+			  ++this->NbrInteractionPerComponent[i - this->LargePrecalculationShift];
+			}
+		    }    
+		}
+	    }
+	  if (this->OneBodyTermFlag == true)
+	    {
+	      for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+		{
+		  m1 = this->OneBodyMValues[j];
+		  m2 = this->OneBodyNValues[j];
+		  Index = TmpParticles->AdA(i, m1, m2, Coefficient);
+		  if (Index < this->Particles->GetLargeHilbertSpaceDimension())
+		    {
+		      ++Memory;
+		      ++this->NbrInteractionPerComponent[i - this->LargePrecalculationShift];
+		    }
+		}
+	    }
+	}
+    }
+  delete TmpParticles;
+
+  return Memory;
+}
+
 // enable fast multiplication algorithm
 //
 
@@ -3868,27 +5648,48 @@ void AbstractQHEOnSphereHamiltonian::EnableFastMultiplication()
   long MinIndex;
   long MaxIndex;
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
-  int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
   timeval TotalStartingTime2;
   timeval TotalEndingTime2;
   double Dt2;
   gettimeofday (&(TotalStartingTime2), 0);
   cout << "start" << endl;
-  int ReducedSpaceDimension = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
-  if ((ReducedSpaceDimension * this->FastMultiplicationStep) != EffectiveHilbertSpaceDimension)
-    ++ReducedSpaceDimension;
-  this->InteractionPerComponentIndex = new int* [ReducedSpaceDimension];
-  this->InteractionPerComponentCoefficient = new double* [ReducedSpaceDimension];
-
-  // allocate all memory at the outset:
-  long TotalPos = 0;
-  for (int i = 0; i < EffectiveHilbertSpaceDimension; i += this->FastMultiplicationStep)
+  if (this->Particles->IsLargeHilbertSpace() == false)
     {
-      this->InteractionPerComponentIndex[TotalPos] = new int [this->NbrInteractionPerComponent[TotalPos]];
-      this->InteractionPerComponentCoefficient[TotalPos] = new double [this->NbrInteractionPerComponent[TotalPos]];
-      ++TotalPos;
+      int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
+     int ReducedSpaceDimension = EffectiveHilbertSpaceDimension / this->FastMultiplicationStep;
+      if ((ReducedSpaceDimension * this->FastMultiplicationStep) != EffectiveHilbertSpaceDimension)
+	++ReducedSpaceDimension;
+      this->InteractionPerComponentIndex = new int* [ReducedSpaceDimension];
+      this->InteractionPerComponentCoefficient = new double* [ReducedSpaceDimension];
+      
+      // allocate all memory at the outset:
+      long TotalPos = 0;
+      for (int i = 0; i < EffectiveHilbertSpaceDimension; i += this->FastMultiplicationStep)
+	{
+	  this->InteractionPerComponentIndex[TotalPos] = new int [this->NbrInteractionPerComponent[TotalPos]];
+	  this->InteractionPerComponentCoefficient[TotalPos] = new double [this->NbrInteractionPerComponent[TotalPos]];
+	  ++TotalPos;
+	}
     }
-
+  else
+    {
+      long EffectiveHilbertSpaceDimension = (MaxIndex - MinIndex) + 1l;
+      long ReducedSpaceDimension = EffectiveHilbertSpaceDimension / this->FastMultiplicationLargeStep;
+      if ((ReducedSpaceDimension * this->FastMultiplicationLargeStep) != EffectiveHilbertSpaceDimension)
+	++ReducedSpaceDimension;
+      this->InteractionPerComponentLargeIndex = new long* [ReducedSpaceDimension];
+      this->InteractionPerComponentCoefficient = new double* [ReducedSpaceDimension];
+      
+      // allocate all memory at the outset:
+      long TotalPos = 0;
+      for (long i = 0l; i < EffectiveHilbertSpaceDimension; i += this->FastMultiplicationLargeStep)
+	{
+	  this->InteractionPerComponentLargeIndex[TotalPos] = new long [this->NbrInteractionPerComponent[TotalPos]];
+	  this->InteractionPerComponentCoefficient[TotalPos] = new double [this->NbrInteractionPerComponent[TotalPos]];
+	  ++TotalPos;
+	}
+    }
+  
   QHEParticlePrecalculationOperation Operation(this, false);
   Operation.ApplyOperation(this->Architecture);
   
@@ -3938,6 +5739,33 @@ void AbstractQHEOnSphereHamiltonian::PartialEnableFastMultiplication(int firstCo
   delete TmpParticles;
 }
 
+// enable fast multiplication algorithm (partial evaluation)
+//
+// firstComponent = index of the first component that has to be precalcualted
+// nbrComponent  = index of the last component that has to be precalcualted
+
+void AbstractQHEOnSphereHamiltonian::PartialEnableFastMultiplication(long firstComponent, long nbrComponent)
+{  
+  long LastComponent = nbrComponent + firstComponent;
+  ParticleOnSphere* TmpParticles = (ParticleOnSphere*) this->Particles->Clone();
+
+  firstComponent -= this->LargePrecalculationShift;
+  LastComponent -= this->LargePrecalculationShift;
+  long Pos = firstComponent / this->FastMultiplicationLargeStep; 
+  long PosMod = firstComponent % this->FastMultiplicationLargeStep;
+  if (PosMod != 0)
+    {
+      ++Pos;
+      PosMod = this->FastMultiplicationLargeStep - PosMod;
+    }
+  for (long i = PosMod + firstComponent; i < LastComponent; i += this->FastMultiplicationStep)
+    {
+      this->EvaluateMNTwoBodyFastMultiplicationComponent(TmpParticles, i, this->InteractionPerComponentIndex[Pos], 
+							 this->InteractionPerComponentCoefficient[Pos], Pos);
+    }
+  delete TmpParticles;
+}
+
 // enable fast multiplication algorithm using on disk cache 
 //
 // fileName = prefix of the name of the file where temporary matrix elements will be stored
@@ -3958,132 +5786,142 @@ void AbstractQHEOnSphereHamiltonian::EnableFastMultiplicationWithDiskStorage(cha
   long MinIndex;
   long MaxIndex;
   this->Architecture->GetTypicalRange(MinIndex, MaxIndex);
-  int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
-  this->DiskStorageStart = (int) MinIndex;
-  int DiskStorageEnd = 1 + (int) MaxIndex;
 
-  int Index;
-  int m1;
-  int m2;
-  int m3;
-  int m4;
-  double Coefficient;
-  int* TmpIndexArray;
-  double* TmpCoefficientArray;
-  int Pos;
   timeval TotalStartingTime2;
   timeval TotalEndingTime2;
   double Dt2;
   gettimeofday (&(TotalStartingTime2), 0);
   cout << "start" << endl;
-  this->InteractionPerComponentIndex = 0;
-  this->InteractionPerComponentCoefficient = 0;
-  this->MaxNbrInteractionPerComponent = 0;
 
-  int TotalPos = 0;
-  ofstream File;
-  File.open(this->DiskStorageFileName, ios::binary | ios::out);
- 
-  File.write((char*) &(EffectiveHilbertSpaceDimension), sizeof(int));
-  File.write((char*) &(this->FastMultiplicationStep), sizeof(int));
-  File.write((char*) this->NbrInteractionPerComponent, sizeof(int) * EffectiveHilbertSpaceDimension);
-
-  long FileJump = 0;
-  for (int i = 0; i < EffectiveHilbertSpaceDimension; ++i)
+  if (this->Particles->IsLargeHilbertSpace() == false)
     {
-      FileJump += (long) this->NbrInteractionPerComponent[i];
-      if (this->MaxNbrInteractionPerComponent < this->NbrInteractionPerComponent[i])
-	this->MaxNbrInteractionPerComponent = this->NbrInteractionPerComponent[i];
-    }
-  FileJump *= sizeof(int);
-
-  TmpIndexArray = new int [this->MaxNbrInteractionPerComponent];
-  TmpCoefficientArray = new double [this->MaxNbrInteractionPerComponent];      
-  double Coefficient2;
-  int SumIndices;
-  int TmpNbrM3Values;
-  int* TmpM3Values;
-  int ReducedNbrInteractionFactors;
-
-  for (int i = this->DiskStorageStart; i < DiskStorageEnd; ++i)
-    {
-      if (this->NbrInteractionPerComponent[TotalPos] > 0)
+      int EffectiveHilbertSpaceDimension = ((int) (MaxIndex - MinIndex)) + 1;
+      this->DiskStorageStart = (int) MinIndex;
+      int DiskStorageEnd = 1 + (int) MaxIndex;
+      
+      int Index;
+      int m1;
+      int m2;
+      int m3;
+      int m4;
+      double Coefficient;
+      int* TmpIndexArray;
+      double* TmpCoefficientArray;
+      int Pos;
+      this->InteractionPerComponentIndex = 0;
+      this->InteractionPerComponentCoefficient = 0;
+      this->MaxNbrInteractionPerComponent = 0;
+      
+      int TotalPos = 0;
+      ofstream File;
+      File.open(this->DiskStorageFileName, ios::binary | ios::out);
+      
+      File.write((char*) &(EffectiveHilbertSpaceDimension), sizeof(int));
+      File.write((char*) &(this->FastMultiplicationStep), sizeof(int));
+      File.write((char*) this->NbrInteractionPerComponent, sizeof(int) * EffectiveHilbertSpaceDimension);
+      
+      long FileJump = 0;
+      for (int i = 0; i < EffectiveHilbertSpaceDimension; ++i)
 	{
-	  Pos = 0;
-	  if (this->NbrM12Indices == 0)
-	    {
-	      for (int j = 0; j < this->NbrInteractionFactors; ++j) 
-		{
-		  m1 = this->M1Value[j];
-		  m2 = this->M2Value[j];
-		  m3 = this->M3Value[j];
-		  m4 = m1 + m2 - m3;
-		  Index = this->Particles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
-		  if (Index < this->Particles->GetHilbertSpaceDimension())
-		    {
-		      TmpIndexArray[Pos] = Index;
-		      TmpCoefficientArray[Pos] = Coefficient * this->InteractionFactors[j];
-		      ++Pos;
-		    }
-		}
-	    }
-	  else
-	    {
-	      ReducedNbrInteractionFactors = 0;
-	      for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
-		{
-		  Coefficient = this->Particles->AA(i, this->M1Value[m1], this->M2Value[m1]);	  
-		  if (Coefficient != 0.0)
-		    {
-		      SumIndices = this->M1Value[m1] + this->M2Value[m1];
-		      TmpM3Values = this->M3Values[m1];
-		      TmpNbrM3Values = this->NbrM3Values[m1];
-		      for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
-			{
-			  Index = this->Particles->AdAd(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
-			  if (Index < this->Particles->GetHilbertSpaceDimension())
-			    {
-			      TmpIndexArray[Pos] = Index;
-			      TmpCoefficientArray[Pos] = Coefficient * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
-			      ++Pos;
-			    }
-			  ++ReducedNbrInteractionFactors;
-			}    
-		    }
-		  else
-		    ReducedNbrInteractionFactors += this->NbrM3Values[m1];
-		}	      
-	    }
-	  if (this->OneBodyTermFlag == true)
-	    {
-	      for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
-		{
-		  m1 = this->OneBodyMValues[j];
-		  m2 = this->OneBodyNValues[j];
-		  Index = this->Particles->AdA(i, m1, m2, Coefficient);
-		  if (Index < this->Particles->GetHilbertSpaceDimension())
-		    {
-		      TmpIndexArray[Pos] = Index;
-		      TmpCoefficientArray[Pos] = Coefficient * this->OneBodyInteractionFactors[j];
-		      ++Pos;
-		    }
-		}
-	    }
-	  File.write((char*) TmpIndexArray, sizeof(int) * this->NbrInteractionPerComponent[TotalPos]);
-	  FileJump -= sizeof(int) * this->NbrInteractionPerComponent[TotalPos];
-	  File.seekp(FileJump, ios::cur);
-	  File.write((char*) TmpCoefficientArray, sizeof(double) * this->NbrInteractionPerComponent[TotalPos]);
-	  FileJump += sizeof(double) * this->NbrInteractionPerComponent[TotalPos];
-	  File.seekp(-FileJump, ios::cur);	  
+	  FileJump += (long) this->NbrInteractionPerComponent[i];
+	  if (this->MaxNbrInteractionPerComponent < this->NbrInteractionPerComponent[i])
+	    this->MaxNbrInteractionPerComponent = this->NbrInteractionPerComponent[i];
 	}
-      ++TotalPos;
+      FileJump *= sizeof(int);
+      
+      TmpIndexArray = new int [this->MaxNbrInteractionPerComponent];
+      TmpCoefficientArray = new double [this->MaxNbrInteractionPerComponent];      
+      double Coefficient2;
+      int SumIndices;
+      int TmpNbrM3Values;
+      int* TmpM3Values;
+      int ReducedNbrInteractionFactors;
+      
+      for (int i = this->DiskStorageStart; i < DiskStorageEnd; ++i)
+	{
+	  if (this->NbrInteractionPerComponent[TotalPos] > 0)
+	    {
+	      Pos = 0;
+	      if (this->NbrM12Indices == 0)
+		{
+		  for (int j = 0; j < this->NbrInteractionFactors; ++j) 
+		    {
+		      m1 = this->M1Value[j];
+		      m2 = this->M2Value[j];
+		      m3 = this->M3Value[j];
+		      m4 = m1 + m2 - m3;
+		      Index = this->Particles->AdAdAA(i, m1, m2, m3, m4, Coefficient);
+		      if (Index < this->Particles->GetHilbertSpaceDimension())
+			{
+			  TmpIndexArray[Pos] = Index;
+			  TmpCoefficientArray[Pos] = Coefficient * this->InteractionFactors[j];
+			  ++Pos;
+			}
+		    }
+		}
+	      else
+		{
+		  ReducedNbrInteractionFactors = 0;
+		  for (m1 = 0; m1 < this->NbrM12Indices; ++m1)
+		    {
+		      Coefficient = this->Particles->AA(i, this->M1Value[m1], this->M2Value[m1]);	  
+		      if (Coefficient != 0.0)
+			{
+			  SumIndices = this->M1Value[m1] + this->M2Value[m1];
+			  TmpM3Values = this->M3Values[m1];
+			  TmpNbrM3Values = this->NbrM3Values[m1];
+			  for (m3 = 0; m3 < TmpNbrM3Values; ++m3)
+			    {
+			      Index = this->Particles->AdAd(TmpM3Values[m3], SumIndices - TmpM3Values[m3], Coefficient2);
+			      if (Index < this->Particles->GetHilbertSpaceDimension())
+				{
+				  TmpIndexArray[Pos] = Index;
+				  TmpCoefficientArray[Pos] = Coefficient * this->InteractionFactors[ReducedNbrInteractionFactors] * Coefficient2;
+				  ++Pos;
+				}
+			      ++ReducedNbrInteractionFactors;
+			    }    
+			}
+		      else
+			ReducedNbrInteractionFactors += this->NbrM3Values[m1];
+		    }	      
+		}
+	      if (this->OneBodyTermFlag == true)
+		{
+		  for (int j = 0; j < this->NbrOneBodyInteractionFactors; ++j)
+		    {
+		      m1 = this->OneBodyMValues[j];
+		      m2 = this->OneBodyNValues[j];
+		      Index = this->Particles->AdA(i, m1, m2, Coefficient);
+		      if (Index < this->Particles->GetHilbertSpaceDimension())
+			{
+			  TmpIndexArray[Pos] = Index;
+			  TmpCoefficientArray[Pos] = Coefficient * this->OneBodyInteractionFactors[j];
+			  ++Pos;
+			}
+		    }
+		}
+	      File.write((char*) TmpIndexArray, sizeof(int) * this->NbrInteractionPerComponent[TotalPos]);
+	      FileJump -= sizeof(int) * this->NbrInteractionPerComponent[TotalPos];
+	      File.seekp(FileJump, ios::cur);
+	      File.write((char*) TmpCoefficientArray, sizeof(double) * this->NbrInteractionPerComponent[TotalPos]);
+	      FileJump += sizeof(double) * this->NbrInteractionPerComponent[TotalPos];
+	      File.seekp(-FileJump, ios::cur);	  
+	    }
+	  ++TotalPos;
+	}
+      delete[] TmpIndexArray;
+      delete[] TmpCoefficientArray;
+      File.close();
+      
+      this->BufferSize = this->Memory / ((this->MaxNbrInteractionPerComponent * (sizeof(int) + sizeof(double))) + sizeof(int*) + sizeof(double*));
     }
-  delete[] TmpIndexArray;
-  delete[] TmpCoefficientArray;
-  File.close();
+  else
+    {
+      cout << "EnableFastMultiplicationWithDiskStorage for large Hilbert spaces is not implemented" << endl;
+    }
 
   this->FastMultiplicationFlag = true;
-  this->BufferSize = this->Memory / ((this->MaxNbrInteractionPerComponent * (sizeof(int) + sizeof(double))) + sizeof(int*) + sizeof(double*));
 
   gettimeofday (&(TotalEndingTime2), 0);
   cout << "------------------------------------------------------------------" << endl << endl;;
@@ -4103,20 +5941,41 @@ bool AbstractQHEOnSphereHamiltonian::SavePrecalculation (char* fileName)
     {
       ofstream File;
       File.open(fileName, ios::binary | ios::out);
-      int Tmp = this->Particles->GetHilbertSpaceDimension();
-      File.write((char*) &(Tmp), sizeof(int));
-      File.write((char*) &(this->FastMultiplicationStep), sizeof(int));
-      Tmp /= this->FastMultiplicationStep;
-      if ((Tmp * this->FastMultiplicationStep) != this->Particles->GetHilbertSpaceDimension())
-	++Tmp;
-      File.write((char*) this->NbrInteractionPerComponent, sizeof(int) * Tmp);
-      for (int i = 0; i < Tmp; ++i)
+      if (this->Particles->IsLargeHilbertSpace() == false)
 	{
-	  File.write((char*) (this->InteractionPerComponentIndex[i]), sizeof(int) * this->NbrInteractionPerComponent[i]);	  
+	  int Tmp = this->Particles->GetHilbertSpaceDimension();
+	  File.write((char*) &(Tmp), sizeof(int));
+	  File.write((char*) &(this->FastMultiplicationStep), sizeof(int));
+	  Tmp /= this->FastMultiplicationStep;
+	  if ((Tmp * this->FastMultiplicationStep) != this->Particles->GetHilbertSpaceDimension())
+	    ++Tmp;
+	  File.write((char*) this->NbrInteractionPerComponent, sizeof(int) * Tmp);
+	  for (int i = 0; i < Tmp; ++i)
+	    {
+	      File.write((char*) (this->InteractionPerComponentIndex[i]), sizeof(int) * this->NbrInteractionPerComponent[i]);	  
+	    }
+	  for (int i = 0; i < Tmp; ++i)
+	    {
+	      File.write((char*) (this->InteractionPerComponentCoefficient[i]), sizeof(double) * this->NbrInteractionPerComponent[i]);	  
+	    }
 	}
-      for (int i = 0; i < Tmp; ++i)
+      else
 	{
-	  File.write((char*) (this->InteractionPerComponentCoefficient[i]), sizeof(double) * this->NbrInteractionPerComponent[i]);	  
+	  long Tmp = this->Particles->GetLargeHilbertSpaceDimension();
+	  File.write((char*) &(Tmp), sizeof(long));
+	  File.write((char*) &(this->FastMultiplicationLargeStep), sizeof(int));
+	  Tmp /= this->FastMultiplicationLargeStep;
+	  if ((Tmp * this->FastMultiplicationLargeStep) != this->Particles->GetLargeHilbertSpaceDimension())
+	    ++Tmp;
+	  File.write((char*) this->NbrInteractionPerComponent, ((long) sizeof(int)) * Tmp);
+	  for (long i = 0l; i < Tmp; ++i)
+	    {
+	      File.write((char*) (this->InteractionPerComponentLargeIndex[i]), sizeof(long) * this->NbrInteractionPerComponent[i]);	  
+	    }
+	  for (long i = 0l; i < Tmp; ++i)
+	    {
+	      File.write((char*) (this->InteractionPerComponentCoefficient[i]), sizeof(double) * this->NbrInteractionPerComponent[i]);	  
+	    }
 	}
       File.close();
       return true;
@@ -4136,30 +5995,61 @@ bool AbstractQHEOnSphereHamiltonian::LoadPrecalculation (char* fileName)
 {
   ifstream File;
   File.open(fileName, ios::binary | ios::in);
-  int Tmp;
-  File.read((char*) &(Tmp), sizeof(int));
-  if (Tmp != this->Particles->GetHilbertSpaceDimension())
+  if (this->Particles->IsLargeHilbertSpace() == false)
     {
-      File.close();
-      return false;
+      int Tmp;
+      File.read((char*) &(Tmp), sizeof(int));
+      if (Tmp != this->Particles->GetHilbertSpaceDimension())
+	{
+	  File.close();
+	  return false;
+	}
+      File.read((char*) &(this->FastMultiplicationStep), sizeof(int));
+      Tmp /= this->FastMultiplicationStep;
+      if ((Tmp * this->FastMultiplicationStep) != this->Particles->GetHilbertSpaceDimension())
+	++Tmp;
+      this->NbrInteractionPerComponent = new int [Tmp];
+      File.read((char*) this->NbrInteractionPerComponent, sizeof(int) * Tmp);
+      this->InteractionPerComponentIndex = new int* [Tmp];
+      this->InteractionPerComponentCoefficient = new double* [Tmp];
+      for (int i = 0; i < Tmp; ++i)
+	{
+	  this->InteractionPerComponentIndex[i] = new int [this->NbrInteractionPerComponent[i]];
+	  File.read((char*) (this->InteractionPerComponentIndex[i]), sizeof(int) * this->NbrInteractionPerComponent[i]);	  
+	}
+      for (int i = 0; i < Tmp; ++i)
+	{
+	  this->InteractionPerComponentCoefficient[i] = new double [this->NbrInteractionPerComponent[i]];
+	  File.read((char*) (this->InteractionPerComponentCoefficient[i]), sizeof(double) * this->NbrInteractionPerComponent[i]);	  
+	}
     }
-  File.read((char*) &(this->FastMultiplicationStep), sizeof(int));
-  Tmp /= this->FastMultiplicationStep;
-  if ((Tmp * this->FastMultiplicationStep) != this->Particles->GetHilbertSpaceDimension())
-    ++Tmp;
-  this->NbrInteractionPerComponent = new int [Tmp];
-  File.read((char*) this->NbrInteractionPerComponent, sizeof(int) * Tmp);
-  this->InteractionPerComponentIndex = new int* [Tmp];
-  this->InteractionPerComponentCoefficient = new double* [Tmp];
-  for (int i = 0; i < Tmp; ++i)
+  else
     {
-      this->InteractionPerComponentIndex[i] = new int [this->NbrInteractionPerComponent[i]];
-      File.read((char*) (this->InteractionPerComponentIndex[i]), sizeof(int) * this->NbrInteractionPerComponent[i]);	  
-    }
-  for (int i = 0; i < Tmp; ++i)
-    {
-      this->InteractionPerComponentCoefficient[i] = new double [this->NbrInteractionPerComponent[i]];
-      File.read((char*) (this->InteractionPerComponentCoefficient[i]), sizeof(double) * this->NbrInteractionPerComponent[i]);	  
+      long Tmp;
+      File.read((char*) &(Tmp), sizeof(long));
+      if (Tmp != this->Particles->GetLargeHilbertSpaceDimension())
+	{
+	  File.close();
+	  return false;
+	}
+      File.read((char*) &(this->FastMultiplicationLargeStep), sizeof(int));
+      Tmp /= this->FastMultiplicationLargeStep;
+      if ((Tmp * this->FastMultiplicationLargeStep) != this->Particles->GetLargeHilbertSpaceDimension())
+	++Tmp;
+      this->NbrInteractionPerComponent = new int [Tmp];
+      File.read((char*) this->NbrInteractionPerComponent, sizeof(int) * Tmp);
+      this->InteractionPerComponentLargeIndex = new long* [Tmp];
+      this->InteractionPerComponentCoefficient = new double* [Tmp];
+      for (long i = 0l; i < Tmp; ++i)
+	{
+	  this->InteractionPerComponentLargeIndex[i] = new long [this->NbrInteractionPerComponent[i]];
+	  File.read((char*) (this->InteractionPerComponentLargeIndex[i]), sizeof(int) * this->NbrInteractionPerComponent[i]);	  
+	}
+      for (long i = 0l; i < Tmp; ++i)
+	{
+	  this->InteractionPerComponentCoefficient[i] = new double [this->NbrInteractionPerComponent[i]];
+	  File.read((char*) (this->InteractionPerComponentCoefficient[i]), sizeof(double) * this->NbrInteractionPerComponent[i]);	  
+	}
     }
   File.close();
   this->FastMultiplicationFlag = true;

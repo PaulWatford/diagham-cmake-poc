@@ -127,12 +127,26 @@ int main(int argc, char** argv)
 	  if (ProjectorFlag == true)
 	    {
 	      ReadLittleEndian(File, AutomaticProjectorConstructionFlag);
-	      ReadLittleEndian(File, NbrProjectors);
-	      ReadLittleEndian(File, InitialNbrProjectors);
-	      if (ProjectorEigenvalues != 0)
+	      if (AutomaticProjectorConstructionFlag == true)
 		{
-		  for (int i = 0; i < NbrProjectors; ++i)
-		    ReadLittleEndian(File, ProjectorEigenvalues[i]);
+		  cout << "auto projector was used" << endl;
+		}
+	      else
+		{				
+		  cout << "auto projector was not used" << endl;
+		}
+	      ReadLittleEndian(File, NbrProjectors);
+	      cout << "nbr of projectors = " << NbrProjectors << endl;
+	      ReadLittleEndian(File, InitialNbrProjectors);
+	      cout << "initial nbr of projectors = " << InitialNbrProjectors << endl;
+	      if (NbrProjectors > InitialNbrProjectors)
+		{
+		  ProjectorEigenvalues = new double [NbrProjectors - InitialNbrProjectors];
+		    for (int i = 0; i < (NbrProjectors - InitialNbrProjectors); ++i)
+		    {
+		      ReadLittleEndian(File, ProjectorEigenvalues[i]);
+		      cout << "projector eigenvalue " << i << "  = " << ProjectorEigenvalues[i] << endl;
+		    }
 		}
 	    }
 
@@ -369,15 +383,29 @@ int main(int argc, char** argv)
       if (ProjectorFlag == true)
 	{
 	  ReadLittleEndian(File, AutomaticProjectorConstructionFlag);
-	  ReadLittleEndian(File, NbrProjectors);
-	  ReadLittleEndian(File, InitialNbrProjectors);
-	  if (ProjectorEigenvalues != 0)
+	  if (AutomaticProjectorConstructionFlag == true)
 	    {
-	      for (int i = 0; i < NbrProjectors; ++i)
-		ReadLittleEndian(File, ProjectorEigenvalues[i]);
+	      cout << "auto projector was used" << endl;
+	    }
+	  else
+	    {				
+	      cout << "auto projector was not used" << endl;
+	    }
+	  ReadLittleEndian(File, NbrProjectors);
+	  cout << "nbr of projectors = " << NbrProjectors << endl;
+	  ReadLittleEndian(File, InitialNbrProjectors);
+	  cout << "initial nbr of projectors = " << InitialNbrProjectors << endl;
+	  if (NbrProjectors > InitialNbrProjectors)
+	    {
+	      ProjectorEigenvalues = new double [NbrProjectors - InitialNbrProjectors];
+	      for (int i = 0; i < (NbrProjectors - InitialNbrProjectors); ++i)
+		{
+		  ReadLittleEndian(File, ProjectorEigenvalues[i]);
+		  cout << "projector eigenvalue " << i << "  = " << ProjectorEigenvalues[i] << endl;
+		}
 	    }
 	}
-
+      
       ReadLittleEndian(File, TmpDimension);
       TridiagonalizedMatrix.Resize(TmpDimension, TmpDimension);
       --TmpDimension;

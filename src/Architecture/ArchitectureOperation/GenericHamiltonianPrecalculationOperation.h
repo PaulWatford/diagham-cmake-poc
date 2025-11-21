@@ -70,6 +70,11 @@ class GenericHamiltonianPrecalculationOperation: public AbstractPrecalculationOp
   // return value = hilbert space dimension  
   int GetHilbertSpaceDimension ();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  long GetLargeHilbertSpaceDimension ();
+
   // clone operation
   //
   // return value = pointer to cloned operation
@@ -90,6 +95,15 @@ class GenericHamiltonianPrecalculationOperation: public AbstractPrecalculationOp
 inline int GenericHamiltonianPrecalculationOperation::GetHilbertSpaceDimension ()
 {
   return this->Hamiltonian->GetHilbertSpaceDimension();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension
+
+inline long GenericHamiltonianPrecalculationOperation::GetLargeHilbertSpaceDimension ()
+{
+  return this->Hamiltonian->GetLargeHilbertSpaceDimension();
 }
 
 #endif

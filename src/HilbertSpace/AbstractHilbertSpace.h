@@ -161,7 +161,7 @@ inline long AbstractHilbertSpace::GetLargeHilbertSpaceDimension()
 
 inline bool AbstractHilbertSpace::IsLargeHilbertSpace ()
 {
-  return !(this->LargeHilbertSpaceDimension != ((long) this->HilbertSpaceDimension));
+  return (this->LargeHilbertSpaceDimension != ((long) this->HilbertSpaceDimension));
 }
   
 // test that all states can be found

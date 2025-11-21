@@ -90,6 +90,11 @@ class VectorTensorMultiplicationCoreOperation: public AbstractPrecalculationOper
   // return value = hilbert space dimension  
   virtual int GetHilbertSpaceDimension ();
 
+  // get hilbert space dimension
+  // 
+  // return value = hilbert space dimension  
+  virtual long GetLargeHilbertSpaceDimension ();
+
   // clone operation
   //
   // return value = pointer to cloned operation
@@ -110,6 +115,15 @@ class VectorTensorMultiplicationCoreOperation: public AbstractPrecalculationOper
 inline int VectorTensorMultiplicationCoreOperation::GetHilbertSpaceDimension ()
 {
   return this->TensorHamiltonian->RightMatrices[this->TensorIndex].GetNbrRow();
+}
+
+// get hilbert space dimension
+// 
+// return value = hilbert space dimension  
+
+inline long VectorTensorMultiplicationCoreOperation::GetLargeHilbertSpaceDimension ()
+{
+  return ((long) this->GetHilbertSpaceDimension());
 }
 
 #endif

@@ -121,6 +121,15 @@ class ParticleOnSquareLatticeWithGenericSpinBandDensityOperator : public Abstrac
   // return value = corresponding matrix element
   Complex PartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent);
 
+  // evaluate part of the matrix element without complex conjugate for the left vector, within a given of indices
+  //
+  // V1 = vector to left multiply with current matrix
+  // V2 = vector to right multiply with current matrix
+  // firstComponent = index of the first component to evaluate
+  // nbrComponent = number of components to evaluate
+  // return value = corresponding matrix element
+  Complex ConjugatePartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent);
+
   // multiply a vector by the current operator for a given range of indices 
   // and store result in another vector
   //

@@ -175,6 +175,31 @@ Complex ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::PartialMatrix
   return Element;
 }
   
+// evaluate part of the matrix element without complex conjugate for the left vector, within a given of indices
+//
+// V1 = vector to left multiply with current matrix
+// V2 = vector to right multiply with current matrix
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = corresponding matrix element
+
+Complex ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::ConjugatePartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
+{
+  int Dim = (int) (firstComponent + nbrComponent);
+  int FullDim = this->Particle->GetHilbertSpaceDimension();
+  double Coefficient = 0.0;
+  Complex Element = 0.0;
+  for (int i = (int) firstComponent; i < Dim; ++i)
+    {
+      int Index = this->Particle->AdsigmaAsigma(i, this->Momentum1, this->Sigma1, this->Momentum2, this->Sigma2, Coefficient);
+      if (Index != FullDim)
+	{
+	  Element += V1[Index] * V2[i] * Coefficient;
+	}
+    }
+  return Element;
+}
+
 // multiply a vector by the current operator for a given range of indices 
 // and store result in another vector
 //

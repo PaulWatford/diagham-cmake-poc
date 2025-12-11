@@ -269,6 +269,17 @@ Complex AbstractOperator::MatrixElement (ComplexVector& V1, ComplexVector& V2)
   return this->PartialMatrixElement(V1, V2, 0l, V2.GetLargeVectorDimension());
 }
 
+// evaluate matrix element without complex conjugation for the left vector,
+//
+// V1 = vector to left multiply with current matrix
+// V2 = vector to right multiply with current matrix
+// return value = corresponding matrix element
+
+Complex AbstractOperator::ConjugateMatrixElement (ComplexVector& V1, ComplexVector& V2)
+{
+  return this->ConjugatePartialMatrixElement(V1, V2, 0l, V2.GetLargeVectorDimension());
+}
+
 // evaluate part of the matrix element, within a given of indices
 //
 // V1 = vector to left multiply with current matrix
@@ -279,6 +290,20 @@ Complex AbstractOperator::MatrixElement (ComplexVector& V1, ComplexVector& V2)
 
 Complex AbstractOperator::PartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
 {
+  return Complex();
+}
+
+// evaluate part of the matrix element without complex conjugation for the left vector, within a given of indices
+//
+// V1 = vector to left multiply with current matrix
+// V2 = vector to right multiply with current matrix
+// firstComponent = index of the first component to evaluate
+// nbrComponent = number of components to evaluate
+// return value = corresponding matrix element
+
+Complex AbstractOperator::ConjugatePartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
+{
+  cout << "using dummy method AbstractOperator::ConjugatePartialMatrixElement " << endl;
   return Complex();
 }
 

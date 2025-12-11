@@ -4,6 +4,7 @@
 #include "HilbertSpace/BosonOnTorusWithMagneticTranslationsShort.h"
 #include "HilbertSpace/FermionOnTorus.h"
 #include "HilbertSpace/FermionOnTorusWithMagneticTranslations.h"
+#include "HilbertSpace/FermionOnTorusWithMagneticTranslationsAndSublatticeConservation.h"
 #include "HilbertSpace/BosonOnT2xT2.h"
 #include "HilbertSpace/BosonOnT2xT2HardcoreNoNearestNeighbors.h"
 #include "HilbertSpace/BosonOnT2xS2.h"
@@ -77,6 +78,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "nbr-n4", "number of type 4 particles (only useful in su(4) mode)", 0);
   (*SystemGroup) += new BooleanOption  ('\n', "no-translation", "do not consider magnetic translation (only trivial translations along one axis)");
   (*SystemGroup) += new  BooleanOption ('\n', "no-sz", "assume that Sz is not conserved (only useful in su(2) mode)", 0);
+  (*SystemGroup) += new  BooleanOption ('\n', "use-sublattice", "use the sublattice quantum number (for pair hopping model)");
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "sublattice", "for even number of sites, fix the sublattice particle number sector (negative if none)", -1);
   (*SystemGroup) += new  BooleanOption ('\n', "t2xt2", "consider particles on the T2xT2 geometry");
   (*SystemGroup) += new SingleIntegerOption  ('\n', "nbrflux-2", "number of flux quanta for the second torus on the T2XT2 geometry", 20);
   (*SystemGroup) += new SingleIntegerOption ('\n', "kymomentum-2", "the total momentum along the y axis for the second torus when using the T2xT2 geometry", 0);  
@@ -559,7 +562,14 @@ int main(int argc, char** argv)
 		  }
 		else
 		  {
-		    Space = new FermionOnTorusWithMagneticTranslations (NbrParticles, NbrFluxQuanta, Kx, Ky);
+		    if (Manager.GetBoolean("use-sublattice") == true)
+		      {
+			Space = new FermionOnTorusWithMagneticTranslationsAndSublatticeConservation(NbrParticles, NbrFluxQuanta, Kx, Ky, Manager.GetInteger("sublattice"));
+		      }
+		    else
+		      {
+			Space = new FermionOnTorusWithMagneticTranslations (NbrParticles, NbrFluxQuanta, Kx, Ky);
+		      }
 		  }
 		if (Manager.GetString("state") == 0)
 		  {

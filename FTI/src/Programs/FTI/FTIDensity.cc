@@ -90,6 +90,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "show-time", "show time required for each operation");
   (*SystemGroup) += new SingleIntegerOption  ('s', "nbr-subbands", "number of subbands", 1);
   (*SystemGroup) += new BooleanOption ('\n', "decoupled", "assume that the FTI states are made of two decoupled FCI copies");
+  (*SystemGroup) += new BooleanOption ('\n', "time-reversal", "apply complex conjugation to the left state before computing expectation values");
   (*SystemGroup) += new BooleanOption  ('\n', "3d", "consider a 3d model instead of a 2d model");
   (*SystemGroup) += new BooleanOption  ('\n', "Wannier", "Wannier basis");
   (*SystemGroup) += new BooleanOption  ('\n', "rhorho", "also compute the density-density expectation values");
@@ -508,7 +509,14 @@ int main(int argc, char** argv)
 			{
 			  Spaces[TmpIndex] = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (TotalSpin + NbrParticles) >> 1, NbrSitesX, NbrSitesY, TotalKx[i], TotalKy[i]);
 			}
-		      sprintf (FileHeader, "# kx ky sigma <c^+ c>");
+		      if (Manager.GetBoolean("off-diagonal") == false)
+			{
+			  sprintf (FileHeader, "# kx ky sigma <c^+ c>");			  
+			}
+		      else
+			{
+			  sprintf (FileHeader, "# psi_i phi_j kx ky sigma <psi_i | c^+ c | phi_j>");
+			}
 		      NbrDensityIndices = 2 * NbrSitesX * NbrSitesY;
 		      NbrDensityPartialTraces = 2;
 		      PartialTraceLabels = new char* [NbrDensityPartialTraces];
@@ -914,6 +922,60 @@ int main(int argc, char** argv)
   else
     {
       // off diagonal case
+      if (Flag3d == false)
+	{
+	  if (NbrBands == 1)
+	    {
+	      for (int i = 0; i < NbrSpaces; ++i)
+		{
+		}
+	      cout << "Error, --off-diagonal is not implemented for a single band, no spin/valley Hilbert space" << endl;
+	      return 0;
+	    }
+	  else
+	    {
+	      if (NbrBands >= 2)
+		{
+		  for (int i = 0; i < NbrSpaces; ++i)
+		    {
+		      Complex TmpTotalDensity = 0.0;
+		      Complex* PartialTraces = new Complex[NbrDensityPartialTraces];
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  PartialTraces[j] = 0.0;
+			}
+		      int TmpIndex = (((TotalKx[i] * NbrSitesY) + TotalKy[i]) * NbrSiteZ) + TotalKz[i];
+		      for (int j = 0; j < NbrSpaces; ++j)
+			{
+			  for (int k = 0 ; k < NbrDensityIndices; ++k)
+			    {
+			      ParticleOnSquareLatticeWithGenericSpinBandDensityOperator TmpOperator ((ParticleOnSphereWithSpin*) Spaces[TmpIndex], CreationMomentumIndices[k], CreationSigmaIndices[k], AnnihilationMomentumIndices[k], AnnihilationSigmaIndices[k]);
+			      Complex TmpElement;
+			      if (Manager.GetBoolean("time-reversal") == false)
+				{
+				  TmpElement = TmpOperator.MatrixElement(GroundStates[i], GroundStates[j]);
+				}
+			      else
+				{
+				  TmpElement = TmpOperator.ConjugateMatrixElement(GroundStates[i], GroundStates[j]);
+				}
+			      if ((CreationSigmaIndices[k] == AnnihilationSigmaIndices[k]) && (CreationMomentumIndices[k] == AnnihilationMomentumIndices[k]) && (i == j))
+				{
+				  PartialTraces[CreationSigmaIndices[k]] += TmpElement;
+				  TmpTotalDensity += TmpElement;
+				}
+			      File << i << " " << j << " " << IndexLabels[k] << " " << TmpElement << endl;
+			    }
+			}
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  File << "# partial density " << PartialTraceLabels[j] << " = " << PartialTraces[j] << endl;
+			}
+		      File << "# total density = " << TmpTotalDensity << endl;
+		    }
+		}
+	    }
+	}
     }
   File.close();
 

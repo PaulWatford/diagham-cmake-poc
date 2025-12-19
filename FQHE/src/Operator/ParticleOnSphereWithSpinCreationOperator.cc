@@ -46,11 +46,12 @@ using std::endl;
 // index = index of the creation operator
 // spinindex = spin index of the creation operator
 
-ParticleOnSphereWithSpinCreationOperator::ParticleOnSphereWithSpinCreationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex)
+ParticleOnSphereWithSpinCreationOperator::ParticleOnSphereWithSpinCreationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex, bool generalizedIndex)
 {
   this->Particle= (ParticleOnSphereWithSpin*) (particle->Clone());
   this->OperatorIndex = index;
   this->SpinIndex = spinindex;
+  this->GeneralizedIndexFlag = generalizedIndex;
 }
 
 // copy constructor
@@ -122,17 +123,32 @@ Complex ParticleOnSphereWithSpinCreationOperator::PartialMatrixElement (RealVect
   double TmpCoefficient = 0.0;
   int TmpIndex ;
   int Dim = firstComponent + nbrComponent;
-  for (int i = firstComponent; i < Dim; ++i)
+  if (this->GeneralizedIndexFlag == true)
     {
-      TmpCoefficient = 0.0;
-      if (this->SpinIndex == 0) 
-        TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
-      else
-        TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
-
-      if (TmpIndex < V1.GetVectorDimension())
+      for (int i = firstComponent; i < Dim; ++i)
 	{
-	  Element += V1[TmpIndex] * V2[i] * TmpCoefficient;
+	  TmpCoefficient = 0.0;
+	  TmpIndex = this->Particle->Adsigma(i, this->OperatorIndex, this->SpinIndex, TmpCoefficient);
+	  if (TmpIndex < V1.GetVectorDimension())
+	    {
+	      Element += V1[TmpIndex] * V2[i] * TmpCoefficient;
+	    }
+	}
+    }
+  else
+    {
+      for (int i = firstComponent; i < Dim; ++i)
+	{
+	  TmpCoefficient = 0.0;
+	  if (this->SpinIndex == 0) 
+	    TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
+	  else
+	    TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < V1.GetVectorDimension())
+	    {
+	      Element += V1[TmpIndex] * V2[i] * TmpCoefficient;
+	    }
 	}
     }
   return Complex(Element);
@@ -148,22 +164,38 @@ Complex ParticleOnSphereWithSpinCreationOperator::PartialMatrixElement (RealVect
 // return value = reference on vector where result has been stored
 
 RealVector& ParticleOnSphereWithSpinCreationOperator::LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination, 
-								 int firstComponent, int nbrComponent)
+									  int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
   double TmpCoefficient = 0.0;
   int TmpIndex ;
-  for (int i = firstComponent; i < Last; ++i)
+  if (this->GeneralizedIndexFlag == true)
     {
-      TmpCoefficient = 0.0;
-      if (this->SpinIndex == 0)
-         TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
-      else
-         TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
-
-      if (TmpIndex < vDestination.GetVectorDimension())
+      for (int i = firstComponent; i < Last; ++i)
 	{
-	  vDestination[TmpIndex] += vSource[i] * TmpCoefficient;
+	  TmpCoefficient = 0.0;
+	  TmpIndex = this->Particle->Adsigma(i, this->OperatorIndex, this->SpinIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestination.GetVectorDimension())
+	    {
+	      vDestination[TmpIndex] += vSource[i] * TmpCoefficient;
+	    }
+	}
+    }
+  else
+    {
+      for (int i = firstComponent; i < Last; ++i)
+	{
+	  TmpCoefficient = 0.0;
+	  if (this->SpinIndex == 0)
+	    TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
+	  else
+	    TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestination.GetVectorDimension())
+	    {
+	      vDestination[TmpIndex] += vSource[i] * TmpCoefficient;
+	    }
 	}
     }
   return vDestination;
@@ -180,24 +212,42 @@ RealVector& ParticleOnSphereWithSpinCreationOperator::LowLevelAddMultiply(RealVe
 // return value = pointer to the array of vectors where result has been stored
 
 RealVector* ParticleOnSphereWithSpinCreationOperator::LowLevelMultipleAddMultiply(RealVector* vSources, RealVector* vDestinations, int nbrVectors, 
-									 int firstComponent, int nbrComponent)
+										  int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
   double TmpCoefficient = 0.0;
-  int TmpIndex ;
-  for (int i = firstComponent; i < Last; ++i)
+  int TmpIndex;
+  if (this->GeneralizedIndexFlag == true)
     {
-      TmpCoefficient = 0.0;
-      if (this->SpinIndex == 0)
-        TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
-      else
-        TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
-
-      if (TmpIndex < vDestinations[0].GetVectorDimension())
+      for (int i = firstComponent; i < Last; ++i)
 	{
-	  for (int k = 0; k < nbrVectors; ++k)
+	  TmpCoefficient = 0.0;
+	  TmpIndex = this->Particle->Adsigma(i, this->OperatorIndex, this->SpinIndex, TmpCoefficient);
+	  if (TmpIndex < vDestinations[0].GetVectorDimension())
 	    {
-	      vDestinations[k][TmpIndex] += vSources[k][i] * TmpCoefficient;
+	      for (int k = 0; k < nbrVectors; ++k)
+		{
+		  vDestinations[k][TmpIndex] += vSources[k][i] * TmpCoefficient;
+		}
+	    }
+	}
+    }
+  else
+    {
+      for (int i = firstComponent; i < Last; ++i)
+	{
+	  TmpCoefficient = 0.0;
+	  if (this->SpinIndex == 0)
+	    TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
+	  else
+	    TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestinations[0].GetVectorDimension())
+	    {
+	      for (int k = 0; k < nbrVectors; ++k)
+		{
+		  vDestinations[k][TmpIndex] += vSources[k][i] * TmpCoefficient;
+		}
 	    }
 	}
     }
@@ -219,17 +269,32 @@ Complex ParticleOnSphereWithSpinCreationOperator::PartialMatrixElement (ComplexV
   int Dim = firstComponent + nbrComponent;
   double TmpCoefficient = 0.0;
   int TmpIndex ;
-  for (int i = firstComponent; i < Dim; ++i)
+  if (this->GeneralizedIndexFlag == true)
     {
-      TmpCoefficient = 0.0;
-      if (this->SpinIndex == 0)
-         TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
-      else
-         TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
-
-      if (TmpIndex < V1.GetVectorDimension())
+      for (int i = firstComponent; i < Dim; ++i)
 	{
-	  Element += Conj(V1[TmpIndex]) * V2[i] * TmpCoefficient;
+	  TmpCoefficient = 0.0;
+	  TmpIndex = this->Particle->Adsigma(i, this->OperatorIndex, this->SpinIndex, TmpCoefficient);	  
+	  if (TmpIndex < V1.GetVectorDimension())
+	    {
+	      Element += Conj(V1[TmpIndex]) * V2[i] * TmpCoefficient;
+	    }
+	}
+    }
+  else
+    {
+      for (int i = firstComponent; i < Dim; ++i)
+	{
+	  TmpCoefficient = 0.0;
+	  if (this->SpinIndex == 0)
+	    TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
+	  else
+	    TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < V1.GetVectorDimension())
+	    {
+	      Element += Conj(V1[TmpIndex]) * V2[i] * TmpCoefficient;
+	    }
 	}
     }
   return Element;
@@ -245,22 +310,38 @@ Complex ParticleOnSphereWithSpinCreationOperator::PartialMatrixElement (ComplexV
 // return value = reference on vector where result has been stored
 
 ComplexVector& ParticleOnSphereWithSpinCreationOperator::LowLevelAddMultiply(ComplexVector& vSource, ComplexVector& vDestination, 
-								    int firstComponent, int nbrComponent)
+									     int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
   double TmpCoefficient = 0.0;
   int TmpIndex ;
-  for (int i = firstComponent; i < Last; ++i)
+  if (this->GeneralizedIndexFlag == true)
     {
-      TmpCoefficient = 0.0;
-      if (this->SpinIndex == 0)
-        TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
-      else
-        TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
-
-      if (TmpIndex < vDestination.GetVectorDimension())
+      for (int i = firstComponent; i < Last; ++i)
 	{
-	  vDestination[TmpIndex] += vSource[i] * TmpCoefficient;
+	  TmpCoefficient = 0.0;
+	  TmpIndex = this->Particle->Adsigma(i, this->OperatorIndex, this->SpinIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestination.GetVectorDimension())
+	    {
+	      vDestination[TmpIndex] += vSource[i] * TmpCoefficient;
+	    }
+	}
+    }
+  else
+    {
+      for (int i = firstComponent; i < Last; ++i)
+	{
+	  TmpCoefficient = 0.0;
+	  if (this->SpinIndex == 0)
+	    TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
+	  else
+	    TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestination.GetVectorDimension())
+	    {
+	      vDestination[TmpIndex] += vSource[i] * TmpCoefficient;
+	    }
 	}
     }
   return vDestination;
@@ -277,24 +358,43 @@ ComplexVector& ParticleOnSphereWithSpinCreationOperator::LowLevelAddMultiply(Com
 // return value = pointer to the array of vectors where result has been stored
 
 ComplexVector* ParticleOnSphereWithSpinCreationOperator::LowLevelMultipleAddMultiply(ComplexVector* vSources, ComplexVector* vDestinations, int nbrVectors, 
-									     int firstComponent, int nbrComponent)
+										     int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
   double TmpCoefficient = 0.0;
   int TmpIndex ;
-  for (int i = firstComponent; i < Last; ++i)
+  if (this->GeneralizedIndexFlag == true)
     {
-      TmpCoefficient = 0.0;
-      if (this->SpinIndex == 0)
-        TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
-      else
-        TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
- 
-      if (TmpIndex < vDestinations[0].GetVectorDimension())
+      for (int i = firstComponent; i < Last; ++i)
 	{
-	  for (int k = 0; k < nbrVectors; ++k)
+	  TmpCoefficient = 0.0;
+	  TmpIndex = this->Particle->Adsigma(i, this->OperatorIndex, this->SpinIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestinations[0].GetVectorDimension())
 	    {
-	      vDestinations[k][TmpIndex] += vSources[k][i] * TmpCoefficient;
+	      for (int k = 0; k < nbrVectors; ++k)
+		{
+		  vDestinations[k][TmpIndex] += vSources[k][i] * TmpCoefficient;
+		}
+	    }
+	}
+    }
+  else
+    {
+      for (int i = firstComponent; i < Last; ++i)
+	{
+	  TmpCoefficient = 0.0;
+	  if (this->SpinIndex == 0)
+	    TmpIndex = this->Particle->Adu(i, this->OperatorIndex, TmpCoefficient);
+	  else
+	    TmpIndex = this->Particle->Add(i, this->OperatorIndex, TmpCoefficient);
+	  
+	  if (TmpIndex < vDestinations[0].GetVectorDimension())
+	    {
+	      for (int k = 0; k < nbrVectors; ++k)
+		{
+		  vDestinations[k][TmpIndex] += vSources[k][i] * TmpCoefficient;
+		}
 	    }
 	}
     }

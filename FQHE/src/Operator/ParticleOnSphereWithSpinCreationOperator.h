@@ -56,6 +56,9 @@ class ParticleOnSphereWithSpinCreationOperator : public AbstractOperator
 
   // spin index of the creation operator
   int SpinIndex;
+
+  // if true, use SpinIndex as an index as a generic internal degree of freedom index
+  bool GeneralizedIndexFlag;
   
  public:
   
@@ -64,7 +67,8 @@ class ParticleOnSphereWithSpinCreationOperator : public AbstractOperator
   // particle = hilbert space associated to the particles
   // index = index of the creation operator
   // spinindex = spin index of the creation operator
-  ParticleOnSphereWithSpinCreationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex);
+  // generalizedIndex = if true, use spinindex as an index as a generic internal degree of freedom index
+  ParticleOnSphereWithSpinCreationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex, bool generalizedIndex = false);
 
   // copy constructor
   //

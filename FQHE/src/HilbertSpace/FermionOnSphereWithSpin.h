@@ -67,6 +67,8 @@ class FermionOnSphereWithSpin :  public ParticleOnSphereWithSpin
   friend class BosonOnSphereTwoLandauLevels;
   friend class BosonOnSphereShort;
   friend class BosonOnSphereWithSU2Spin;
+
+  friend class FermionOnSquareLatticeWithSU2SpinMomentumSpace;
   
  protected:
 
@@ -476,6 +478,15 @@ class FermionOnSphereWithSpin :  public ParticleOnSphereWithSpin
   // return value =  index of the resulting state 
   virtual int Add (int index, int n, double& coefficient);
 
+  // apply a^+_m_u  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index for creation operator
+  // sigma = internal degree of freedom label of the creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Adsigma (int index, int m, int sigma, double& coefficient);
+
   // apply a_m_u  operator to a given state. 
   //
   // index = index of the state on which the operator has to be applied
@@ -491,6 +502,15 @@ class FermionOnSphereWithSpin :  public ParticleOnSphereWithSpin
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value =  index of the resulting state 
   virtual int Ad (int index, int n, double& coefficient);
+
+  // apply a^+_m_u  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // n = index for annihilation operator
+  // sigma = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Asigma (int index, int n, int sigma, double& coefficient);
 
   // apply Prod_i a_ni operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next ProdA call
   //
@@ -1140,7 +1160,7 @@ inline int FermionOnSphereWithSpin::GenericAdA(int index, int m, int n, double& 
   if ((n > StateHighestBit) || ((State & (0x1ul << n)) == 0x0ul) )
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
   int NewLargestBit = StateHighestBit;
   coefficient = -this->SignLookUpTable[(State >> n) & this->SignLookUpTableMask[n]];
@@ -1157,7 +1177,7 @@ inline int FermionOnSphereWithSpin::GenericAdA(int index, int m, int n, double& 
   if ((State & (0x1ul << m)) != 0x0ul)
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
   if (m > NewLargestBit)
     {
@@ -1173,7 +1193,7 @@ inline int FermionOnSphereWithSpin::GenericAdA(int index, int m, int n, double& 
 #endif
     }
   State |= 0x1ul << m;
-  return this->FindStateIndex(State, NewLargestBit);
+  return this->TargetSpace->FindStateIndex(State, NewLargestBit);
 }
 
 // apply a^+_m1_s1 a_m2_s2 operator to a given state
@@ -1190,6 +1210,7 @@ inline int FermionOnSphereWithSpin::AdsigmaAsigma (int index, int m1, int sigma1
 {
   return this->GenericAdA(index, (m1 << 1) + sigma1, (m2 << 1) + sigma2, coefficient);
 }
+
 // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
 //
 // index = index of the state on which the operator has to be applied

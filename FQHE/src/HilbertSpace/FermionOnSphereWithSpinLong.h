@@ -586,7 +586,7 @@ inline int FermionOnSphereWithSpinLong::GenericAdA(int index, int m, int n, doub
   if ((State & (((ULONGLONG) 0x1ul) << m)) != ((ULONGLONG) 0x0ul))
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
   if (m > NewLargestBit)
     {
@@ -606,7 +606,7 @@ inline int FermionOnSphereWithSpinLong::GenericAdA(int index, int m, int n, doub
 #endif
     }
   State |= ((ULONGLONG) 0x1ul) << m;
-  return this->FindStateIndex(State, NewLargestBit);
+  return this->TargetSpace->FindStateIndex(State, NewLargestBit);
 }
 
 // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down

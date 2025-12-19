@@ -785,6 +785,7 @@ int ParticleOnSphereWithSpin::Adu (int m, double& coefficient, int& nbrTranslati
 
 int ParticleOnSphereWithSpin::Adu (int index, int m, double& coefficient)
 {
+  cout << "using dummy method ParticleOnSphereWithSpin::Adu" << endl;
   return this->HilbertSpaceDimension;
 }
 
@@ -797,6 +798,21 @@ int ParticleOnSphereWithSpin::Adu (int index, int m, double& coefficient)
 
 int ParticleOnSphereWithSpin::Add (int index, int m, double& coefficient)
 {
+  cout << "using dummy method ParticleOnSphereWithSpin::Add" << endl;
+  return this->HilbertSpaceDimension;
+}
+
+// apply a^+_m_u  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// m = index for creation operator
+// sigma = internal degree of freedom label of the creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int ParticleOnSphereWithSpin::Adsigma (int index, int m, int sigma, double& coefficient)
+{
+  cout << "using dummy method ParticleOnSphereWithSpin::Adsigma" << endl;
   return this->HilbertSpaceDimension;
 }
 
@@ -809,6 +825,7 @@ int ParticleOnSphereWithSpin::Add (int index, int m, double& coefficient)
 
 int ParticleOnSphereWithSpin::Au (int index, int m, double& coefficient)
 {
+  cout << "using dummy method ParticleOnSphereWithSpin::Au" << endl;
   return this->HilbertSpaceDimension;
 }
 
@@ -821,9 +838,24 @@ int ParticleOnSphereWithSpin::Au (int index, int m, double& coefficient)
 
 int ParticleOnSphereWithSpin::Ad (int index, int m, double& coefficient)
 {
+  cout << "using dummy method ParticleOnSphereWithSpin::Ad" << endl;
   return this->HilbertSpaceDimension;
 }
   
+// apply a_m_u operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// n = index for annihilation operator
+// sigma = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int ParticleOnSphereWithSpin::Asigma (int index, int n, int sigma, double& coefficient)
+{
+  cout << "using dummy method ParticleOnSphereWithSpin::Asigma" << endl;
+  return this->HilbertSpaceDimension;
+}
+
 // apply a_n1_sigma1 a_n2_sigma2 operator to a given state. Warning, the resulting state may not belong to the current Hilbert subspace. It will be keep in cache until next Ad*Ad* call. Sigma is 0 for up and 1 for down
 //
 // index = index of the state on which the operator has to be applied

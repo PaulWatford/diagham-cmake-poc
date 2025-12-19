@@ -120,6 +120,24 @@ class FermionOnSquareLatticeWithSU2SpinMomentumSpace : public FermionOnSquareLat
   // coefficient = reference on the double where the multiplicative factor has to be stored
   // return value = index of the destination state 
   virtual int AdsigmaAdsigma (int m1, int m2, int sigma1, int sigma2, double& coefficient);
+  
+  // apply a^+_m_u  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index for creation operator
+  // sigma = internal degree of freedom label of the creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Adsigma (int index, int m, int sigma, double& coefficient);
+  
+  // apply a_m_u  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // n = index for annihilation operator
+  // sigma = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Asigma (int index, int n, int sigma, double& coefficient);
 
   // evaluate Hilbert space dimension with a fixed number of bosons with spin up
   //
@@ -221,6 +239,72 @@ inline int FermionOnSquareLatticeWithSU2SpinMomentumSpace::AdsigmaAdsigma (int m
     }
   TmpState |= (0x1ul << m1);
   return this->FindStateIndex(TmpState, NewLzMax);
+}
+
+// apply a^+_m_u  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// m = index for creation operator
+// sigma = internal degree of freedom label of the creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+inline int FermionOnSquareLatticeWithSU2SpinMomentumSpace::Adsigma (int index, int m, int sigma, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  m <<= 1;
+  m += sigma;
+  if ((TmpState & (0x1ul << m)) != 0x0ul)
+    return this->TargetSpace->GetHilbertSpaceDimension();
+  coefficient = 1.0;
+  int NewLzMax = this->StateHighestBit[index];  
+  if (m > NewLzMax)
+    NewLzMax = m;
+  else
+    {
+      coefficient *= this->SignLookUpTable[(TmpState >> m) & this->SignLookUpTableMask[m]];
+      coefficient *= this->SignLookUpTable[(TmpState >> (m + 16)) & this->SignLookUpTableMask[m + 16]];
+#ifdef  __64_BITS__
+      coefficient *= this->SignLookUpTable[(TmpState >> (m + 32)) & this->SignLookUpTableMask[m + 32]];
+      coefficient *= this->SignLookUpTable[(TmpState >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
+#endif
+    }
+  TmpState |= (0x1ul << m);
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
+}
+  
+// apply a_m_u  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// n = index for annihilation operator
+// sigma = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+inline int FermionOnSquareLatticeWithSU2SpinMomentumSpace::Asigma (int index, int n, int sigma, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  n <<= 1;
+  n += sigma;
+  if ((TmpState & (0x1ul << n)) == 0x0ul)
+    return this->TargetSpace->GetHilbertSpaceDimension();
+  this->ProdALzMax = this->StateHighestBit[index];
+  coefficient = this->SignLookUpTable[(TmpState >> n) & this->SignLookUpTableMask[n]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 16)) & this->SignLookUpTableMask[n + 16]];
+#ifdef  __64_BITS__
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
+#endif
+  TmpState &= ~(0x1ul << n);
+  int NewLzMax = this->StateHighestBit[index];
+  if (TmpState != 0x0ul)
+    {
+      while ((TmpState >> NewLzMax) == 0)
+	--NewLzMax;
+    }
+  else
+    NewLzMax = 0;
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
 }
 
 #endif

@@ -1476,6 +1476,38 @@ int FermionOnSphereWithSpin::Add (int index, int m, double& coefficient)
   return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
 }
 
+// apply a^+_m_u  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// m = index for creation operator
+// sigma = internal degree of freedom label of the creation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int FermionOnSphereWithSpin::Adsigma (int index, int m, int sigma, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  m <<= 1;
+  m += 1 - sigma;
+  if ((TmpState & (0x1ul << m)) != 0x0ul)
+    return this->TargetSpace->HilbertSpaceDimension;
+  coefficient = 1.0;
+  int NewLzMax = this->StateHighestBit[index];  
+  if (m > NewLzMax)
+    NewLzMax = m;
+  else
+    {
+      coefficient *= this->SignLookUpTable[(TmpState >> m) & this->SignLookUpTableMask[m]];
+      coefficient *= this->SignLookUpTable[(TmpState >> (m + 16)) & this->SignLookUpTableMask[m + 16]];
+#ifdef  __64_BITS__
+      coefficient *= this->SignLookUpTable[(TmpState >> (m + 32)) & this->SignLookUpTableMask[m + 32]];
+      coefficient *= this->SignLookUpTable[(TmpState >> (m + 48)) & this->SignLookUpTableMask[m + 48]];
+#endif
+    }
+  TmpState |= (0x1ul << m);
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
+}
+
 // apply a_n_d operator to a state, assuming a different target space
 //
 // index = index of the state on which the operator has to be applied
@@ -1540,6 +1572,40 @@ int FermionOnSphereWithSpin::Au (int index, int n, double& coefficient)
   else
     NewLzMax = 0;
 
+  return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
+}
+
+// apply a_m_u  operator to a given state. 
+//
+// index = index of the state on which the operator has to be applied
+// n = index for annihilation operator
+// sigma = internal degree of freedom label of the annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// return value =  index of the resulting state 
+
+int FermionOnSphereWithSpin::Asigma (int index, int n, int sigma, double& coefficient)
+{
+  unsigned long TmpState = this->StateDescription[index];
+  n <<= 1;
+  n += 1 - sigma;
+  if ((TmpState & (0x1ul << n)) == 0x0ul)
+    return this->TargetSpace->HilbertSpaceDimension;
+  this->ProdALzMax = this->StateHighestBit[index];
+  coefficient = this->SignLookUpTable[(TmpState >> n) & this->SignLookUpTableMask[n]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 16)) & this->SignLookUpTableMask[n + 16]];
+#ifdef  __64_BITS__
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 32)) & this->SignLookUpTableMask[n + 32]];
+  coefficient *= this->SignLookUpTable[(TmpState >> (n + 48)) & this->SignLookUpTableMask[n + 48]];
+#endif
+  TmpState &= ~(0x1ul << n);
+  int NewLzMax = this->StateHighestBit[index];
+  if (TmpState != 0x0ul)
+    {
+      while ((TmpState >> NewLzMax) == 0)
+	--NewLzMax;
+    }
+  else
+    NewLzMax = 0;
   return this->TargetSpace->FindStateIndex(TmpState, NewLzMax);
 }
 

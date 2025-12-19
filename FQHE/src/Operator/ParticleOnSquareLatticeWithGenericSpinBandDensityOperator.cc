@@ -110,7 +110,7 @@ int ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::GetHilbertSpaceDi
 Complex ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::PartialMatrixElement (RealVector& V1, RealVector& V2, long firstComponent, long nbrComponent)
 {
   int Dim = (int) (firstComponent + nbrComponent);
-  int FullDim = this->Particle->GetHilbertSpaceDimension();
+  int FullDim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   double Element = 0.0;
   for (int i = (int) firstComponent; i < Dim; ++i)
@@ -137,7 +137,7 @@ RealVector& ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::LowLevelA
 											   int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
-  int Dim = this->Particle->GetHilbertSpaceDimension();
+  int Dim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   for (int i = firstComponent; i < Last; ++i)
     {
@@ -161,7 +161,7 @@ RealVector& ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::LowLevelA
 Complex ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::PartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
 {
   int Dim = (int) (firstComponent + nbrComponent);
-  int FullDim = this->Particle->GetHilbertSpaceDimension();
+  int FullDim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   Complex Element = 0.0;
   for (int i = (int) firstComponent; i < Dim; ++i)
@@ -186,7 +186,7 @@ Complex ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::PartialMatrix
 Complex ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::ConjugatePartialMatrixElement (ComplexVector& V1, ComplexVector& V2, long firstComponent, long nbrComponent)
 {
   int Dim = (int) (firstComponent + nbrComponent);
-  int FullDim = this->Particle->GetHilbertSpaceDimension();
+  int FullDim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   Complex Element = 0.0;
   for (int i = (int) firstComponent; i < Dim; ++i)
@@ -213,7 +213,7 @@ ComplexVector& ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::LowLev
 											      int firstComponent, int nbrComponent)
 {
   int Last = firstComponent + nbrComponent;;
-  int Dim = this->Particle->GetHilbertSpaceDimension();
+  int Dim = this->Particle->GetTargetHilbertSpaceDimension();
   double Coefficient = 0.0;
   for (int i = firstComponent; i < Last; ++i)
     {

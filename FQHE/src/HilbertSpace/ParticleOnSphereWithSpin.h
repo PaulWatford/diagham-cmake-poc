@@ -630,6 +630,24 @@ class ParticleOnSphereWithSpin :  public ParticleOnSphere
   // return value =  index of the resulting state 
   virtual int Add (int index, int m, double& coefficient);
 
+  // apply a^+_m_u  operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index for creation operator
+  // sigma = internal degree of freedom label of the creation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Adsigma (int index, int m, int sigma, double& coefficient);
+
+  // apply a_m_u operator to a given state. 
+  //
+  // index = index of the state on which the operator has to be applied
+  // n = index for annihilation operator
+  // sigma = internal degree of freedom label of the annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // return value =  index of the resulting state 
+  virtual int Asigma (int index, int n, int sigma, double& coefficient);
+
   // apply a^_m_u  operator to a given state. 
   //
   // index = index of the state on which the operator has to be applied

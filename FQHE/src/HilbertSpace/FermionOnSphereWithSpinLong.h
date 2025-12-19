@@ -565,7 +565,7 @@ inline int FermionOnSphereWithSpinLong::GenericAdA(int index, int m, int n, doub
   if ((n > StateHighestBit) || ((State & (((ULONGLONG) 0x1ul) << n)) == ((ULONGLONG) 0x0ul)) )
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
   int NewLargestBit = StateHighestBit;
   coefficient = -this->SignLookUpTable[(State >> n) & this->SignLookUpTableMask[n]];

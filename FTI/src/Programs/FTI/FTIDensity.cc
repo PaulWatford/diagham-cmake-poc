@@ -139,6 +139,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "show-time", "show time required for each operation");
   (*SystemGroup) += new SingleIntegerOption  ('s', "nbr-subbands", "number of subbands", 1);
   (*SystemGroup) += new BooleanOption ('\n', "decoupled", "assume that the FTI states are made of two decoupled FCI copies");
+  (*SystemGroup) += new SingleIntegerOption  ('\n', "sigma", "in decoupled mode, only compute in a given spin/sigma sector if non-negative", -1);
   (*SystemGroup) += new BooleanOption ('\n', "time-reversal", "apply complex conjugation to the left state before computing expectation values");
   (*SystemGroup) += new BooleanOption  ('\n', "3d", "consider a 3d model instead of a 2d model");
   (*SystemGroup) += new BooleanOption  ('\n', "Wannier", "Wannier basis");
@@ -190,6 +191,7 @@ int main(int argc, char** argv)
   int MinBand1 = 0;
   int MinBand2 = 0;
   int MinBand3 = 0;
+  int SelectSigmaSector = Manager.GetInteger("sigma");
   bool Statistics = true;
   double* Coefficients = 0;
   bool ShowTimeFlag = Manager.GetBoolean("show-time");
@@ -564,13 +566,20 @@ int main(int argc, char** argv)
 			{
 			  sprintf (FileHeader, "# psi_i phi_j kx1 ky1 kx2 ky2 sigma <psi_i | c^+_{kx1,ky1} c_{kx2,ky2} | phi_j>");
 			}
+		      int MinSigma = 0;
+		      int MaxSigma = 1;		      
+		      if ((SelectSigmaSector >= 0) && (SelectSigmaSector < 2))
+			{
+			  MinSigma = SelectSigmaSector;
+			  MaxSigma = SelectSigmaSector;
+			}
 		      NbrDensityIndices = 2 * NbrSitesX * NbrSitesY;
 		      NbrDensityPartialTraces = 2;
 		      PartialTraceLabels = new char* [NbrDensityPartialTraces];
 		      for (int i = 0; i < NbrDensityPartialTraces; ++i)
 			{
 			  PartialTraceLabels[i] = new char [256];
-			  sprintf(PartialTraceLabels[i], "sigma=%d", i);
+			  sprintf(PartialTraceLabels[i], "sigma=%d", MinSigma + i);
 			}
 		      CreationMomentumIndices = new int[NbrDensityIndices];
 		      AnnihilationMomentumIndices = new int[NbrDensityIndices];
@@ -582,7 +591,7 @@ int main(int argc, char** argv)
 			{	
 			  for (int ky = 0; ky < NbrSitesY; ++ky)
 			    {
-			      for (int i = 0; i <= 1; ++i)
+			      for (int i = MinSigma; i <= MaxSigma; ++i)
 				{
 				  CreationMomentumIndices[NbrDensityIndices] = ((kx * NbrSitesY) + ky);
 				  AnnihilationMomentumIndices[NbrDensityIndices] = ((kx * NbrSitesY) + ky);

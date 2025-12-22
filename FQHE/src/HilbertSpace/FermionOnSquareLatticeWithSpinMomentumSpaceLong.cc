@@ -98,6 +98,7 @@ FermionOnSquareLatticeWithSpinMomentumSpaceLong::FermionOnSquareLatticeWithSpinM
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
+      this->TargetSpace = this;
       this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
       this->StateHighestBit = new int [this->HilbertSpaceDimension];  
       this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
@@ -162,6 +163,7 @@ FermionOnSquareLatticeWithSpinMomentumSpaceLong::FermionOnSquareLatticeWithSpinM
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
+      this->TargetSpace = this;
       this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
       this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->NbrFermionsUp, 0l);
@@ -227,6 +229,10 @@ FermionOnSquareLatticeWithSpinMomentumSpaceLong::FermionOnSquareLatticeWithSpinM
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
 }
 
 // destructor
@@ -270,6 +276,10 @@ FermionOnSquareLatticeWithSpinMomentumSpaceLong& FermionOnSquareLatticeWithSpinM
   this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
   this->LookUpTableShift = fermions.LookUpTableShift;
   this->LookUpTable = fermions.LookUpTable;  
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
   return *this;
 }
 

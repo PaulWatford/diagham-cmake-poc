@@ -56,6 +56,8 @@
 #include "Operator/ParticleOnSquareLatticeWithGenericSpinBandDensityOperator.h"
 #include "Operator/ParticleOnSquareLatticeWithGenericSpinBandDensityDensityOperator.h"
 
+#include "Architecture/ArchitectureOperation/OperatorMatrixElementOperation.h"
+
 #include <iostream>
 #include <cstring>
 #include <stdlib.h>
@@ -901,7 +903,10 @@ int main(int argc, char** argv)
 				  Complex TmpElement;
 				  if (Manager.GetBoolean("time-reversal") == false)
 				    {
-				      TmpElement = TmpOperator.MatrixElement(RightGroundStates[j], RightGroundStates[i]);
+				      OperatorMatrixElementOperation TmpOperation (&TmpOperator, RightGroundStates[j], RightGroundStates[i]);
+				      TmpOperation.ApplyOperation(Architecture.GetArchitecture());
+				      TmpElement = TmpOperation.GetScalar();
+					//				      TmpElement = TmpOperator.MatrixElement(RightGroundStates[j], RightGroundStates[i]);
 				    }
 				  else
 				    {

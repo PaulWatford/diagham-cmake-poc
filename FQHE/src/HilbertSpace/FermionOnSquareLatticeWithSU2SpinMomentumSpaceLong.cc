@@ -111,6 +111,7 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong::FermionOnSquareLatticeWithSU
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
+      this->TargetSpace = this;
       this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
       this->StateHighestBit = new int [this->HilbertSpaceDimension];  
       gettimeofday (&(TotalStartingTime), 0);
@@ -187,6 +188,7 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong::FermionOnSquareLatticeWithSU
   if ( this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
+      this->TargetSpace = this;
       this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
       this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
       gettimeofday (&(TotalStartingTime), 0);
@@ -257,6 +259,10 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong::FermionOnSquareLatticeWithSU
   this->SignLookUpTable = fermions.SignLookUpTable;
   this->SignLookUpTableMask = fermions.SignLookUpTableMask;
   this->MaximumSignLookUp = fermions.MaximumSignLookUp;
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
 }
 
 // destructor
@@ -300,6 +306,10 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong& FermionOnSquareLatticeWithSU
   this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
   this->LookUpTableShift = fermions.LookUpTableShift;
   this->LookUpTable = fermions.LookUpTable;  
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
   return *this;
 }
 

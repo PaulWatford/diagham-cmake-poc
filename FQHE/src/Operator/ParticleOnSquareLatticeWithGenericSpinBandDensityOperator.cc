@@ -49,7 +49,7 @@ using std::endl;
 
 ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::ParticleOnSquareLatticeWithGenericSpinBandDensityOperator(ParticleOnSphereWithSpin* particle, int m1, int sigma1, int m2, int sigma2)
 {
-  this->Particle = particle;
+  this->Particle = (ParticleOnSphereWithSpin*) particle->Clone();
   this->Momentum1 = m1;
   this->Sigma1 = sigma1;
   this->Momentum2 = m2;
@@ -61,6 +61,7 @@ ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::ParticleOnSquareLatti
 
 ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::~ParticleOnSquareLatticeWithGenericSpinBandDensityOperator()
 {
+  delete this->Particle;
 }
   
 // clone operator without duplicating data
@@ -69,7 +70,7 @@ ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::~ParticleOnSquareLatt
 
 AbstractOperator* ParticleOnSquareLatticeWithGenericSpinBandDensityOperator::Clone ()
 {
-  return 0;
+  return new ParticleOnSquareLatticeWithGenericSpinBandDensityOperator(this->Particle, this->Momentum1, this->Sigma1, this->Momentum2, this->Sigma2);
 }
 
 // set Hilbert space

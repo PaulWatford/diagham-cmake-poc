@@ -44,6 +44,8 @@ OperatorMatrixElementOperation::OperatorMatrixElementOperation(AbstractOperator*
 {
   this->RealLeftVector = leftVector;
   this->RealRightVector = rightVector;
+  this->ComplexLeftVector = ComplexVector();
+  this->ComplexRightVector = ComplexVector();
   this->Operator = oper->Clone();
   this->OperationType = AbstractArchitectureOperation::OperatorMatrixElement;  
   this->FirstComponent = 0;
@@ -68,14 +70,16 @@ OperatorMatrixElementOperation::OperatorMatrixElementOperation(AbstractOperator*
 
 OperatorMatrixElementOperation::OperatorMatrixElementOperation(AbstractOperator* oper, ComplexVector& leftVector, ComplexVector& rightVector, long nbrComponents)
 {
+  this->RealLeftVector = RealVector();
+  this->RealRightVector = RealVector();
   this->ComplexLeftVector = leftVector;
   this->ComplexRightVector = rightVector;
   this->Operator = oper->Clone();
   this->OperationType = AbstractArchitectureOperation::OperatorMatrixElement;
   this->FirstComponent = 0;
-  this->NbrComponent = leftVector.GetVectorDimension();
+  this->NbrComponent = rightVector.GetVectorDimension();
   this->LargeFirstComponent = 0l;
-  this->LargeNbrComponent = leftVector.GetLargeVectorDimension();
+  this->LargeNbrComponent = rightVector.GetLargeVectorDimension();
   if (nbrComponents > 0)
     {
       this->LargeNbrComponent = nbrComponents;

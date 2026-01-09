@@ -36,7 +36,6 @@
 #include "GeneralTools/List.h"
 #include "GeneralTools/GarbageFlag.h"
 
-
 class ComplexVector;
 class RealVector;
 class Vector;

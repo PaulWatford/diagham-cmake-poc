@@ -81,6 +81,8 @@ void QHEParticlePrecalculationOperation::SetIndicesRange (const int& firstCompon
 {
   this->FirstComponent = firstComponent;
   this->NbrComponent = nbrComponent;
+  this->LargeFirstComponent = (long) firstComponent;
+  this->LargeNbrComponent = (long) nbrComponent;
 }
 
 // set range of indices
@@ -92,6 +94,9 @@ void QHEParticlePrecalculationOperation::SetIndicesRange (const long& firstCompo
 {
   this->LargeFirstComponent = firstComponent;
   this->LargeNbrComponent = nbrComponent;
+  /// for compatibility with MPI mode and non large Hilbert spaces
+  this->FirstComponent = (int) firstComponent;
+  this->NbrComponent = (int) nbrComponent;
 }
 
 // clone operation

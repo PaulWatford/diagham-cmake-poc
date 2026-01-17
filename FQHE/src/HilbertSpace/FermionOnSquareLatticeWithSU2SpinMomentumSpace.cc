@@ -99,12 +99,12 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
   gettimeofday (&(TotalEndingTime), 0);
   double Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
 	       ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));                   
-  cout << "Hilbert space dimension computed in " << Dt << "s" << endl;
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+  cout << "Hilbert space dimension (" << this->LargeHilbertSpaceDimension << ") computed in " << Dt << "s" << endl;
+  if (this->LargeHilbertSpaceDimension >= (1l << 31))
     this->HilbertSpaceDimension = 0;
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
-  if ( this->LargeHilbertSpaceDimension > 0l)
+  if (this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
       this->TargetSpace = this;
@@ -183,8 +183,8 @@ FermionOnSquareLatticeWithSU2SpinMomentumSpace::FermionOnSquareLatticeWithSU2Spi
   gettimeofday (&(TotalEndingTime), 0);
   double Dt = ((double) (TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
 	       ((TotalEndingTime.tv_usec - TotalStartingTime.tv_usec) / 1000000.0));                   
-  cout << "Hilbert space dimension computed in " << Dt << "s" << endl;
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+  cout << "Hilbert space dimension (" << this->LargeHilbertSpaceDimension << ") computed in " << Dt << "s" << endl;
+  if (this->LargeHilbertSpaceDimension >= (1l << 31))
     this->HilbertSpaceDimension = 0;
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;

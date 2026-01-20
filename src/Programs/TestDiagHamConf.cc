@@ -72,6 +72,11 @@ int main()
   cout <<"__MPI__ defined"<<endl;
 #endif
 
+// MPI flag
+#ifdef  __MPI_NOBROADCAST__
+  cout <<" __MPI_NOBROADCAST__ defined"<<endl;
+#endif
+
 
 // LAPACK flag
 #ifdef HAVE_LAPACK

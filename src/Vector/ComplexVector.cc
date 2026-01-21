@@ -343,9 +343,15 @@ ComplexVector::ComplexVector(const MPI_Comm& communicator, int id, bool broadcas
 	{
 	  MPI_Status TmpMPIStatus;
 	  if (broadcast == true)
-	    MPI_Bcast(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, communicator);      
+	    {
+	      this->BroadcastVectorComponents(this->Components, this->Dimension, id, communicator);
+	      //			  MPI_Bcast(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, communicator);
+	    }
 	  else
-	    MPI_Recv(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);   
+	    {
+	      this->ReceiveVectorComponents(this->Components, this->Dimension, id, communicator, &TmpMPIStatus);
+	      //	      MPI_Recv(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus);
+	    }
 	}
     }
   this->TrueDimension = this->Dimension;
@@ -3077,7 +3083,8 @@ Vector& ComplexVector::SendVector(const MPI_Comm& communicator, int id)
   MPI_Recv(&Acknowledge, 1, MPI_INT, id, 1, communicator, &TmpMPIStatus);
   if (Acknowledge != 0)
     return *this;
-  MPI_Send(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator); 
+  this->SendVectorComponents(this->Components, this->Dimension, id, communicator);
+  //  MPI_Send(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator); 
   return *this;
 }
 
@@ -3136,11 +3143,13 @@ Vector& ComplexVector::BroadcastVector(const MPI_Comm& communicator,  int id)
     {
       if (id != i)
 	{
-	  MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
+	  this->SendVectorComponents(this->Components, this->Dimension, i, communicator);
+	  //	  MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
 	}
     }  
 #else
-   MPI_Bcast(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, communicator); 
+   this->BroadcastVectorComponents(this->Components, this->Dimension, id, communicator);
+   //   MPI_Bcast(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, communicator); 
 #endif
   return *this;
 }
@@ -3197,7 +3206,8 @@ Vector& ComplexVector::BroadcastPartialVector(const MPI_Comm& communicator, int 
     {
       this->Resize(TmpDimension);      
     }
-  MPI_Bcast(this->Components + firstComponent, 2 * nbrComponent, MPI_DOUBLE, id, communicator); 
+  this->BroadcastVectorComponents(this->Components + firstComponent, nbrComponent, id, communicator);
+  //  MPI_Bcast(this->Components + firstComponent, 2 * nbrComponent, MPI_DOUBLE, id, communicator); 
   return *this;
 }
 
@@ -3229,7 +3239,8 @@ Vector& ComplexVector::ReceiveVector(const MPI_Comm& communicator, int id)
       TmpDimension = 0;
       MPI_Send(&TmpDimension, 1, MPI_INT, id, 1, communicator);
     }
-  MPI_Recv(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus); 
+  this->ReceiveVectorComponents(this->Components, this->Dimension, id, communicator, &TmpMPIStatus);
+  //MPI_Recv(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator, &TmpMPIStatus); 
   return *this;
 }
 
@@ -3317,7 +3328,8 @@ Vector& ComplexVector::ReassembleVector(const MPI_Comm& communicator, int id)
 	      TmpArray[0] = 0;
 	      TmpArray[1] = 0;
 	      MPI_Recv(TmpArray, 2, MPI_INT, i, 1, communicator, &TmpMPIStatus);      	    
-	      MPI_Recv(this->Components + TmpArray[0], 2 * TmpArray[1], MPI_DOUBLE, i, 1, communicator, &TmpMPIStatus);   	    
+	      this->ReceiveVectorComponents(this->Components + TmpArray[0], TmpArray[1], i, communicator, &TmpMPIStatus);
+	      //	      MPI_Recv(this->Components + TmpArray[0], 2 * TmpArray[1], MPI_DOUBLE, i, 1, communicator, &TmpMPIStatus);   	    
 	    }
 	}
     }
@@ -3327,7 +3339,8 @@ Vector& ComplexVector::ReassembleVector(const MPI_Comm& communicator, int id)
       TmpArray[0] = 0;
       TmpArray[1] = this->Dimension;
       MPI_Send(TmpArray, 2, MPI_INT, id, 1, communicator);
-      MPI_Send(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator);  
+      this->SendVectorComponents(this->Components, this->Dimension, id, communicator);
+      //      MPI_Send(this->Components, 2 * this->Dimension, MPI_DOUBLE, id, 1, communicator);  
     }
   return *this;
 }
@@ -3358,12 +3371,14 @@ Vector* ComplexVector::BroadcastClone(const MPI_Comm& communicator, int id)
 	  if (id != i)
 	    {
 	      MPI_Send(TmpArray, 3, MPI_INT, i, 1, communicator);  
-	      MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
+	      //	      MPI_Send(this->Components, 2l * this->Dimension, MPI_DOUBLE, i, 1, communicator);  
+	      this->SendVectorComponents(this->Components, this->Dimension, i, communicator);
 	    }
 	}  
 #else      
       MPI_Bcast(TmpArray, 3, MPI_INT, id, communicator);
-      MPI_Bcast(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, communicator);
+      this->BroadcastVectorComponents(this->Components, this->Dimension, id, communicator);
+  //      MPI_Bcast(this->Components, 2l * this->Dimension, MPI_DOUBLE, id, communicator);
 #endif      
     }
   else
@@ -3393,7 +3408,8 @@ Vector& ComplexVector::SendPartialClone(const MPI_Comm& communicator, int id, in
   TmpArray[3] = firstComponent;
   TmpArray[4] = this->Dimension;
   MPI_Send(TmpArray, 5, MPI_INT, id, 1, communicator); 
-  MPI_Send(this->Components + firstComponent, 2 * nbrComponent, MPI_DOUBLE, id, 1, communicator); 
+  //  MPI_Send(this->Components + firstComponent, 2 * nbrComponent, MPI_DOUBLE, id, 1, communicator); 
+  this->SendVectorComponents(this->Components + firstComponent, nbrComponent, id, communicator);
 
   return *this;
 }

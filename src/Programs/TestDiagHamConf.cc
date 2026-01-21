@@ -50,7 +50,7 @@ int main()
 #endif
 
 // machine precision
-  cout <<"MACHINE_PRECISION 1e-14 defined"<<endl;
+  cout <<"MACHINE_PRECISION " << MACHINE_PRECISION << " defined"<<endl;
 
 // SMP flag
 #ifdef __SMP__
@@ -72,9 +72,15 @@ int main()
   cout <<"__MPI__ defined"<<endl;
 #endif
 
-// MPI flag
+// MPI no broadcast flag
 #ifdef  __MPI_NOBROADCAST__
   cout <<" __MPI_NOBROADCAST__ defined"<<endl;
+#endif
+
+// MPI buffer maximum size
+#ifdef  HAVE_MPI
+  cout <<" MPI_MAXIMUM_DOUBLE_BUFFER " <<  MPI_MAXIMUM_DOUBLE_BUFFER << endl;
+  cout <<" MPI_MAXIMUM_COMPLEX_BUFFER " <<  MPI_MAXIMUM_COMPLEX_BUFFER << endl;
 #endif
 
 

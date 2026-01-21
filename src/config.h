@@ -64,7 +64,14 @@
 
 // avoid broadcast calls in MPI for large arrays
 #ifdef HAVE_MPI
-//#define __MPI_NOBROADCAST__
+#define __MPI_NOBROADCAST__
+#endif
+
+// maximum buffer size when sending/receiving/broadcasting arrays of double or comples numbers
+#ifdef HAVE_MPI
+#define MPI_MAXIMUM_DOUBLE_BUFFER (1l << 30)
+// for complex, the number of elements is given as the number of double numbers 
+#define MPI_MAXIMUM_COMPLEX_BUFFER (1l << 30)
 #endif
 
 // LAPACK flag

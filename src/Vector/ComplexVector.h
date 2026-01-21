@@ -966,6 +966,31 @@ class ComplexVector : public Vector
   // return value = pointer to new vector 
   Vector* BroadcastEmptyClone(const MPI_Comm& communicator, int id, bool zeroFlag = false);
 
+  // send only the vector components to a given MPI process
+  // 
+  // components = pointer to the components
+  // dimension = number of components to send
+  // id = id of the MPI process to which the components are sent
+  // communicator = reference on the communicator to use 
+  void SendVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator);
+  
+  // receive only the vector components from a given MPI process
+  // 
+  // components = pointer to the components
+  // dimension = number of components to receive
+  // id = id of the MPI process sending the components
+  // communicator = reference on the communicator to use 
+  // mPIStatus = pointer to the MPI status
+  void ReceiveVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator, MPI_Status* mPIStatus);
+
+  // broadcast only the vector components to a given MPI process
+  // 
+  // components = pointer to the components
+  // dimension = number of components to send
+  // id = id of the MPI process which broadcasts or sends the vector components
+  // communicator = reference on the communicator to use 
+  void BroadcastVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator);
+
 #endif
 
 };
@@ -1036,6 +1061,82 @@ inline ostream& ComplexVector::PrintComponent(ostream& str, long index)
   return str;
 }
 
+#ifdef __MPI__
+
+// send only the vector components to a given MPI process
+// 
+// components = pointer to the components
+// dimension = number of components to send
+// id = id of the MPI process to which the components are sent
+// communicator = reference on the communicator to use 
+
+inline void ComplexVector::SendVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator)
+{
+  //  MPI_Send(components, 2l * dimension, MPI_DOUBLE, id, 1, communicator);
+  long TmpDimension = 2l * dimension;
+  long TmpIndex = 0l;
+  while (TmpDimension > MPI_MAXIMUM_COMPLEX_BUFFER)
+    {
+      MPI_Send(components + TmpIndex, MPI_MAXIMUM_COMPLEX_BUFFER, MPI_DOUBLE, id, 1, communicator);
+      TmpIndex += (MPI_MAXIMUM_COMPLEX_BUFFER >> 1);
+      TmpDimension -= MPI_MAXIMUM_COMPLEX_BUFFER;
+    }
+  if (TmpDimension > 0)
+    {
+      MPI_Send(components + TmpIndex, TmpDimension, MPI_DOUBLE, id, 1, communicator);
+    }
+}
+  
+// broadcast only the vector components to a given MPI process
+// 
+// components = pointer to the components
+// dimension = number of components to send
+// id = id of the MPI process which broadcasts or sends the vector components
+// communicator = reference on the communicator to use 
+
+inline void ComplexVector::BroadcastVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator)
+{
+  //  MPI_Bcast(components, 2l * dimension, MPI_DOUBLE, id, communicator);
+  long TmpDimension = 2l * dimension;
+  long TmpIndex = 0l;
+  while (TmpDimension > MPI_MAXIMUM_COMPLEX_BUFFER)
+    {
+      MPI_Bcast(components + TmpIndex, MPI_MAXIMUM_COMPLEX_BUFFER, MPI_DOUBLE, id, communicator);
+      TmpIndex += (MPI_MAXIMUM_COMPLEX_BUFFER >> 1);
+      TmpDimension -= MPI_MAXIMUM_COMPLEX_BUFFER;
+    }
+  if (TmpDimension > 0)
+    {
+      MPI_Bcast(components + TmpIndex, TmpDimension, MPI_DOUBLE, id, communicator);
+    }
+}
+  
+// receive only the vector components from a given MPI process
+// 
+// components = pointer to the components
+// dimension = number of components to receive
+// id = id of the MPI process sending the components
+// communicator = reference on the communicator to use 
+// mPIStatus = pointer to the MPI status
+
+inline void ComplexVector::ReceiveVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator, MPI_Status* mPIStatus)
+{
+  //  MPI_Recv(components, 2l * dimension, MPI_DOUBLE, id, 1, communicator, mPIStatus); 
+  long TmpDimension = 2l * dimension;
+  long TmpIndex = 0l;
+  while (TmpDimension > MPI_MAXIMUM_COMPLEX_BUFFER)
+    {
+      MPI_Recv(components + TmpIndex, MPI_MAXIMUM_COMPLEX_BUFFER, MPI_DOUBLE, id, 1, communicator, mPIStatus); 
+      TmpIndex += (MPI_MAXIMUM_COMPLEX_BUFFER >> 1);
+      TmpDimension -= MPI_MAXIMUM_COMPLEX_BUFFER;
+    }
+  if (TmpDimension > 0)
+    {
+       MPI_Recv(components + TmpIndex, TmpDimension, MPI_DOUBLE, id, 1, communicator, mPIStatus); 
+    }   
+}
+
+#endif
 
 #endif
 

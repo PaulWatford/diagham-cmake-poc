@@ -3295,7 +3295,8 @@ Vector& ComplexVector::SumVector(const MPI_Comm& communicator, int id)
     {
       TmpComponents = new Complex [this->Dimension];
     }
-  MPI_Reduce(this->Components, TmpComponents, 2 * this->Dimension, MPI_DOUBLE, MPI_SUM, id, communicator); 
+  //  MPI_Reduce(this->Components, TmpComponents, 2 * this->Dimension, MPI_DOUBLE, MPI_SUM, id, communicator);
+  this->SumVectorComponents(this->Components, TmpComponents, this->Dimension, id, communicator);
   if (id == TmpMPIRank)
     {
       for (int i = 0; i < this->Dimension; ++i)

@@ -991,6 +991,15 @@ class ComplexVector : public Vector
   // communicator = reference on the communicator to use 
   void BroadcastVectorComponents(Complex* components, long dimension, int id, const MPI_Comm& communicator);
 
+  // sum only the vector components to a given MPI process
+  // 
+  // components = pointer to the components
+  // targetComponents = array where the sum of each component will be stored
+  // dimension = number of components to send
+  // id = id of the MPI process to which the components are sent
+  // communicator = reference on the communicator to use 
+  void SumVectorComponents(Complex* components, Complex* targetComponents, long dimension, int id, const MPI_Comm& communicator);
+
 #endif
 
 };
@@ -1134,6 +1143,31 @@ inline void ComplexVector::ReceiveVectorComponents(Complex* components, long dim
     {
        MPI_Recv(components + TmpIndex, TmpDimension, MPI_DOUBLE, id, 1, communicator, mPIStatus); 
     }   
+}
+
+// sum only the vector components to a given MPI process
+// 
+// components = pointer to the components
+// targetComponents = array where the sum of each component will be stored
+// dimension = number of components to send
+// id = id of the MPI process to which the components are sent
+// communicator = reference on the communicator to use 
+
+inline void ComplexVector::SumVectorComponents(Complex* components, Complex* targetComponents, long dimension, int id, const MPI_Comm& communicator)
+{
+  //  MPI_Reduce(components, targetComponents, 2l * dimension, MPI_DOUBLE, MPI_SUM, id, communicator);
+  long TmpDimension = 2l * dimension;
+  long TmpIndex = 0l;
+  while (TmpDimension > MPI_MAXIMUM_COMPLEX_BUFFER)
+    {
+      MPI_Reduce(components + TmpIndex, targetComponents + TmpIndex, MPI_MAXIMUM_COMPLEX_BUFFER, MPI_DOUBLE, MPI_SUM, id, communicator);
+      TmpIndex += (MPI_MAXIMUM_COMPLEX_BUFFER >> 1);
+      TmpDimension -= MPI_MAXIMUM_COMPLEX_BUFFER;
+    }
+  if (TmpDimension > 0)
+    {
+      MPI_Reduce(components + TmpIndex, targetComponents + TmpIndex, TmpDimension, MPI_DOUBLE, MPI_SUM, id, communicator);
+    }
 }
 
 #endif

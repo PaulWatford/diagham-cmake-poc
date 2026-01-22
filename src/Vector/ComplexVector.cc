@@ -2748,10 +2748,12 @@ bool ComplexVector::WriteVector (const char* fileName)
   if (this->Dimension == -1)
     {
       WriteLittleEndian(File, this->LargeDimension);
-      WriteBlockLittleEndian(File, &(this->Components[0].Re), 2*this->LargeDimension);
+      WriteBlockLittleEndian(File, &(this->Components[0].Re), 2l * this->LargeDimension);
     }
   else
-    WriteBlockLittleEndian(File, &(this->Components[0].Re), 2*this->Dimension);
+    {
+      WriteBlockLittleEndian(File, &(this->Components[0].Re), 2l * this->Dimension);
+    }
   File.close();
   return true;
 }
@@ -2775,14 +2777,18 @@ bool ComplexVector::WriteAsciiVector (const char* fileName)
     {
       long ReducedDimension = this->LargeDimension - 1;
       for (long i = 0; i < ReducedDimension; ++i)
-	File << this->Components[i].Re << " " << this->Components[i].Im << " ";
+	{
+	  File << this->Components[i].Re << " " << this->Components[i].Im << " ";
+	}
       File << this->Components[ReducedDimension].Re << " " << this->Components[ReducedDimension].Im << endl;
     }
   else
     {
       int ReducedDimension = this->Dimension - 1;
       for (int i = 0; i < ReducedDimension; ++i)
-	File << this->Components[i].Re << " " << this->Components[i].Im << " ";
+	{
+	  File << this->Components[i].Re << " " << this->Components[i].Im << " ";
+	}
       File << this->Components[ReducedDimension].Re << " " << this->Components[ReducedDimension].Im << endl;
     }
   File.close();
@@ -2893,7 +2899,7 @@ bool ComplexVector::ReadVector (const char* fileName)
 	}
       this->Resize(TmpDimension);
 
-      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2*this->Dimension);
+      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2l * this->Dimension);
 
     }
   else
@@ -2910,7 +2916,7 @@ bool ComplexVector::ReadVector (const char* fileName)
 	}
       
       this->Resize(TmpLargeDimension);
-      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2*this->LargeDimension);
+      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2l * this->LargeDimension);
     }
   File.close();
   return true;
@@ -2947,10 +2953,10 @@ bool ComplexVector::ReadVector (const char* fileName, long minIndex, long maxInd
 
   if (TmpDimension > 0)
     {
-      if (Length/(2 * (std::streampos)sizeof(double)) < (std::streampos)TmpDimension)
+      if (Length/(2l * (std::streampos)sizeof(double)) < (std::streampos)TmpDimension)
 	{      
 	  cout << "Error reading complex vector " <<fileName <<": estimated length " << Length/ (2 * sizeof(double)) << " vs dimension " << TmpDimension << endl;
-	  if ((unsigned)TmpDimension*2==Length/sizeof(double))
+	  if (((unsigned long) (TmpDimension * 2l)) == (Length / sizeof(double)))
 	    cout << "This could be a real vector!"<<endl;
 	  exit(1);
 	}
@@ -2960,12 +2966,7 @@ bool ComplexVector::ReadVector (const char* fileName, long minIndex, long maxInd
 	minIndex += TmpDimension;
       this->Resize(maxIndex - minIndex + 1l);
       File.seekg (minIndex * 2l * sizeof(double), ios::cur);
-      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2 * this->Dimension);
-//       for (int i = 0; i < this->Dimension; ++i)
-// 	{
-// 	  ReadLittleEndian(File, this->Components[i].Re);
-// 	  ReadLittleEndian(File, this->Components[i].Im);
-// 	}
+      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2l * this->Dimension);
     }
   else
     {
@@ -2977,12 +2978,7 @@ bool ComplexVector::ReadVector (const char* fileName, long minIndex, long maxInd
 	minIndex += TmpLargeDimension;
       this->Resize(maxIndex - minIndex + 1l);
       File.seekg (minIndex * 2l * sizeof(double), ios::cur);
-      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2 * this->LargeDimension);
-//       for (long i = 0; i < this->LargeDimension; ++i)
-// 	{
-// 	  ReadLittleEndian(File, this->Components[i].Re);
-// 	  ReadLittleEndian(File, this->Components[i].Im);
-// 	}
+      ReadBlockLittleEndian(File, &(this->Components[0].Re), 2l * this->LargeDimension);
     }
   File.close();
   return true;

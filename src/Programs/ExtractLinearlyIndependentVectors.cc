@@ -18,6 +18,7 @@
 #include "Options/SingleStringOption.h"
 
 #include "GeneralTools/ConfigurationParser.h"
+#include "GeneralTools/MultiColumnASCIIFile.h"
 #include "GeneralTools/FilenameTools.h"
 
 #include <iostream>
@@ -59,6 +60,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('c', "complex", "Assume vectors consist of complex numbers");
   (*SystemGroup) += new BooleanOption  ('\n', "rational" , "use rational numbers instead of double precision floating point numbers");
   (*SystemGroup) += new  SingleStringOption ('b', "basis", "name of the file that contains the vector files used to describe the basis");
+  (*SystemGroup) += new BooleanOption ('\n', "column", "indicates that the file provided to --basis is column-based rather than a single lien starting with \"Basis=\"");
   (*SystemGroup) += new BooleanOption ('\n', "check-only", "check how many vectors are linearly independent without extracting the basis");
   (*SystemGroup) += new BooleanOption ('\n', "quiet", "only output the minimal amount of information");
   (*SystemGroup) += new SingleDoubleOption ('\n', "error", "bound above which vectors are consider as linearly independent", 1e-10);
@@ -87,25 +89,40 @@ int main(int argc, char** argv)
   char* VectorPrefix = Manager.GetString("vector-prefix");
   double Error = ((SingleDoubleOption*) Manager["error"])->GetDouble();
 
-  ConfigurationParser ReducedBasis;
-  if (ReducedBasis.Parse(BasisDescription) == false)
-    {
-      ReducedBasis.DumpErrors(cout) << endl;
-      return -1;
-    }
   int NbrVectors;
   char** VectorFileNames;
-  if (ReducedBasis.GetAsStringArray("Basis", ' ', VectorFileNames, NbrVectors) == false)
+  char* DirectoryName = 0;
+  if (Manager.GetBoolean("column") == false)
     {
-      cout << "Vectors are not defined or have a wrong value in " << BasisDescription << endl;
-      return -1;
+      ConfigurationParser ReducedBasis;
+      if (ReducedBasis.Parse(BasisDescription) == false)
+	{
+	  ReducedBasis.DumpErrors(cout) << endl;
+	  return -1;
+	}
+      if (ReducedBasis.GetAsStringArray("Basis", ' ', VectorFileNames, NbrVectors) == false)
+	{
+	  cout << "Vectors are not defined or have a wrong value in " << BasisDescription << endl;
+	  return -1;
+	}
+      DirectoryName = ReducedBasis["Directory"];
+    }
+  else
+    {
+      MultiColumnASCIIFile ReducedBasis;
+      if (ReducedBasis.Parse(BasisDescription) == false)
+	{
+	  ReducedBasis.DumpErrors(cout);
+	  return -1;
+	}
+      NbrVectors = ReducedBasis.GetNbrLines();
+      VectorFileNames = ReducedBasis.GetAsStringArray(0);
     }
 
-  if(Manager.GetBoolean("complex") == true)
+  if (Manager.GetBoolean("complex") == true)
     {
       ComplexVector * Basis = new ComplexVector[NbrVectors];
       HermitianMatrix HRep(NbrVectors);
-      char* DirectoryName = ReducedBasis["Directory"];
       char* TmpName;
       for (int i = 0; i < NbrVectors; ++i)
 	{
@@ -231,7 +248,6 @@ int main(int argc, char** argv)
   if (Manager.GetBoolean("rational"))
     {
       LongRationalVector* Basis = new LongRationalVector[NbrVectors];
-      char* DirectoryName = ReducedBasis["Directory"];
       char* TmpName;
       for (int i = 0; i < NbrVectors; ++i)
 	{
@@ -316,7 +332,6 @@ int main(int argc, char** argv)
     {
       RealVector * Basis = new RealVector[NbrVectors];
       
-      char* DirectoryName = ReducedBasis["Directory"];
       char* TmpName;
       for (int i = 0; i < NbrVectors; ++i)
 	{

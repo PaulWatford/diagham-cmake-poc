@@ -63,6 +63,7 @@ ParticleOnSphereWithSpinCreationOperator::ParticleOnSphereWithSpinCreationOperat
   this->Particle = (ParticleOnSphereWithSpin*) (oper.Particle->Clone());
   this->OperatorIndex = oper.OperatorIndex;
   this->SpinIndex = oper.SpinIndex;
+  this->GeneralizedIndexFlag = oper.GeneralizedIndexFlag;
 }
 
 // destructor

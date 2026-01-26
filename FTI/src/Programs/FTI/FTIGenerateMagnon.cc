@@ -4,6 +4,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong.h"
 
 #include "Operator/ParticleOnSphereWithSpinDensityOperator.h"
+#include "Operator/ParticleOnSphereWithSpinCreationOperator.h"
 
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
@@ -12,6 +13,7 @@
 #include "Architecture/ArchitectureOperation/VectorOperatorMultiplyOperation.h"
 
 #include "GeneralTools/FilenameTools.h"
+#include "GeneralTools/StringTools.h"
 
 #include "Tools/FTITightBinding/TightBindingModel2DAtomicLimitLattice.h"
 
@@ -52,6 +54,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-kx", "only evalute a given x momentum sector (negative if all kx sectors have to be computed)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-ky", "only evalute a given y momentum sector (negative if all ky sectors have to be computed)", -1);
   //  (*SystemGroup) += new BooleanOption  ('\n', "all-bilinear", "apply all bilinear operators to the ground state, without summing on the sector");
+  (*SystemGroup) += new BooleanOption  ('\n', "creation-only", "only apply the creation operators to the states");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
@@ -191,64 +194,138 @@ int main(int argc, char** argv)
 	      int TargetSz = SzValues[i];
 	      int AnnihilationSpinIndex = 0;
 	      int CreationSpinIndex = 1;
-	      if (TargetSz > 0)
+	      if (Manager.GetBoolean("creation-only") == false)
 		{
-		  TargetSz -= 2;
-		  AnnihilationSpinIndex = 1;
-		  CreationSpinIndex = 0;
-		}
-	      else
-		{
-		  TargetSz += 2;
-		}
-	      if (Statistics == true)
-		{
-		  if ((NbrSitesX * NbrSitesY) <= 32)
+		  if (TargetSz > 0)
 		    {
-		      SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (NbrParticles + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+		      TargetSz -= 2;
+		      AnnihilationSpinIndex = 1;
+		      CreationSpinIndex = 0;
 		    }
 		  else
 		    {
-		      SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, (NbrParticles + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+		      TargetSz += 2;
+		    }
+		}
+	      else
+		{
+		  if (TargetSz > 0)
+		    {
+		      TargetSz--;
+		      AnnihilationSpinIndex = 1;
+		      CreationSpinIndex = 0;
+		    }
+		  else
+		    {
+		      TargetSz++;
+		    }
+		}
+	      if (Statistics == true)
+		{
+		  if (Manager.GetBoolean("creation-only") == false)		    
+		    {
+		      if ((NbrSitesX * NbrSitesY) <= 32)
+			{
+			  SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, (NbrParticles + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			}
+		      else
+			{
+			  SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles, (NbrParticles + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			}
+		      cout << "target space has N=" << NbrParticles << ", Nup=" << ((NbrParticles + TargetSz) >> 1) << ", Kx=" << MinKx << ", Ky=" << MinKy << endl;
+		    }
+		  else
+		    {
+		      if ((NbrSitesX * NbrSitesY) <= 32)
+			{
+			  SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles + 1, (NbrParticles + 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			}
+		      else
+			{
+			  SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles + 1, (NbrParticles + 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			}
+		      cout << "target space has N=" << (NbrParticles + 1) << ", Nup=" << ((NbrParticles + 1 + TargetSz) >> 1) << ", Kx=" << MinKx << ", Ky=" << MinKy << endl;
 		    }
 		}
 	      SpaceSource[i]->SetTargetSpace(SpaceDestination);
 	      cout << "From Hilbert space dim=" << SpaceSource[i]->GetHilbertSpaceDimension() << " to Hilbert space dim=" << SpaceDestination->GetHilbertSpaceDimension() << endl;
-	      for (int Q1x = 0; Q1x < NbrSitesX; ++Q1x)
+	      if (Manager.GetBoolean("creation-only") == false)		    
 		{
-		  for (int Q1y = 0; Q1y < NbrSitesY; ++Q1y)
+		  for (int Q1x = 0; Q1x < NbrSitesX; ++Q1x)
 		    {
-		      int Q2x = TotalKx[i] + Q1x - MinKx;
-		      while (Q2x < 0)
+		      for (int Q1y = 0; Q1y < NbrSitesY; ++Q1y)
 			{
-			  Q2x += NbrSitesX;
-			}
-		      Q2x %= NbrSitesX;
-		      int Q2y = TotalKy[i] + Q1y - MinKy;
-		      while (Q2y < 0)
-			{
-			  Q2y += NbrSitesY;
-			}
-		      Q2y %= NbrSitesY;
-		      ComplexVector EigenstateOutput(SpaceDestination->GetHilbertSpaceDimension(), true);
+			  int Q2x = TotalKx[i] + Q1x - MinKx;
+			  while (Q2x < 0)
+			    {
+			      Q2x += NbrSitesX;
+			    }
+			  Q2x %= NbrSitesX;
+			  int Q2y = TotalKy[i] + Q1y - MinKy;
+			  while (Q2y < 0)
+			    {
+			      Q2y += NbrSitesY;
+			    }
+			  Q2y %= NbrSitesY;
+			  ComplexVector EigenstateOutput(SpaceDestination->GetHilbertSpaceDimension(), true);
 		      // cout << "creation x=" << Q1x << " y=" << Q1y << " " << TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y) << endl;
 		      // cout << "annihilation x=" << Q2x << " y=" << Q2y << " " << TightBindingModel->GetLinearizedMomentumIndex(Q2x, Q2y) << endl;
-		      ParticleOnSphereWithSpinDensityOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), CreationSpinIndex,
-									TightBindingModel->GetLinearizedMomentumIndex(Q2x, Q2y), AnnihilationSpinIndex);
-		      VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);
-		      Operation.ApplyOperation(Architecture.GetArchitecture());
-		      double TmpNorm = EigenstateOutput.Norm();
-		      cout << "norm = " << TmpNorm << endl;
-		      if (TmpNorm != 0.0)
-			{
-			  EigenstateOutput /= TmpNorm;
-			  char* TmpExtention = new char[128];
-			  sprintf (TmpExtention, "_magnon_qx_%d_qy_%d_q1x_%d_q1y_%d_bz_%d.vec", MinKx, MinKy, Q2x, Q2y, TargetSz);
-			  char* EigenstateOutputFile = ReplaceExtensionToFileName(GroundStateFiles[i], ".vec", TmpExtention);
-			  EigenstateOutput.WriteVector(EigenstateOutputFile);
-			  delete[] TmpExtention;
-			  delete[] EigenstateOutputFile;
+			  ParticleOnSphereWithSpinDensityOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), CreationSpinIndex,
+									    TightBindingModel->GetLinearizedMomentumIndex(Q2x, Q2y), AnnihilationSpinIndex);
+			  VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);
+			  Operation.ApplyOperation(Architecture.GetArchitecture());
+			  double TmpNorm = EigenstateOutput.Norm();
+			  cout << "norm = " << TmpNorm << endl;
+			  if (TmpNorm != 0.0)
+			    {
+			      EigenstateOutput /= TmpNorm;			  
+			      char* TmpExtention = new char[128];
+			      sprintf (TmpExtention, "_magnon_qx_%d_qy_%d_q1x_%d_q1y_%d_bz_%d.vec", MinKx, MinKy, Q2x, Q2y, TargetSz);			  
+			      char* EigenstateOutputFile = ReplaceExtensionToFileName(GroundStateFiles[i], ".vec", TmpExtention);
+			      EigenstateOutput.WriteVector(EigenstateOutputFile);
+			      delete[] TmpExtention;
+			      delete[] EigenstateOutputFile;
+			    }
 			}
+		    }
+		}
+	      else
+		{
+		  int Q1x = MinKx - TotalKx[i];
+		  while (Q1x < 0)
+		    {
+		      Q1x += NbrSitesX;
+		    }
+		  Q1x %= NbrSitesX;
+		  int Q1y = MinKy - TotalKy[i];
+		  while (Q1y < 0)
+		    {
+		      Q1y += NbrSitesY;
+		    }
+		  Q1y %= NbrSitesY;
+		  //		  cout << "Q1x=" << Q1x << " Q1y=" << Q1y << endl;
+		  ComplexVector EigenstateOutput(SpaceDestination->GetHilbertSpaceDimension(), true);
+		  ParticleOnSphereWithSpinCreationOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), CreationSpinIndex, true);
+		  VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);
+		  Operation.ApplyOperation(Architecture.GetArchitecture());
+		  double TmpNorm = EigenstateOutput.Norm();
+		  cout << "norm = " << TmpNorm << endl;
+		  if (TmpNorm != 0.0)
+		    {
+		      EigenstateOutput /= TmpNorm;			  
+		      char* TmpExtention = new char[128];
+		      sprintf (TmpExtention, "_fracmagnon_qx_%d_qy_%d_bz_%d.vec", MinKx, MinKy, TargetSz);			  
+		      char* TmpEigenstateOutputFile = ReplaceExtensionToFileName(GroundStateFiles[i], ".vec", TmpExtention);
+		      char* OldNbrParticlesString = new char[16];
+		      sprintf (OldNbrParticlesString, "n_%d_", NbrParticles);
+		      char* NewNbrParticlesString = new char[16];
+		      sprintf (NewNbrParticlesString, "n_%d_", (NbrParticles + 1));
+		      char* EigenstateOutputFile = ReplaceString(TmpEigenstateOutputFile, OldNbrParticlesString, NewNbrParticlesString);
+		      EigenstateOutput.WriteVector(EigenstateOutputFile);
+		      delete[] OldNbrParticlesString;
+		      delete[] NewNbrParticlesString;
+		      delete[] TmpExtention;
+		      delete[] EigenstateOutputFile;
 		    }
 		}
 	    }

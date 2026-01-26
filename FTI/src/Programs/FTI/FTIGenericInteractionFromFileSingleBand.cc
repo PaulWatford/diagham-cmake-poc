@@ -11,7 +11,9 @@
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzPzPreservingEzSymmetry.h"
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU8SpinMomentumSpace.h"
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU8SpinMomentumSpaceLong.h"
-// #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
+#include "HilbertSpace/BosonOnSquareLatticeMomentumSpace.h"
+#include "HilbertSpace/BosonOnSquareLatticeMomentumSpaceLong.h"
+#include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
 
 #include "Hamiltonian/ParticleOnLatticeFromFileInteractionOneBandHamiltonian.h"
 #include "Hamiltonian/ParticleOnLatticeFromFileInteractionOneBandThreeBodyHamiltonian.h"
@@ -1103,9 +1105,34 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  cout << "bosons are not supported" << endl;
-	  return 0;
-	  // Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+	  if (Manager.GetBoolean("add-spin") == false)
+	    {
+	      if (Manager.GetBoolean("add-valley") == false)
+		{
+		  // no valley, no spin
+		  ParticleOnSphere* TmpSpace;
+		  if (((NbrSitesX * NbrSitesY) + (NbrParticles - 1)) <= 64)
+		    {
+		      TmpSpace = new BosonOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		    }
+		  else
+		    {
+		      TmpSpace = new BosonOnSquareLatticeMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		    }
+		  Space = new ParticleOnSphereWithPolarizedSpin(TmpSpace);
+		}
+	      else
+		{
+		  // valley but no spin
+		  cout << "bosons are not supported" << endl;
+		  // Space = new BosonOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		}
+	    }
+	  else
+	    {
+	      cout << "bosons are not supported" << endl;
+	      return 0;
+	    }
 	}
       cout << "dim = " << Space->GetHilbertSpaceDimension()  << endl;
       TotalDim += Space->GetHilbertSpaceDimension();

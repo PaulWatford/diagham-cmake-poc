@@ -119,6 +119,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption ('\n', "energy-shift", "apply a temporary energy shift during the diagonalization", 0.0);
   (*PrecalculationGroup) += new SingleIntegerOption  ('m', "memory", "amount of memory that can be allocated for fast multiplication (in Mbytes)", 500);
   (*PrecalculationGroup) += new SingleStringOption ('\n', "hilbert-directory", "directory where Hilbert spaces should be read and stored (bypassing their construction)");
+  (*PrecalculationGroup) += new BooleanOption ('\n', "hilbert-only", "only compte the Hilbert spaces, bypassing the diagonalization");
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
@@ -2072,7 +2073,7 @@ int main(int argc, char** argv)
 	}
       cout << "dim = " << Space->GetHilbertSpaceDimension()  << endl;
       TotalDim += Space->GetHilbertSpaceDimension();
-      if (Space->GetHilbertSpaceDimension() > 0)
+      if ((Space->GetHilbertSpaceDimension() > 0) && (Manager.GetBoolean("hilbert-only") == false))
 	{
 	  Architecture.GetArchitecture()->SetDimension(Space->GetHilbertSpaceDimension());
 	  

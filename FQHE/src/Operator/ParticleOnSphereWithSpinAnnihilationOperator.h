@@ -57,14 +57,18 @@ class ParticleOnSphereWithSpinAnnihilationOperator : public AbstractOperator
   // spin index of the annihilation operator that is part of the annihilation operator
   int SpinIndex;
   
- public:
+  // if true, use SpinIndex as an index as a generic internal degree of freedom index
+  bool GeneralizedIndexFlag;
+
+public:
   
   // constructor from default data
   //
   // particle = hilbert space associated to the particles
   // index = index of the annihilation operator
   // spinindex = spin index of the annihilation operator
-  ParticleOnSphereWithSpinAnnihilationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex);
+  // generalizedIndex = if true, use spinindex as an index as a generic internal degree of freedom index
+  ParticleOnSphereWithSpinAnnihilationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex, bool generalizedIndex = false);
 
   // copy constructor
   //

@@ -5,6 +5,7 @@
 
 #include "Operator/ParticleOnSphereWithSpinDensityOperator.h"
 #include "Operator/ParticleOnSphereWithSpinCreationOperator.h"
+#include "Operator/ParticleOnSphereWithSpinAnnihilationOperator.h"
 
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
@@ -55,7 +56,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-ky", "only evalute a given y momentum sector (negative if all ky sectors have to be computed)", -1);
   //  (*SystemGroup) += new BooleanOption  ('\n', "all-bilinear", "apply all bilinear operators to the ground state, without summing on the sector");
   (*SystemGroup) += new BooleanOption  ('\n', "creation-only", "only apply the creation operators to the states");
-  (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
+   (*SystemGroup) += new BooleanOption  ('\n', "annihilation-only", "only apply the creation operators to the states");
+ (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
   
   if (Manager.ProceedOptions(argv, argc, cout) == false)
     {
@@ -194,7 +196,7 @@ int main(int argc, char** argv)
 	      int TargetSz = SzValues[i];
 	      int AnnihilationSpinIndex = 0;
 	      int CreationSpinIndex = 1;
-	      if (Manager.GetBoolean("creation-only") == false)
+	      if ((Manager.GetBoolean("creation-only") == false) && (Manager.GetBoolean("annihilation-only") == false))
 		{
 		  if (TargetSz > 0)
 		    {
@@ -209,20 +211,36 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  if (TargetSz > 0)
+		  if (Manager.GetBoolean("creation-only") == true)
 		    {
-		      TargetSz--;
-		      AnnihilationSpinIndex = 1;
-		      CreationSpinIndex = 0;
+		      if (TargetSz > 0)
+			{
+			  TargetSz--;
+			  AnnihilationSpinIndex = 1;
+			  CreationSpinIndex = 0;
+			}
+		      else
+			{
+			  TargetSz++;
+			}
 		    }
 		  else
 		    {
-		      TargetSz++;
+		      if (TargetSz > 0)
+			{
+			  TargetSz++;
+			  AnnihilationSpinIndex = 1;
+			  CreationSpinIndex = 0;
+			}
+		      else
+			{
+			  TargetSz--;
+			}
 		    }
 		}
 	      if (Statistics == true)
 		{
-		  if (Manager.GetBoolean("creation-only") == false)		    
+		  if ((Manager.GetBoolean("creation-only") == false) && (Manager.GetBoolean("annihilation-only") == false))
 		    {
 		      if ((NbrSitesX * NbrSitesY) <= 32)
 			{
@@ -236,20 +254,35 @@ int main(int argc, char** argv)
 		    }
 		  else
 		    {
-		      if ((NbrSitesX * NbrSitesY) <= 32)
+		      if (Manager.GetBoolean("creation-only") == true)
 			{
-			  SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles + 1, (NbrParticles + 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			  if ((NbrSitesX * NbrSitesY) <= 32)
+			    {
+			      SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles + 1, (NbrParticles + 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			    }
+			  else
+			    {
+			      SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles + 1, (NbrParticles + 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			    }
+			  cout << "target space has N=" << (NbrParticles + 1) << ", Nup=" << ((NbrParticles + 1 + TargetSz) >> 1) << ", Kx=" << MinKx << ", Ky=" << MinKy << endl;
 			}
 		      else
 			{
-			  SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles + 1, (NbrParticles + 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
-			}
-		      cout << "target space has N=" << (NbrParticles + 1) << ", Nup=" << ((NbrParticles + 1 + TargetSz) >> 1) << ", Kx=" << MinKx << ", Ky=" << MinKy << endl;
+			  if ((NbrSitesX * NbrSitesY) <= 32)
+			    {
+			      SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpace (NbrParticles - 1, (NbrParticles - 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			    }
+			  else
+			    {
+			      SpaceDestination = new FermionOnSquareLatticeWithSU2SpinMomentumSpaceLong (NbrParticles - 1, (NbrParticles - 1 + TargetSz) >> 1, NbrSitesX, NbrSitesY, MinKx, MinKy);
+			    }
+			  cout << "target space has N=" << (NbrParticles - 1) << ", Nup=" << ((NbrParticles - 1 + TargetSz) >> 1) << ", Kx=" << MinKx << ", Ky=" << MinKy << endl;
+			} 
 		    }
 		}
 	      SpaceSource[i]->SetTargetSpace(SpaceDestination);
 	      cout << "From Hilbert space dim=" << SpaceSource[i]->GetHilbertSpaceDimension() << " to Hilbert space dim=" << SpaceDestination->GetHilbertSpaceDimension() << endl;
-	      if (Manager.GetBoolean("creation-only") == false)		    
+	      if ((Manager.GetBoolean("creation-only") == false) && (Manager.GetBoolean("annihilation-only") == false))	    
 		{
 		  for (int Q1x = 0; Q1x < NbrSitesX; ++Q1x)
 		    {
@@ -291,23 +324,52 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
-		  int Q1x = MinKx - TotalKx[i];
-		  while (Q1x < 0)
+		  int Q1x = 0;
+		  int Q1y = 0;
+		  if (Manager.GetBoolean("creation-only") == true)
 		    {
-		      Q1x += NbrSitesX;
+		      Q1x = MinKx - TotalKx[i];
+		      while (Q1x < 0)
+			{
+			  Q1x += NbrSitesX;
+			}
+		      Q1x %= NbrSitesX;
+		      Q1y = MinKy - TotalKy[i];
+		      while (Q1y < 0)
+			{
+			  Q1y += NbrSitesY;
+			}
+		      Q1y %= NbrSitesY;
 		    }
-		  Q1x %= NbrSitesX;
-		  int Q1y = MinKy - TotalKy[i];
-		  while (Q1y < 0)
+		  else
 		    {
-		      Q1y += NbrSitesY;
+		      Q1x = TotalKx[i] - MinKx;
+		      while (Q1x < 0)
+			{
+			  Q1x += NbrSitesX;
+			}
+		      Q1x %= NbrSitesX;
+		      Q1y = TotalKy[i] - MinKy;
+		      while (Q1y < 0)
+			{
+			  Q1y += NbrSitesY;
+			}
+		      Q1y %= NbrSitesY;
 		    }
-		  Q1y %= NbrSitesY;
 		  //		  cout << "Q1x=" << Q1x << " Q1y=" << Q1y << endl;
 		  ComplexVector EigenstateOutput(SpaceDestination->GetHilbertSpaceDimension(), true);
-		  ParticleOnSphereWithSpinCreationOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), CreationSpinIndex, true);
-		  VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);
-		  Operation.ApplyOperation(Architecture.GetArchitecture());
+		  if (Manager.GetBoolean("creation-only") == true)
+		    {
+		      ParticleOnSphereWithSpinCreationOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), CreationSpinIndex, true);
+		      VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);
+		      Operation.ApplyOperation(Architecture.GetArchitecture());
+		    }
+		  else
+		    {
+		      ParticleOnSphereWithSpinAnnihilationOperator Projector(SpaceSource[i], TightBindingModel->GetLinearizedMomentumIndex(Q1x, Q1y), AnnihilationSpinIndex, true);
+		      VectorOperatorMultiplyOperation Operation(&Projector, &(GroundStates[i]), &EigenstateOutput);
+		      Operation.ApplyOperation(Architecture.GetArchitecture());
+		    }
 		  double TmpNorm = EigenstateOutput.Norm();
 		  cout << "norm = " << TmpNorm << endl;
 		  if (TmpNorm != 0.0)
@@ -319,7 +381,14 @@ int main(int argc, char** argv)
 		      char* OldNbrParticlesString = new char[16];
 		      sprintf (OldNbrParticlesString, "n_%d_", NbrParticles);
 		      char* NewNbrParticlesString = new char[16];
-		      sprintf (NewNbrParticlesString, "n_%d_", (NbrParticles + 1));
+		      if (Manager.GetBoolean("creation-only") == true)
+			{
+			  sprintf (NewNbrParticlesString, "n_%d_", (NbrParticles + 1));
+			}
+		      else
+			{
+			  sprintf (NewNbrParticlesString, "n_%d_", (NbrParticles - 1));
+			}
 		      char* EigenstateOutputFile = ReplaceString(TmpEigenstateOutputFile, OldNbrParticlesString, NewNbrParticlesString);
 		      EigenstateOutput.WriteVector(EigenstateOutputFile);
 		      delete[] OldNbrParticlesString;

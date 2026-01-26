@@ -45,6 +45,7 @@ using std::endl;
 // particle = hilbert space associated to the particles
 // index = index of the creation operator
 // spinindex = spin index of the creation operator
+// generalizedIndex = if true, use spinindex as an index as a generic internal degree of freedom index
 
 ParticleOnSphereWithSpinCreationOperator::ParticleOnSphereWithSpinCreationOperator(ParticleOnSphereWithSpin* particle, int index, int spinindex, bool generalizedIndex)
 {

@@ -736,6 +736,214 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
   else
     {      
       // bosonic interaction
+      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+	      {
+		int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		if (Index1 <= Index2)
+		  {
+		    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
+		    ++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		  }
+	      }
+      this->IntraSectorIndicesPerSum = new int* [this->NbrIntraSectorSums];
+      for (int i = 0; i < this->NbrIntraSectorSums; ++i)
+	{
+	  if (this->NbrIntraSectorIndicesPerSum[i]  > 0)
+	    {
+	      this->IntraSectorIndicesPerSum[i] = new int[2 * this->NbrIntraSectorIndicesPerSum[i]];      
+	      this->NbrIntraSectorIndicesPerSum[i] = 0;
+	    }
+	}
+      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+	      {
+		int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		if (Index1 <= Index2)
+		  {
+		    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, 
+										     (ky1 + ky2) % this->NbrSiteY);
+		    this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
+		    this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
+		    TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
+		    ++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		  }
+	      }
+      
+
+      double TmpKx1 = 0.0;
+      double TmpKx2 = 0.0;
+      double TmpKx3 = 0.0;
+      double TmpKx4 = 0.0;
+      double TmpKy1 = 0.0;
+      double TmpKy2 = 0.0;
+      double TmpKy3 = 0.0;
+      double TmpKy4 = 0.0;
+      
+      this->InteractionFactorsSigma = new Complex***** [this->NbrInternalIndices];
+      for (int sigma3 = 0; sigma3 < this->NbrInternalIndices; ++sigma3)
+	{
+	  this->InteractionFactorsSigma[sigma3] = new Complex****  [this->NbrInternalIndices];
+	  for (int sigma4 = sigma3; sigma4 < this->NbrInternalIndices; ++sigma4)
+	    {
+	      this->InteractionFactorsSigma[sigma3][sigma4] = new Complex***[this->NbrInternalIndices];
+	      for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
+		{
+		  this->InteractionFactorsSigma[sigma3][sigma4][sigma1] = new Complex**[this->NbrInternalIndices];
+		  for (int sigma2 = sigma1; sigma2 < this->NbrInternalIndices; ++sigma2)		
+		    {
+		      this->InteractionFactorsSigma[sigma3][sigma4][sigma1][sigma2] = 0;
+		    }
+		}
+	    }
+	}
+      if (this->AdditionalSpinFlag == false)
+	{
+	  // spinless case
+	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
+	    {
+	      for (int sigma3 = 0; sigma3 < this->NbrInternalIndices; ++sigma3)
+		{
+		  this->InteractionFactorsSigma[sigma3][sigma3][sigma1][sigma1] = new Complex*[this->NbrIntraSectorSums];
+		  for (int j = 0; j < this->NbrIntraSectorSums; ++j)
+		    {
+		      int Tmp = this->NbrIntraSectorIndicesPerSum[j] * this->NbrIntraSectorIndicesPerSum[j];
+		      this->InteractionFactorsSigma[sigma3][sigma3][sigma1][sigma1][j] = new Complex [Tmp];
+		    }
+		}
+	    }
+	  
+	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
+	    {
+	      for (int sigma3 = 0; sigma3 < this->NbrInternalIndices; ++sigma3)
+		{
+		  for (int sigma4 = sigma3 + 1; sigma4 < this->NbrInternalIndices; ++sigma4)
+		    {
+		      this->InteractionFactorsSigma[sigma3][sigma4][sigma1][sigma1] = new Complex*[this->NbrIntraSectorSums];
+		      for (int j = 0; j < this->NbrInterSectorSums; ++j)
+			{
+			  this->InteractionFactorsSigma[sigma3][sigma4][sigma1][sigma1][j] = new Complex [this->NbrIntraSectorIndicesPerSum[j] * this->NbrInterSectorIndicesPerSum[j]];
+			}
+		    }
+		}
+	    }
+
+	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
+	    {
+	      for (int sigma2 = sigma1 + 1; sigma2 < this->NbrInternalIndices; ++sigma2)
+		{
+		  for (int sigma3 = 0; sigma3 < this->NbrInternalIndices; ++sigma3)
+		    {
+		      this->InteractionFactorsSigma[sigma3][sigma3][sigma1][sigma2] = new Complex*[this->NbrIntraSectorSums];
+		      for (int j = 0; j < this->NbrInterSectorSums; ++j)
+			{
+			  this->InteractionFactorsSigma[sigma3][sigma3][sigma1][sigma2][j] = new Complex [this->NbrInterSectorIndicesPerSum[j] * this->NbrIntraSectorIndicesPerSum[j]];
+			  
+			}
+		    }
+		}
+	    }
+	  
+	  for (int sigma1 = 0; sigma1 < this->NbrInternalIndices; ++sigma1)
+	    {
+	      for (int sigma2 = sigma1 + 1; sigma2 < this->NbrInternalIndices; ++sigma2)
+		{
+		  for (int sigma3 = 0; sigma3 < this->NbrInternalIndices; ++sigma3)
+		    {
+		      for (int sigma4 = sigma3 + 1; sigma4 < this->NbrInternalIndices; ++sigma4)
+			{
+			  if (InternalIndicesFlags[sigma3][sigma4][sigma1][sigma2] == true)
+			    {
+			      this->InteractionFactorsSigma[sigma3][sigma4][sigma1][sigma2] = new Complex*[this->NbrIntraSectorSums];
+			      for (int j = 0; j < this->NbrInterSectorSums; ++j)
+				{
+				  this->InteractionFactorsSigma[sigma3][sigma4][sigma1][sigma2][j] = new Complex [this->NbrInterSectorIndicesPerSum[j] * this->NbrInterSectorIndicesPerSum[j]];
+				}
+			    }
+			  else
+			    {
+			      this->InteractionFactorsSigma[sigma3][sigma4][sigma1][sigma2] = 0;
+			    }
+			}
+		    }
+		}
+	    }
+	  
+	  for (int i = 0; i < TmpNbrTwoBodyMatrixElements; ++i)
+	    {
+	      int TmpIndex = 0;
+	      int TmpMaxIndexFactor = 0;
+	      int TmpSumK = TmpLinearizedSumK[i];
+	      int Sigma1 = TmpSigma1[i];
+	      int Sigma2 = TmpSigma2[i];
+	      int Sigma3 = TmpSigma3[i];
+	      int Sigma4 = TmpSigma4[i];
+	      int K1 = TmpLinearizedK1[i];
+	      int K2 = TmpLinearizedK2[i];
+	      int K3 = TmpLinearizedK3[i];
+	      int K4 = TmpLinearizedK4[i];
+	      double TmpSign = 1.0;
+	      if (Sigma2 < Sigma1)
+		{
+		  int Tmp = Sigma2;
+		  Sigma2 = Sigma1;
+		  Sigma1 = Tmp;
+		  Tmp = K2;
+		  K2 = K1;
+		  K1 = Tmp;
+		}
+	      if (Sigma4 < Sigma3)
+		{
+		  int Tmp = Sigma4;
+		  Sigma4 = Sigma3;
+		  Sigma3 = Tmp;
+		  Tmp = K4;
+		  K4 = K3;
+		  K3 = Tmp;
+		}
+	      if (Sigma1 == Sigma2)
+		{
+		  if (K1 > K2)
+		    {
+		      int Tmp = K2;
+		      K2 = K1;
+		      K1 = Tmp;
+		    }
+		  // if (K1 == K2)
+		  //   {
+		  //     //		      TmpSign *= 0.5;
+		  //   }
+		}
+	      if (Sigma3 == Sigma4)
+		{
+		  if (K3 > K4)
+		    {
+		      int Tmp = K4;
+		      K4 = K3;
+		      K3 = Tmp;
+		    }
+		  // if (K3 == K4)
+		  //   {
+		  //     //		      TmpSign *= 0.5;
+		  //   }
+		}
+	      TmpIndex = ((this->NbrIntraSectorIndicesPerSum[TmpSumK] * TmpLinearizedKIntraIndices[TmpSumK][K3][K4])
+			  + TmpLinearizedKIntraIndices[TmpSumK][K1][K2]);
+	      this->InteractionFactorsSigma[Sigma1][Sigma2][Sigma3][Sigma4][TmpSumK][TmpIndex] += TmpSign * TmpMatrixElements[i];
+	      ++TotalNbrInteractionFactors;
+	    }
+	}
+      else
+	{
+	  // bosonic spinful case
+	  cout << "Warning, bosonic spinful case in ParticleOnLatticeFromFileInteractionTwoBandHamiltonian is not defined" << endl;
+	}
     }
 
   this->FreeMatrixElementsConservedDegreesOfFreedom(InternalIndicesFlags);

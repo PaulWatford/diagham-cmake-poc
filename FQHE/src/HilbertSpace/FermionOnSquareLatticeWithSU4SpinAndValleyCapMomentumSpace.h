@@ -46,9 +46,14 @@ class FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace : public Fermio
 
  protected:
 
-  // maximum number of particles in valley plus
+  // minimum number of particles in valley plus (or band 0)
+  int MinNbrParticlesPlus;
+  // minimum number of particles in valley minus (or band 1)
+  int MinNbrParticlesMinus;
+  
+  // maximum number of particles in valley plus (or band 0)
   int MaxNbrParticlesPlus;
-  // maximum number of particles in valley minus
+  // maximum number of particles in valley minus (or band 1)
   int MaxNbrParticlesMinus;
 
  public:
@@ -66,8 +71,9 @@ class FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace : public Fermio
   // maxNbrParticlesMinus = maximum number of particles in valley minus
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesPlus, int maxNbrParticlesMinus, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesPlus, int maxNbrParticlesMinus, int kxMomentum, int kyMomentum, char* outputDirectory = 0, unsigned long memory = 10000000);
   
   // constructor when preserving only spin
   // 
@@ -79,8 +85,9 @@ class FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace : public Fermio
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
   // totalSpin = twice the total spin value
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesPlus, int maxNbrParticlesMinus, int kxMomentum, int kyMomentum, int totalSpin, unsigned long memory = 10000000);
+  FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesPlus, int maxNbrParticlesMinus, int kxMomentum, int kyMomentum, int totalSpin, char* outputDirectory = 0, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
@@ -102,6 +109,11 @@ class FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace : public Fermio
   // return value = pointer to cloned Hilbert space
   AbstractHilbertSpace* Clone();
 
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+  
  protected:
 
   // evaluate Hilbert space dimension
@@ -155,6 +167,10 @@ class FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace : public Fermio
   // maxNbrParticlesMinus = current maximum number of particles in valley minus
   // return value = position from which new states have to be stored
   virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos, int nbrFermionsUp, int maxNbrParticlesPlus, int maxNbrParticlesMinus);
+
+  // generate all states using the single band hilbert spaces
+  //
+  virtual void GenerateStatesFromSingleBandHilbertSpaces();
 
 };
 

@@ -60,10 +60,12 @@ int main(int argc, char** argv)
   OptionGroup* SystemGroup = new OptionGroup ("system options");
   OptionGroup* OutputGroup = new OptionGroup ("output options");
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");
+  OptionGroup* PrecalculationGroup = new OptionGroup ("precalculation options");
 
 
   Manager += SystemGroup;
   Manager += OutputGroup;
+  Manager += PrecalculationGroup;
   Manager += ToolsGroup;
   Manager += MiscGroup;
 
@@ -84,6 +86,8 @@ int main(int argc, char** argv)
   
   (*OutputGroup) += new SingleStringOption  ('\n', "output-file-name", "string that will be used in the output file names (all system parameters will be automatically added))", "projected");
   (*OutputGroup) += new BooleanOption ('\n', "normalize", "normalized state once projected onto the target Hilbert space");
+
+  (*PrecalculationGroup) += new SingleStringOption ('\n', "hilbert-directory", "directory where Hilbert spaces should be read and stored (bypassing their construction)");
 
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
 
@@ -622,11 +626,11 @@ int main(int argc, char** argv)
 		}
 	      if ((NbrSitesX * NbrSitesY) <= 16)
 		{
-		  InputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, SourceMaxBand0, SourceMaxBand1, TotalKx, TotalKy, TotalSpin, 10000000ul);
+		  InputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, SourceMaxBand0, SourceMaxBand1, TotalKx, TotalKy, TotalSpin, Manager.GetString("hilbert-directory"), 10000000ul);
 		}
 	      else
 		{
-		  InputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, SourceMaxBand0, SourceMaxBand1, TotalKx, TotalKy, TotalSpin, 10000000ul);
+		  InputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, SourceMaxBand0, SourceMaxBand1, TotalKx, TotalKy, TotalSpin, Manager.GetString("hilbert-directory"), 10000000ul);
 		}
 	    }
 
@@ -653,11 +657,11 @@ int main(int argc, char** argv)
 		}
 	      if ((NbrSitesX * NbrSitesY) <= 16)
 		{
-		  OutputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TargetMaxBand0, TargetMaxBand1, TotalKx, TotalKy, TotalSpin, 10000000ul);
+		  OutputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TargetMaxBand0, TargetMaxBand1, TotalKx, TotalKy, TotalSpin, Manager.GetString("hilbert-directory"), 10000000ul);
 		}
 	      else
 		{
-		  OutputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TargetMaxBand0, TargetMaxBand1, TotalKx, TotalKy, TotalSpin, 10000000ul);
+		  OutputSpace = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, TargetMaxBand0, TargetMaxBand1, TotalKx, TotalKy, TotalSpin, Manager.GetString("hilbert-directory"), 10000000ul);
 		}
 	    }
 	}

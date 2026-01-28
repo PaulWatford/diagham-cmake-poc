@@ -125,11 +125,13 @@ int main(int argc, char** argv)
   OptionGroup* SystemGroup = new OptionGroup ("system options");
   OptionGroup* OutputGroup = new OptionGroup ("output options");
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");
+  OptionGroup* PrecalculationGroup = new OptionGroup ("precalculation options");
 
   ArchitectureManager Architecture;
 
   Manager += SystemGroup;
   Manager += OutputGroup;
+  Manager += PrecalculationGroup;
   Manager += ToolsGroup;
   Architecture.AddOptionGroup(&Manager);
   Manager += MiscGroup;
@@ -149,6 +151,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "intraband-only", "when computing the density-density expectation values, only consider the intra band terms");
   (*SystemGroup) += new SingleStringOption ('\n', "allowed-orbitals", "provide an ASCII file indicating which orbitals are allowed");
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name instead of the one that can be deduced from the input file name (replacing the vec extension with rho.dat extension");
+  (*PrecalculationGroup) += new BooleanOption ('\n', "hilbert-only", "only compte the Hilbert spaces, bypassing the diagonalization");
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
 #endif
@@ -1859,11 +1862,11 @@ ParticleOnSphere* FTIDensityGetHilbertSpace(bool flag3d, bool flagDecoupled, boo
 		}
 	      if ((nbrSitesX * nbrSitesY) <= 16)
 		{
-		  return new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (nbrParticles, nbrSitesX, nbrSitesY, maxBand0, maxBand1, totalKx, totalKy, totalSpin, 10000000ul);
+		  return new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (nbrParticles, nbrSitesX, nbrSitesY, maxBand0, maxBand1, totalKx, totalKy, totalSpin, manager.GetString("hilbert-directory"), 10000000ul);
 		}
 	      else
 		{
-		  return new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (nbrParticles, nbrSitesX, nbrSitesY, maxBand0, maxBand1, totalKx, totalKy, totalSpin, 10000000ul);
+		  return new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (nbrParticles, nbrSitesX, nbrSitesY, maxBand0, maxBand1, totalKx, totalKy, totalSpin, manager.GetString("hilbert-directory"), 10000000ul);
 		}
 	    }
 	}

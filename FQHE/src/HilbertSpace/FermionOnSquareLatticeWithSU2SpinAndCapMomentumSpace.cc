@@ -642,7 +642,7 @@ void FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace::GenerateStatesFromSin
 	{
 	  cout << "Hilbert space dimension " << this->LargeHilbertSpaceDimension << endl;
 	}
-      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+      if (this->LargeHilbertSpaceDimension >= (1l << 31))
 	this->HilbertSpaceDimension = 0;
       else
 	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;

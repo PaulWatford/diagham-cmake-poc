@@ -141,6 +141,11 @@ class FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong : public FermionOnSpher
   // return value = reference on current output stream 
   virtual ostream& PrintState (ostream& Str, int state);
 
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+
  protected:
 
   // evaluate Hilbert space dimension
@@ -291,6 +296,41 @@ class FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong : public FermionOnSpher
   virtual long GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy,
 			      int nbrParticlesDownMinus, int nbrParticlesDownPlus, int nbrParticles3, int nbrParticlesUpPlus, long pos);
   
+  // evaluate all the single band Hilbert spaces
+  //
+  // maxBandOccupation = maiximum occupation of a single band
+  // singleBandTotalKxMax = reference on the array for the maximum total Kx values 
+  // singleBandTotalKyMax = reference on the array for the maximum total Ky values
+  // singleBandHilbertDimensions = reference on the array for all the Hilbert space dimension (first index being the particle number, second index being the total Kx, third index being the total Ky)
+  // singleBandStates = reference on the array for all the Hilbert space basis states 
+  virtual void GenerateAllSingleBandHilbertSpaces(int maxBandOccupation, int*& singleBandTotalKxMax, int*& singleBandTotalKyMax, long***& singleBandHilbertDimensions, ULONGLONG****& singleBandStates);
+
+  // evaluate Hilbert space dimension for a single band
+  //
+  // nbrFermions = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // singleBandTotalKx = total momentum along x
+  // singleBandTotalKy = total momentum along y
+  // return value = Hilbert space dimension
+  virtual long EvaluateSingleBandHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy);
+
+  // generate all states corresponding to the constraints for a single band
+  // 
+  // nbrFermions = number of fermions
+  // currentKx = current momentum along x for a single particle
+  // currentKy = current momentum along y for a single particle
+  // currentTotalKx = current total momentum along x
+  // currentTotalKy = current total momentum along y
+  // singleBandTotalKx = total momentum along x
+  // singleBandTotalKy = total momentum along y
+  // singleBandStateDescription = pointer to the single band state description array
+  // pos = position in StateDescription array where to store states
+  // return value = position from which new states have to be stored
+  virtual long GenerateSingleBandStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy, ULONGLONG* singleBandStateDescription, long pos);
+
 
 };
 

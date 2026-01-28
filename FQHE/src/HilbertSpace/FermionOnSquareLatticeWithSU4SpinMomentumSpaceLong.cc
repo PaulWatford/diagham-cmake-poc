@@ -1621,3 +1621,203 @@ long FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::EvaluateHilbertSpaceDim
   return Tmp;
 }
   
+// provide the default name of the file for Hilbert space storage 
+//
+// return value = pointer to file name (0 if no default file name exists) 
+
+char* FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::GetDefaultHilbertSpaceFileName()
+{
+  char* TmpName = new char[256];
+  if ((this->SzFlag == false) && (this->PzFlag == false))
+    {
+      sprintf(TmpName, "fermions_klattice_su4_long_n_%d_nx_%d_ny_%d_kx_%d_ky_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum);
+    }
+  if ((this->SzFlag == true) && (this->PzFlag == false))
+    {
+      sprintf(TmpName, "fermions_klattice_su4_long_n_%d_nx_%d_ny_%d_kx_%d_ky_%d_sz_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum, this->TotalSpin);
+    }
+  if ((this->SzFlag == false) && (this->PzFlag == true))
+    {
+      sprintf(TmpName, "fermions_klattice_su4_long_n_%d_nx_%d_ny_%d_kx_%d_ky_%d_pz_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum, this->TotalIsospin);
+    }
+  if ((this->SzFlag == true) && (this->PzFlag == true))
+    {
+      sprintf(TmpName, "fermions_klattice_su4_long_n_%d_nx_%d_ny_%d_kx_%d_ky_%d_sz_%d_pz_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum, this->TotalSpin, this->TotalIsospin);
+    }
+  return TmpName;
+}
+
+// evaluate all the single band Hilbert spaces
+//
+// maxBandOccupation = maiximum occupation of a single band
+// singleBandTotalKxMax = reference on the array for the maximum total Kx values 
+// singleBandTotalKyMax = reference on the array for the maximum total Ky values
+// singleBandHilbertDimensions = reference on the array for all the Hilbert space dimension (first index being the particle number, second index being the total Kx, third index being the total Ky)
+// singleBandStates = reference on the array for all the Hilbert space basis states 
+
+void FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::GenerateAllSingleBandHilbertSpaces(int maxBandOccupation, int*& singleBandTotalKxMax, int*& singleBandTotalKyMax, long***& singleBandHilbertDimensions, ULONGLONG****& singleBandStates)
+{
+  singleBandTotalKxMax = new int[maxBandOccupation + 1];
+  singleBandTotalKyMax = new int[maxBandOccupation + 1];
+  singleBandHilbertDimensions = new long**[maxBandOccupation + 1];
+  singleBandStates = new ULONGLONG***[maxBandOccupation + 1];
+  int TmpHalfMaxBandOccupation = (this->NbrSiteX * this->NbrSiteY) >> 1;
+  if (maxBandOccupation < TmpHalfMaxBandOccupation)
+    {
+      TmpHalfMaxBandOccupation = maxBandOccupation;
+    }
+  for (int i = 0; i <= TmpHalfMaxBandOccupation; ++i)
+    {
+      singleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
+      singleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
+      singleBandHilbertDimensions[i] = new long*[singleBandTotalKxMax[i] + 1];
+      singleBandStates[i] = new ULONGLONG**[singleBandTotalKxMax[i] + 1];
+      for (int j = 0; j <= singleBandTotalKxMax[i]; ++j)
+	{
+	  singleBandHilbertDimensions[i][j] = new long[singleBandTotalKyMax[i] + 1];
+	  singleBandStates[i][j] = new ULONGLONG*[singleBandTotalKyMax[i] + 1];
+	  for (int k = 0; k <= singleBandTotalKyMax[i]; ++k)
+	    {
+	      singleBandHilbertDimensions[i][j][k] = this->EvaluateSingleBandHilbertSpaceDimension(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k);
+	      if (singleBandHilbertDimensions[i][j][k] > 0l)
+		{
+		  singleBandStates[i][j][k] = new ULONGLONG[singleBandHilbertDimensions[i][j][k]];
+		  long Tmp = this->GenerateSingleBandStates(i, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, j, k, singleBandStates[i][j][k], 0l);
+		  if (Tmp != singleBandHilbertDimensions[i][j][k])
+		    {
+		      cout << "Single band Hilbert space generation error at N=" << i << " Kx=" << j << " Ky=" << k << endl;
+		    }
+		}
+	      else
+		{
+		  singleBandStates[i][j][k] = 0;
+		}
+	    }
+	}
+    }
+  
+  ULONGLONG TmpHoleMask = (ULONGLONG) 0x0ul;
+  for (int i = 0; i < (this->NbrSiteX * this->NbrSiteY); ++i)
+    {
+      TmpHoleMask |= ((ULONGLONG) 0x1ul) << (4 * i);
+    }
+  
+  for (int i = TmpHalfMaxBandOccupation + 1; i <= maxBandOccupation; ++i)
+    {
+      singleBandTotalKxMax[i] = (this->NbrSiteX - 1) * i;
+      singleBandTotalKyMax[i] = (this->NbrSiteY - 1) * i;
+      singleBandHilbertDimensions[i] = new long*[singleBandTotalKxMax[i] + 1];
+      singleBandStates[i] = new ULONGLONG**[singleBandTotalKxMax[i] + 1];
+      for (int j = 0; j <= singleBandTotalKxMax[i]; ++j)
+	{
+	  singleBandHilbertDimensions[i][j] = new long[singleBandTotalKyMax[i] + 1];
+	  singleBandStates[i][j] = new ULONGLONG*[singleBandTotalKyMax[i] + 1];
+	  for (int k = 0; k <= singleBandTotalKyMax[i]; ++k)
+	    {
+	      int TmpNbrHoles = (this->NbrSiteX * this->NbrSiteY) - i;
+	      int TmpHolesTotalKx = (this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) >> 1)) - j;
+	      int TmpHolesTotalKy = (this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) >> 1)) - k;
+	      if ((singleBandTotalKxMax[TmpNbrHoles] < TmpHolesTotalKx) || (singleBandTotalKyMax[TmpNbrHoles] < TmpHolesTotalKy)
+		  || (TmpHolesTotalKx < 0) || (TmpHolesTotalKy < 0))
+		{
+		  singleBandHilbertDimensions[i][j][k] = 0l;
+		  singleBandStates[i][j][k] = 0;
+		}
+	      else
+		{
+		  singleBandHilbertDimensions[i][j][k] = singleBandHilbertDimensions[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
+		  if (singleBandHilbertDimensions[i][j][k] > 0l)
+		    {
+		      long Tmp = singleBandHilbertDimensions[i][j][k];
+		      singleBandStates[i][j][k] = new ULONGLONG[Tmp];
+		      ULONGLONG* TmpInput = singleBandStates[TmpNbrHoles][TmpHolesTotalKx][TmpHolesTotalKy];
+		      ULONGLONG* TmpOutput = singleBandStates[i][j][k];
+		      for (int l = 0; l < Tmp; ++l)
+			{
+			  TmpOutput[l] = (~TmpInput[l]) & TmpHoleMask;
+			}
+		    }
+		  else
+		    {
+		      singleBandStates[i][j][k] = 0;
+		    }
+		}
+	    }
+	}
+    }
+}
+
+// evaluate Hilbert space dimension for a single band
+//
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// singleBandTotalKx = total momentum along x
+// singleBandTotalKy = total momentum along y
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::EvaluateSingleBandHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrFermions == 0)
+    {
+      if ((currentTotalKx == singleBandTotalKx) && (currentTotalKy == singleBandTotalKy))
+	return 1l;
+      else	
+	return 0l;
+    }
+  if ((currentKx < 0) || (((nbrFermions * currentKx) + currentTotalKx) < singleBandTotalKx)
+      || (((nbrFermions * (this->NbrSiteY - 1)) + currentTotalKy) < singleBandTotalKy))
+    return 0l;
+  long Count = 0;
+  Count += this->EvaluateSingleBandHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, singleBandTotalKx, singleBandTotalKy);
+  Count += this->EvaluateSingleBandHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy);
+  return Count;
+}
+
+
+// generate all states corresponding to the constraints for a single band
+// 
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// singleBandTotalKx = total momentum along x
+// singleBandTotalKy = total momentum along y
+// singleBandStateDescription = pointer to the single band state description array
+// pos = position in StateDescription array where to store states
+// return value = position from which new states have to be stored
+
+long FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong::GenerateSingleBandStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int singleBandTotalKx, int singleBandTotalKy, ULONGLONG* singleBandStateDescription, long pos)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrFermions == 0)
+    {
+      if ((currentTotalKx == singleBandTotalKx) && (currentTotalKy == singleBandTotalKy))
+	{
+	  singleBandStateDescription[pos] = (ULONGLONG) 0x0ul;	  
+	  return (pos + 1l);
+	}
+      else	
+	return pos;
+    }
+  if (currentKx < 0)
+    return pos;
+  long TmpPos = this->GenerateSingleBandStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
+  ULONGLONG Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) * 4);
+  for (; pos < TmpPos; ++pos)
+    singleBandStateDescription[pos] |= Mask;
+  return this->GenerateSingleBandStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, singleBandTotalKx, singleBandTotalKy, singleBandStateDescription, pos);
+};
+

@@ -2412,7 +2412,7 @@ bool FermionOnSphereWithSpin::ReadCoreHilbertSpace (char* fileName)
       return false;
     }
   ReadLittleEndian(File, this->LargeHilbertSpaceDimension);
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+  if (this->LargeHilbertSpaceDimension >= (1l << 31))
     this->HilbertSpaceDimension = 0;
   else
     this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;

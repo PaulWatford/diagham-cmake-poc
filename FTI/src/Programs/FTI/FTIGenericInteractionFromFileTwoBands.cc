@@ -1913,12 +1913,12 @@ int main(int argc, char** argv)
 			  if ((NbrSitesX * NbrSitesY) <= 16)
 			    {
 			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-												      PzValues[SymmetrySectorIndex], 10000000ul);
+												      PzValues[SymmetrySectorIndex], Manager.GetString("hilbert-directory"), 10000000ul);
 			    }
 			  else
 			    {
 			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-													  PzValues[SymmetrySectorIndex], 10000000ul);
+													  PzValues[SymmetrySectorIndex], Manager.GetString("hilbert-directory"), 10000000ul);
 			    }
 			}
 		    }
@@ -1985,12 +1985,12 @@ int main(int argc, char** argv)
 			  if ((NbrSitesX * NbrSitesY) <= 16)
 			    {
 			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-												      SzValues[SymmetrySectorIndex], 10000000ul);
+												      SzValues[SymmetrySectorIndex], Manager.GetString("hilbert-directory"), 10000000ul);
 			    }
 			  else
 			    {
 			      Space = new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, MaxBand0, MaxBand1, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-													  SzValues[SymmetrySectorIndex], 10000000ul);
+													  SzValues[SymmetrySectorIndex], Manager.GetString("hilbert-directory"), 10000000ul);
 			    }
 			}
 		    }

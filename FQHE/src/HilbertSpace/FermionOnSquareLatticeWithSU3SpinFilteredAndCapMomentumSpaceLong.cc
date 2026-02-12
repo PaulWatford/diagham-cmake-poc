@@ -368,6 +368,10 @@ FermionOnSquareLatticeWithSU3SpinFilteredAndCapMomentumSpaceLong::FermionOnSquar
 	cout << UsedMemory << endl;
 #endif
     }
+  else
+    {
+      this->HilbertSpaceDimension = 0;
+    }
 }
 
 // copy constructor (without duplicating datas)

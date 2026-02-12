@@ -188,6 +188,10 @@ FermionOnSquareLatticeWithSU3SpinAndCapMomentumSpace::FermionOnSquareLatticeWith
 	cout << UsedMemory << endl;
 #endif
     }
+  else
+    {
+      this->HilbertSpaceDimension = 0;
+    }
 }
 
 // basic constructor

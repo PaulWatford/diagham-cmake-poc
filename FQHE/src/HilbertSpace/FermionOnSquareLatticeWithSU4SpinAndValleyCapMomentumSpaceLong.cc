@@ -1190,7 +1190,9 @@ void FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::GenerateSta
 	      for (int TmpN1Up = 0; TmpN1Up <= TmpN1; ++TmpN1Up)
 		{
 		  int TmpN1Down = TmpN1 - TmpN1Up;
-		  if ((this->SzFlag == false) || (((TmpN0Up + TmpN1Up) - (TmpN0Down + TmpN1Down)) == this->TotalSpin))
+		  if (((this->SzFlag == false) || (((TmpN0Up + TmpN1Up) - (TmpN0Down + TmpN1Down)) == this->TotalSpin))
+		      && (TmpN0Up <= TmpMaxBandOccupation) && (TmpN0Down <= TmpMaxBandOccupation)
+		      && (TmpN1Up <= TmpMaxBandOccupation) && (TmpN1Down <= TmpMaxBandOccupation))
 		    {
 		      for (int TmpKx0Up = 0; TmpKx0Up <= TmpSingleBandTotalKxMax[TmpN0Up]; ++TmpKx0Up)
 			{
@@ -1260,7 +1262,9 @@ void FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::GenerateSta
 		  for (int TmpN1Up = 0; TmpN1Up <= TmpN1; ++TmpN1Up)
 		    {
 		      int TmpN1Down = TmpN1 - TmpN1Up;
-		      if ((this->SzFlag == false) || (((TmpN0Up + TmpN1Up) - (TmpN0Down + TmpN1Down)) == this->TotalSpin))
+		      if (((this->SzFlag == false) || (((TmpN0Up + TmpN1Up) - (TmpN0Down + TmpN1Down)) == this->TotalSpin))
+			  && (TmpN0Up <= TmpMaxBandOccupation) && (TmpN0Down <= TmpMaxBandOccupation)
+			  && (TmpN1Up <= TmpMaxBandOccupation) && (TmpN1Down <= TmpMaxBandOccupation))
 			{
 			  for (int TmpKx0Up = 0; TmpKx0Up <= TmpSingleBandTotalKxMax[TmpN0Up]; ++TmpKx0Up)
 			    {

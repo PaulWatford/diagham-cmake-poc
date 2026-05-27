@@ -27,7 +27,7 @@
 #include "Architecture/AbstractArchitecture.h"
 #include "Architecture/ArchitectureOperation/MainTaskOperation.h"
 
-
+#include "LanczosAlgorithm/LanczosManager.h"
 
 #include "MainTask/QHEOnSphereMainTask.h"
 
@@ -103,6 +103,7 @@ int main(int argc, char** argv)
 
   OptionManager Manager("FQHESphereFermionsNFlavor", "0.01");
   ArchitectureManager Architecture;
+  LanczosManager Lanczos(false);  
 
   // -------------------------
   // Option groups
@@ -110,16 +111,15 @@ int main(int argc, char** argv)
   OptionGroup* SystemGroup   = new OptionGroup("system options");
   OptionGroup* ToolsGroup    = new OptionGroup("tools options");
   OptionGroup* OutputGroup   = new OptionGroup("output options");
-  OptionGroup* LanczosGroup  = new OptionGroup("lanczos options");
   OptionGroup* PrecalcGroup  = new OptionGroup("precalculation options");
   OptionGroup* MiscGroup     = new OptionGroup("misc options");
 
   Manager += SystemGroup;
-  Manager += ToolsGroup;
-  Manager += OutputGroup;
-  Manager += LanczosGroup;
-  Manager += PrecalcGroup;
   Architecture.AddOptionGroup(&Manager);
+  Lanczos.AddOptionGroup(&Manager);
+  Manager += OutputGroup;
+  Manager += PrecalcGroup;
+  Manager += ToolsGroup;
   Manager += MiscGroup;
 
   // -------------------------
@@ -146,41 +146,13 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption('\n', "interaction-name", "interaction name label used in output files", (char*)"nflavor");
   (*SystemGroup) += new SingleStringOption('\n', "use-hilbert", "external Hilbert space file", 0);
   (*SystemGroup) += new SingleIntegerOption('\n', "fast-search", "memory for Hilbert space lookup (MB)", 100);
-  // -------------------------
-  // Output / Lanczos / Tools
-  // -------------------------
-  (*OutputGroup) += new BooleanOption('\n', "eigenstate", "compute and store eigenvectors", false);
-  (*OutputGroup) += new BooleanOption('\n', "use-entanglement", "enable entanglement-related outputs (if available)", false);
-  (*OutputGroup) += new SingleDoubleOption('\n', "energy-shift", "energy shift applied to Hamiltonian (for Lanczos stability)", 0.0);
 
-  (*LanczosGroup) += new SingleIntegerOption('n', "nbr-eigen", "number of eigenvalues", 30);
-  (*LanczosGroup) += new SingleIntegerOption('\n', "full-diag",
-          "maximum Hilbert space dimension for which full diagonalization is applied",
-          500, true, 100);
-  (*LanczosGroup) += new SingleIntegerOption('\n', "iter-max", "maximum number of lanczos iteration", 3000);
-  (*LanczosGroup) += new BooleanOption('\n', "block-lanczos", "use block Lanczos algorithm", false);
-  (*LanczosGroup) += new SingleIntegerOption('\n', "block-size", "block size for block Lanczos", 2);
-  (*LanczosGroup) += new SingleIntegerOption('\n', "limit-time", "time limit in seconds (0 = none)", 0);
-  (*LanczosGroup) += new BooleanOption('d', "disk", "enable disk resume capabilities", false);
-  (*LanczosGroup) += new BooleanOption('r', "resume", "resume from disk datas", false);
-  (*LanczosGroup) += new SingleIntegerOption('\n', "nbr-iter", "number of Lanczos iterations for current run", 10);
-  (*LanczosGroup) += new SingleIntegerOption('\n', "nbr-vector", "max vectors in RAM during Lanczos", 10);
-  (*LanczosGroup) += new BooleanOption('\n', "force-reorthogonalize", "force reorthogonalization", false);
-  (*LanczosGroup) += new BooleanOption('\n', "eigenstate-convergence", "use eigenstate convergence", false);
-  (*LanczosGroup) += new BooleanOption('\n', "show-itertime", "show iteration timing", false);
-  (*LanczosGroup) += new SingleStringOption('\n', "initial-vector", "initial Lanczos vector file", 0);
-  (*LanczosGroup) += new BooleanOption('\n', "partial-lanczos", "run only limited Lanczos iterations", false);
-  (*LanczosGroup) += new SingleDoubleOption('\n', "lanczos-precision", "Lanczos precision", 0);
-  (*LanczosGroup) += new BooleanOption('\n', "fast-disk", "use fast disk mode");
-  (*LanczosGroup) += new BooleanOption('\n', "resume-fastdisk", "resume fast disk mode");
-  (*PrecalcGroup) += new BooleanOption('\n', "disk-cache", "use on-disk cache for precalculations", false);
-  (*PrecalcGroup) += new SingleIntegerOption('m', "memory", "precalculation memory in MB", 0);
-  (*PrecalcGroup) += new SingleStringOption('\n', "save-precalculation", "save precalculation to this file", 0);
-  (*PrecalcGroup) += new SingleStringOption('\n', "load-precalculation", "load precalculation from this file", 0);
-
-  #ifdef __LAPACK__
+#ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption('\n', "use-lapack", "use LAPACK instead of DiagHam");
-  #endif
+#endif
+#ifdef __SCALAPACK__
+  (*ToolsGroup) += new BooleanOption  ('\n', "use-scalapack", "use SCALAPACK libraries instead of DiagHam or LAPACK libraries");
+#endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
   (*MiscGroup) += new BooleanOption('h', "help", "display this help", false);
 

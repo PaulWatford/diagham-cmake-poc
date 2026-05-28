@@ -147,6 +147,15 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleStringOption('\n', "use-hilbert", "external Hilbert space file", 0);
   (*SystemGroup) += new SingleIntegerOption('\n', "fast-search", "memory for Hilbert space lookup (MB)", 100);
 
+  (*OutputGroup) += new BooleanOption('\n', "eigenstate", "compute and store eigenvectors", false);
+  (*OutputGroup) += new BooleanOption('\n', "use-entanglement", "enable entanglement-related outputs (if available)", false);
+  (*OutputGroup) += new SingleDoubleOption('\n', "energy-shift", "energy shift applied to Hamiltonian (for Lanczos stability)", 0.0);
+
+  (*PrecalcGroup) += new BooleanOption('\n', "disk-cache", "use on-disk cache for precalculations", false);
+  (*PrecalcGroup) += new SingleIntegerOption('m', "memory", "precalculation memory in MB", 0);
+  (*PrecalcGroup) += new SingleStringOption('\n', "save-precalculation", "save precalculation to this file", 0);
+  (*PrecalcGroup) += new SingleStringOption('\n', "load-precalculation", "load precalculation from this file", 0);
+  
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption('\n', "use-lapack", "use LAPACK instead of DiagHam");
 #endif

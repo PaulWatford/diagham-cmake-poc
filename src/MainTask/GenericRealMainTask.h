@@ -205,7 +205,7 @@ protected:
   // terminate = indicate if line should be terminated with endl
   void WriteResult(ofstream& file, double value, bool terminate=true);
  
- // do the Hamiltonian diagonalization in a given Hilbert subspace
+  // do the Hamiltonian diagonalization in a given Hilbert subspace
   //
   // subspaceDescription = name of the file that contains the vector files used to describe the Hilbert subspace
   // file = reference on the output file stream where eigenvalues have to be stored

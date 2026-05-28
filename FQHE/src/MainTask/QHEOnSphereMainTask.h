@@ -36,6 +36,7 @@
 
 #include "MainTask/AbstractMainTask.h"
 #include "Hamiltonian/AbstractHamiltonian.h"
+#include "Matrix/RealDiagonalMatrix.h"
 
 #include <iostream>
 
@@ -95,6 +96,12 @@ class QHEOnSphereMainTask: public AbstractMainTask
   bool FullReorthogonalizationFlag;
   // evaluate eigenstates
   bool EvaluateEigenvectors;
+  // evaluate all eigenstates
+  bool EvaluateAllEigenvectors;
+  // export the eigenstates in an ascii format rather than a binary format
+  bool EvaluateAsciiEigenvectors;
+  // index of the first eigenstate to compute
+  int FirstEigenstateIndex;
   // prefix to add to the name of each file that will contain an eigenvector
   char* EigenvectorFileName;
   // evaluate Lanczos convergence from eigenstate convergence
@@ -109,6 +116,8 @@ class QHEOnSphereMainTask: public AbstractMainTask
   bool PartialLanczos;
   // use LAPACK libraries instead of DiagHam libraries
   bool LapackFlag;
+  // use SCALAPACK libraries instead of DiagHam and/or Lapack libraries
+  bool ScalapackFlag;
   // name of the file that contains the vector files used to describe the Hilbert subspace
   char* ReducedHilbertSpaceDescription;
   // show the hamiltonian
@@ -127,6 +136,9 @@ class QHEOnSphereMainTask: public AbstractMainTask
   bool FirstRun;
   // name of the file that contains a optional set of vectors to which eigenstates have to be orthogonal
   char* LanczosReorthogonalization;
+
+  // matrix where the eigenvalue will be stored
+  RealDiagonalMatrix EigenvalueMatrix;
 
   // fields for storage of optional projector operators to use in Lanczos algorithm
   AbstractHamiltonian** Projectors;
@@ -182,6 +194,13 @@ class QHEOnSphereMainTask: public AbstractMainTask
 
  protected:
 
+  // write a line of output to the results file
+  //
+  // file = stream to write to
+  // value = numerical value to be printed after columns for flux and momentum (if defined)
+  // terminate = indicate if line should be terminated with endl
+  void WriteResult(ofstream& file, double value, bool terminate=true);
+ 
   // do the Hamiltonian diagonalization in a given Hilbert subspace
   //
   // subspaceDescription = name of the file that contains the vector files used to describe the Hilbert subspace

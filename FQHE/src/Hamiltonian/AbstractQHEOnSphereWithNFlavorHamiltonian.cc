@@ -1314,6 +1314,8 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
 
     this->InteractionPerComponentCoefficient[TotalPos] = new double[this->NbrInteractionPerComponent[TotalPos]];
 
+    cout << "TotalPos = " << TotalPos << " " << this->NbrInteractionPerComponent[TotalPos] << endl;
+
     TmpIndexArray = this->InteractionPerComponentIndex[TotalPos];
     TmpCoefficientArray = this->InteractionPerComponentCoefficient[TotalPos];
 

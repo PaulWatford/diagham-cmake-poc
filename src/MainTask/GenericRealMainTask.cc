@@ -1094,6 +1094,7 @@ void GenericRealMainTask::AddOptionGroup(OptionManager *optionManager)
 // file = stream to write to
 // value = numerical value to be printed after columns for flux and momentum (if defined)
 // terminate = indicate if line should be terminated with endl
+
 void GenericRealMainTask::WriteResult(ofstream& file, double value, bool terminate)
 {
   if (SubspaceStr[0] != '\0')

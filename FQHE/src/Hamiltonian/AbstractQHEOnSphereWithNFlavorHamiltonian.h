@@ -138,7 +138,13 @@ protected:
   RealVector* LowLevelMultipleAddMultiplyPartialFastMultiply(RealVector* vSources, RealVector* vDestinations,
 							     int nbrVectors, int firstComponent, int nbrComponent);
 
-  virtual long PartialFastMultiplicationMemory( int firstComponent, int lastComponent);
+  // test the amount of memory needed for fast multiplication algorithm (partial evaluation)
+  //
+  // firstComponent = index of the first component that has to be precalcualted
+  // nbrComponent  = number of components that has to be precalcualted
+  // return value = number of non-zero matrix element
+  virtual long PartialFastMultiplicationMemory(int firstComponent, int nbrComponent);
+
   virtual void PartialEnableFastMultiplication( int firstComponent, int lastComponent);
 
   virtual void EnableFastMultiplicationWithDiskStorage(char* fileName);

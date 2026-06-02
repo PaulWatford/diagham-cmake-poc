@@ -1,3 +1,35 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                                                                            //
+//                            DiagHam  version 0.01                           //
+//                                                                            //
+//                   Copyright (C) 2001-2005 Nicolas Regnault                 //
+//                                                                            //
+//                                                                            //
+//                   class of fermions on sphere with N flavors               //
+//                                                                            //
+//                           class author: Sahana Das                         //
+//                                                                            //
+//                        last modification : 27/05/2026                      //
+//                                                                            //
+//                                                                            //
+//    This program is free software; you can redistribute it and/or modify    //
+//    it under the terms of the GNU General Public License as published by    //
+//    the Free Software Foundation; either version 2 of the License, or       //
+//    (at your option) any later version.                                     //
+//                                                                            //
+//    This program is distributed in the hope that it will be useful,         //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of          //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           //
+//    GNU General Public License for more details.                            //
+//                                                                            //
+//    You should have received a copy of the GNU General Public License       //
+//    along with this program; if not, write to the Free Software             //
+//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.               //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
 #include "config.h"
 #include "HilbertSpace/FermionOnSphereWithNFlavor.h"
 #include "HilbertSpace/FermionOnSphere.h"
@@ -14,6 +46,8 @@
 
 using std::cout;
 using std::endl;
+using std::hex;
+using std::dec;
 
 
 /**************************************************************/
@@ -412,37 +446,67 @@ int FermionOnSphereWithNFlavor::AdsigmaAdsigma(int m1, int m2, int sigma1, int s
 
 int FermionOnSphereWithNFlavor::FindStateIndex(unsigned long stateDescription, int lzmax)
 {
-  int TableMaxBit = (this->LzMax + 1) * this->NbrFlavors - 1;
-
-  if (lzmax < 0 || lzmax > TableMaxBit)
-    return this->HilbertSpaceDimension;
-
-  unsigned long CurrentState = stateDescription >> this->LookUpTableShift[lzmax];
-
-  if (CurrentState > (unsigned long)this->LookUpTableMemorySize)
-    CurrentState = this->LookUpTableMemorySize;
-
-  int PosMin = this->LookUpTable[lzmax][CurrentState];
-  int PosMax = this->LookUpTable[lzmax][CurrentState + 1];
-  int PosMid = (PosMin + PosMax) >> 1;
-
-  CurrentState = this->StateDescription[PosMid];
-
+  if ((stateDescription > this->StateDescription[0]) || (stateDescription < this->StateDescription[this->HilbertSpaceDimension - 1]))
+    {
+      return this->HilbertSpaceDimension;
+    }
+  long PosMax = stateDescription >> this->LookUpTableShift[lzmax];
+  long PosMin = this->LookUpTable[lzmax][PosMax];
+  PosMax = this->LookUpTable[lzmax][PosMax + 1];
+  long PosMid = (PosMin + PosMax) >> 1;
+  unsigned long CurrentState = this->StateDescription[PosMid];
   while ((PosMax != PosMid) && (CurrentState != stateDescription))
-  {
-    if (CurrentState > stateDescription)
-      PosMax = PosMid;
-    else
-      PosMin = PosMid;
-
-    PosMid = (PosMin + PosMax) >> 1;
-    CurrentState = this->StateDescription[PosMid];
-  }
-
+    {
+      if (CurrentState > stateDescription)
+	{
+	  PosMax = PosMid;
+	}
+      else
+	{
+	  PosMin = PosMid;
+	} 
+      PosMid = (PosMin + PosMax) >> 1;
+      CurrentState = this->StateDescription[PosMid];
+    }
   if (CurrentState == stateDescription)
     return PosMid;
   else
-    return this->HilbertSpaceDimension;
+    if ((this->StateDescription[PosMin] != stateDescription) && (this->StateDescription[PosMax] != stateDescription))
+      return this->HilbertSpaceDimension;
+    else
+      return PosMin;
+
+  // int TableMaxBit = (this->LzMax + 1) * this->NbrFlavors - 1;
+
+  // if (lzmax < 0 || lzmax > TableMaxBit)
+  //   return this->HilbertSpaceDimension;
+
+  // unsigned long CurrentState = stateDescription >> this->LookUpTableShift[lzmax];
+
+  // if (CurrentState > (unsigned long)this->LookUpTableMemorySize)
+  //   CurrentState = this->LookUpTableMemorySize;
+
+  // int PosMin = this->LookUpTable[lzmax][CurrentState];
+  // int PosMax = this->LookUpTable[lzmax][CurrentState + 1];
+  // int PosMid = (PosMin + PosMax) >> 1;
+
+  // CurrentState = this->StateDescription[PosMid];
+
+  // while ((PosMax != PosMid) && (CurrentState != stateDescription))
+  // {
+  //   if (CurrentState > stateDescription)
+  //     PosMax = PosMid;
+  //   else
+  //     PosMin = PosMid;
+
+  //   PosMid = (PosMin + PosMax) >> 1;
+  //   CurrentState = this->StateDescription[PosMid];
+  // }
+
+  // if (CurrentState == stateDescription)
+  //   return PosMid;
+  // else
+  //   return this->HilbertSpaceDimension;
 }
 
 
@@ -814,7 +878,7 @@ void FermionOnSphereWithNFlavor::GenerateLookUpTable(unsigned long memory)
 
   for (int i = 0; i <= TableMaxBit; ++i)
   {
-    this->LookUpTable[i] = new int[this->LookUpTableMemorySize + 1];
+    this->LookUpTable[i] = new int[this->LookUpTableMemorySize + 1];    
     this->LookUpTableShift[i] = 0;
     for (int j = 0; j <= this->LookUpTableMemorySize; ++j)
       this->LookUpTable[i][j] = 0;

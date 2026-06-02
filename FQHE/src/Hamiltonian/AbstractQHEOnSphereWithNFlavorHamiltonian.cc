@@ -324,20 +324,20 @@ LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination,
         for (int m = 0; m <= this->LzMax; ++m)
           for (int a = 0; a < NbrFlavors; ++a)
             for (int b = 0; b < NbrFlavors; ++b)
-              if (a != b)
-              {
-                Index = TmpParticles->AdsigmaAsigma(i, m, m, a, b, Coefficient);
-    
-                if (Index < Dim)
-                  vDestination[Index] += Coefficient * this->OneBodyInteractionFactors[a][b][m] * vSource[i];
-              }
+              if ((a != b) && (this->OneBodyInteractionFactors[a][b] != 0))
+		{
+		  Index = TmpParticles->AdsigmaAsigma(i, m, m, a, b, Coefficient);
+		  
+		  if (Index < Dim)
+		    vDestination[Index] += Coefficient * this->OneBodyInteractionFactors[a][b][m] * vSource[i];
+		}
       }
-    }
-    else
-    {
-      for (int i = firstComponent; i < LastComponent; ++i)
-        vDestination[i] += this->HamiltonianShift * vSource[i];
-    }
+      }
+      else
+	{
+	  for (int i = firstComponent; i < LastComponent; ++i)
+	    vDestination[i] += this->HamiltonianShift * vSource[i];
+	}
 
 	  //cout << " Final vDestination = " << vDestination << " Shift = " << this->HamiltonianShift << endl;
 
@@ -531,15 +531,14 @@ LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination,
               for (int m = 0; m <= this->LzMax; ++m)
                 for (int a = 0; a < NbrFlavors; ++a)
                   for (int b = 0; b < NbrFlavors; ++b)
-                    if (a != b)
-                    {
-                      Index2 =
-                        TmpParticles->AdsigmaAsigma(
-                          i, m, m, a, b, Coeff2);
+                    if ((a != b) && (this->OneBodyInteractionFactors[a][b] != 0))
+		      {
+			Index2 =
+			  TmpParticles->AdsigmaAsigma(i, m, m, a, b, Coeff2);
 
-                      if (Index2 < Dim)
-                        vDestination[Index2] += Coeff2 * this->OneBodyInteractionFactors[a][b][m] * Source;
-                    }
+			if (Index2 < Dim)
+			  vDestination[Index2] += Coeff2 * this->OneBodyInteractionFactors[a][b][m] * Source;
+		      }
             }
             else
             {
@@ -798,7 +797,7 @@ LowLevelMultipleAddMultiply(RealVector* vSources,
           for (int m = 0; m <= this->LzMax; ++m)
             for (int a = 0; a < NbrFlavors; ++a)
               for (int b = 0; b < NbrFlavors; ++b)
-                if (a != b)
+                if ((a != b) && (this->OneBodyInteractionFactors[a][b] != 0))
                 {
                   Index = TmpParticles->AdsigmaAsigma(i, m, m, a, b, Coefficient);
     
@@ -1095,19 +1094,19 @@ LowLevelMultipleAddMultiplyPartialFastMultiply(
           for (int m = 0; m <= this->LzMax; ++m)
             for (int a = 0; a < NbrFlavors; ++a)
               for (int b = 0; b < NbrFlavors; ++b)
-                if (a != b)
-                {
-                  Index =
-                    TmpParticles->AdsigmaAsigma(
-                        i, m, m, a, b, Coefficient);
-
-                  if (Index < Dim)
-                    for (int p = 0; p < nbrVectors; ++p)
-                      vDestinations[p][Index] +=
+                if ((a != b) && (this->OneBodyInteractionFactors[a][b] != 0))
+		  {
+		    Index =
+		      TmpParticles->AdsigmaAsigma(
+						  i, m, m, a, b, Coefficient);
+		    
+		    if (Index < Dim)
+		      for (int p = 0; p < nbrVectors; ++p)
+			vDestinations[p][Index] +=
                           Coefficient * this->OneBodyInteractionFactors[a][b][m] * vSources[p][i];
-                }
+		  }
         }   // One-body loop
-     }    // Non-precalculated part loop
+      }    // Non-precalculated part loop
     }   // Fast multiplication step loop
 
   delete[] Coefficient2;
@@ -1235,23 +1234,22 @@ PartialFastMultiplicationMemory(int firstComponent, int lastComponent)
       for (int m = 0; m <= this->LzMax; ++m)
         for (int a = 0; a < NbrFlavors; ++a)
           for (int b = 0; b < NbrFlavors; ++b)
-            if (a != b)
-            {
-              Index = TmpParticles->AdsigmaAsigma(i, m, m, a, b, Coefficient);
-    
-              if (Index < Dim)
-              {
-                ++Memory;
-                ++this->NbrInteractionPerComponent[i - this->PrecalculationShift];
-              }
-            }
+            if ((a != b) && (this->OneBodyInteractionFactors[a][b] != 0))
+	      {
+		Index = TmpParticles->AdsigmaAsigma(i, m, m, a, b, Coefficient);
+		
+		if (Index < Dim)
+		  {
+		    ++Memory;
+		    ++this->NbrInteractionPerComponent[i - this->PrecalculationShift];
+		  }
+	      }
     }
   
   
   }
 
   delete TmpParticles;
-
   return Memory;
 }
 
@@ -1286,12 +1284,13 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
        this->FastMultiplicationStep) != EffectiveHilbertSpaceDimension)
     ++ReducedSpaceDimension;
 
-  if (this->NbrInteractionPerComponent == 0)
-    this->NbrInteractionPerComponent = new int[EffectiveHilbertSpaceDimension];
-  
+  int* TmpNbrInteractionPerComponent = this->NbrInteractionPerComponent;
+  this->NbrInteractionPerComponent = new int [EffectiveHilbertSpaceDimension];
   for (int i = 0; i < EffectiveHilbertSpaceDimension; ++i)
     this->NbrInteractionPerComponent[i] = 0;
 
+
+  
   //this->PartialFastMultiplicationMemory( this->PrecalculationShift, EffectiveHilbertSpaceDimension);
   
   this->InteractionPerComponentIndex = new int*[ReducedSpaceDimension];
@@ -1310,11 +1309,13 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
        i < EffectiveHilbertSpaceDimension;
        i += this->FastMultiplicationStep)
   {
+    this->NbrInteractionPerComponent[TotalPos] = TmpNbrInteractionPerComponent[i];
     this->InteractionPerComponentIndex[TotalPos] = new int[this->NbrInteractionPerComponent[TotalPos]];
 
     this->InteractionPerComponentCoefficient[TotalPos] = new double[this->NbrInteractionPerComponent[TotalPos]];
 
-    cout << "TotalPos = " << TotalPos << " " << this->NbrInteractionPerComponent[TotalPos] << endl;
+    // cout << "i = " << i << " " << this->PrecalculationShift << endl;
+    // cout << "TotalPos = " << TotalPos << " " << this->NbrInteractionPerComponent[TotalPos] << endl;
 
     TmpIndexArray = this->InteractionPerComponentIndex[TotalPos];
     TmpCoefficientArray = this->InteractionPerComponentCoefficient[TotalPos];
@@ -1442,10 +1443,14 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
       double TmpDiagonal = 0.0;
 
       for (int s = 0; s < NbrFlavors; ++s)
-        for (int m = 0; m <= this->LzMax; ++m)
-          TmpDiagonal += this->OneBodyInteractionFactors[s][s][m] *
-            TmpParticles->AdsigmaAsigma(i + this->PrecalculationShift, m, s);
-
+	{
+	  if (this->OneBodyInteractionFactors[s][s] !=0)
+	    {
+	      for (int m = 0; m <= this->LzMax; ++m)
+		TmpDiagonal += this->OneBodyInteractionFactors[s][s][m] *
+		  TmpParticles->AdsigmaAsigma(i + this->PrecalculationShift, m, s);
+	    }
+	}
       TmpIndexArray[Pos] = i + this->PrecalculationShift;
       TmpCoefficientArray[Pos] = TmpDiagonal;   // + this->HamiltonianShift
       ++Pos;
@@ -1456,7 +1461,7 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
       for (int m = 0; m <= this->LzMax; ++m)
         for (int a = 0; a < NbrFlavors; ++a)
           for (int b = 0; b < NbrFlavors; ++b)
-            if (a != b)
+            if ((a != b) && (this->OneBodyInteractionFactors[a][b] != 0))
             {
               Index =
                 TmpParticles->AdsigmaAsigma(i + this->PrecalculationShift, m, m, a, b, Coefficient);
@@ -1472,7 +1477,8 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
 
     ++TotalPos;
   }
-
+  delete[] TmpNbrInteractionPerComponent;
+  
   this->FastMultiplicationFlag = true;
   gettimeofday(&(TotalEndingTime2), 0);
   cout << "------------------------------------------------------------------" << endl << endl;
@@ -1480,6 +1486,7 @@ void AbstractQHEOnSphereWithNFlavorHamiltonian::EnableFastMultiplication()
   Dt2 = (double)(TotalEndingTime2.tv_sec - TotalStartingTime2.tv_sec) + ((TotalEndingTime2.tv_usec - TotalStartingTime2.tv_usec) / 1000000.0);
   cout << "time = " << Dt2 << endl;
 }
+
 
 
 void AbstractQHEOnSphereWithNFlavorHamiltonian::PartialEnableFastMultiplication(int firstComponent, int lastComponent)

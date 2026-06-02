@@ -272,9 +272,7 @@ int main(int argc, char** argv)
       OneBody[a] = new double*[NbrFlavors];
       for (int b=0; b<NbrFlavors; ++b)
       {
-          OneBody[a][b] = new double[LzMax+1];
-          for (int m=0; m<=LzMax; ++m)
-              OneBody[a][b][m] = 0.0;
+	OneBody[a][b] = 0;
       }
   }
 
@@ -304,6 +302,9 @@ int main(int argc, char** argv)
         if (InteractionFile.GetAsDoubleArray(key, ' ', vals, nvals) == true)
           {
             int copyMax = (nvals <= (LzMax+1)) ? nvals : (LzMax+1);
+	    OneBody[a][b] = new double[LzMax+1];
+	    for (int m=0; m<=LzMax; ++m)
+              OneBody[a][b][m] = 0.0;
             for (int m=0; m<copyMax; ++m)
               OneBody[a-1][b-1][m] = vals[m];
             delete[] vals;

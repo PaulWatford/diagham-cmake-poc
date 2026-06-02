@@ -66,7 +66,6 @@ ParticleOnSphereWithNFlavorGenericHamiltonian::ParticleOnSphereWithNFlavorGeneri
   this->NbrLzValue = this->LzMax + 1;
   this->NbrParticles = nbrParticles;
   this->FastMultiplicationFlag = false;
-  this->OneBodyTermFlag = false;
   this->Architecture = architecture;
   this->NbrFlavors = particles->GetNbrFlavors();
 
@@ -74,32 +73,39 @@ ParticleOnSphereWithNFlavorGenericHamiltonian::ParticleOnSphereWithNFlavorGeneri
 
   this->PseudoPotentials = new double* [NChannels];
   for (int j = 0; j < NChannels; ++j)
-  {
-    this->PseudoPotentials[j] = new double [this->NbrLzValue];
-    for (int i = 0; i < this->NbrLzValue; ++i)
-    this->PseudoPotentials[j][i] = pseudoPotential[j][this->LzMax - i];
-  }
+    {
+      this->PseudoPotentials[j] = new double [this->NbrLzValue];
+      for (int i = 0; i < this->NbrLzValue; ++i)
+	this->PseudoPotentials[j][i] = pseudoPotential[j][this->LzMax - i];
+    }
 
   this->OneBodyInteractionFactors = 0;
-
+  this->OneBodyTermFlag = false;
+ 
   if (oneBodyPotential)
-  {
-    this->OneBodyTermFlag = true;
-
-    this->OneBodyInteractionFactors = new double** [this->NbrFlavors];
-    for (int a = 0; a < this->NbrFlavors; ++a)
     {
-      this->OneBodyInteractionFactors[a] = new double* [this->NbrFlavors];
-
-      for (int b = 0; b < this->NbrFlavors; ++b)
-      {
-        this->OneBodyInteractionFactors[a][b] = new double[this->NbrLzValue];
-
-        for (int m = 0; m < this->NbrLzValue; ++m)
-          this->OneBodyInteractionFactors[a][b][m] = oneBodyPotential[a][b][m];
-      }
+      this->OneBodyTermFlag = true;
+      
+      this->OneBodyInteractionFactors = new double** [this->NbrFlavors];
+      for (int a = 0; a < this->NbrFlavors; ++a)
+	{
+	  this->OneBodyInteractionFactors[a] = new double* [this->NbrFlavors];
+	  
+	  for (int b = 0; b < this->NbrFlavors; ++b)
+	    {
+	      if (oneBodyPotential[a][b] != 0)
+		{
+		  this->OneBodyInteractionFactors[a][b] = new double[this->NbrLzValue];		  
+		  for (int m = 0; m < this->NbrLzValue; ++m)
+		    this->OneBodyInteractionFactors[a][b][m] = oneBodyPotential[a][b][m];
+		}
+	      else
+		{
+		  this->OneBodyInteractionFactors[a][b] = 0;
+		}
+	    }
+	}
     }
-  }
 
   this->EvaluateInteractionFactors();
   this->HamiltonianShift = 0.0;

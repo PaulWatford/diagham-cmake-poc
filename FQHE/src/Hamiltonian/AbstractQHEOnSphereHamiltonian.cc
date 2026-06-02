@@ -66,6 +66,7 @@ AbstractQHEOnSphereHamiltonian::AbstractQHEOnSphereHamiltonian()
   this->InteractionPerComponentIndex = 0;
   this->InteractionPerComponentLargeIndex = 0;
   this->LargePrecalculationShift = 0l;
+  this->FastMultiplicationLargeStep = 0l;
 }
 
 // destructor

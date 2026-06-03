@@ -309,9 +309,13 @@ LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination,
       /* -------- diagonal ---------- */
 
         for (int sigma = 0; sigma < NbrFlavors; ++sigma)
-          for (int j = 0; j <= this->LzMax; ++j)
-            TmpDiagonal += this->OneBodyInteractionFactors[sigma][sigma][j] * TmpParticles->AdsigmaAsigma(i, j, sigma);
-
+	  {
+	    if (this->OneBodyInteractionFactors[sigma][sigma])
+	      {
+		for (int j = 0; j <= this->LzMax; ++j)
+		  TmpDiagonal += this->OneBodyInteractionFactors[sigma][sigma][j] * TmpParticles->AdsigmaAsigma(i, j, sigma);
+	      }
+	  }
         vDestination[i] += (this->HamiltonianShift + TmpDiagonal) * vSource[i];
         //cout << "One body " << i << " = " << TmpDiagonal << endl;
 
@@ -518,10 +522,14 @@ LowLevelAddMultiply(RealVector& vSource, RealVector& vDestination,
 
               /* ---- diagonal ---- */
               for (int s = 0; s < NbrFlavors; ++s)
-                for (int m = 0; m <= this->LzMax; ++m)
-                  TmpDiagonal +=
-                    this->OneBodyInteractionFactors[s][s][m] * TmpParticles->AdsigmaAsigma(i, m, s);
-
+		{
+		  if (this->OneBodyInteractionFactors[s][s] != 0)
+		    {
+		      for (int m = 0; m <= this->LzMax; ++m)
+			TmpDiagonal +=
+			  this->OneBodyInteractionFactors[s][s][m] * TmpParticles->AdsigmaAsigma(i, m, s);
+		    }
+		}
               vDestination[i] += (this->HamiltonianShift + TmpDiagonal) * Source;
 
               /* ---- tunneling ---- */
@@ -787,11 +795,15 @@ LowLevelMultipleAddMultiply(RealVector* vSources,
           double TmpDiagonal = 0.0;
     
           for (int s = 0; s < NbrFlavors; ++s)
-            for (int m = 0; m <= this->LzMax; ++m)
-              TmpDiagonal +=
-                this->OneBodyInteractionFactors[s][s][m] *
-                TmpParticles->AdsigmaAsigma(i, m, s);
-    
+	    {
+	      if (this->OneBodyInteractionFactors[s][s] != 0)
+		{
+		  for (int m = 0; m <= this->LzMax; ++m)
+		    TmpDiagonal +=
+		      this->OneBodyInteractionFactors[s][s][m] *
+		      TmpParticles->AdsigmaAsigma(i, m, s);
+		}
+	    }
           Dst[i] += (this->HamiltonianShift + TmpDiagonal) * Src[i];
     
           for (int m = 0; m <= this->LzMax; ++m)
@@ -1080,11 +1092,15 @@ LowLevelMultipleAddMultiplyPartialFastMultiply(
         {
           double TmpDiagonal = 0.0;
           for (int s = 0; s < NbrFlavors; ++s)
-            for (int m = 0; m <= this->LzMax; ++m)
-              TmpDiagonal +=
-                this->OneBodyInteractionFactors[s][s][m] *
-                TmpParticles->AdsigmaAsigma(i, m, s);
-
+	    {
+	      if (this->OneBodyInteractionFactors[s][s] != 0)
+		{
+		  for (int m = 0; m <= this->LzMax; ++m)
+		    TmpDiagonal +=
+		      this->OneBodyInteractionFactors[s][s][m] *
+		      TmpParticles->AdsigmaAsigma(i, m, s);
+		}
+	    }
           for (int p = 0; p < nbrVectors; ++p)
             vDestinations[p][i] +=
                 (this->HamiltonianShift + TmpDiagonal) * vSources[p][i];

@@ -863,11 +863,18 @@ int QHEOnSphereMainTask::ExecuteMainTask()
       int StartTimeSecond = TotalStartingTime.tv_sec;
       if (this->ResumeFlag == false)
 	{
-	  Lanczos->RunLanczosAlgorithm(NbrEigenvalue + 2);
 	  if (this->BlockLanczosFlag == true)
-	    CurrentNbrIterLanczos = (NbrEigenvalue + 3) * this->SizeBlockLanczos;
+	    {
+	      int TmpNbrIter = NbrEigenvalue /  this->SizeBlockLanczos;
+	      TmpNbrIter += 2;
+	      Lanczos->RunLanczosAlgorithm(TmpNbrIter);
+	      CurrentNbrIterLanczos = (TmpNbrIter + 1) * this->SizeBlockLanczos;
+	    }
 	  else
-	    CurrentNbrIterLanczos = NbrEigenvalue + 3;
+	    {
+	      Lanczos->RunLanczosAlgorithm(NbrEigenvalue + 2);
+	      CurrentNbrIterLanczos = NbrEigenvalue + 3;
+	    }
 	}
       RealTriDiagonalSymmetricMatrix TmpMatrix;
       gettimeofday (&(TotalCurrentTime), 0); 

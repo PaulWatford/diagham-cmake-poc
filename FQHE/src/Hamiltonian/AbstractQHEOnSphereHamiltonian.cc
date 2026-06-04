@@ -5190,6 +5190,7 @@ bool AbstractQHEOnSphereHamiltonian::GetLoadBalancing(int nbrTasks, long* &segme
 	}
       long ReducedSpaceDimension  = EffectiveHilbertSpaceDimension / TmpFastMultiplicationStep;
       long TmpTotalNbrElement = 0l;
+      
       for (long i = 0; i < ReducedSpaceDimension; ++i)
 	{
 	  TmpTotalNbrElement += this->NbrInteractionPerComponent[i];

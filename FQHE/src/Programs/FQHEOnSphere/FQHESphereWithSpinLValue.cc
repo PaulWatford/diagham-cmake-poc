@@ -182,8 +182,8 @@ int main(int argc, char** argv)
 		  LzMinusParity = false;
 		}
 	    }
-	    //	  if (!Manager.GetBoolean("all-sz"))
-	    //	    TotalSz=TmpTotalSz;
+	  if (!Manager.GetBoolean("all-sz"))
+	    TotalSz = TmpTotalSz;
 	  if (Manager.GetBoolean("show-extracted") == true)
 	    {
 	      cout << "N=" << NbrParticles << "  LzMax=" << LzMax << "  TotalLz=" << TotalLz;

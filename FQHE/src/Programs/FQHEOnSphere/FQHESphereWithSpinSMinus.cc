@@ -54,6 +54,8 @@ int main(int argc, char** argv)
  
   (*SystemGroup) += new SingleStringOption  ('i', "input-file", "name of the file corresponding to the input state");
   (*SystemGroup) += new  BooleanOption ('\n', "fully-unpolarized", "apply the S- minus as many times as need to reach the Sz=0 (or Sz=1/2) sector");
+  (*SystemGroup) += new  BooleanOption ('\n', "partially-polarized", "apply the S- minus as many times as need to reach a given Sz sector");
+  (*SystemGroup) += new  SingleIntegerOption ('\n', "sz-sector", "(twice the) Sz sector that should be targeted with the --partially-polarized option", 0);
   (*SystemGroup) += new BooleanOption  ('\n', "all-sz", "use Hilbert-space comprising all sz sectors", 0);
   (*OutputGroup) += new SingleStringOption ('o', "output-file", "use this file name instead of the one that can be deduced from the input file name (changing the Sz value)");
   (*MiscGroup) += new BooleanOption  ('h', "help", "display this help");
@@ -70,6 +72,14 @@ int main(int argc, char** argv)
   int LzMax = 0;
   int Lz = 0;
   int TotalSz = 0;
+  if (Manager.GetBoolean("partially-polarized"))
+    {
+      if ((NbrParticles & 1) != (Manager.GetInteger("sz-sector") & 1))
+	{
+	  cout << "--sz-sector and NbrParticles must have the same parity" << endl;
+	  return -1;
+	}
+    }
   bool Statistics = true;
   if (Manager.GetBoolean("all-sz"))
     TotalSz = -1;
@@ -94,6 +104,7 @@ int main(int argc, char** argv)
       return -1;
     }
 
+  
   RealVector InputState; 
   RealVector TargetVector; 
   if (InputState.ReadVector(Manager.GetString("input-file")) == false)
@@ -158,6 +169,10 @@ int main(int argc, char** argv)
 	MinSz = 0;
       else
 	MinSz = 1;
+    }
+  if (Manager.GetBoolean("partially-polarized"))
+    {
+      MinSz = Manager.GetInteger("sz-sector");
     }
   char* OutputFileName = 0;
   if (Manager.GetString("output-file") == 0)
@@ -232,7 +247,9 @@ int main(int argc, char** argv)
       else
 	{
 	  if (Manager.GetBoolean("all-sz")==false)
-	    OutputSpace = new BosonOnSphereWithSpin(NbrParticles, Lz, LzMax, CurrentSz, MemorySpace);
+	    {
+	      OutputSpace = new BosonOnSphereWithSpin(NbrParticles, Lz, LzMax, CurrentSz, MemorySpace);
+	    }
 	  else
 	    {
 	      OutputSpace = new BosonOnSphereWithSpinAllSz(NbrParticles, Lz, LzMax, MemorySpace);

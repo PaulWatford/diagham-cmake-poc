@@ -96,6 +96,8 @@ FermionOnTorusWithSpinAndMagneticTranslations::FermionOnTorusWithSpinAndMagnetic
   this->ReorderingSign = 0;
 
   this->LargeHilbertSpaceDimension = 0l;
+
+  this->TargetSpace = 0;
 }  
 
 
@@ -141,6 +143,7 @@ FermionOnTorusWithSpinAndMagneticTranslations::FermionOnTorusWithSpinAndMagnetic
   this->HilbertSpaceDimension = this->GenerateStates();
   cout << "Hilbert space dimension = "<< HilbertSpaceDimension << endl;
   this->Flag.Initialize();
+  this->TargetSpace = this;
 
   if (this->HilbertSpaceDimension !=0)
     this->GenerateLookUpTable(1000000);
@@ -194,6 +197,7 @@ FermionOnTorusWithSpinAndMagneticTranslations::FermionOnTorusWithSpinAndMagnetic
       this->MomentumMask <<= 1;
       this->MomentumMask |= 0x1ul;
     }
+  this->TargetSpace = this;
 
   this->MaximumSignLookUp = 16;
   this->GenerateSignLookUpTable();
@@ -271,6 +275,11 @@ FermionOnTorusWithSpinAndMagneticTranslations::FermionOnTorusWithSpinAndMagnetic
 
   this->Flag = fermions.Flag;
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
 }
 
 // destructor
@@ -372,6 +381,12 @@ FermionOnTorusWithSpinAndMagneticTranslations& FermionOnTorusWithSpinAndMagnetic
   this->Flag = fermions.Flag;
 
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
+
   return *this;
 }
 
@@ -448,6 +463,15 @@ AbstractHilbertSpace* FermionOnTorusWithSpinAndMagneticTranslations::ExtractSubs
     return 0;
 }
 
+
+// set a different target space (for all basic operations)
+//
+// targetSpace = pointer to the target space
+
+void FermionOnTorusWithSpinAndMagneticTranslations::SetTargetSpace(ParticleOnSphereWithSpin* targetSpace)
+{
+  this->TargetSpace = (FermionOnTorusWithSpinAndMagneticTranslations*) targetSpace;
+}
 
 // apply a^+_(d,m1) a^+_(d,m2) a_(d,n1) a_(d,n2) operator to a given state (with m1+m2=n1+n2)
 //
@@ -1087,6 +1111,19 @@ int FermionOnTorusWithSpinAndMagneticTranslations::AduAd (int index, int m, int 
   return TmpIndex;
 }
 
+// apply a^+_m_d a_m_u operator to a given state 
+//
+// index = index of the state on which the operator has to be applied
+// m = index of the creation/annihilation operator
+// coefficient = reference on the double where the multiplicative factor has to be stored
+// nbrTranslation = reference on the number of translations to applied to the resulting state to obtain the return orbit describing state
+// return value = index of the destination state 
+
+int FermionOnTorusWithSpinAndMagneticTranslations::AddAu (int index, int m, double& coefficient, int& nbrTranslation)
+{
+  return this->AddAu(index, m, m, coefficient, nbrTranslation);
+}
+
 // apply a^+_m_d a_n_u operator to a given state 
 //
 // index = index of the state on which the operator has to be applied
@@ -1105,7 +1142,7 @@ int FermionOnTorusWithSpinAndMagneticTranslations::AddAu (int index, int m, int 
   if ((n > StateHighestBit) || ((State & (0x1ul << n)) == 0))
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
   int NewLargestBit = StateHighestBit;
   coefficient = this->SignLookUpTable[(State >> n) & this->SignLookUpTableMask[n]];
@@ -1122,7 +1159,7 @@ int FermionOnTorusWithSpinAndMagneticTranslations::AddAu (int index, int m, int 
   if ((State & (0x1ul << m))!= 0)
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
   if (m > NewLargestBit)
     {
@@ -1138,18 +1175,18 @@ int FermionOnTorusWithSpinAndMagneticTranslations::AddAu (int index, int m, int 
 #endif
     }
   State |= (0x1ul << m);
-  State = this->FindCanonicalForm(State, NewLargestBit, nbrTranslation);
-  if (this->TestXMomentumConstraint(State, NewLargestBit) == false)
+  State = this->TargetSpace->FindCanonicalForm(State, NewLargestBit, nbrTranslation);
+  if (this->TargetSpace->TestXMomentumConstraint(State, NewLargestBit) == false)
     {
       coefficient = 0.0;
-      return this->HilbertSpaceDimension;
+      return this->TargetSpace->HilbertSpaceDimension;
     }
-  int TmpIndex = this->FindStateIndex(State, NewLargestBit);
-  if (TmpIndex < this->HilbertSpaceDimension)
+  int TmpIndex = this->TargetSpace->FindStateIndex(State, NewLargestBit);
+  if (TmpIndex < this->TargetSpace->HilbertSpaceDimension)
     {
-      coefficient *= this->RescalingFactors[this->NbrStateInOrbit[index]][this->NbrStateInOrbit[TmpIndex]];
-      coefficient *= 1.0 - (2.0 * ((double) ((this->ReorderingSign[TmpIndex] >> nbrTranslation) & 0x1ul)));
-      nbrTranslation *= this->StateShift / 2;
+      coefficient *= this->RescalingFactors[this->NbrStateInOrbit[index]][this->TargetSpace->NbrStateInOrbit[TmpIndex]];
+      coefficient *= 1.0 - (2.0 * ((double) ((this->TargetSpace->ReorderingSign[TmpIndex] >> nbrTranslation) & 0x1ul)));
+      nbrTranslation *= this->TargetSpace->StateShift / 2;
     }
   return TmpIndex;
 }

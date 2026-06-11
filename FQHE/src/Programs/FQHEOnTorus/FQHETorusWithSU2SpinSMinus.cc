@@ -249,11 +249,10 @@ int main(int argc, char** argv)
   else
     {
       ParticleOnTorusWithSpinAndMagneticTranslations* InputSpace;
-      cout << NbrParticles << " " << KyMax << " " << TotalSz << " " <<  TotalKx << " " <<  TotalKy << endl;
+      cout << "N=" << NbrParticles << " Nphi=" << KyMax << " 2Sz=" << TotalSz << " kx=" <<  TotalKx << " ky=" <<  TotalKy << endl;
       if (Statistics == true)
 	{
-	  cout << "error : fermions are not yet supported" << endl;
-	  return 0;
+	  InputSpace = new FermionOnTorusWithSpinAndMagneticTranslations (NbrParticles, TotalSz, KyMax, TotalKx, TotalKy);
 	}
       else
 	{
@@ -272,8 +271,7 @@ int main(int argc, char** argv)
 	  ParticleOnTorusWithSpinAndMagneticTranslations* OutputSpace;
 	  if (Statistics == true)
 	    {
-	      cout << "error : fermions are not yet supported" << endl;
-	      return 0;
+	      OutputSpace = new FermionOnTorusWithSpinAndMagneticTranslations (NbrParticles, CurrentSz, KyMax, TotalKx, TotalKy);
 	    }
 	  else
 	    {

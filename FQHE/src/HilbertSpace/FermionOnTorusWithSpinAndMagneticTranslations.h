@@ -133,7 +133,10 @@ class FermionOnTorusWithSpinAndMagneticTranslations :  public ParticleOnTorusWit
   // array containing for each state the sign due to fermion reordering when translating state (1 bit to 0 if sign is negative)
 //  unsigned long* TranslationSign;
 
- public:
+  // target space for operations leaving the Hilbert-space
+  FermionOnTorusWithSpinAndMagneticTranslations* TargetSpace;
+
+public:
 
   // default constructor
   // 
@@ -241,6 +244,18 @@ class FermionOnTorusWithSpinAndMagneticTranslations :  public ParticleOnTorusWit
   AbstractHilbertSpace* ExtractSubspace (AbstractQuantumNumber& q, 
 					 SubspaceSpaceConverter& converter);
 
+  // set a different target space (for all basic operations)
+  //
+  // targetSpace = pointer to the target space
+  virtual void SetTargetSpace(ParticleOnSphereWithSpin* targetSpace);
+  
+  
+  // return Hilbert space dimension of the target space
+  //
+  // return value = Hilbert space dimension
+  virtual int GetTargetHilbertSpaceDimension();
+
+  
   // apply a^+_(d,m1) a^+_(d,m2) a_(d,n1) a_(d,n2) operator to a given state (with m1+m2=n1+n2)
   //
   // index = index of the state on which the operator has to be applied
@@ -323,6 +338,15 @@ class FermionOnTorusWithSpinAndMagneticTranslations :  public ParticleOnTorusWit
   // nbrTranslation = reference on the number of translations to applied to the resulting state to obtain the return orbit describing state
   // return value = index of the destination state 
   virtual int AduAd (int index, int m, int n, double& coefficient, int& nbrTranslation);
+
+  // apply a^+_m_d a_m_u operator to a given state 
+  //
+  // index = index of the state on which the operator has to be applied
+  // m = index of the creation/annihilation operator
+  // coefficient = reference on the double where the multiplicative factor has to be stored
+  // nbrTranslation = reference on the number of translations to applied to the resulting state to obtain the return orbit describing state
+  // return value = index of the destination state 
+  int AddAu (int index, int m, double& coefficient, int& nbrTranslation);
 
   // apply a^+_m_d a_n_u operator to a given state 
   //
@@ -669,6 +693,15 @@ inline int FermionOnTorusWithSpinAndMagneticTranslations::GetMaxYMomentum()
   return this->MaxMomentum;
 }
   
+// return Hilbert space dimension of the target space
+//
+// return value = Hilbert space dimension
+
+inline int FermionOnTorusWithSpinAndMagneticTranslations::GetTargetHilbertSpaceDimension()
+{
+  return this->TargetSpace->HilbertSpaceDimension;
+}
+
 #endif // FERMIONONTORUSWITHSPINANDMAGNETICTRANSLATIONS_H
 
 

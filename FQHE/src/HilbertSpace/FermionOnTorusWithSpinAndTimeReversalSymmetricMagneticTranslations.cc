@@ -91,7 +91,7 @@ FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslations::FermionOnTor
       this->MomentumMask <<= 1;
       this->MomentumMask |= 0x1ul;
     }
-
+  this->TargetSpace = this;
   
   this->MaximumSignLookUp = 16;
   this->GenerateSignLookUpTable();
@@ -170,6 +170,11 @@ FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslations::FermionOnTor
 
   this->Flag = fermions.Flag;
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
 }
 
 // destructor
@@ -244,6 +249,12 @@ FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslations& FermionOnTor
   this->Flag = fermions.Flag;
 
   this->LargeHilbertSpaceDimension = (long) this->HilbertSpaceDimension;
+
+  if (fermions.TargetSpace != &fermions)
+    this->TargetSpace = fermions.TargetSpace;
+  else
+    this->TargetSpace = this;
+
   return *this;
 }
 

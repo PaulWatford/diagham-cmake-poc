@@ -7,6 +7,7 @@
 #include "HilbertSpace/FermionOnSphereLong.h"
 
 #include "Hamiltonian/ParticleOnCylinderPseudopotentialHamiltonian.h"
+#include "Hamiltonian/ParticleOnThickCylinderPseudopotentialHamiltonian.h"
 
 #include "Tools/FQHEFiles/FQHETorusPseudopotentialTools.h"
 
@@ -73,6 +74,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption ('y', "ky-momentum", "constraint on the total momentum along y-axis (negative if none)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "nbr-ky", "number of Ky values to evaluate", -1);
   (*SystemGroup) += new SingleDoubleOption ('r', "ratio", "ratio between the height and length of the cylinder (LH=2pi r N_{orb})", 1.0);
+  (*SystemGroup) += new BooleanOption ('\n', "thick-cylinder", "use the thick cylinder limit, i.e., set the ratio to infinity");
   (*SystemGroup) += new SingleIntegerOption ('\n', "landau-level", "Landau level index", 0);
   (*SystemGroup) += new BooleanOption ('\n', "line-charge", "consider line charge instead of parabolic confinement potential", false);
   (*SystemGroup) += new SingleDoubleOption ('\n', "confinement-potential", "amplitude of the quadratic confinement potential", 0.0);
@@ -152,7 +154,14 @@ int main(int argc, char** argv)
   bool FirstRun = true;
   
   char* OutputNameLz = new char [256];
-  sprintf (OutputNameLz, "fermions_cylinder_ky_%s_n_%d_2s_%d_ratio_%f.dat", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio);
+  if (Manager.GetBoolean("thick-cylinder") == false)
+    {
+      sprintf (OutputNameLz, "fermions_cylinder_ky_%s_n_%d_2s_%d_ratio_%f.dat", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio);
+    }
+  else
+    {
+      sprintf (OutputNameLz, "fermions_thickcylinder_ky_%s_n_%d_2s_%d.dat", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum);
+    }
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
   File.precision(14);
@@ -204,15 +213,30 @@ int main(int argc, char** argv)
       if (Architecture.GetArchitecture()->GetLocalMemory() > 0)
 	Memory = Architecture.GetArchitecture()->GetLocalMemory();
 
-      AbstractQHEHamiltonian* Hamiltonian = new ParticleOnCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
-
+      AbstractQHEHamiltonian* Hamiltonian = 0;
+      if (Manager.GetBoolean("thick-cylinder") == false)
+	{
+	  Hamiltonian = new ParticleOnCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	}
+      else
+	{
+	  Hamiltonian = new ParticleOnThickCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	}
+      
       double Shift = -10.0;
       Hamiltonian->ShiftHamiltonian(Shift);
       char* EigenvectorName = 0;
       if (Manager.GetBoolean("eigenstate") == true)	
 	{
 	  EigenvectorName = new char [256];
-	  sprintf (EigenvectorName, "fermions_cylinder_%s_n_%d_2s_%d_ratio_%f_ky_%d", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio, Ky);
+	  if (Manager.GetBoolean("thick-cylinder") == false)
+	    {
+	      sprintf (EigenvectorName, "fermions_cylinder_%s_n_%d_2s_%d_ratio_%f_ky_%d", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio, Ky);
+	    }
+	  else
+	    {
+	      sprintf (EigenvectorName, "fermions_thickcylinder_%s_n_%d_2s_%d_ky_%d", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, Ky);
+	    }
 	}
       FQHEOnTorusMainTask Task (&Manager, Space, &Lanczos, Hamiltonian, Ky, Shift, OutputNameLz, FirstRun, EigenvectorName);
       Task.SetKxValue(-1);

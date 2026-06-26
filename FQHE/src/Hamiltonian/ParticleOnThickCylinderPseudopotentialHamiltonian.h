@@ -6,10 +6,10 @@
 //                  Copyright (C) 2001-2002 Nicolas Regnault                  //
 //                                                                            //
 //                                                                            //
-//       class of hamiltonian associated to particles on a cylinder with      //
-//                          pseudopotential interaction                       //
+//                class of hamiltonian associated to particles on a           //
+//                   thick cylinder with pseudopotential interaction          //
 //                                                                            //
-//                        last modification : 29/06/2010                      //
+//                        last modification : 26/06/2026                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,14 +29,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef PARTICLEONCYLINDERCOULOMBHAMILTONIAN_H
-#define PARTICLEONCYLINDERCOULOMBHAMILTONIAN_H
+#ifndef PARTICLEONTHICKCYLINDERCOULOMBHAMILTONIAN_H
+#define PARTICLEONTHICKCYLINDERCOULOMBHAMILTONIAN_H
 
 
 #include "config.h"
 #include "HilbertSpace/ParticleOnSphere.h"
 #include "Hamiltonian/AbstractHamiltonian.h"
-#include "Hamiltonian/AbstractQHEOnCylinderHamiltonian.h"
+#include "Hamiltonian/ParticleOnCylinderPseudopotentialHamiltonian.h"
 
 #include <iostream>
 
@@ -44,78 +44,40 @@
 using std::ostream;
 
 
-class MathematicaOutput;
-class Polynomial;
-
-class ParticleOnCylinderPseudopotentialHamiltonian : public AbstractQHEOnCylinderHamiltonian
+class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylinderPseudopotentialHamiltonian
 {
 
  protected:
 
-  // Number of Pseudopotential
-  int NbrPseudopotentials;
-  // pseudopotential coefficients
-  double* Pseudopotentials;
-  // Laguerre polynomial for the pseudopotentials
-  Polynomial* LaguerrePolynomials;
 
 
  public:
 
-  // default constructor
-  //
-  ParticleOnCylinderPseudopotentialHamiltonian();
-  
-  // constructor from default data
+  // constructor from default datas
   //
   // particles = Hilbert space associated to the system
   // nbrParticles = number of particles
   // maxMomentum = maximum Lz value reached by a particle in the state
-  // ratio = ratio between the width in the x direction and the width in the y direction
-  // confinement = amplitude of the quadratic confinement potential
-  // lineCharge = use line charge instead of parabolic confinement
   // nbrPseudopotentials = number of pseudopotentials
   // pseudopotentials = array containing values of pseudopotentials 
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
-  ParticleOnCylinderPseudopotentialHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum, double ratio, double confinement, bool lineCharge, int nbrPseudopotentials, double* pseudopotentials,
-					       AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
+  ParticleOnThickCylinderPseudopotentialHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum, int nbrPseudopotentials, double* pseudopotentials,
+						    AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
 
   // destructor
   //
-  ~ParticleOnCylinderPseudopotentialHamiltonian();
+  ~ParticleOnThickCylinderPseudopotentialHamiltonian();
 
   // clone hamiltonian without duplicating datas
   //
   // return value = pointer to cloned hamiltonian
   AbstractHamiltonian* Clone ();
 
-  // set Hilbert space
-  //
-  // hilbertSpace = pointer to Hilbert space to use
-  void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
-
-  // shift Hamiltonian from a given energy
-  //
-  // shift = shift value
-  void ShiftHamiltonian (double shift);
-
-  double Integrand(double qx, void *p);
-
-  double LineChargeIntegrand(double qx, void *p);
-
-  double PseudopotentialMatrixElement(double xj14, double xj13, int nbrPseudopotentials, double* pseudopotentials, Polynomial* laguerrePolynomials, double &error);
-
-  double LineChargeMatrixElement(int index, int MaxMomentum, double Length, double Height, double &error);
-
 
  protected:
  
-  // evaluate all interaction factors
-  //   
-  void EvaluateInteractionFactors();
-
   // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
   //
   // m1 = first index

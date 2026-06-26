@@ -55,7 +55,14 @@ using std::ostream;
 #define M1_12 0.08333333333333333
 
 
-// constructor from default datas
+// default constructor
+//
+
+ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialHamiltonian()
+{
+}
+  
+// constructor from default data
 //
 // particles = Hilbert space associated to the system
 // nbrParticles = number of particles

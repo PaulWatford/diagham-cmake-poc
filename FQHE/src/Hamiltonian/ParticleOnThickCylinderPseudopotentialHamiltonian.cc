@@ -9,6 +9,8 @@
 //                class of hamiltonian associated to particles on a           //
 //                   thick cylinder with pseudopotential interaction          //
 //                                                                            //
+//                      class author: Andreas Feuerpfeil                      //
+//                                                                            //
 //                        last modification : 26/06/2026                      //
 //                                                                            //
 //                                                                            //
@@ -137,17 +139,18 @@ ParticleOnThickCylinderPseudopotentialHamiltonian::~ParticleOnThickCylinderPseud
 
 Complex ParticleOnThickCylinderPseudopotentialHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4)
 {
-  double Length = sqrt(2.0 * M_PI * this->Ratio * this->NbrLzValue);
-  double kappa = 2.0 * M_PI/Length;
+  double Length = (double) this->NbrLzValue;
+  double kappa = 2.0 / Length;
+  double Omega = 2.0 * M_PI / kappa;
   double Xm1 = kappa * m1;
   double Xm2 = kappa * m2;
   double Xm3 = kappa * m3;
-  double Xm4 = kappa * m4;	
+  double Xm4 = kappa * m4;
   double error;
-
+  
   Complex Coefficient(0, 0);
 
-  Coefficient.Re = this->PseudopotentialMatrixElement(Xm1-Xm4, Xm1-Xm3, this->NbrPseudopotentials, this->Pseudopotentials, this->LaguerrePolynomials, error);
+  Coefficient.Re = this->ThickPseudopotentialMatrixElement(Xm1-Xm4, Xm1-Xm3, this->NbrPseudopotentials, this->Pseudopotentials, this->LaguerrePolynomials, error);
   Coefficient.Im = 0.0;
 
   if (fabs(error) > 1e-6)
@@ -155,6 +158,27 @@ Complex ParticleOnThickCylinderPseudopotentialHamiltonian::EvaluateInteractionCo
       cout << "Warning: large error in matrix elements! " ;
     }
 
-  return (Coefficient/Length);
+  return (Coefficient/(2.0 * Omega));
 }
 
+// evaluate the matrix element of V(q)= sum_i (-1)^i * pseudopotentials[i] * q^(2i) for a thick cylinder
+//
+
+double ParticleOnThickCylinderPseudopotentialHamiltonian::ThickPseudopotentialMatrixElement(
+    double q1, double q2, int nbrPseudopotentials,
+    const double* pseudopotentials, Polynomial* laguerrePolynomials, double& error)
+{
+  (void) q2; 
+  (void) laguerrePolynomials;
+  error = 0.0;
+
+  double neg_q1_sq = -(q1 * q1);
+
+  // Horner's method: sum_i (-1)^i * pseudopotentials[i] * q1^(2i)
+  // Equivalent to evaluating polynomial in x = -q1^2 with coefficients pseudopotentials[i]
+  double sum = pseudopotentials[nbrPseudopotentials - 1];
+  for (int i = nbrPseudopotentials - 2; i >= 0; --i) {
+    sum = sum * neg_q1_sq + pseudopotentials[i];
+  }
+  return sum;
+}

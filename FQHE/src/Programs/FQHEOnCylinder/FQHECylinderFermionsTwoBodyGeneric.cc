@@ -78,6 +78,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption ('\n', "landau-level", "Landau level index", 0);
   (*SystemGroup) += new BooleanOption ('\n', "line-charge", "consider line charge instead of parabolic confinement potential", false);
   (*SystemGroup) += new SingleDoubleOption ('\n', "confinement-potential", "amplitude of the quadratic confinement potential", 0.0);
+ (*SystemGroup) += new SingleDoubleOption ('\n', "energy-shift", "apply a temporary energy shift used during the diagonalization", -1.0);
+
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "coulomb");
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-file", "file describing the 2-body interaction in terms of the pseudo-potential");
   (*SystemGroup) += new  SingleStringOption ('\n', "use-hilbert", "name of the file that contains the vector files used to describe the reduced Hilbert space (replace the n-body basis)");
@@ -91,6 +93,9 @@ int main(int argc, char** argv)
 
 #ifdef __LAPACK__
   (*ToolsGroup) += new BooleanOption  ('\n', "use-lapack", "use LAPACK libraries instead of DiagHam libraries");
+#endif
+#ifdef __SCALAPACK__
+  (*ToolsGroup) += new BooleanOption  ('\n', "use-scalapack", "use SCALAPACK libraries instead of DiagHam or LAPACK libraries");
 #endif
   (*ToolsGroup) += new BooleanOption  ('\n', "show-hamiltonian", "show matrix representation of the hamiltonian");
 
@@ -223,7 +228,7 @@ int main(int argc, char** argv)
 	  Hamiltonian = new ParticleOnThickCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
 	}
       
-      double Shift = -10.0;
+      double Shift =Manager.GetDouble("energy-shift");
       Hamiltonian->ShiftHamiltonian(Shift);
       char* EigenvectorName = 0;
       if (Manager.GetBoolean("eigenstate") == true)	

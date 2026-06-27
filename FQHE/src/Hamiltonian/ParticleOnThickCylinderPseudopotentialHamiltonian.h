@@ -9,6 +9,8 @@
 //                class of hamiltonian associated to particles on a           //
 //                   thick cylinder with pseudopotential interaction          //
 //                                                                            //
+//                      class author: Andreas Feuerpfeil                      //
+//                                                                            //
 //                        last modification : 26/06/2026                      //
 //                                                                            //
 //                                                                            //
@@ -50,7 +52,6 @@ class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylin
  protected:
 
 
-
  public:
 
   // constructor from default datas
@@ -75,7 +76,6 @@ class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylin
   // return value = pointer to cloned hamiltonian
   AbstractHamiltonian* Clone ();
 
-
  protected:
  
   // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
@@ -85,8 +85,14 @@ class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylin
   // m3 = third index
   // m4 = fourth index
   // return value = numerical coefficient
-  Complex EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
+  virtual Complex EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
 
+  // evaluate the matrix element of V(q)= sum_i (-1)^i * pseudopotentials[i] * q^(2i) for a thick cylinder
+  //
+  double ThickPseudopotentialMatrixElement(double q1, double q2, int nbrPseudopotentials,
+					   const double* pseudopotentials, Polynomial* laguerrePolynomials,
+					   double& error);
+  
 };
 
 #endif

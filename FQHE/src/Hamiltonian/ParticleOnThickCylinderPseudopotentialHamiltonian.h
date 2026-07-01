@@ -38,7 +38,7 @@
 #include "config.h"
 #include "HilbertSpace/ParticleOnSphere.h"
 #include "Hamiltonian/AbstractHamiltonian.h"
-#include "Hamiltonian/ParticleOnCylinderPseudopotentialHamiltonian.h"
+#include "Hamiltonian/ParticleOnCylinderPseudopotentialRealHamiltonian.h"
 
 #include <iostream>
 
@@ -46,7 +46,7 @@
 using std::ostream;
 
 
-class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylinderPseudopotentialHamiltonian
+class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylinderPseudopotentialRealHamiltonian
 {
 
  protected:
@@ -85,7 +85,7 @@ class ParticleOnThickCylinderPseudopotentialHamiltonian : public ParticleOnCylin
   // m3 = third index
   // m4 = fourth index
   // return value = numerical coefficient
-  virtual Complex EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
+  virtual double EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
 
   // evaluate the matrix element of V(q)= sum_i (-1)^i * pseudopotentials[i] * q^(2i) for a thick cylinder
   //

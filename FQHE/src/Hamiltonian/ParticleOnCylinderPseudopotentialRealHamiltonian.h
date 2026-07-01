@@ -7,9 +7,9 @@
 //                                                                            //
 //                                                                            //
 //       class of hamiltonian associated to particles on a cylinder with      //
-//                          pseudopotential interaction                       //
+//             pseudopotential interaction with a real hamiltonian            //
 //                                                                            //
-//                        last modification : 29/06/2010                      //
+//                        last modification : 29/06/2026                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,14 +29,14 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#ifndef PARTICLEONCYLINDERCOULOMBHAMILTONIAN_H
-#define PARTICLEONCYLINDERCOULOMBHAMILTONIAN_H
+#ifndef PARTICLEONCYLINDERCOULOMBREALHAMILTONIAN_H
+#define PARTICLEONCYLINDERCOULOMBREALHAMILTONIAN_H
 
 
 #include "config.h"
 #include "HilbertSpace/ParticleOnSphere.h"
 #include "Hamiltonian/AbstractHamiltonian.h"
-#include "Hamiltonian/AbstractQHEOnCylinderHamiltonian.h"
+#include "Hamiltonian/AbstractQHEOnSphereHamiltonian.h"
 
 #include <iostream>
 
@@ -47,27 +47,36 @@ using std::ostream;
 class MathematicaOutput;
 class Polynomial;
 
-
-// #ifdef HAVE_GSL  
-
-// namespace CoulombMatEl
-// {
-
-// struct f_params {
-//   double Xj14;
-//   double Xj13;
-//   int NbrPseudopotentials;
-//   double* Pseudopotentials;
-//   Polynomial* LaguerrePolynomials;
-// };
-// }
-// #endif
-
-
-class ParticleOnCylinderPseudopotentialHamiltonian : public AbstractQHEOnCylinderHamiltonian
+class ParticleOnCylinderPseudopotentialRealHamiltonian : public AbstractQHEOnSphereHamiltonian
 {
 
  protected:
+
+  // global energy shift (can be used to store the energy of the Wigner crystal)
+  double EnergyShift;
+
+  // ratio between the width in the x direction and the width in the y direction
+  double Ratio;
+  // ratio between the width in the y direction and the width in the x direction
+  double InvRatio;
+
+  // maximum momentum value reached by a particle in the state
+  int MaxMomentum;
+
+  //mass anisotropy parameter
+  double MassAnisotropy;
+
+  //amplitude of the quadratic confinement potential
+  double Confinement;
+
+  //parameter for the electric field
+  double ElectricField;
+
+  //parameter for the magnetic field (needed when electric field is nonzero)
+  double MagneticField;
+
+  // truncates the interaction terms according to |m1 - m2|, |m3 - m4| <= truncation 
+  int Truncation; 
 
   // Number of Pseudopotential
   int NbrPseudopotentials;
@@ -81,7 +90,7 @@ class ParticleOnCylinderPseudopotentialHamiltonian : public AbstractQHEOnCylinde
 
   // default constructor
   //
-  ParticleOnCylinderPseudopotentialHamiltonian();
+  ParticleOnCylinderPseudopotentialRealHamiltonian();
   
   // constructor from default data
   //
@@ -96,12 +105,12 @@ class ParticleOnCylinderPseudopotentialHamiltonian : public AbstractQHEOnCylinde
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
-  ParticleOnCylinderPseudopotentialHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum, double ratio, double confinement, bool lineCharge, int nbrPseudopotentials, double* pseudopotentials,
+  ParticleOnCylinderPseudopotentialRealHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum, double ratio, double confinement, bool lineCharge, int nbrPseudopotentials, double* pseudopotentials,
 					       AbstractArchitecture* architecture, long memory = -1, char* precalculationFileName = 0);
 
   // destructor
   //
-  ~ParticleOnCylinderPseudopotentialHamiltonian();
+  ~ParticleOnCylinderPseudopotentialRealHamiltonian();
 
   // clone hamiltonian without duplicating datas
   //
@@ -113,10 +122,6 @@ class ParticleOnCylinderPseudopotentialHamiltonian : public AbstractQHEOnCylinde
   // hilbertSpace = pointer to Hilbert space to use
   void SetHilbertSpace (AbstractHilbertSpace* hilbertSpace);
 
-  // shift Hamiltonian from a given energy
-  //
-  // shift = shift value
-  virtual void ShiftHamiltonian (double shift);
 
   double Integrand(double qx, void *p);
 
@@ -140,7 +145,7 @@ class ParticleOnCylinderPseudopotentialHamiltonian : public AbstractQHEOnCylinde
   // m3 = third index
   // m4 = fourth index
   // return value = numerical coefficient
-  virtual Complex EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
+  virtual double EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4);
 
 };
 

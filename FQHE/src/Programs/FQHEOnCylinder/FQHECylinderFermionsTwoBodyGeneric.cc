@@ -7,6 +7,7 @@
 #include "HilbertSpace/FermionOnSphereLong.h"
 
 #include "Hamiltonian/ParticleOnCylinderPseudopotentialHamiltonian.h"
+#include "Hamiltonian/ParticleOnCylinderPseudopotentialRealHamiltonian.h"
 #include "Hamiltonian/ParticleOnThickCylinderPseudopotentialHamiltonian.h"
 
 #include "Tools/FQHEFiles/FQHETorusPseudopotentialTools.h"
@@ -14,6 +15,7 @@
 #include "LanczosAlgorithm/LanczosManager.h"
 
 #include "MainTask/FQHEOnTorusMainTask.h"
+#include "MainTask/GenericRealMainTask.h"
 
 #include "Architecture/ArchitectureManager.h"
 #include "Architecture/AbstractArchitecture.h"
@@ -78,7 +80,8 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption ('\n', "landau-level", "Landau level index", 0);
   (*SystemGroup) += new BooleanOption ('\n', "line-charge", "consider line charge instead of parabolic confinement potential", false);
   (*SystemGroup) += new SingleDoubleOption ('\n', "confinement-potential", "amplitude of the quadratic confinement potential", 0.0);
- (*SystemGroup) += new SingleDoubleOption ('\n', "energy-shift", "apply a temporary energy shift used during the diagonalization", -1.0);
+  (*SystemGroup) += new SingleDoubleOption ('\n', "energy-shift", "apply a temporary energy shift used during the diagonalization", -1.0);
+  (*SystemGroup) += new BooleanOption ('\n', "force-real", "use real hamiltonian", false);
 
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-name", "interaction name (as it should appear in output files)", "coulomb");
   (*SystemGroup) += new  SingleStringOption ('\n', "interaction-file", "file describing the 2-body interaction in terms of the pseudo-potential");
@@ -128,7 +131,11 @@ int main(int argc, char** argv)
   bool LineCharge = false;
   if (Manager.GetBoolean("line-charge") == true)
     LineCharge = true;
-
+  if (Manager.GetBoolean("force-real") == true)
+    {
+      Lanczos.SetRealAlgorithms();
+    }
+  
   double* PseudoPotentials;
   int NbrPseudoPotentials = 0;
   if (Manager.GetString("interaction-file") == 0)
@@ -221,11 +228,26 @@ int main(int argc, char** argv)
       AbstractQHEHamiltonian* Hamiltonian = 0;
       if (Manager.GetBoolean("thick-cylinder") == false)
 	{
-	  Hamiltonian = new ParticleOnCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	  if (Manager.GetBoolean("force-real") == true)
+	    {
+	      Hamiltonian = new ParticleOnCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	    }
+	  else
+	    {
+	      Hamiltonian = new ParticleOnCylinderPseudopotentialRealHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	    }
 	}
       else
 	{
-	  Hamiltonian = new ParticleOnThickCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	  if (Manager.GetBoolean("force-real") == true)
+	    {
+	      Hamiltonian = new ParticleOnThickCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	    }
+	  else
+	    {
+	      cout << "thick cylinder requires the --force-real option" << endl; 
+	      return 0;
+	    }
 	}
       
       double Shift =Manager.GetDouble("energy-shift");
@@ -243,10 +265,21 @@ int main(int argc, char** argv)
 	      sprintf (EigenvectorName, "fermions_thickcylinder_%s_n_%d_2s_%d_ky_%d", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, Ky);
 	    }
 	}
-      FQHEOnTorusMainTask Task (&Manager, Space, &Lanczos, Hamiltonian, Ky, Shift, OutputNameLz, FirstRun, EigenvectorName);
-      Task.SetKxValue(-1);
-      MainTaskOperation TaskOperation (&Task);
-      TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+      if (Manager.GetBoolean("force-real") == true)
+	{
+	  char* TmpSectorString = new char[16];
+	  sprintf (TmpSectorString, "%d", Ky);
+	  GenericRealMainTask Task (&Manager, Space, &Lanczos, Hamiltonian, TmpSectorString, "ky", Shift, OutputNameLz, FirstRun, EigenvectorName);
+	  MainTaskOperation TaskOperation (&Task);
+	  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+	}
+      else
+	{
+	  FQHEOnTorusMainTask Task (&Manager, Space, &Lanczos, Hamiltonian, Ky, Shift, OutputNameLz, FirstRun, EigenvectorName);
+	  Task.SetKxValue(-1);
+	  MainTaskOperation TaskOperation (&Task);
+	  TaskOperation.ApplyOperation(Architecture.GetArchitecture());
+	}
       if (EigenvectorName != 0)
 	{
 	  delete[] EigenvectorName;

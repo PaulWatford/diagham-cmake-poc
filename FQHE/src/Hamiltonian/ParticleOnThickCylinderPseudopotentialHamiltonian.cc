@@ -90,7 +90,7 @@ ParticleOnThickCylinderPseudopotentialHamiltonian::ParticleOnThickCylinderPseudo
   this->EnergyShift = 0.0;
 
 
-  this->OneBodyInteractionFactors = new Complex [this->NbrLzValue];
+  this->OneBodyInteractionFactors = new double [this->NbrLzValue];
   for (int i = 0; i < this->NbrLzValue; ++i)
    { 
        this->OneBodyInteractionFactors[i] = 0.0;
@@ -137,7 +137,7 @@ ParticleOnThickCylinderPseudopotentialHamiltonian::~ParticleOnThickCylinderPseud
 // m4 = fourth index
 // return value = numerical coefficient
 
-Complex ParticleOnThickCylinderPseudopotentialHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4)
+double ParticleOnThickCylinderPseudopotentialHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4)
 {
   double Length = (double) this->NbrLzValue;
   double kappa = 2.0 / Length;
@@ -148,10 +148,9 @@ Complex ParticleOnThickCylinderPseudopotentialHamiltonian::EvaluateInteractionCo
   double Xm4 = kappa * m4;
   double error;
   
-  Complex Coefficient(0, 0);
+  double Coefficient = 0.0;
 
-  Coefficient.Re = this->ThickPseudopotentialMatrixElement(Xm1-Xm4, Xm1-Xm3, this->NbrPseudopotentials, this->Pseudopotentials, this->LaguerrePolynomials, error);
-  Coefficient.Im = 0.0;
+  Coefficient = this->ThickPseudopotentialMatrixElement(Xm1-Xm4, Xm1-Xm3, this->NbrPseudopotentials, this->Pseudopotentials, this->LaguerrePolynomials, error);
 
   if (fabs(error) > 1e-6)
     {
@@ -165,8 +164,8 @@ Complex ParticleOnThickCylinderPseudopotentialHamiltonian::EvaluateInteractionCo
 //
 
 double ParticleOnThickCylinderPseudopotentialHamiltonian::ThickPseudopotentialMatrixElement(
-    double q1, double q2, int nbrPseudopotentials,
-    const double* pseudopotentials, Polynomial* laguerrePolynomials, double& error)
+											    double q1, double q2, int nbrPseudopotentials,
+											    const double* pseudopotentials, Polynomial* laguerrePolynomials, double& error)
 {
   (void) q2; 
   (void) laguerrePolynomials;

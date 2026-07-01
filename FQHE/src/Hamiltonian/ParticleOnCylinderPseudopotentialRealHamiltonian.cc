@@ -7,9 +7,9 @@
 //                                                                            //
 //                                                                            //
 //       class of hamiltonian associated to particles on a cylinder with      //
-//                        pseudopotential interaction                         //
+//             pseudopotential interaction with a real hamiltonian            //
 //                                                                            //
-//                        last modification : 29/06/2010                      //
+//                        last modification : 29/06/2026                      //
 //                                                                            //
 //                                                                            //
 //    This program is free software; you can redistribute it and/or modify    //
@@ -29,7 +29,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
-#include "Hamiltonian/ParticleOnCylinderPseudopotentialHamiltonian.h"
+#include "Hamiltonian/ParticleOnCylinderPseudopotentialRealHamiltonian.h"
 #include "Vector/RealVector.h"
 #include "Vector/ComplexVector.h"
 #include "Matrix/RealTriDiagonalSymmetricMatrix.h"
@@ -63,7 +63,7 @@ using std::ostream;
 // default constructor
 //
 
-ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialHamiltonian()
+ParticleOnCylinderPseudopotentialRealHamiltonian::ParticleOnCylinderPseudopotentialRealHamiltonian()
 {
 }
   
@@ -81,7 +81,7 @@ ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialH
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 // precalculationFileName = option file name where precalculation can be read instead of reevaluting them
 
-ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum,
+ParticleOnCylinderPseudopotentialRealHamiltonian::ParticleOnCylinderPseudopotentialRealHamiltonian(ParticleOnSphere* particles, int nbrParticles, int maxMomentum,
 										   double ratio, double confinement, bool lineCharge, int nbrPseudopotentials, double* pseudopotentials, AbstractArchitecture* architecture, long memory, char* precalculationFileName)
 {
   this->Particles = particles;
@@ -106,8 +106,8 @@ ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialH
   this->EnergyShift = 0.0;
 
 
-  this->OneBodyInteractionFactors = new Complex [this->NbrLzValue];
-  Complex Factor;
+  this->OneBodyInteractionFactors = new double [this->NbrLzValue];
+  double Factor;
   double kappa = sqrt(2.0 * M_PI /(this->NbrLzValue * this->Ratio));
   double Length = sqrt(2.0 * M_PI * this->Ratio * this->NbrLzValue);
   double Height = sqrt(2.0 * M_PI * this->NbrLzValue / this->Ratio);
@@ -117,22 +117,20 @@ ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialH
        if (lineCharge == false)
          {
            //Parabolic confinement     
-           Factor.Re = this->Confinement * pow(kappa * (i - 0.5 * this->MaxMomentum), 2.0);
-           Factor.Im = 0.0;
+           Factor = this->Confinement * pow(kappa * (i - 0.5 * this->MaxMomentum), 2.0);
          }
        else
         {
            double error;
 
            //Realistic confinement
-           Factor.Re = this->Confinement * this->LineChargeMatrixElement(i, this->MaxMomentum, Length, Height, error);
-           Factor.Im = 0.0;
-           if (fabs(error) > 1e-6)
+           Factor = this->Confinement * this->LineChargeMatrixElement(i, this->MaxMomentum, Length, Height, error);
+            if (fabs(error) > 1e-6)
              cout << "Insufficient accuracy in line charge " << endl;
          } 
        this->OneBodyInteractionFactors[i] += Factor;
 
-       if (Norm(Factor) != 0.0)
+       if (fabs(Factor) != 0.0)
          cout << "One body: i= " << i << " " << Factor << endl;
 
     }
@@ -165,41 +163,21 @@ ParticleOnCylinderPseudopotentialHamiltonian::ParticleOnCylinderPseudopotentialH
 // destructor
 //
 
-ParticleOnCylinderPseudopotentialHamiltonian::~ParticleOnCylinderPseudopotentialHamiltonian() 
+ParticleOnCylinderPseudopotentialRealHamiltonian::~ParticleOnCylinderPseudopotentialRealHamiltonian() 
 {
   delete[] this->Pseudopotentials;
   delete[] this->LaguerrePolynomials;
   delete[] this->InteractionFactors;
-  delete[] this->M1Value;
-  delete[] this->M2Value;
-  delete[] this->M3Value;
-  delete[] this->M4Value;
 
   if (this->OneBodyInteractionFactors != 0)
     delete[] this->OneBodyInteractionFactors;
-
-  if (this->FastMultiplicationFlag == true)
-    {
-      int ReducedDim = this->Particles->GetHilbertSpaceDimension() / this->FastMultiplicationStep;
-      if ((ReducedDim * this->FastMultiplicationStep) != this->Particles->GetHilbertSpaceDimension())
-	++ReducedDim;
-      for (int i = 0; i < ReducedDim; ++i)
-	{
-	  delete[] this->InteractionPerComponentIndex[i];
-	  delete[] this->InteractionPerComponentCoefficient[i];
-	}
-      delete[] this->InteractionPerComponentIndex;
-      delete[] this->InteractionPerComponentCoefficient;
-      delete[] this->NbrInteractionPerComponent;
-      this->FastMultiplicationFlag = false;
-    }
 }
 
 // set Hilbert space
 //
 // hilbertSpace = pointer to Hilbert space to use
 
-void ParticleOnCylinderPseudopotentialHamiltonian::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
+void ParticleOnCylinderPseudopotentialRealHamiltonian::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
 {
   delete[] this->InteractionFactors;
   if (this->FastMultiplicationFlag == true)
@@ -217,23 +195,14 @@ void ParticleOnCylinderPseudopotentialHamiltonian::SetHilbertSpace (AbstractHilb
   this->EvaluateInteractionFactors();
 }
 
-// shift Hamiltonian from a given energy
-//
-// shift = shift value
-
-void ParticleOnCylinderPseudopotentialHamiltonian::ShiftHamiltonian (double shift)
-{
-  this->EnergyShift = shift;
-}
-  
 // evaluate all interaction factors
 //   
 
-void ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionFactors()
+void ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionFactors()
 {
   int Pos = 0;
   int m4;
-  Complex* TmpCoefficient = new Complex [this->NbrLzValue * this->NbrLzValue * this->NbrLzValue];
+  double* TmpCoefficient = new double [this->NbrLzValue * this->NbrLzValue * this->NbrLzValue];
   double MaxCoefficient = 0.0;
 
   if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
@@ -262,8 +231,7 @@ void ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionFactors()
       this->M1Value = new int [Pos];
       this->M2Value = new int [Pos];
       this->M3Value = new int [Pos];
-      this->M4Value = new int [Pos];
-      this->InteractionFactors = new Complex [Pos];
+      this->InteractionFactors = new double [Pos];
       cout << "nbr interaction = " << Pos << endl;
       Pos = 0;
       MaxCoefficient *= MACHINE_PRECISION;
@@ -281,7 +249,6 @@ void ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionFactors()
 		        this->M1Value[this->NbrInteractionFactors] = m1;
 		        this->M2Value[this->NbrInteractionFactors] = m2;
 		        this->M3Value[this->NbrInteractionFactors] = m3;
-		        this->M4Value[this->NbrInteractionFactors] = m4;
 		        ++this->NbrInteractionFactors;
 		      }
 		    ++Pos;
@@ -333,8 +300,7 @@ void ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionFactors()
       this->M1Value = new int [Pos];
       this->M2Value = new int [Pos];
       this->M3Value = new int [Pos];
-      this->M4Value = new int [Pos];
-      this->InteractionFactors = new Complex [Pos];
+      this->InteractionFactors = new double [Pos];
       cout << "nbr interaction = " << Pos << endl;
       Pos = 0;
       MaxCoefficient *= MACHINE_PRECISION;
@@ -352,7 +318,6 @@ void ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionFactors()
 		      this->M1Value[this->NbrInteractionFactors] = m1;
 		      this->M2Value[this->NbrInteractionFactors] = m2;
 		      this->M3Value[this->NbrInteractionFactors] = m3;
-		      this->M4Value[this->NbrInteractionFactors] = m4;
 		      ++this->NbrInteractionFactors;
 		    }
 		  ++Pos;
@@ -372,7 +337,7 @@ void ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionFactors()
 // m4 = fourth index
 // return value = numerical coefficient
 
-Complex ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4)
+double ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionCoefficient(int m1, int m2, int m3, int m4)
 {
   double Length = sqrt(2.0 * M_PI * this->Ratio * this->NbrLzValue);
   double kappa = 2.0 * M_PI/Length;
@@ -382,10 +347,9 @@ Complex ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionCoeffic
   double Xm4 = kappa * m4;	
   double error;
 
-  Complex Coefficient(0, 0);
+  double Coefficient = 0.0;
 
-  Coefficient.Re = this->PseudopotentialMatrixElement(Xm1-Xm4, Xm1-Xm3, this->NbrPseudopotentials, this->Pseudopotentials, this->LaguerrePolynomials, error);
-  Coefficient.Im = 0.0;
+  Coefficient = this->PseudopotentialMatrixElement(Xm1-Xm4, Xm1-Xm3, this->NbrPseudopotentials, this->Pseudopotentials, this->LaguerrePolynomials, error);
 
   if (fabs(error) > 1e-6)
     {
@@ -394,6 +358,7 @@ Complex ParticleOnCylinderPseudopotentialHamiltonian::EvaluateInteractionCoeffic
 
   return (Coefficient/Length);
 }
+
 
 #ifdef HAVE_GSL
 
@@ -408,20 +373,7 @@ struct f_params {
   Polynomial* LaguerrePolynomials;
 };
 
-double Integrand(double qx, void *p)
-{
-  f_params &params= *reinterpret_cast<f_params *>(p);
-
-  double q2 = qx * qx + params.Xj14 * params.Xj14;
-
-  double Vq = 0.0;
-  for (int i = 0; i < params.NbrPseudopotentials; ++i)
-     if (params.Pseudopotentials[i] != 0.0)
-        Vq += params.Pseudopotentials[i] * params.LaguerrePolynomials[i].PolynomialEvaluate(q2);
-
-  return (exp(-0.5*q2) * 2.0 * cos(qx * params.Xj13) * Vq);  
-}
-
+  double Integrand(double qx, void *p);
 
 }
 
@@ -435,33 +387,12 @@ struct f_params {
   double H;
 };
 
-double LineChargeIntegrand(double x, void *p)
-{
-  f_params &params= *reinterpret_cast<f_params *>(p);
-
-  double Xm = (params.index - 0.5 * params.Nphi) * 2.0 * M_PI/params.L;
-
-  double LogNum, LogDen, IntegrandPos, IntegrandNeg;
-
-  LogNum = x - 0.5 * params.H + sqrt(pow(x - 0.5 * params.H, 2.0) + pow(params.L/(2.0 * M_PI),2.0));
-  LogDen = x + 0.5 * params.H + sqrt(pow(x + 0.5 * params.H, 2.0) + pow(params.L/(2.0 * M_PI),2.0));
-
-  IntegrandPos = exp(-pow(x - Xm,2.0)) * log(fabs(LogNum/LogDen));
-
-  LogNum = -x - 0.5 * params.H + sqrt(pow(-x - 0.5 * params.H, 2.0) + pow(params.L/(2.0 * M_PI),2.0));
-  LogDen = -x + 0.5 * params.H + sqrt(pow(-x + 0.5 * params.H, 2.0) + pow(params.L/(2.0 * M_PI),2.0));
-
-  IntegrandNeg = exp(-pow(-x - Xm,2.0)) * log(fabs(LogNum/LogDen));
-
-  return ( ((IntegrandPos + IntegrandNeg) * params.Nphi ) / (sqrt(M_PI) ) );
-}
-
+  double LineChargeIntegrand(double x, void *p);
 
 }
 #endif
 
-
-double ParticleOnCylinderPseudopotentialHamiltonian::PseudopotentialMatrixElement(double xj14, double xj13, int nbrPseudopotentials, double* pseudopotentials, Polynomial* laguerrePolynomials, double &error)
+double ParticleOnCylinderPseudopotentialRealHamiltonian::PseudopotentialMatrixElement(double xj14, double xj13, int nbrPseudopotentials, double* pseudopotentials, Polynomial* laguerrePolynomials, double &error)
 {
 #ifdef HAVE_GSL
 
@@ -501,7 +432,7 @@ double ParticleOnCylinderPseudopotentialHamiltonian::PseudopotentialMatrixElemen
 #endif
 }
 
-double ParticleOnCylinderPseudopotentialHamiltonian::LineChargeMatrixElement(int index, int MaxMomentum, double Length, double Height, double &error)
+double ParticleOnCylinderPseudopotentialRealHamiltonian::LineChargeMatrixElement(int index, int MaxMomentum, double Length, double Height, double &error)
 {
 #ifdef HAVE_GSL
 

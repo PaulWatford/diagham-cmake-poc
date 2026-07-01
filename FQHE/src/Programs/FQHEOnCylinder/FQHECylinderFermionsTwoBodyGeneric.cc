@@ -219,7 +219,7 @@ int main(int argc, char** argv)
 		Space = new FermionOnSphereUnlimited(NbrParticles, Ky, MaxMomentum);
 
 
-      cout << " Hilbert space dimension = " << Space->GetHilbertSpaceDimension() << endl;
+      cout << " Hilbert space dimension = " << Space->GetLargeHilbertSpaceDimension() << endl;
 
       Architecture.GetArchitecture()->SetDimension(Space->GetHilbertSpaceDimension());
       if (Architecture.GetArchitecture()->GetLocalMemory() > 0)

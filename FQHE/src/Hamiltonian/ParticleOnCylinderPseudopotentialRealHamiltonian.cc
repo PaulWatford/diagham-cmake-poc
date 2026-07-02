@@ -222,8 +222,8 @@ void ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionFactor
 
 		     //cout << m1 << " " << m2 << " " << m3 << " " << m4 << " : " << this->EvaluateInteractionCoefficient(m1, m2, m3, m4) << endl;
 		     //cout << m1 << " " << m2 << " " << m4 << " " << m3 << " : " << this->EvaluateInteractionCoefficient(m1,m2,m4,m3) << endl;
-                     if (MaxCoefficient < Norm(TmpCoefficient[Pos]))
-		        MaxCoefficient = Norm(TmpCoefficient[Pos]);
+                     if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+		        MaxCoefficient = fabs(TmpCoefficient[Pos]);
 		    ++Pos;
 		  }
 	    }
@@ -243,7 +243,7 @@ void ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionFactor
               if ((m4 >= 0) && (m4 <= this->MaxMomentum))
 	        if (m3 > m4)
 		  {
-		    if  (Norm(TmpCoefficient[Pos]) > MaxCoefficient)
+		    if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
 		      {
 		        this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
 		        this->M1Value[this->NbrInteractionFactors] = m1;
@@ -276,8 +276,8 @@ void ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionFactor
 		      else
 			TmpCoefficient[Pos] = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4)
 					       + this->EvaluateInteractionCoefficient(m1, m2, m4, m3));
-		      if (MaxCoefficient < Norm(TmpCoefficient[Pos]))
-			MaxCoefficient = Norm(TmpCoefficient[Pos]);
+		      if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+			MaxCoefficient = fabs(TmpCoefficient[Pos]);
 		      ++Pos;
 		    }
 		  else
@@ -289,8 +289,8 @@ void ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionFactor
 						   + this->EvaluateInteractionCoefficient(m2, m1, m3, m4));
 			  else
 			    TmpCoefficient[Pos] = this->EvaluateInteractionCoefficient(m1, m2, m3, m4);
-			  if (MaxCoefficient < Norm(TmpCoefficient[Pos]))
-			    MaxCoefficient = Norm(TmpCoefficient[Pos]);
+			  if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+			    MaxCoefficient = fabs(TmpCoefficient[Pos]);
 			  ++Pos;
 			}
 		    }
@@ -312,7 +312,7 @@ void ParticleOnCylinderPseudopotentialRealHamiltonian::EvaluateInteractionFactor
 	      if ((m4 >= 0) && (m4 <= this->MaxMomentum))
 	       if (m3 >= m4)
 		{
-		  if (Norm(TmpCoefficient[Pos]) > MaxCoefficient)
+		  if (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
 		    {
 		      this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
 		      this->M1Value[this->NbrInteractionFactors] = m1;

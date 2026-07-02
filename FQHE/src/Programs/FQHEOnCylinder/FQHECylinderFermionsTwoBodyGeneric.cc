@@ -230,11 +230,11 @@ int main(int argc, char** argv)
 	{
 	  if (Manager.GetBoolean("force-real") == true)
 	    {
-	      Hamiltonian = new ParticleOnCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	      Hamiltonian = new ParticleOnCylinderPseudopotentialRealHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
 	    }
 	  else
 	    {
-	      Hamiltonian = new ParticleOnCylinderPseudopotentialRealHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
+	      Hamiltonian = new ParticleOnCylinderPseudopotentialHamiltonian (Space, NbrParticles, MaxMomentum, XRatio, Confinement, LineCharge, NbrPseudoPotentials, PseudoPotentials, Architecture.GetArchitecture(), Memory);
 	    }
 	}
       else

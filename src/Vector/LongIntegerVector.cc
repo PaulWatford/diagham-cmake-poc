@@ -44,6 +44,16 @@ using std::ifstream;
 using std::ios;
 using std::endl;
 
+#ifndef __GMP__
+namespace
+{
+  ULONGLONG DiagHamUnsignedAbs(LONGLONG value)
+  {
+    return (value < 0) ? (static_cast<ULONGLONG>(-(value + 1)) + 1u) : static_cast<ULONGLONG>(value);
+  }
+}
+#endif
+
 
 // default constructor  
 // 
@@ -559,7 +569,7 @@ bool LongIntegerVector::IsProportional(LongIntegerVector& vector)
 #else
   LONGLONG* SmallerVector = this->Components;
   LONGLONG* LargerVector = vector.Components;
-  if (abs(this->Components[FirstNonZeroCoefficient]) > abs(vector.Components[FirstNonZeroCoefficient]))
+  if (DiagHamUnsignedAbs(this->Components[FirstNonZeroCoefficient]) > DiagHamUnsignedAbs(vector.Components[FirstNonZeroCoefficient]))
     {
       LargerVector = this->Components;
       SmallerVector = vector.Components;	  

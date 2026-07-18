@@ -625,7 +625,7 @@ double BosonOnTorusWithSU3SpinAndMagneticTranslations::A1A3 (int index, int n1, 
 double BosonOnTorusWithSU3SpinAndMagneticTranslations::A2A2 (int index, int n1, int n2)
 {
   this->FermionToBoson(this->StateDescription2[index], this->N2KyMax, this->ProdATemporaryState2);
-  if ((this->ProdATemporaryState2[n1] == 0) || (this->ProdATemporaryState2[n2] == 0) || ((n1 == n2) && (this->ProdATemporaryState1[n2] == 1)))
+  if ((this->ProdATemporaryState2[n1] == 0) || (this->ProdATemporaryState2[n2] == 0) || ((n1 == n2) && (this->ProdATemporaryState2[n2] == 1)))
     {
       return 0.0;
     }

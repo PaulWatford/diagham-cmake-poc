@@ -111,19 +111,33 @@ AC_MSG_RESULT([${HAVE_PKG_GSL}])
 
 
 USER_DEFINED_GSL=no
+GSL_AM_CPPFLAGS=""
 AC_ARG_WITH(gsl-libs,[AC_HELP_STRING([--with-gsl-libs="LIBS"],[GSL libraries @<:@"-lgsl  -lgslcblas"@:>@])],
 [GSL_LIBS=${withval}
 USER_DEFINED_GSL=yes
 AC_MSG_CHECKING(user-defined GSL libraries)
 AC_MSG_RESULT([${GSL_LIBS}])
+for gsl_arg in ${GSL_LIBS}; do
+  case "${gsl_arg}" in
+    -L*)
+      gsl_lib_dir=`echo "${gsl_arg}" | sed 's/^-L//'`
+      gsl_include_dir=`echo "${gsl_lib_dir}" | sed 's,/lib$,/include,'`
+      if test -d "${gsl_include_dir}"; then
+        GSL_AM_CPPFLAGS="${GSL_AM_CPPFLAGS} -I${gsl_include_dir}"
+      fi
+      ;;
+  esac
+done
 ])
 
 
 
-if test X${USER_DEFINED_GSL} = Xno && test X${HAVE_PKG_GSL} = Xyes; then
+if test X${HAVE_PKG_GSL} = Xyes; then
   AC_DEFINE(HAVE_GSL,,[define if we are using gsl library])
-  AC_CHECK_LIB(gsl,gsl_blas_dgemm,GSL_LIBS="-lgsl -lgslcblas",AC_MSG_ERROR([gsl library not found]))
-  GSL_LIBS="-lgsl -lgslcblas"
+  if test X${USER_DEFINED_GSL} = Xno; then
+    AC_CHECK_LIB(gsl,gsl_blas_dgemm,GSL_LIBS="-lgsl -lgslcblas",AC_MSG_ERROR([gsl library not found]))
+    GSL_LIBS="-lgsl -lgslcblas"
+  fi
 fi
 
 
@@ -148,19 +162,33 @@ AC_MSG_RESULT([${HAVE_PKG_GMP}])
 
 
 USER_DEFINED_GMP=no
+GMP_AM_CPPFLAGS=""
 AC_ARG_WITH(gmp-libs,[AC_HELP_STRING([--with-gmp-libs="LIBS"],[GMP libraries @<:@"-lgmp -lgmpxx"@:>@])],
 [GMP_LIBS=${withval}
 USER_DEFINED_GMP=yes
 AC_MSG_CHECKING(user-defined GMP libraries)
 AC_MSG_RESULT([${GMP_LIBS}])
+for gmp_arg in ${GMP_LIBS}; do
+  case "${gmp_arg}" in
+    -L*)
+      gmp_lib_dir=`echo "${gmp_arg}" | sed 's/^-L//'`
+      gmp_include_dir=`echo "${gmp_lib_dir}" | sed 's,/lib$,/include,'`
+      if test -d "${gmp_include_dir}"; then
+        GMP_AM_CPPFLAGS="${GMP_AM_CPPFLAGS} -I${gmp_include_dir}"
+      fi
+      ;;
+  esac
+done
 ])
 
 
 
-if test X${USER_DEFINED_GMP} = Xno && test X${HAVE_PKG_GMP} = Xyes; then
+if test X${HAVE_PKG_GMP} = Xyes; then
   AC_DEFINE(HAVE_GMP,,[define if we are using gmp library])
-  AC_CHECK_LIB(gmp,__gmpz_init,GMP_LIBS=-lgmp,AC_MSG_ERROR([gmp library not found]))
-  GMP_LIBS="-lgmp -lgmpxx"
+  if test X${USER_DEFINED_GMP} = Xno; then
+    AC_CHECK_LIB(gmp,__gmpz_init,GMP_LIBS=-lgmp,AC_MSG_ERROR([gmp library not found]))
+    GMP_LIBS="-lgmp -lgmpxx"
+  fi
 fi
 
 
@@ -486,7 +514,11 @@ fi
 dnl add further includes for GSL library if needed
 
 if test X${HAVE_PKG_GSL} = Xyes; then
-  INCLUDES="${GSL_INCLUDES} ${INCLUDES}"
+  INCLUDES="${GSL_AM_CPPFLAGS} ${INCLUDES}"
+fi
+
+if test X${HAVE_PKG_GMP} = Xyes; then
+  INCLUDES="${GMP_AM_CPPFLAGS} ${INCLUDES}"
 fi
 
 

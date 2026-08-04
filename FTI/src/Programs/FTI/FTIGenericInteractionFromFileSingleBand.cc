@@ -1016,7 +1016,7 @@ int main(int argc, char** argv)
 		  // no valley, no spin
 		  if ((NbrSitesX * NbrSitesY) <= 64)
 		    {
-		      ParticleOnSphere* TmpSpace = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		      ParticleOnSphere* TmpSpace = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], Manager.GetString("hilbert-directory"));
 		      Space = new ParticleOnSphereWithPolarizedSpin(TmpSpace);
 		    }
 		  else

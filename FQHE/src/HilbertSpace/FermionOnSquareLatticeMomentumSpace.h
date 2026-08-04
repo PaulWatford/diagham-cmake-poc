@@ -73,8 +73,9 @@ class FermionOnSquareLatticeMomentumSpace : public FermionOnSphere
   // nbrSiteY = number of sites in the y direction
   // kxMomentum = momentum along the x direction
   // kyMomentum = momentum along the y direction
+  // outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
   // memory = amount of memory granted for precalculations
-  FermionOnSquareLatticeMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int kxMomentum, int kyMomentum, unsigned long memory = 10000000);
+  FermionOnSquareLatticeMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int kxMomentum, int kyMomentum, char* outputDirectory = 0, unsigned long memory = 10000000);
 
   // copy constructor (without duplicating datas)
   //
@@ -194,8 +195,17 @@ class FermionOnSquareLatticeMomentumSpace : public FermionOnSphere
   // holeBasis = n-body basis on which the symmetrized state has to be expressed
   virtual ComplexVector ParticleHoleSymmetrize (ComplexVector& state, FermionOnSphere& holeBasis);
 
+  // provide the default name of the file for Hilbert space storage 
+  //
+  // return value = pointer to file name (0 if no default file name exists) 
+  virtual char* GetDefaultHilbertSpaceFileName();
+
 protected:
 
+  // core part of the Hilbert space generation
+  //
+  void GenerateCoreHilbertSpace();
+    
   // evaluate Hilbert space dimension
   //
   // nbrFermions = number of fermions

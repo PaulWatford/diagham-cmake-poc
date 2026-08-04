@@ -507,6 +507,18 @@ class FermionOnSphere :  public ParticleOnSphere
   // return value = true if no error occured
   virtual bool WriteHilbertSpace (char* fileName);
 
+  // save Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description has to be saved
+  // return value = true if no error occured
+  virtual bool WriteCoreHilbertSpace (char* fileName);
+
+  // read Hilbert space description to disk, restricted to the raw Hilbert space
+  //
+  // fileName = name of the file where the Hilbert space description is stored
+  // return value = true if no error occured
+  virtual bool ReadCoreHilbertSpace (char* fileName);  
+  
   // convert a state to its occupation number representation
   //
   // index = index of the state

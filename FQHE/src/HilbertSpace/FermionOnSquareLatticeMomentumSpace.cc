@@ -43,6 +43,7 @@
 #include "MathTools/FactorialCoefficient.h"
 #include "GeneralTools/Endian.h"
 #include "Architecture/ArchitectureOperation/FQHESphereParticleEntanglementSpectrumOperation.h"
+#include "GeneralTools/FilenameTools.h"
 
 #include <math.h>
 #include <cstdlib>
@@ -71,9 +72,10 @@ FermionOnSquareLatticeMomentumSpace::FermionOnSquareLatticeMomentumSpace ()
 // nbrSiteY = number of sites in the y direction
 // kxMomentum = momentum along the x direction
 // kyMomentum = momentum along the y direction
+// outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
 // memory = amount of memory granted for precalculations
 
-FermionOnSquareLatticeMomentumSpace::FermionOnSquareLatticeMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int kxMomentum, int kyMomentum, unsigned long memory)
+FermionOnSquareLatticeMomentumSpace::FermionOnSquareLatticeMomentumSpace (int nbrFermions, int nbrSiteX, int nbrSiteY, int kxMomentum, int kyMomentum, char* outputDirectory, unsigned long memory)
 {  
   this->NbrFermions = nbrFermions;
   this->IncNbrFermions = this->NbrFermions + 1;
@@ -85,18 +87,29 @@ FermionOnSquareLatticeMomentumSpace::FermionOnSquareLatticeMomentumSpace (int nb
   this->LzMax = this->NbrSiteX * this->NbrSiteY;
   this->NbrLzValue = this->LzMax + 1;
   this->MaximumSignLookUp = 16;
-  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0);
-  if (this->LargeHilbertSpaceDimension >= (1l << 30))
-    this->HilbertSpaceDimension = 0;
+  if (outputDirectory == 0)
+    {
+      this->GenerateCoreHilbertSpace();
+    }
   else
-    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
-  if ( this->LargeHilbertSpaceDimension > 0l)
+    {
+      char* TmpName = this->GetDefaultHilbertSpaceFileName();
+      char* FullName = new char[strlen(TmpName) + strlen(outputDirectory) + 16];
+      sprintf (FullName, "%s/%s", outputDirectory, TmpName);
+      if (IsFile(FullName))
+	{
+	  this->ReadCoreHilbertSpace(FullName);	  
+	}
+      else
+	{
+	  this->GenerateCoreHilbertSpace();
+	  this->WriteCoreHilbertSpace(FullName);
+	}
+    }
+  if (this->LargeHilbertSpaceDimension > 0l)
     {
       this->Flag.Initialize();
       this->TargetSpace = this;
-      this->StateDescription = new unsigned long [this->HilbertSpaceDimension];
-      this->StateLzMax = new int [this->HilbertSpaceDimension];  
-      this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
       int TmpLzMax = this->LzMax;
       for (long i = 0l; i < this->LargeHilbertSpaceDimension; ++i)
 	{
@@ -216,10 +229,40 @@ AbstractHilbertSpace* FermionOnSquareLatticeMomentumSpace::Clone()
   return new FermionOnSquareLatticeMomentumSpace(*this);
 }
 
+// core part of the Hilbert space generation
+//
+
+void  FermionOnSquareLatticeMomentumSpace::GenerateCoreHilbertSpace()
+{
+  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0);
+  if (this->LargeHilbertSpaceDimension >= (1l << 31))
+    this->HilbertSpaceDimension = 0;
+  else
+    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+  if (this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->StateDescription = new unsigned long [this->LargeHilbertSpaceDimension];
+      this->StateLzMax = new int [this->LargeHilbertSpaceDimension];  
+      this->LargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l);
+    }
+}
+
+// provide the default name of the file for Hilbert space storage 
+//
+// return value = pointer to file name (0 if no default file name exists) 
+
+char* FermionOnSquareLatticeMomentumSpace::GetDefaultHilbertSpaceFileName()
+{
+  char* TmpName = new char[256];
+  sprintf(TmpName, "fermions_klattice_n_%d_nx_%d_ny_%d_kx_%d_ky_%d.hil", this->NbrFermions, this->NbrSiteX, this->NbrSiteY, this->KxMomentum, this->KyMomentum);
+  return TmpName;
+}
+
 // save Hilbert space description to disk
 //
 // fileName = name of the file where the Hilbert space description has to be saved
 // return value = true if no error occured
+
 bool FermionOnSquareLatticeMomentumSpace::WriteHilbertSpace (char* fileName)
 {
   ofstream File;

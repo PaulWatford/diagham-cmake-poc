@@ -304,6 +304,12 @@ int main(int argc, char** argv)
       return -1;      
   }
 
+  if (InitialSpace->GetLargeHilbertSpaceDimension() != InitialState.GetLargeVectorDimension())
+    {
+      cout << "Hilbert space dimension mismatch: " << Manager.GetString("ground-file") << " has dimension " << InitialState.GetLargeVectorDimension() << ", should be " << InitialSpace->GetLargeHilbertSpaceDimension() << endl;
+      return 0;
+    }
+  
   ComplexVector FinalState (FinalSpace->GetHilbertSpaceDimension()); 
   InitialSpace->ProjectOntoSingleBand(&InitialState, FinalSpace, &FinalState, ProjectedBandIndex);
   cout << "weight onto band " << ProjectedBandIndex << " : " << FinalState.SqrNorm() << endl;

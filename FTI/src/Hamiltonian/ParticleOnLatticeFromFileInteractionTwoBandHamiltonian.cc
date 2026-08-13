@@ -55,6 +55,7 @@ using std::ostream;
 
 ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::ParticleOnLatticeFromFileInteractionTwoBandHamiltonian()
 {
+  this->OnlyPreserveKx = false;
 }
 
 // constructor
@@ -226,8 +227,15 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
   int* TmpLinearizedK4 = new int[TmpNbrTwoBodyMatrixElements];
   for (int i = 0; i < TmpNbrTwoBodyMatrixElements; ++i)
     {
-      TmpLinearizedSumK[i] = this->TightBindingModel->GetLinearizedMomentumIndex((TmpKx1[i] + TmpKx2[i]) % this->NbrSiteX,
-										 (TmpKy1[i] + TmpKy2[i]) % this->NbrSiteY);
+      if (this->OnlyPreserveKx == false)
+	{
+	  TmpLinearizedSumK[i] = this->TightBindingModel->GetLinearizedMomentumIndex((TmpKx1[i] + TmpKx2[i]) % this->NbrSiteX,
+										     (TmpKy1[i] + TmpKy2[i]) % this->NbrSiteY);
+	}
+      else
+	{
+	  TmpLinearizedSumK[i] = (TmpKx1[i] + TmpKx2[i]) % this->NbrSiteX;
+	}
       TmpLinearizedK1[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx1[i], TmpKy1[i]);
       TmpLinearizedK2[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx2[i], TmpKy2[i]);
       TmpLinearizedK3[i] = this->TightBindingModel->GetLinearizedMomentumIndex(TmpKx3[i], TmpKy3[i]);
@@ -238,22 +246,49 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
   
   this->EvaluateOneBodyFactors();
  
-  this->NbrInterSectorSums = this->NbrSiteX * this->NbrSiteY;
+  if (this->OnlyPreserveKx == false)
+    {
+      this->NbrInterSectorSums = this->NbrSiteX * this->NbrSiteY;
+    }
+  else
+    {
+       this->NbrInterSectorSums = this->NbrSiteX;
+   }
   this->NbrInterSectorIndicesPerSum = new int[this->NbrInterSectorSums];
   for (int i = 0; i < this->NbrInterSectorSums; ++i)
     this->NbrInterSectorIndicesPerSum[i] = 0;
-  this->NbrIntraSectorSums = this->NbrSiteX * this->NbrSiteY;
+  if (this->OnlyPreserveKx == false)
+    {
+      this->NbrIntraSectorSums = this->NbrSiteX * this->NbrSiteY;
+    }
+  else
+    {
+      this->NbrIntraSectorSums = this->NbrSiteX;
+    }
   this->NbrIntraSectorIndicesPerSum = new int[this->NbrIntraSectorSums];
   for (int i = 0; i < this->NbrIntraSectorSums; ++i)
     this->NbrIntraSectorIndicesPerSum[i] = 0;      
 
-  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
-    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
-      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
-	for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2)
-	  {
-	    ++this->NbrInterSectorIndicesPerSum[this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY)];
-	  }
+  if (this->OnlyPreserveKx == false)
+    {
+      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2)
+	      {
+		++this->NbrInterSectorIndicesPerSum[this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY)];
+	      }
+    }
+  else
+    {
+      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2)
+	      {
+		++this->NbrInterSectorIndicesPerSum[(kx1 + kx2) % this->NbrSiteX];
+	      }
+    }
   this->InterSectorIndicesPerSum = new int* [this->NbrInterSectorSums];
   for (int i = 0; i < this->NbrInterSectorSums; ++i)
     {
@@ -283,33 +318,69 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 	}
     }
   
-  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
-    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
-      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
-	for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2)    
-	  {
-	    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
-	    this->InterSectorIndicesPerSum[TmpSum][this->NbrInterSectorIndicesPerSum[TmpSum] << 1] = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
-	    this->InterSectorIndicesPerSum[TmpSum][1 + (this->NbrInterSectorIndicesPerSum[TmpSum] << 1)] = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
-	    TmpLinearizedKInterIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrInterSectorIndicesPerSum[TmpSum];
-	    ++this->NbrInterSectorIndicesPerSum[TmpSum];    
-	  }
- 
-  if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
+  if (this->OnlyPreserveKx == false)
     {
       for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
 	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
 	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
-	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2)    
 	      {
-		int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
-		int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
-		if (Index1 < Index2)
-		  {
-		    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
-		    ++this->NbrIntraSectorIndicesPerSum[TmpSum];    
-		  }
+		int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
+		this->InterSectorIndicesPerSum[TmpSum][this->NbrInterSectorIndicesPerSum[TmpSum] << 1] = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		this->InterSectorIndicesPerSum[TmpSum][1 + (this->NbrInterSectorIndicesPerSum[TmpSum] << 1)] = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		TmpLinearizedKInterIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrInterSectorIndicesPerSum[TmpSum];
+		++this->NbrInterSectorIndicesPerSum[TmpSum];    
 	      }
+    }
+  else
+    {
+      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2)    
+	      {
+		int TmpSum = (kx1 + kx2) % this->NbrSiteX;
+		this->InterSectorIndicesPerSum[TmpSum][this->NbrInterSectorIndicesPerSum[TmpSum] << 1] = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		this->InterSectorIndicesPerSum[TmpSum][1 + (this->NbrInterSectorIndicesPerSum[TmpSum] << 1)] = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		TmpLinearizedKInterIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrInterSectorIndicesPerSum[TmpSum];
+		++this->NbrInterSectorIndicesPerSum[TmpSum];    
+	      }
+    }    
+ 
+  if (this->Particles->GetParticleStatistic() == ParticleOnSphere::FermionicStatistic)
+    {
+      if (this->OnlyPreserveKx == false)
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+		  {
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 < Index2)
+		      {
+			int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
+		  }
+	}
+      else
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+		  {
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 < Index2)
+		      {
+			int TmpSum = (kx1 + kx2) % this->NbrSiteX;
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
+		  }
+	}
       this->IntraSectorIndicesPerSum = new int* [this->NbrIntraSectorSums];
       for (int i = 0; i < this->NbrIntraSectorSums; ++i)
 	{
@@ -319,24 +390,45 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 	      this->NbrIntraSectorIndicesPerSum[i] = 0;
 	    }
 	}
-      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
-	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
-	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
-	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
-	      {
-		int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
-		int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
-		if (Index1 < Index2)
+       if (this->OnlyPreserveKx == false)
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
 		  {
-		    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, 
-										     (ky1 + ky2) % this->NbrSiteY);
-		    this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
-		    this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
-		    TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
-		    ++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 < Index2)
+		      {
+			int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, 
+											 (ky1 + ky2) % this->NbrSiteY);
+			this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
+			this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
+			TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
 		  }
-	      }
-      
+	}
+       else
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+		  {
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 < Index2)
+		      {
+			int TmpSum = (kx1 + kx2) % this->NbrSiteX;
+			this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
+			this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
+			TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
+		  }
+	}	 
 
       double TmpKx1 = 0.0;
       double TmpKx2 = 0.0;
@@ -736,19 +828,38 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
   else
     {      
       // bosonic interaction
-      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
-	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
-	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
-	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
-	      {
-		int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
-		int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
-		if (Index1 <= Index2)
+      if (this->OnlyPreserveKx == false)
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
 		  {
-		    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
-		    ++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 <= Index2)
+		      {
+			int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, (ky1 + ky2) % this->NbrSiteY);
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
 		  }
-	      }
+	}
+      else
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+		  {
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 <= Index2)
+		      {
+			int TmpSum = (kx1 + kx2) % this->NbrSiteX;
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
+		  }
+	}
       this->IntraSectorIndicesPerSum = new int* [this->NbrIntraSectorSums];
       for (int i = 0; i < this->NbrIntraSectorSums; ++i)
 	{
@@ -758,24 +869,46 @@ void ParticleOnLatticeFromFileInteractionTwoBandHamiltonian::EvaluateInteraction
 	      this->NbrIntraSectorIndicesPerSum[i] = 0;
 	    }
 	}
-      for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
-	for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
-	  for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
-	    for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
-	      {
-		int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
-		int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
-		if (Index1 <= Index2)
+       if (this->OnlyPreserveKx == false)
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
 		  {
-		    int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, 
-										     (ky1 + ky2) % this->NbrSiteY);
-		    this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
-		    this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
-		    TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
-		    ++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 <= Index2)
+		      {
+			int TmpSum = this->TightBindingModel->GetLinearizedMomentumIndex((kx1 + kx2) % this->NbrSiteX, 
+											 (ky1 + ky2) % this->NbrSiteY);
+			this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
+			this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
+			TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
 		  }
-	      }
-      
+	}
+       else
+	{
+	  for (int kx1 = 0; kx1 < this->NbrSiteX; ++kx1)
+	    for (int kx2 = 0; kx2 < this->NbrSiteX; ++kx2)
+	      for (int ky1 = 0; ky1 < this->NbrSiteY; ++ky1)
+		for (int ky2 = 0; ky2 < this->NbrSiteY; ++ky2) 
+		  {
+		    int Index1 = this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1);
+		    int Index2 = this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2);
+		    if (Index1 <= Index2)
+		      {
+			int TmpSum = (kx1 + kx2) % this->NbrSiteX;
+			this->IntraSectorIndicesPerSum[TmpSum][this->NbrIntraSectorIndicesPerSum[TmpSum] << 1] = Index1;
+			this->IntraSectorIndicesPerSum[TmpSum][1 + (this->NbrIntraSectorIndicesPerSum[TmpSum] << 1)] = Index2;
+			TmpLinearizedKIntraIndices[TmpSum][this->TightBindingModel->GetLinearizedMomentumIndex(kx1, ky1)][this->TightBindingModel->GetLinearizedMomentumIndex(kx2, ky2)] = this->NbrIntraSectorIndicesPerSum[TmpSum];
+			++this->NbrIntraSectorIndicesPerSum[TmpSum];    
+		      }
+		  }
+	}
+	 
 
       double TmpKx1 = 0.0;
       double TmpKx2 = 0.0;

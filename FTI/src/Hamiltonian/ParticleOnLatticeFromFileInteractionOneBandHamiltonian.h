@@ -69,12 +69,13 @@ class ParticleOnLatticeFromFileInteractionOneBandHamiltonian : public ParticleOn
   // flatBandFlag = use flat band model
   // interactionRescalingFactor = global rescaling factor for the two-body interaction term
   // spinFlag = include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
+  // onlyPreserveKx = assume that the system is periodic only along x, treating ky as a coordinate along y
   // architecture = architecture to use for precalculation
   // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
   ParticleOnLatticeFromFileInteractionOneBandHamiltonian(ParticleOnSphereWithSpin* particles, int nbrParticles, int nbrSiteX, int nbrSiteY,
 							 char* matrixElementsInteractionFile,
 							 Abstract2DTightBindingModel* tightBindingModel, bool flatBandFlag, double interactionRescalingFactor, 
-							 bool spinFlag, AbstractArchitecture* architecture, long memory = -1);
+							 bool spinFlag, bool onlyPreserveKx, AbstractArchitecture* architecture, long memory = -1);
 
   // destructor
   //

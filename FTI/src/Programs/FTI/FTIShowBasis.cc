@@ -1,6 +1,7 @@
 #include "HilbertSpace/FermionOnSquareLatticeWithSpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeNonPeriodicMomentumSpace.h"
+#include "HilbertSpace/FermionOnSquareOpenLatticeMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceLong.h"
 #include "HilbertSpace/FermionOnCubicLatticeMomentumSpace.h"
@@ -86,6 +87,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new BooleanOption  ('\n', "4d", "consider a 4d model instead of a 2d model");
   (*SystemGroup) += new BooleanOption  ('\n', "spin-conserved", "assume that the spin is conserved in the two band model");
   (*SystemGroup) += new SingleIntegerOption  ('\n', "sz", "twice the spin Sz value (only useful when --spin-conserved is on)", 0);
+  (*SystemGroup) += new BooleanOption  ('\n', "open-y", "only enforce momentum conservation x, treating ky as a coordinate along y");
   (*SystemGroup) += new BooleanOption  ('\n', "non-periodic", "look at the non-periodic hilbert space with a cut in momentum space described by nbr-allowed-site and min-k");
   (*SystemGroup) += new SingleIntegerOption  ('X', "nbr-allowed-sitex", "number of x momenta allowed for a single particle", 3);
   (*SystemGroup) += new SingleIntegerOption  ('Y', "nbr-allowed-sitey", "number of y momenta allowed for a single particle", 3);
@@ -188,7 +190,14 @@ int main(int argc, char** argv)
 	    {
               if (Manager.GetBoolean("3d") == false)
                 {
-                  Space = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      Space = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx, TotalKy);
+		    }
+		  else
+		    {
+		      Space = new FermionOnSquareOpenLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, TotalKx);
+		    }
                   if (Manager.GetString("save-hilbert") != 0)
                     {
                       Space->WriteHilbertSpace(Manager.GetString("save-hilbert"));

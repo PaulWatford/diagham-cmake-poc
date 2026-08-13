@@ -11,6 +11,7 @@
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinMomentumSpaceSzPzPreservingEzSymmetry.h"
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU8SpinMomentumSpace.h"
 // #include "HilbertSpace/FermionOnSquareLatticeWithSU8SpinMomentumSpaceLong.h"
+#include "HilbertSpace/FermionOnSquareOpenLatticeMomentumSpace.h"
 #include "HilbertSpace/BosonOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/BosonOnSquareLatticeMomentumSpaceLong.h"
 #include "HilbertSpace/BosonOnSquareLatticeWithSU2SpinMomentumSpace.h"
@@ -76,6 +77,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-kx", "only evalute a given x momentum sector (negative if all kx sectors have to be computed)", -1);
   (*SystemGroup) += new SingleIntegerOption  ('\n', "only-ky", "only evalute a given y momentum sector (negative if all ky sectors have to be computed)", -1);
   (*SystemGroup) += new BooleanOption  ('\n', "full-momentum", "compute the spectrum for all momentum sectors, disregarding symmetries");
+  (*SystemGroup) += new BooleanOption  ('\n', "open-y", "only enforce momentum conservation x, treating ky as a coordinate along y");
   (*SystemGroup) += new BooleanOption  ('\n', "boson", "use bosonic statistics instead of fermionic statistics");
   (*SystemGroup) += new SingleStringOption  ('\n', "interaction-file", "name of the file containing the two-body interaction matrix elements");
   (*SystemGroup) += new SingleStringOption  ('\n', "threebody-interaction-file", "name of the file containing an optional three-body interaction matrix elements");
@@ -85,7 +87,7 @@ int main(int argc, char** argv)
   (*SystemGroup) += new SingleDoubleOption  ('u', "threebody-interaction-rescaling", "global rescaling of the three-body interaction", 1.0);
   (*SystemGroup) += new SingleStringOption  ('\n', "singleparticle-file", "optional name of the file containing the one-body matrix elements");
   //  (*SystemGroup) += new BooleanOption  ('\n', "full-singleparticle", "the one-body matrix element file contains off-diagonal inter-band contributions");
-  (*SystemGroup) += new BooleanOption  ('\n', "complex-singlebody", "the one-body matrix element file contains complex entries (only valid when using --full-singleparticle)");
+  //  (*SystemGroup) += new BooleanOption  ('\n', "complex-singlebody", "the one-body matrix element file contains complex entries (only valid when using --full-singleparticle)");
   (*SystemGroup) += new BooleanOption  ('\n', "add-valley", "add valley-like degree of freedom (i.e. U(1) symmetry) included in --interaction-file");
   (*SystemGroup) += new SingleIntegerOption  ('\n', "pz-value", "twice the valley Pz value", 0);
   //  (*SystemGroup) += new SingleIntegerOption  ('\n', "ez-value", "twice the Ez =1/2(N_{1u}+N_{2d}-N_{1d}-N_{2u}) value", 0);
@@ -178,6 +180,11 @@ int main(int argc, char** argv)
       MinKy = Manager.GetInteger("only-ky");
       MaxKy = MinKy;
     }
+  if (Manager.GetBoolean("open-y") == true)
+    {
+      MinKy = 0;
+      MaxKy = 0;
+    }
   int NbrMomentumSectors = (MaxKx - MinKx + 1) * (MaxKy - MinKy + 1);
   int MinSz = NbrParticles & 1;
   int MaxSz = MinSz;
@@ -233,7 +240,14 @@ int main(int argc, char** argv)
 	  //	  if (Manager.GetBoolean("conserve-bandoccuption") == false)
 	    {
 	      sprintf (FileSystemGeometry, "n_%d_ns_%d_x_%d_y_%d", NbrParticles, NbrSites, NbrSitesX, NbrSitesY);
-	      sprintf (CommentLine, "eigenvalues\n# kx ky");
+	      if (Manager.GetBoolean("open-y") == false)
+		{
+		  sprintf (CommentLine, "eigenvalues\n# kx ky");
+		}
+	      else
+		{
+		  sprintf (CommentLine, "eigenvalues\n# kx");
+		}
 	    }
 	  // else
 	  //   {
@@ -249,11 +263,25 @@ int main(int argc, char** argv)
 	      if ((MinSz == 0) && (DisableSzMinusSzSymmetry == false))
 		{
 		  UseSzMinusSzSymmetry = true;
-		  sprintf (CommentLine, "eigenvalues\n# Sz Szsym kx ky");
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Sz Szsym kx ky");
+		    }
+		  else
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Sz Szsym kx");
+		    }		  
 		}
 	      else
 		{
-		  sprintf (CommentLine, "eigenvalues\n# Sz kx ky");
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Sz kx ky");
+		    }
+		  else
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Sz kx");
+		    }
 		}
 	    }
 	  // else
@@ -273,11 +301,25 @@ int main(int argc, char** argv)
 	      if ((MinPz == 0) && (DisablePzMinusPzSymmetry == false))
 		{
 		  UsePzMinusPzSymmetry = true;
-		  sprintf (CommentLine, "eigenvalues\n# Pz Pzsym kx ky");
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz Pzsym kx ky");
+		    }
+		  else
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz Pzsym kx");
+		    }
 		}
 	      else
 		{
-		  sprintf (CommentLine, "eigenvalues\n# Pz kx ky");
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz kx ky");
+		    }
+		  else
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz kx");
+		    }
 		}
 	    }
 	  // else
@@ -295,11 +337,25 @@ int main(int argc, char** argv)
 		{
 		  UseSzMinusSzSymmetry = true;
 		  UsePzMinusPzSymmetry = true;
-		  sprintf (CommentLine, "eigenvalues\n# Pz Sz Pzsym Szsym kx ky");
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz Sz Pzsym Szsym kx ky");
+		    }
+		  else
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz Sz Pzsym Szsym kx");
+		    }
 		}
 	      else
 		{
-		  sprintf (CommentLine, "eigenvalues\n# Pz Sz kx ky");
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz Sz kx ky");
+		    }
+		  else
+		    {
+		      sprintf (CommentLine, "eigenvalues\n# Pz Sz kx");
+		    }
 		}
 	    }
 	  // else
@@ -316,12 +372,27 @@ int main(int argc, char** argv)
   char* FilePrefix = new char [512 + strlen(FileSystemGeometry) + strlen(BandCapPrefix)+ strlen(Manager.GetString("interaction-name"))];
   if (Manager.GetBoolean("flat-band"))
     {
-      sprintf (FilePrefix, "%s_oneband_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+      if (Manager.GetBoolean("open-y") == false)
+	{
+	  sprintf (FilePrefix, "%s_oneband_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+	}
+      else
+	{
+	  sprintf (FilePrefix, "%s_oneband_openy_flatband_%s%s_%s", StatisticPrefix, Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+	}
     }
   else
     {
-      sprintf (FilePrefix, "%s_oneband_u_%.3f_%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
-	       Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+      if (Manager.GetBoolean("open-y") == false)
+	{
+	  sprintf (FilePrefix, "%s_oneband_u_%.3f_%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
+		   Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+	}
+      else
+	{
+	  sprintf (FilePrefix, "%s_oneband_openy_u_%.3f_%s%s_%s", StatisticPrefix, Manager.GetDouble("interaction-rescaling"),
+		   Manager.GetString("interaction-name"), BandCapPrefix, FileSystemGeometry);
+	}
     }
   
   char* EigenvalueOutputFile = new char [512 + strlen(FilePrefix)];
@@ -804,7 +875,18 @@ int main(int argc, char** argv)
 		    }
 		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
 		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		  if (Manager.GetBoolean("open-y") == true)
+		    {
+		      KyMomenta = new int [NbrSymmetrySectors];
+		      for (int i = 0; i < NbrSymmetrySectors; ++i)
+			{
+			  KyMomenta[i] = 0;
+			}
+		    }
+		  else
+		    {
+		      KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		    }
 		  SzValues = new int [NbrSymmetrySectors];
 		  PzValues = new int [NbrSymmetrySectors];
 		  EzValues = new int [NbrSymmetrySectors];
@@ -842,9 +924,21 @@ int main(int argc, char** argv)
 		    }
 		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
 		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		  if (Manager.GetBoolean("open-y") == true)
+		    {
+		      KyMomenta = new int [NbrSymmetrySectors];
+		      for (int i = 0; i < NbrSymmetrySectors; ++i)
+			{
+			  KyMomenta[i] = 0;
+			}
+		      PzValues = SymmetrySectorsFile.GetAsIntegerArray(1);
+		    }
+		  else
+		    {
+		      KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		      PzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
+		    }
 		  SzValues = new int [NbrSymmetrySectors];
-		  PzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
 		  EzValues = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1UpPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1UpMinus = new int [NbrSymmetrySectors];
@@ -882,8 +976,20 @@ int main(int argc, char** argv)
 		    }
 		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
 		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
-		  SzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
+		  if (Manager.GetBoolean("open-y") == true)
+		    {
+		      KyMomenta = new int [NbrSymmetrySectors];
+		      for (int i = 0; i < NbrSymmetrySectors; ++i)
+			{
+			  KyMomenta[i] = 0;
+			}
+		      SzValues = SymmetrySectorsFile.GetAsIntegerArray(1);
+		    }
+		  else
+		    {
+		      KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		      SzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
+		    }
 		  PzValues = new int [NbrSymmetrySectors];
 		  EzValues = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1UpPlus = new int [NbrSymmetrySectors];
@@ -919,9 +1025,22 @@ int main(int argc, char** argv)
 		    }
 		  NbrSymmetrySectors = SymmetrySectorsFile.GetNbrLines();
 		  KxMomenta = SymmetrySectorsFile.GetAsIntegerArray(0);
-		  KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
-		  SzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
-		  PzValues = SymmetrySectorsFile.GetAsIntegerArray(3);
+		  if (Manager.GetBoolean("open-y") == true)
+		    {
+		      KyMomenta = new int [NbrSymmetrySectors];
+		      for (int i = 0; i < NbrSymmetrySectors; ++i)
+			{
+			  KyMomenta[i] = 0;
+			}
+		      SzValues = SymmetrySectorsFile.GetAsIntegerArray(1);
+		      PzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
+		    }
+		  else
+		    {
+		      KyMomenta = SymmetrySectorsFile.GetAsIntegerArray(1);
+		      SzValues = SymmetrySectorsFile.GetAsIntegerArray(2);
+		      PzValues = SymmetrySectorsFile.GetAsIntegerArray(3);
+		    }
 		  EzValues = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1UpPlus = new int [NbrSymmetrySectors];
 		  NbrParticlesBand1UpMinus = new int [NbrSymmetrySectors];
@@ -964,17 +1083,38 @@ int main(int argc, char** argv)
 	{
 	  if (Manager.GetBoolean("add-spin") == false)
 	    {
-	      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ") : " << endl;
+	      if (Manager.GetBoolean("open-y") == false)
+		{
+		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ") : " << endl;
+		}
+	      else
+		{
+		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ") : " << endl;
+		}
 	    }
 	  else
 	    {
 	      if (UseSzMinusSzSymmetry == false)
 		{
-		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ") : " << endl;
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ") : " << endl;
+		    }
+		  else
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ") : " << endl;
+		    }
 		}
 	      else
 		{
-		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ",Sz<->-Sz=" << SzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ",Sz<->-Sz=" << SzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		    }
+		  else
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ",Sz<->-Sz=" << SzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		    }
 		}
 	    }
 	}
@@ -984,22 +1124,50 @@ int main(int argc, char** argv)
 	    {
 	      if (UsePzMinusPzSymmetry == false)
 		{
-		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ") : " << endl;
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ") : " << endl;
+		    }
+		  else
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ") : " << endl;
+		    }
 		}
 	      else
 		{
-		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",Pz<->-Pz=" << PzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",Pz<->-Pz=" << PzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		    }
+		  else
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",Pz<->-Pz=" << PzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		    }
 		}
 	    }
 	  else
 	    {
 	      if ((UsePzMinusPzSymmetry == false) && (UseSzMinusSzSymmetry == false))
 		{
-		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ") : " << endl;		      
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ") : " << endl;		      
+		    }
+		  else
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ") : " << endl;		      
+		    }
 		}
 	      else
 		{
-		  cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ",Sz<->-Sz=" << SzParityValues1[SymmetrySectorIndex] << ",Pz<->-Pz=" << PzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",ky=" << KyMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ",Sz<->-Sz=" << SzParityValues1[SymmetrySectorIndex] << ",Pz<->-Pz=" << PzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		    }
+		  else
+		    {
+		      cout << "(kx=" << KxMomenta[SymmetrySectorIndex] << ",2pz=" << PzValues[SymmetrySectorIndex] << ",2sz=" << SzValues[SymmetrySectorIndex] << ",Sz<->-Sz=" << SzParityValues1[SymmetrySectorIndex] << ",Pz<->-Pz=" << PzParityValues1[SymmetrySectorIndex] << ") : " << endl;
+		    }
 		}
 	    }
 	}
@@ -1013,20 +1181,42 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
+		  ParticleOnSphere* TmpSpace = 0;
 		  // no valley, no spin
 		  if ((NbrSitesX * NbrSitesY) <= 64)
 		    {
-		      ParticleOnSphere* TmpSpace = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], Manager.GetString("hilbert-directory"));
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  TmpSpace = new FermionOnSquareLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], Manager.GetString("hilbert-directory"));
+			}
+		      else
+			{
+			  TmpSpace = new FermionOnSquareOpenLatticeMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], Manager.GetString("hilbert-directory"));
+			}
 		      Space = new ParticleOnSphereWithPolarizedSpin(TmpSpace);
 		    }
 		  else
 		    {
-		      ParticleOnSphere* TmpSpace = new FermionOnSquareLatticeMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  TmpSpace = new FermionOnSquareLatticeMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			  cout << "open bc in the y direction and long Hilbert space not available" << endl;
+			  return 0;
+			  //			  TmpSpace = new FermionOnOpenSquareLatticeMomentumSpaceLong (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			}
 		      Space = new ParticleOnSphereWithPolarizedSpin(TmpSpace);
 		    }
 		}
 	      else
 		{
+		  if (Manager.GetBoolean("open-y") == true)
+		    {
+		      cout << "open bc in the y direction not available" << endl;
+		      return 0;
+		    }
 		  // valley but no spin
 		  if ((NbrSitesX * NbrSitesY) <= 32)
 		    {
@@ -1057,6 +1247,11 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
+	      if (Manager.GetBoolean("open-y") == true)
+		{
+		  cout << "open bc in the y direction not available" << endl;
+		  return 0;
+		}
 	      // spinful case
 	      if (Manager.GetBoolean("add-valley") == false)
 		{
@@ -1084,6 +1279,11 @@ int main(int argc, char** argv)
 		}
 	      else
 		{
+		  if (Manager.GetBoolean("open-y") == true)
+		    {
+		      cout << "open bc in the y direction not available" << endl;
+		      return 0;
+		    }
 		  if ((NbrSitesX * NbrSitesY) <= 16)
 		    {
 		      Space = new FermionOnSquareLatticeWithSU4SpinMomentumSpace (NbrParticles, NbrSitesX, NbrSitesY, KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
@@ -1107,6 +1307,11 @@ int main(int argc, char** argv)
 	}
       else
 	{
+	  if (Manager.GetBoolean("open-y") == true)
+	    {
+	      cout << "open bc in the y direction not available" << endl;
+	      return 0;
+	    }
 	  if (Manager.GetBoolean("add-spin") == false)
 	    {
 	      if (Manager.GetBoolean("add-valley") == false)
@@ -1174,6 +1379,7 @@ int main(int argc, char** argv)
 												TightBindingModel, Manager.GetBoolean("flat-band"), 
 												Manager.GetDouble("interaction-rescaling"),
 												Manager.GetBoolean("add-spin"),
+												Manager.GetBoolean("open-y"),
 												Architecture.GetArchitecture(), Memory);
 		    }
 		  else
@@ -1214,22 +1420,48 @@ int main(int argc, char** argv)
 	    {
 	      if (Manager.GetBoolean("add-spin") == false)
 		{
-		  sprintf (ContentPrefix, "%d %d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		  sprintf (TmpExtention, "_kx_%d_ky_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		  if (Manager.GetBoolean("open-y") == false)
+		    {
+		      sprintf (ContentPrefix, "%d %d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		      sprintf (TmpExtention, "_kx_%d_ky_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+		    }
+		  else
+		    {
+		      sprintf (ContentPrefix, "%d", KxMomenta[SymmetrySectorIndex]);
+		      sprintf (TmpExtention, "_kx_%d", KxMomenta[SymmetrySectorIndex]);
+		    }
 		}
 	      else
 		{
 		  if (UseSzMinusSzSymmetry == false)
 		    {
-		      sprintf (ContentPrefix, "%d %d %d", SzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_sz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  sprintf (ContentPrefix, "%d %d %d", SzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_ky_%d_sz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			  sprintf (ContentPrefix, "%d %d", SzValues[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_sz_%d", KxMomenta[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			}
 		    }
 		  else
 		    {
-		      sprintf (ContentPrefix, "%d %d %d %d", SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex],
-			       KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_sz_%d_szsym_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			       SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  sprintf (ContentPrefix, "%d %d %d %d", SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_ky_%d_sz_%d_szsym_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+				   SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			  sprintf (ContentPrefix, "%d %d %d", SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_sz_%d_szsym_%d", KxMomenta[SymmetrySectorIndex],
+				   SzValues[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
+			}
 		    }
 		}
 	    }
@@ -1239,34 +1471,72 @@ int main(int argc, char** argv)
 		{
 		  if (UsePzMinusPzSymmetry == false)
 		    {
-		      sprintf (ContentPrefix, "%d %d %d", PzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  sprintf (ContentPrefix, "%d %d %d", PzValues[SymmetrySectorIndex], KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex], PzValues[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			}
 		    }
 		  else
 		    {
-		      sprintf (ContentPrefix, "%d %d %d %d", PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex],
-			       KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d_pzsym_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			       PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  sprintf (ContentPrefix, "%d %d %d %d", PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d_pzsym_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+				   PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			  sprintf (ContentPrefix, "%d %d %d", PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_pz_%d_pzsym_%d", KxMomenta[SymmetrySectorIndex], 
+				   PzValues[SymmetrySectorIndex], PzParityValues1[SymmetrySectorIndex]);
+			}
 		    }
 		}
 	      else
 		{
 		  if ((UsePzMinusPzSymmetry == false) && (UseSzMinusSzSymmetry == false))
 		    {
-		      sprintf (ContentPrefix, "%d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
-			       KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d_sz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			       PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  sprintf (ContentPrefix, "%d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d_sz_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+				   PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			  sprintf (ContentPrefix, "%d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_pz_%d_sz_%d", KxMomenta[SymmetrySectorIndex],
+				   PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex]);
+			}
 		    }
 		  else
 		    {
-		      sprintf (ContentPrefix, "%d %d %d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
-			       PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex],
-			       KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
-		      sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d_sz_%d_pzsym_%d_szsym_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
-			       PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
-			       PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
+		      if (Manager.GetBoolean("open-y") == false)
+			{
+			  sprintf (ContentPrefix, "%d %d %d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
+				   PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_ky_%d_pz_%d_sz_%d_pzsym_%d_szsym_%d", KxMomenta[SymmetrySectorIndex], KyMomenta[SymmetrySectorIndex],
+				   PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
+				   PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
+			}
+		      else
+			{
+			  sprintf (ContentPrefix, "%d %d %d %d %d", PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
+				   PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex],
+				   KxMomenta[SymmetrySectorIndex]);
+			  sprintf (TmpExtention, "_kx_%d_pz_%d_sz_%d_pzsym_%d_szsym_%d", KxMomenta[SymmetrySectorIndex],
+				   PzValues[SymmetrySectorIndex], SzValues[SymmetrySectorIndex],
+				   PzParityValues1[SymmetrySectorIndex], SzParityValues1[SymmetrySectorIndex]);
+			}
 		    }
 		}
 	    }

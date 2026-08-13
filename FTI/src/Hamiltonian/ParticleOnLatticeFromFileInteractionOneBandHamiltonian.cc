@@ -68,6 +68,7 @@ ParticleOnLatticeFromFileInteractionOneBandHamiltonian::ParticleOnLatticeFromFil
 // flatBandFlag = use flat band model
 // interactionRescalingFactor = global rescaling factor for the two-body interaction term
 // spinFlag = include an additional spin 1/2 degree of freedom, building an SU(2) invariant interaction
+// onlyPreserveKx = assume that the system is periodic only along x, treating ky as a coordinate along y
 // architecture = architecture to use for precalculation
 // memory = maximum amount of memory that can be allocated for fast multiplication (negative if there is no limit)
 
@@ -75,7 +76,7 @@ ParticleOnLatticeFromFileInteractionOneBandHamiltonian::ParticleOnLatticeFromFil
 													       int nbrSiteX, int nbrSiteY,
 													       char* matrixElementsInteractionFile,
 													       Abstract2DTightBindingModel* tightBindingModel, 
-													       bool flatBandFlag, double interactionRescalingFactor, bool spinFlag,
+													       bool flatBandFlag, double interactionRescalingFactor, bool spinFlag, bool onlyPreserveKx,
 													       AbstractArchitecture* architecture, long memory)
 {
   this->Particles = particles;
@@ -90,6 +91,7 @@ ParticleOnLatticeFromFileInteractionOneBandHamiltonian::ParticleOnLatticeFromFil
   this->FlatBand = flatBandFlag;
   this->InteractionRescalingFactor = interactionRescalingFactor;
   this->AdditionalSpinFlag = spinFlag;
+  this->OnlyPreserveKx = onlyPreserveKx;
   if (this->AdditionalSpinFlag == true)
     {
       this->NbrInternalIndices = 2;

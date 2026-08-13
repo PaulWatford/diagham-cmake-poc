@@ -242,4 +242,5 @@ FermionOnSquareLatticeWithSU2SpinAndCapMomentumSpace.cc \
 FermionOnTorusWithSpinAndTimeReversalSymmetricMagneticTranslationsLong.cc \
 ParticleOnSphereWithNFlavor.cc \
 FermionOnSphereWithNFlavor.cc \
-FermionOnSphereWithNFlavorLzSymmetry.cc
+FermionOnSphereWithNFlavorLzSymmetry.cc \
+FermionOnSquareOpenLatticeMomentumSpace.cc

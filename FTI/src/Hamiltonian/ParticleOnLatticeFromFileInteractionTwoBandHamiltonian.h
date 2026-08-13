@@ -56,6 +56,9 @@ class ParticleOnLatticeFromFileInteractionTwoBandHamiltonian : public ParticleOn
   double KxFactor;
   // numerical factor for momentum along y
   double KyFactor;
+
+  // assume that the system is periodic only along x, treating ky as a coordinate along y
+  bool OnlyPreserveKx;
   
   // index of the filled first band
   int BandIndex1;

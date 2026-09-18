@@ -85,6 +85,9 @@ function(diagham_add_program target_name source)
     if(DIAGHAM_USE_MPI)
         target_link_libraries(${target_name} PRIVATE MPI::MPI_CXX)
     endif()
+    if(DIAGHAM_USE_GSL)
+        target_link_libraries(${target_name} PRIVATE ${GSL_LIBRARIES})
+    endif()
 endfunction()
 
 

@@ -506,3 +506,30 @@ found `HAVE_GLOBAL_COMMAND_LOG` omission. This scopes the next real
 piece of work precisely: wiring GSL (and, per Gunnar's own BDMC
 precedent, MKL alongside it) is the next CMake-side task with actual
 payoff, not further bug-hunting.
+
+## GSL wired in; remaining Find*.cmake modules staged (18/09)
+
+Wired `DIAGHAM_USE_GSL` (default `OFF`) the same way as LAPACK/MPI:
+`set(HAVE_GSL 1)` feeding a real `#cmakedefine HAVE_GSL`, not a direct
+compile-def injection -- learned from the bug documented above.
+
+**Deliberately did NOT port Gunnar's EXTERNAL_CBLAS/mkl_cblas.h
+coexistence patch** (`cmake/gsl_external_cblas.patch`, copied in
+alongside the other Find*.cmake modules for future reference, but
+unused). Checked what DiagHam's 20 GSL-using files actually include:
+`gsl_errno`, `gsl_integration`, `gsl_randist`, `gsl_rng`, `gsl_roots`,
+`gsl_sf_airy`, `gsl_sf_gamma`, `gsl_sf_hyperg`, `gsl_spline` -- root
+finding, integration, random numbers, special functions, splines. No
+`gsl_blas.h`, no cblas anywhere. BDMC_UFL's cblas clash is specific to
+BDMC's own use of GSL's BLAS interface alongside MKL; DiagHam doesn't
+have that usage pattern, so the patch would be solving a problem this
+codebase doesn't have. Noted here so nobody re-adds it later assuming
+it must be needed just because Gunnar's project needed it.
+
+**Also copied in, not yet wired** (staged in `cmake/` for when/if
+needed): `FindNAG.cmake`, `FindMPC.cmake`, `FindMPFR.cmake`,
+`FindGMP.cmake`, `FindFFTW3.cmake`, `FindDLR.cmake`. Per the parity
+audit, these libraries' upstream usage is low (GMP 2 files, FFTW 1,
+MPACK/ScaLAPACK 0 direct includes) or the DiagHam-side wiring wasn't
+scoped for this PoC (NAG, DLR) -- low priority, so not wired now, but
+the modules are in place for whoever picks this up next.

@@ -1,0 +1,37 @@
+--- blas/gsl_blas_types.h
++++ blas/gsl_blas_types.h
+@@ -25,6 +25,7 @@
+ #ifndef __GSL_BLAS_TYPES_H__
+ #define __GSL_BLAS_TYPES_H__
+
++#ifndef EXTERNAL_CBLAS
+ #include <gsl/gsl_cblas.h>
+
+ #undef __BEGIN_DECLS
+@@ -50,5 +51,6 @@
+
+ __END_DECLS
+
++#endif
+
+ #endif /* __GSL_BLAS_TYPES_H__ */
+--- cblas/gsl_cblas.h
++++ cblas/gsl_cblas.h
+@@ -43,6 +43,8 @@
+  */
+ #define CBLAS_INDEX size_t  /* this may vary between platforms */
+
++#ifndef EXTERNAL_CBLAS
++
+ enum CBLAS_ORDER {CblasRowMajor=101, CblasColMajor=102};
+ enum CBLAS_TRANSPOSE {CblasNoTrans=111, CblasTrans=112, CblasConjTrans=113};
+ enum CBLAS_UPLO {CblasUpper=121, CblasLower=122};
+@@ -599,6 +601,8 @@
+                   const void *B, const int ldb, const double beta,
+                   void *C, const int ldc);
+
++#endif /* EXTERNAL_CBLAS */
++
+ void cblas_xerbla(int p, const char *rout, const char *form, ...);
+
+ __END_DECLS

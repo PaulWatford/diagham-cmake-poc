@@ -48,11 +48,11 @@
 /* #undef HAVE_BZ2 */
 /* #undef HAVE_FFTW */
 /* #undef HAVE_GMP */
-/* #undef HAVE_GSL */
 #cmakedefine HAVE_LAPACK
 /* #undef HAVE_LAPACK_ONLY */
 /* #undef HAVE_MPACK */
 #cmakedefine HAVE_MPI
+#cmakedefine HAVE_GSL
 /* #undef HAVE_SCALAPACK */
 #cmakedefine HAVE_INTELMKL
 /* #undef HAVE_FORTRAN2C */

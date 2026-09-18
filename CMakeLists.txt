@@ -209,6 +209,28 @@ if(DIAGHAM_USE_LAPACK)
     endif()
 endif()
 
+# GSL
+#
+# Highest-priority unimplemented library per the parity audit (20 files
+# use it, more than any other optional library -- see patches/PATCHES.md).
+# Unlike Gunnar's BDMC_UFL, DiagHam's own GSL usage never touches GSL's
+# cblas interface (checked: DiagHam includes gsl_errno/gsl_integration/
+# gsl_randist/gsl_rng/gsl_roots/gsl_sf_airy/gsl_sf_gamma/gsl_sf_hyperg/
+# gsl_spline -- root finding, integration, random numbers, special
+# functions, splines; no gsl_blas.h, no cblas anywhere), so BDMC_UFL's
+# EXTERNAL_CBLAS/mkl_cblas.h coexistence patch (cmake/gsl_external_cblas.patch,
+# copied in alongside the other Find*.cmake modules for future reference)
+# solves a problem DiagHam doesn't have. Wired simply instead: plain
+# find_package(GSL), no cblas patching, whether or not DIAGHAM_USE_MKL
+# is also on.
+option(DIAGHAM_USE_GSL "Enable GSL support (optional)" OFF)
+if(DIAGHAM_USE_GSL)
+    find_package(GSL 2.0 REQUIRED)
+    set(HAVE_GSL 1)
+    include_directories(${GSL_INCLUDE_DIRS})
+    message(STATUS "GSL: ${GSL_VERSION} (${GSL_INCLUDE_DIRS})")
+endif()
+
 # Apply globally to every target in this project
 add_compile_definitions(${DIAGHAM_COMPILE_DEFS})
 
@@ -309,6 +331,7 @@ message(STATUS "  C++ standard:   ${CMAKE_CXX_STANDARD}")
 message(STATUS "  SMP (pthreads): ${DIAGHAM_USE_SMP}")
 message(STATUS "  LAPACK:         ${DIAGHAM_USE_LAPACK}")
 message(STATUS "  MPI:            ${DIAGHAM_USE_MPI}")
+message(STATUS "  GSL:            ${DIAGHAM_USE_GSL}")
 message(STATUS "  FQHE module:    ${DIAGHAM_BUILD_FQHE}")
 message(STATUS "  FTI module:     ${DIAGHAM_BUILD_FTI}")
 message(STATUS "  Build programs: ${DIAGHAM_BUILD_PROGRAMS}")

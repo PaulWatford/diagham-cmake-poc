@@ -493,6 +493,14 @@ int main(int argc, char** argv)
 	    {
 	      if (NbrBands == 1)
 		{
+		  if (Manager.GetBoolean("off-diagonal") == false)
+		    {
+		      sprintf (FileHeader, "# kx ky sigma <c^+ c>");			  
+		    }
+		  else
+		    {
+		      sprintf (FileHeader, "# psi_i phi_j kx1 ky1 kx2 ky2 <psi_i|c^+_{kx1,ky1}c_{kx2,ky2}|phi_j>");
+		    }
 		  sprintf (FileHeader, "# kx ky <c^+ c>");
 		  NbrDensityIndices = NbrSitesX * NbrSitesY;
 		  NbrDensityPartialTraces = 1;

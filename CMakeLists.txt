@@ -49,6 +49,12 @@ if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
 endif()
 
+# Build-type validation + per-compiler warning flags, adapted from Gunnar's
+# BDMC_UFL DefaultHeader.cmake (attribution and rationale in the file
+# itself). Included here, after the default above, because it validates
+# whatever CMAKE_BUILD_TYPE is already set rather than choosing one.
+include(CompilerDefaults)
+
 # ----------------------------------------------------------------------------
 # Options, mirroring the autotools AC_ARG_ENABLE flags
 #

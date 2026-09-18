@@ -183,6 +183,16 @@ Highlights:
   converges to a constant (≈ −48.14) confirming the expected 1/U scaling
   in the Heisenberg limit.
 
+## Production migration context
+
+This repository is a personal proof-of-concept on GitHub, developed
+against a read-only git mirror for ground truth. It is not the
+production repository. See
+[`MIGRATION_ROADMAP.md`](MIGRATION_ROADMAP.md) for how this work
+reconciles with what was actually agreed for the production migration
+(Kent GitLab hosting, single-repo, full SVN history preservation, and
+static linking) and what, if anything, changes as a result.
+
 ## Beyond this iteration
 
 The current PoC covers the core build chain plus the FQHE and FTI

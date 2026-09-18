@@ -38,6 +38,14 @@ project(DiagHam
 # group's own machines. See cmake/FindMKL.cmake header for provenance.
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
+# Optional Kent-cluster site defaults, modelled on Gunnar's TCMDefaults.cmake
+# pattern (off by default; see cmake/KentDefaults.cmake -- it's a scaffold,
+# not filled in with real Kent paths yet).
+option(DIAGHAM_KENT_DEFAULTS "Use Kent-cluster site defaults (see cmake/KentDefaults.cmake)" OFF)
+if(DIAGHAM_KENT_DEFAULTS)
+    include(KentDefaults)
+endif()
+
 # ----------------------------------------------------------------------------
 # Build configuration
 # ----------------------------------------------------------------------------
@@ -295,6 +303,7 @@ endif()
 # ----------------------------------------------------------------------------
 message(STATUS "")
 message(STATUS "DiagHam CMake configuration:")
+message(STATUS "  Kent defaults:  ${DIAGHAM_KENT_DEFAULTS}")
 message(STATUS "  Build type:     ${CMAKE_BUILD_TYPE}")
 message(STATUS "  C++ standard:   ${CMAKE_CXX_STANDARD}")
 message(STATUS "  SMP (pthreads): ${DIAGHAM_USE_SMP}")

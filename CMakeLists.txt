@@ -32,6 +32,12 @@ project(DiagHam
     LANGUAGES CXX C
 )
 
+# cmake/ holds our own Find*.cmake modules, including FindMKL.cmake taken
+# (with attribution) from Gunnar Möller & Lars Schonenberg's BDMC_UFL
+# project, which already solves MKL-as-LAPACK/BLAS/FFTW3-provider for this
+# group's own machines. See cmake/FindMKL.cmake header for provenance.
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
+
 # ----------------------------------------------------------------------------
 # Build configuration
 # ----------------------------------------------------------------------------
@@ -67,6 +73,7 @@ endif()
 option(DIAGHAM_USE_SMP        "Enable pthread-based shared-memory parallelism" ON)
 option(DIAGHAM_USE_DEBUG      "Define __DEBUG__ for runtime sanity checks" ON)
 option(DIAGHAM_USE_LAPACK     "Enable LAPACK support (optional)" OFF)
+option(DIAGHAM_USE_MKL        "When LAPACK is enabled, get BLAS/LAPACK (and FFTW3) from Intel MKL instead of plain find_package(LAPACK) -- matches Gunnar's BDMC_UFL precedent" OFF)
 option(DIAGHAM_USE_MPI        "Enable MPI support (optional)" OFF)
 option(DIAGHAM_BUILD_PROGRAMS "Build executables (not just libraries)" ON)
 
@@ -129,16 +136,63 @@ if(DIAGHAM_USE_SMP)
     list(APPEND DIAGHAM_COMPILE_DEFS "__SMP__")
 endif()
 
-# MPI (stub)
+# MPI
+#
+# BUG FIX (same class as the LAPACK fix below): was injecting __MPI__
+# directly, bypassing src/config.h's "#ifdef HAVE_MPI -> #define __MPI__"
+# block. Dormant today only because DIAGHAM_USE_MPI defaults OFF, but it
+# would misbehave the moment someone turns MPI on, the same way LAPACK did.
 if(DIAGHAM_USE_MPI)
     find_package(MPI REQUIRED)
-    list(APPEND DIAGHAM_COMPILE_DEFS "__MPI__")
+    set(HAVE_MPI 1)
 endif()
 
-# LAPACK (stub)
+# LAPACK
+#
+# BUG FIX (see patches/PATCHES.md): this used to inject the compile
+# definition __LAPACK__ directly, bypassing src/config.h's own
+# "#ifdef HAVE_LAPACK -> #define __LAPACK__ -> typedef doublecomplex..."
+# block. That block is where upstream DiagHam defines `doublecomplex`
+# (src/config.h, guarded on HAVE_LAPACK). Injecting __LAPACK__ directly
+# turned on LAPACK-consuming code (e.g. HermitianMatrix.h's
+# `#ifdef __LAPACK__` member block, which uses doublecomplex) WITHOUT
+# ever defining HAVE_LAPACK, so the typedef never happened -> the
+# ~5000 "doublecomplex undeclared" compile errors. This was a PoC
+# translation bug, not an upstream DiagHam defect: LAPACK is disabled
+# by default upstream too (configure.ac: HAVE_PKG_LAPACK=no unless
+# --enable-lapack), and doublecomplex is only ever needed once LAPACK
+# is actually on. The fix: set HAVE_LAPACK for configure_file(), the
+# same way HAVE_FQHE/HAVE_FTI are set above, and let src/config.h do
+# what it already does correctly.
+#
+# Provider choice (new): DIAGHAM_USE_MKL switches between two ways of
+# satisfying LAPACK, both producing the same DIAGHAM_LAPACK_LIBRARIES
+# variable that DiagHamHelpers.cmake links against:
+#   OFF (default) - plain find_package(LAPACK), matching what upstream
+#                    DiagHam's own configure.ac does (--enable-lapack
+#                    links -llapack -lblas directly).
+#   ON             - find_package(MKL) via cmake/FindMKL.cmake (taken from
+#                    Gunnar's BDMC_UFL), which supplies BLAS+LAPACK+FFTW3
+#                    together. This is his own group's established pattern
+#                    (see BDMC_UFL/CMakeLists.txt: USE_MKL defaults ON
+#                    there), offered here as an option, not a replacement,
+#                    since DiagHam's own default path is plain LAPACK.
 if(DIAGHAM_USE_LAPACK)
-    find_package(LAPACK REQUIRED)
-    list(APPEND DIAGHAM_COMPILE_DEFS "__LAPACK__")
+    set(HAVE_LAPACK 1)
+    if(DIAGHAM_USE_MKL)
+        set(MKL_MULTI_THREADED 0 CACHE BOOL "Use MKL library in multi-threaded mode")
+        find_package(MKL REQUIRED COMPONENTS FFTW3)
+        if(MKL_FOUND)
+            set(HAVE_INTELMKL 1)
+            include_directories("${MKL_INCLUDE_DIRS}" "${MKL_FFTW3_INCLUDE_DIRS}")
+            set(DIAGHAM_LAPACK_LIBRARIES ${MKL_LIBRARIES})
+            message(STATUS "LAPACK/BLAS provider: Intel MKL (${MKL_VERSION})")
+        endif()
+    else()
+        find_package(LAPACK REQUIRED)
+        set(DIAGHAM_LAPACK_LIBRARIES ${LAPACK_LIBRARIES})
+        message(STATUS "LAPACK/BLAS provider: plain find_package(LAPACK)")
+    endif()
 endif()
 
 # Apply globally to every target in this project

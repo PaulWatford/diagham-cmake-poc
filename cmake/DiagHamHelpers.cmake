@@ -78,7 +78,9 @@ function(diagham_add_program target_name source)
         target_link_libraries(${target_name} PRIVATE Threads::Threads)
     endif()
     if(DIAGHAM_USE_LAPACK)
-        target_link_libraries(${target_name} PRIVATE ${LAPACK_LIBRARIES})
+        # DIAGHAM_LAPACK_LIBRARIES is set in the top-level CMakeLists.txt to
+        # either MKL_LIBRARIES or LAPACK_LIBRARIES depending on DIAGHAM_USE_MKL.
+        target_link_libraries(${target_name} PRIVATE ${DIAGHAM_LAPACK_LIBRARIES})
     endif()
     if(DIAGHAM_USE_MPI)
         target_link_libraries(${target_name} PRIVATE MPI::MPI_CXX)

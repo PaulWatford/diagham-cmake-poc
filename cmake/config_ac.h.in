@@ -49,12 +49,12 @@
 /* #undef HAVE_FFTW */
 /* #undef HAVE_GMP */
 /* #undef HAVE_GSL */
-/* #undef HAVE_LAPACK */
+#cmakedefine HAVE_LAPACK
 /* #undef HAVE_LAPACK_ONLY */
 /* #undef HAVE_MPACK */
-/* #undef HAVE_MPI */
+#cmakedefine HAVE_MPI
 /* #undef HAVE_SCALAPACK */
-/* #undef HAVE_INTELMKL */
+#cmakedefine HAVE_INTELMKL
 /* #undef HAVE_FORTRAN2C */
 
 /* Package identity */

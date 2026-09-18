@@ -405,3 +405,104 @@ The `HAVE_FTI` / `HAVE_FQHE` fix in `cmake/config_ac.h.in` is not part of
 this patch series because it isn't a patch to upstream source, it's a
 CMake-side fix that exposes constructors which the autotools build also
 exposes via `--enable-fti`. It's documented here for completeness.
+
+## CMake-side fix: `HAVE_LAPACK` / `HAVE_MPI` config gating (18/09)
+
+Same category as the `HAVE_FTI`/`HAVE_FQHE` fix above — not a patch to
+upstream source, a bug in this PoC's own translation of the autotools
+config generation.
+
+**Root cause:** `CMakeLists.txt` was injecting the compile definitions
+`__LAPACK__` and `__MPI__` directly via `add_compile_definitions()`,
+instead of setting the `HAVE_LAPACK` / `HAVE_MPI` CMake variables that
+`configure_file()` substitutes into `cmake/config_ac.h.in`. Upstream
+`src/config.h` defines `__LAPACK__`/`__MPI__` *and* the types that go
+with them (notably the `doublecomplex` typedef LAPACK code depends on)
+only inside `#ifdef HAVE_LAPACK` / `#ifdef HAVE_MPI` blocks. Injecting
+the downstream macro directly skipped that block, so LAPACK-consuming
+code (e.g. `HermitianMatrix.h`'s `#ifdef __LAPACK__` member block) got
+compiled in without the typedef it needs — the actual cause of the
+~5000 "doublecomplex undeclared" errors previously attributed to
+upstream DiagHam. It is not an upstream bug: LAPACK is disabled by
+default upstream too (`configure.ac`: `HAVE_PKG_LAPACK=no` unless
+`--enable-lapack`).
+
+**Fix:** `set(HAVE_LAPACK 1)` / `set(HAVE_MPI 1)` before
+`configure_file()`, plus real `#cmakedefine HAVE_LAPACK` /
+`#cmakedefine HAVE_MPI` lines in `cmake/config_ac.h.in`, matching the
+pattern already used for `HAVE_FQHE`/`HAVE_FTI`.
+
+**MPI note:** `DIAGHAM_USE_MPI` defaults `OFF`, so this half of the bug
+was dormant (never yet triggered a build), not previously fixed by
+luck. Fixed pre-emptively so turning MPI on doesn't reproduce the
+LAPACK failure mode.
+
+**Audit of the remaining optional libraries** (18/09): checked whether
+GSL, BZ2, GMP, FFTW, MPACK, ScaLAPACK have the same bug. They don't —
+none of them have any CMake wiring yet at all (no `option()`, no
+`find_package()`, no compile-def injection), so there's nothing to be
+bypassed. This is a real gap, not a bug: those six libraries are simply
+not yet implemented in this PoC. Usage count in upstream DiagHam
+(`grep`-counted, guarded correctly behind `#ifdef HAVE_*` in every case
+checked): GSL 20 files, GMP 2, FFTW 1, BZ2 1, MPACK/ScaLAPACK 0 direct
+includes found. GSL is the clear next priority if/when these are wired
+up — Gunnar's own BDMC_UFL CMake treats it as a required dependency
+alongside MKL, which is a precedent worth following here too.
+
+## MKL as an alternative LAPACK/BLAS provider (18/09)
+
+Added `DIAGHAM_USE_MKL` (default `OFF`) alongside `DIAGHAM_USE_LAPACK`.
+When both are on, `cmake/FindMKL.cmake` (copied, with attribution, from
+Gunnar's BDMC_UFL project — his own group's established pattern for
+these machines) supplies BLAS+LAPACK+FFTW3 together; otherwise the
+build falls back to plain `find_package(LAPACK)`, which is what
+upstream DiagHam's own `configure.ac` does by default. Both paths feed
+a single `DIAGHAM_LAPACK_LIBRARIES` variable that `DiagHamHelpers.cmake`
+links against, so the choice of provider is invisible to every target.
+
+**Honesty check on `HAVE_INTELMKL`:** grepped upstream DiagHam source
+for `HAVE_INTELMKL`/`__INTELMKL__` — it doesn't exist anywhere. DiagHam
+only ever checks `__LAPACK__`/`HAVE_LAPACK`, because MKL provides an
+ABI-compatible LAPACK interface, so the C++ source genuinely doesn't
+care which library backs it. The `HAVE_INTELMKL` macro added to
+`config_ac.h.in` is therefore cosmetic/informational only (matches
+Gunnar's own `BDMC_config.h.in` convention, e.g. for a future
+`--version`/build-info printout) — it is not load-bearing the way
+`HAVE_LAPACK` is. Documented here so nobody later assumes it gates
+real behaviour.
+
+This is offered as an *option*, not a replacement for DiagHam's default
+path — plain LAPACK stays the default, matching upstream, exactly as
+planned (Kepner-Tregoe MUST: don't silently change DiagHam's own
+defaults).
+
+## Exhaustive config-header parity pass (18/09)
+
+Every `AC_DEFINE(HAVE_*)` in upstream `configure.ac`, cross-checked
+against `cmake/config_ac.h.in`, one row per macro:
+
+| Macro | Upstream (`configure.ac`) | PoC (`config_ac.h.in`) | Status |
+|---|---|---|---|
+| `HAVE_BIGENDIAN` / `HAVE_LITTLEENDIAN` | byte-order test | `test_big_endian()` → `IS_BIG_ENDIAN` → derives both | OK, different mechanism, same result |
+| `HAVE_LAPACK` | `--enable-lapack`, default off | `#cmakedefine`, wired to `DIAGHAM_USE_LAPACK` | **Fixed today** |
+| `HAVE_LAPACK_ONLY` | `--enable-lapack-only` | inert placeholder | Correctly absent — no CMake option offers this yet |
+| `HAVE_MPI` | `--enable-mpi`? no, MPI test | `#cmakedefine`, wired to `DIAGHAM_USE_MPI` | **Fixed today** (was dormant-broken) |
+| `HAVE_GSL` | `--enable-gsl` | inert placeholder | Gap — unimplemented, highest priority (20 files use it) |
+| `HAVE_BZ2` | `--enable-bz2` | inert placeholder | Gap — unimplemented (1 file) |
+| `HAVE_GMP` | `--enable-gmp` | inert placeholder | Gap — unimplemented (2 files) |
+| `HAVE_FFTW` | `--enable-fftw` | inert placeholder | Gap — unimplemented (1 file) |
+| `HAVE_MPACK` | `--enable-mpack` | inert placeholder | Gap — unimplemented (0 direct includes found; low priority) |
+| `HAVE_SCALAPACK` | conditional block | inert placeholder | Gap — unimplemented (0 direct includes found; low priority) |
+| `HAVE_GLOBAL_COMMAND_LOG` | `--with-global-command-log`, default off | **absent entirely** (no placeholder line) | Newly found — minor, off by default upstream too, used only in `Options/OptionManager.cc` (3 sites). Not a bug (nothing bypasses it, since nothing references it), just an undocumented gap. Worth a one-line placeholder for completeness, low priority. |
+| `HAVE_FQHE` / `HAVE_FTI` | module `--enable-*` flags | `#cmakedefine`, wired to `DIAGHAM_BUILD_*` | OK (fixed in an earlier pass, see above) |
+
+**Verdict:** two real bugs found and fixed (LAPACK, MPI — both the same
+bypass pattern). No further hidden bugs of that class exist, because
+no further macro has live CMake wiring to bypass. Seven macros are
+legitimate, correctly-inert unimplemented gaps, not bugs:
+`HAVE_GSL` (priority), `HAVE_BZ2`, `HAVE_GMP`, `HAVE_FFTW`,
+`HAVE_MPACK`, `HAVE_SCALAPACK`, `HAVE_LAPACK_ONLY`, plus the newly
+found `HAVE_GLOBAL_COMMAND_LOG` omission. This scopes the next real
+piece of work precisely: wiring GSL (and, per Gunnar's own BDMC
+precedent, MKL alongside it) is the next CMake-side task with actual
+payoff, not further bug-hunting.

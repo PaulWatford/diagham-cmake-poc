@@ -866,11 +866,64 @@ int main(int argc, char** argv)
 	{
 	  if (NbrBands == 1)
 	    {
-	      for (int i = 0; i < NbrRightStates; ++i)
+	      if (Manager.GetString("left-states") == 0)
 		{
+		  for (int i = 0; i < NbrRightStates; ++i)
+		    {
+		      Complex TmpTotalDensity = 0.0;
+		      Complex* PartialTraces = new Complex[NbrDensityPartialTraces];
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  PartialTraces[j] = 0.0;
+			}
+		      int TmpIndex = (((TotalKx[i] * NbrSitesY) + TotalKy[i]) * NbrSitesZ) + TotalKz[i];
+		      for (int j = 0; j < NbrRightStates; ++j)
+			{
+			  int TmpLeftIndex = (((TotalKx[j] * NbrSitesY) + TotalKy[j]) * NbrSitesZ) + TotalKz[j];
+			  Spaces[TmpIndex]->SetTargetSpace(Spaces[TmpLeftIndex]);
+			  for (int k = 0 ; k < NbrDensityIndices; ++k)
+			    {
+			      int TmpKx;
+			      int TmpKy;
+			      int TmpKz;
+			      int TmpCreationMomentumIndex = FTIDensityComputeMomentumTransfer(CreationMomentumIndices[k], TotalKx[j], TotalKy[j], TotalKz[j],
+											       TotalKx[i], TotalKy[i], TotalKz[i],
+											       TmpKx, TmpKy, TmpKz,
+											       NbrSitesX, NbrSitesY, NbrSitesZ);
+			      ParticleOnSquareLatticeWithGenericSpinBandDensityOperator TmpOperator ((ParticleOnSphereWithSpin*) Spaces[TmpIndex], TmpCreationMomentumIndex,
+												     CreationSigmaIndices[k], AnnihilationMomentumIndices[k],
+												     AnnihilationSigmaIndices[k]);
+			      Complex TmpElement;
+			      OperatorMatrixElementOperation TmpOperation (&TmpOperator, RightGroundStates[j], RightGroundStates[i]);
+			      TmpOperation.ApplyOperation(Architecture.GetArchitecture());
+			      TmpElement = TmpOperation.GetScalar();
+			      if ((CreationSigmaIndices[k] == AnnihilationSigmaIndices[k]) && (TmpCreationMomentumIndex == AnnihilationMomentumIndices[k]) && (i == j))
+				{
+				  PartialTraces[CreationSigmaIndices[k]] += TmpElement;
+				  TmpTotalDensity += TmpElement;
+				}
+			      if (Flag3d == false)
+				{
+				  File << j << " " << i << " " << TmpKx << " " << TmpKy << " " << IndexLabels[k] << " " << TmpElement << endl;
+				}
+			      else
+				{
+				  File << j << " " << i << " " << TmpKx << " " << TmpKy << " " << TmpKz << " " << IndexLabels[k] << " " << TmpElement << endl;
+				}
+			    }
+			}
+		      for (int j = 0; j < NbrDensityPartialTraces; ++j)
+			{
+			  File << "# partial density " << PartialTraceLabels[j] << " = " << PartialTraces[j] << endl;
+			}
+		      File << "# total density = " << TmpTotalDensity << endl;
+			}
 		}
-	      cout << "Error, --off-diagonal is not implemented for a single band, no spin/valley Hilbert space" << endl;
-	      return 0;
+	      else
+		{
+		  cout << "Error, --off-diagonal with --left-states is not implemented for a single band, no spin/valley Hilbert space" << endl;
+		  return 0;
+		}
 	    }
 	  else
 	    {

@@ -135,7 +135,7 @@ int main(int argc, char** argv)
   int MinKy = Manager.GetInteger("min-ky");
   int MinKz = Manager.GetInteger("min-kz");
   int MinKt = Manager.GetInteger("min-kt");
-  int TotalKx = Manager.GetInteger("kx"); 
+  int TotalKx = Manager.GetInteger("kx");
   int TotalKy = Manager.GetInteger("ky");
   int TotalKz = Manager.GetInteger("kz");
   int TotalKt = Manager.GetInteger("kt");

@@ -183,6 +183,17 @@ Highlights:
   converges to a constant (≈ −48.14) confirming the expected 1/U scaling
   in the Heisenberg limit.
 
+## AI-assisted contribution rules
+
+This repository accepts AI-assisted contributions under a strict
+review policy: see [`AGENTS.md`](AGENTS.md) for the full rules. In
+short — an AI agent may describe a diff and judge its usefulness, but
+it never sets pass/fail, never edits a golden file, and never merges;
+every suggested change is held for a named human maintainer to
+approve, reject, or ask for tests to be restored. The automated
+mailer/hold pipeline described there is not yet built; `AGENTS.md` is
+the specification for it.
+
 ## Production migration context
 
 This repository is a personal proof-of-concept on GitHub, developed

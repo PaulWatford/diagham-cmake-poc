@@ -1,0 +1,179 @@
+# AGENTS.md — rules for AI-assisted work on this repository
+
+This file governs any AI agent (a coding assistant editing this repo
+directly, or the automated "CMake AI Guard" reviewing suggested
+uploads) working on `PaulWatford/diagham-cmake-poc`. It is a first cut:
+it encodes the rules from the Guard specification so they're versioned
+with the code they govern, not just in a separate document. The
+automated Guard pipeline itself (self-hosted runner, mailer, GitHub
+status check) is not yet built — see "Build order" below for what
+exists today versus what's planned.
+
+## Locked facts
+
+These are the two claims this repository stands on. **No agent may
+weaken either of them**, in code, in tests, or in what it reports about
+them:
+
+- **79/79 verification checks pass** (`build/cmake/verify_build.sh`,
+  core-only scope: `DIAGHAM_BUILD_FQHE=OFF`, `DIAGHAM_BUILD_FTI=OFF`).
+- **The Hubbard ED demo matches the analytic ground state to machine
+  precision** (see `benchmarks/BENCHMARK.md` and `HUBBARD_BENCHMARK.md`).
+
+If a change affects either number, that is Damage (see below) even if
+every check still reports green.
+
+## Purpose
+
+Any AI review of a suggested change here is a **maintainer mailer and
+holding queue**, not a merge robot and not a second DiagHam physics
+engine. Its job is to make it possible for a human maintainer to see, in
+one place: what the change does to the build system and tests, whether
+it risks the 79-check suite or the Hubbard golden, whether it's useful
+for the CMake port, and a clear hold — nothing reaches `main` until a
+named maintainer replies `approve`.
+
+## Scope
+
+**In scope** for AI-assisted review or editing: `CMakeLists.txt`, CMake
+presets, `cmake/Find*.cmake` modules, toolchain files, `ctest` wiring,
+demo targets, goldens, CI workflows, and documentation of how to
+configure and build.
+
+**Out of scope**: computing new eigenvalues or other physics results,
+changing DiagHam physics defaults, approving anything because "an LLM
+likes it," and mixing review gates in from any other project.
+
+## Authority
+
+**Pass/fail of the suite is owned by CMake + ctest, not by any model.**
+An AI agent may write a description of a diff and an opinion on its
+usefulness. It may not set a pass bit, edit a golden file, or merge
+anything.
+
+Required human action on any suggested change: approve, reject, or ask
+the author to restore tests. Silence is not approval — the hold lasts
+until a named maintainer replies.
+
+## Pipeline
+
+1. **Intake.** A suggested upload (PR, patch, or dropped zip) is copied
+   into an isolated worktree. `main` is never built in place.
+2. **Machine gates (blocking).**
+   - `cmake -S . -B build` (out-of-source)
+   - `cmake --build build`
+   - `ctest --test-dir build --output-on-failure`
+   - Hubbard ED demo vs. the locked analytic golden, machine precision
+   - Manifest check: the set of 79 test names must match the locked
+     list exactly, even if ctest still reports green
+3. **Damage scan (blocking for the mail class, never an auto-fix).**
+   Flag even when ctest is still 79/79:
+   - `add_test` / `enable_testing` lines removed
+   - a test name disappears from the suite
+   - the demo target is no longer registered with CTest
+   - golden file bits changed
+   - an option now defaults `OFF` so a DiagHam tree is silently unbuilt
+   - an in-source build is reintroduced
+4. **Code analysis (description).** Diff the incoming tree against the
+   last approved `main` and produce a plain-language change list: files
+   touched; new/removed/renamed CMake options and cache variables; new
+   `find_package`/`FetchContent` pins; compiler or generator
+   assumptions; install rules, export files, presets; any test added,
+   skipped, or renamed. **The description must come from the diff plus
+   the gate output — it must not invent files that aren't in the diff.**
+5. **Hold.** The worktree stays quarantined. `main` and the protected
+   branch are unchanged. Status reads `HELD_FOR_APPROVAL` until a
+   maintainer sends the approve token or clicks the held Action.
+
+## What an AI agent must never do here
+
+- Auto-merge anything because a description sounded positive.
+- Rewrite a golden file to make ctest green.
+- Count the suite as 79/79 if names were dropped and new names filled
+  the count back up to 79.
+- Run DiagHam itself as a replacement for ctest.
+- Upload large object files or unpublished notes.
+- Treat silence as approval.
+
+## Usefulness, defined
+
+Useful: easier to configure or build DiagHam with CMake, support for
+more compilers, clearer options, extra tests that add to the 79. Not
+useful: style-only changes, vendored junk, physics code that isn't
+wired to ctest, or a green run that quietly dropped tests.
+
+## Review-mail fields (for the future automated Guard)
+
+Once the mailer pipeline exists, one email goes out per incoming
+change (not per commit), to the people who run the repo, with these
+fixed fields:
+
+| Field | Content |
+|---|---|
+| Break | `PASS 79/79` / `FAIL <first test>` / `BUILD BROKEN` |
+| Damage | none / tests removed / checks skipped / golden edited / option default flipped |
+| Demo | Hubbard ED vs golden OK / DRIFT / NOT RUN |
+| Change description | What the upload will cause if merged, written from the diff. No physics claims. |
+| Usefulness advice | Max eight lines, labelled `ADVICE` |
+| Hold | `HELD_FOR_APPROVAL` until named maintainer replies `approve` \| `reject` \| `restore-tests` |
+| Attachments | `LastTest.log` tail, `CMakeError.log` if configure died, test-name add/remove list, short diffstat |
+
+Subject line format: `[diagham-cmake-poc] HOLD | <short title> | PASS 79/79 or FAIL n/79 or BUILD BROKEN or TESTS DROPPED`
+
+## System prompt for the reviewing model (use as written, once wired up)
+
+> You explain diagham-cmake-poc CI and diffs. You describe what a patch
+> will change in the CMake build and tests. You do not compute
+> eigenvalues. You do not approve merges. If a number is not in ctest
+> output or the locked golden, say it is not in the log. Prefer CMake
+> cache variables, `find_package` failures, and missing `add_test`
+> lines. Eight lines of usefulness advice, then stop.
+
+## Approval
+
+A change leaves hold only when a maintainer on the (separately kept,
+non-public) maintainer list replies with one of:
+
+- `approve` — merge allowed; quarantine discarded after merge
+- `reject` — close; worktree deleted
+- `restore-tests` — author must put the 79 names and golden back; the
+  Guard re-runs
+
+No AI agent is on that list, now or ever.
+
+## Locked artefacts
+
+- Manifest of exactly 79 test names (hashed).
+- Hubbard ED demo golden (analytic ground state, machine-precision
+  tolerance).
+- Default CMake options that decide which DiagHam trees are built.
+
+Changing any locked artefact is Damage even if the build stays green.
+It still gets flagged and still holds.
+
+## Build order (what exists vs. what's planned)
+
+This repository today has the CMake build, the 79-check
+`verify_build.sh`, and the Hubbard golden — i.e., step 1 below. The
+automated mailer/hold pipeline (steps 2-5) is not yet implemented; this
+file is the specification an implementation must follow when it is
+built.
+
+1. Worktree + `cmake` + `ctest` + 79-name manifest on a self-hosted
+   runner. *(exists — this is what `verify_build.sh` already checks
+   locally; running it on a self-hosted runner with an isolated
+   worktree is the remaining piece.)*
+2. Damage scan and email template with an empty advice line.
+3. A local LLM fills in the Change description and Usefulness advice.
+4. Hold label + required GitHub status check.
+5. Maintainer reply releases the hold.
+
+If step 1 is not green and mailed on every failure, do not add the
+model yet.
+
+## Success looks like
+
+A PR that breaks one of the 79, drifts the Hubbard demo, or deletes a
+test name is held, and the maintainers get one message that states the
+break, the damage, a plain description of the code change, and a
+usefulness line that never pretends to be a merge decision.

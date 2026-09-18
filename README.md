@@ -183,6 +183,12 @@ Highlights:
   converges to a constant (≈ −48.14) confirming the expected 1/U scaling
   in the Heisenberg limit.
 
+## Finding your way around
+
+The directory tree above is what's on disk; [`MODULE_MAP.md`](MODULE_MAP.md)
+is organised by task instead ("I want to add a dependency", "I want to
+verify the physics", ...) and points at the specific file for each.
+
 ## AI-assisted contribution rules
 
 This repository accepts AI-assisted contributions under a strict

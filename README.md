@@ -249,6 +249,8 @@ remain out of scope:
 
 Optional: LAPACK, MPI (toggle via `-DDIAGHAM_USE_LAPACK=ON`, `-DDIAGHAM_USE_MPI=ON`).
 
+See [`CHANGELOG.md`](CHANGELOG.md) for what's changed and when.
+
 ## License
 
 DiagHam is licensed under the GNU General Public License, version 2 or

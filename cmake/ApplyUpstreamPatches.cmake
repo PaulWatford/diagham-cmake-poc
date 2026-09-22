@@ -18,6 +18,17 @@
 #
 # Files NOT patched (excluded from the build instead, see DiagHamHelpers.cmake)
 # are listed in DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS and documented in PATCHES.md.
+#
+# Apply strategy: try `patch -p1`, and if that specific patch fails, retry it
+# with `git apply -p1` before giving up. This isn't redundancy for its own
+# sake -- verified against a fresh clone of the upstream mirror, `patch`
+# (GNU patch 2.7.6) and `git apply` each fail on different patches in this
+# series for unrelated reasons (patch 09 trips a CRLF-detection bug in that
+# patch version even though the patch content is valid -- confirmed via
+# `git apply --check`; other patches in the series rely on patch's fuzzier
+# context matching and fail under git apply's stricter one). Neither tool
+# alone gets all 11 patches through cleanly; the fallback does. See
+# patches/PATCHES.md for the dated write-up of this finding.
 # ============================================================================
 
 set(DIAGHAM_PATCH_DIR ${CMAKE_SOURCE_DIR}/patches)
@@ -53,6 +64,9 @@ else()
 
     if(need_apply)
         find_program(PATCH_EXECUTABLE patch REQUIRED)
+        # Not REQUIRED: if git isn't available, we simply lose the fallback
+        # and behave exactly as before (patch-only, fails loudly on mismatch).
+        find_program(GIT_EXECUTABLE git)
 
         foreach(p ${patch_files})
             get_filename_component(pname ${p} NAME)
@@ -63,6 +77,30 @@ else()
                 OUTPUT_VARIABLE patch_output
                 ERROR_VARIABLE patch_error
             )
+
+            if(NOT patch_result EQUAL 0 AND GIT_EXECUTABLE)
+                # `patch` failed on this one -- retry with `git apply` before
+                # treating it as a real failure. See the file header for why
+                # this isn't just belt-and-braces: each tool alone misses
+                # different patches in this series.
+                execute_process(
+                    COMMAND ${GIT_EXECUTABLE} apply -p1 ${p}
+                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                    RESULT_VARIABLE gitapply_result
+                    OUTPUT_VARIABLE gitapply_output
+                    ERROR_VARIABLE gitapply_error
+                )
+                if(gitapply_result EQUAL 0)
+                    set(patch_result 0)
+                    set(pname "${pname} (via git apply fallback)")
+                else()
+                    # Keep both tools' errors so a real failure is diagnosable
+                    # without having to reproduce the fallback attempt by hand.
+                    set(patch_error
+                        "patch: ${patch_error}\ngit apply (fallback): ${gitapply_error}")
+                endif()
+            endif()
+
             if(patch_result EQUAL 0)
                 message(STATUS "DiagHam: applied ${pname}")
             else()

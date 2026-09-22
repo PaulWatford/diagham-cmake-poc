@@ -533,3 +533,60 @@ audit, these libraries' upstream usage is low (GMP 2 files, FFTW 1,
 MPACK/ScaLAPACK 0 direct includes) or the DiagHam-side wiring wasn't
 scoped for this PoC (NAG, DLR) -- low priority, so not wired now, but
 the modules are in place for whoever picks this up next.
+
+## Patch 09 fails under GNU patch 2.7.6 (CRLF-detection bug); git-apply fallback added (22/09)
+
+**First real end-to-end configure test against a fresh upstream clone**
+(previously only individually verified/reasoned about -- no `cmake`
+binary was available in the working environment until this session;
+installed a user-local one via `pip install --user cmake` with no
+system changes needed).
+
+Configure failed at patch 09
+(`09-FCIHofstadterCorrelationPrecision.patch`) with `patch`'s own
+"3 out of 3 hunks FAILED" and a `.rej` file, even though patches 01-08
+applied cleanly moments before with the identical tool and identical
+`-p1 --silent -i` invocation in `cmake/ApplyUpstreamPatches.cmake`.
+
+**Root cause, not a bad patch:** `patch --dry-run` on patch 09 alone
+printed `(Stripping trailing CRs from patch; use --binary to disable.)`
+then failed all 3 hunks with `different line endings`. Both the patch
+file and the target file are consistently CRLF throughout (verified
+byte-for-byte, no mixed line endings in either) and the patch's context
+lines matched the target file's lines exactly (verified with `cat -A`
+side by side). `git apply --check -p1` on the same patch against the
+same pristine file succeeded immediately. This is a CRLF
+auto-detection bug/quirk in GNU patch 2.7.6 specifically (Ubuntu
+22.04/24.04's shipped version), not a defect in patch 09's content.
+
+**Why not just switch everything to `git apply`:** tested. `git apply`
+fails on patches 01, 02, 03, 04, 05, 06, 07, 08 that `patch` handles
+fine (git apply's context matching is stricter than patch's fuzzy
+matching; several of this series' patches rely on that fuzz). Neither
+tool alone gets all 11 patches through against a fresh clone.
+
+**Fix:** `cmake/ApplyUpstreamPatches.cmake` now tries `patch -p1`
+first, and if that specific patch fails, retries the same patch with
+`git apply -p1` before treating it as a real failure. Verified against
+two independent fresh clones of `guysoft/DiagHam`: all 11 patches now
+apply (10 via `patch`, 1 -- patch 09 -- via the `git apply` fallback),
+and `cmake -S . -B build` reaches `Configuring done` / `Generating
+done` cleanly. `find_program(GIT_EXECUTABLE git)` is not `REQUIRED`:
+if git isn't on the machine, behaviour is unchanged from before (patch
+09 will still hard-fail with a clear error, same as it did before this
+fix existed).
+
+**Also verified for real, not just configured:** `cmake --build build
+--target Vector` actually compiles and links `libVector.a` from the
+patched, freshly-cloned, freshly-generated tree (warnings only, no
+errors). This is the first real compiler invocation this PoC's CMake
+build has had in this environment; everything before this was
+configure-only or reasoned about from source inspection.
+
+**Still not tested, flagged honestly:** `DIAGHAM_USE_LAPACK=ON` still
+fails at `find_package(LAPACK)` in this environment -- `liblapack.so.3`
+is present but no BLAS library is installed, and installing one needs
+root, which isn't available here. So the previously-documented "5000+
+errors in `HermitianMatrix.h`" question (see README's "Beyond this
+iteration") remains genuinely open; this session did not resolve it,
+only confirmed it's still untested rather than fixed.

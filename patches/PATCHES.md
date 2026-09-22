@@ -590,3 +590,81 @@ root, which isn't available here. So the previously-documented "5000+
 errors in `HermitianMatrix.h`" question (see README's "Beyond this
 iteration") remains genuinely open; this session did not resolve it,
 only confirmed it's still untested rather than fixed.
+
+## Correction to the patch-09 root cause above, and a real fix (22/09, audited by a second Claude session)
+
+The "GNU patch 2.7.6 CRLF-detection bug" diagnosis above is wrong, and the
+`git apply` fallback it describes was never actually verified against this
+repository's real content -- both were caught by a second, independent
+Claude session auditing this work, then confirmed here with direct
+evidence (git blobs, `file`, and repeated fresh-clone tests), not just
+re-asserted.
+
+**What was actually wrong with the previous entry:**
+
+- The `git apply` fallback was tested by copying patch files out of a
+  Windows checkout of this repository, which silently normalizes them to
+  CRLF on checkout. It was never tested against what git actually has
+  stored. When tested against the real blobs (`git show HEAD:patches/*.patch`
+  from a Linux clone, independent of any local checkout-time conversion),
+  `git apply` fails on patch 09 for the identical reason plain `patch`
+  does. The fix committed on 22/09 (`d49f816`) does not work against this
+  repository's real, portable content -- it only worked against a
+  Windows-checkout artifact of the machine that tested it.
+- There is no GNU patch version bug. `patch`'s CR-stripping
+  ("Stripping trailing CRs from patch; use --binary to disable") is
+  documented, deliberate behaviour, confirmed by testing that even a
+  manually CRLF-converted copy of patch 09 still fails under plain
+  `patch` -- it strips the CRs right back off before comparing. Only
+  `--binary` stops that.
+
+**The real root cause:** all 11 patches in this series are stored in git
+as pure LF (confirmed for every one of them by inspecting the git blobs
+directly, independent of checkout line-ending conversion). Ten of the
+eleven patches target upstream files that are themselves LF, so an LF
+patch matches them byte-for-byte under `patch --binary -p1`. Patch 09
+targets exactly one upstream file,
+`FTI/src/Programs/FCI/FCIHofstadterCorrelation.cc`, which is genuinely
+CRLF throughout in the canonical `guysoft/DiagHam` source (confirmed with
+`file`, which reports "CRLF line terminators" on all 403 lines of a
+pristine clone's copy). An LF patch cannot match CRLF context, under any
+patch tool, regardless of flags -- this is a real file-level line-ending
+mismatch between patch 09 and its one target file, not a tool defect.
+
+**The actual fix:** `cmake/ApplyUpstreamPatches.cmake` now applies each
+patch with `patch --binary -p1` first (this alone gets 10 of 11 through,
+byte-for-byte, since their targets are LF). On failure, it byte-converts
+a scratch copy of that specific patch to CRLF and retries with
+`patch --binary -p1` again (`--binary` is still required on the retry, or
+`patch` strips the CRs straight back off the converted copy before
+comparing). This gets patch 09 through by matching its one CRLF target
+correctly, without touching the other ten.
+
+**Verified for real, three separate ways:**
+
+1. Standalone: `patch --binary -p1` against all 11 real (git-blob, LF)
+   patches extracted fresh from this repository -- 10 succeed, only patch
+   09 fails, exactly as predicted from the upstream-file-encoding
+   argument above.
+2. The CRLF-retry step alone, standalone: converting patch 09's own scratch
+   copy to CRLF and re-running `patch --binary -p1` succeeds cleanly.
+3. End-to-end, as actual CMake: a fresh clone of `guysoft/DiagHam`,
+   overlaid with this repo's real (git-archived, not checkout-copied)
+   `cmake/`, `CMakeLists.txt`, `scripts_cmake/`, and `patches/`, run
+   through `cmake -S . -B build`, reaches `-- DiagHam: applied
+   09-FCIHofstadterCorrelationPrecision.patch (CRLF-converted retry --
+   its target file is CRLF upstream)` and then `Configuring done` /
+   `Generating done`. A real target (`Vector`) then builds and links.
+   This is the first time this exact fix was verified as an assembled
+   CMake module rather than reasoned about from separate shell tests.
+
+**A genuine, separate, still-open issue this surfaced:** re-running
+`cmake -S . -B build` a second time against a source tree that already
+has the patches applied in place (rather than a fresh clone) fails with
+`Reversed (or previously applied) patch detected!` -- `execute_process`
+runs `patch` non-interactively, so the `[n]` prompt is answered `n` and
+the whole configure aborts. This is a real, reproducible gap (patches are
+applied in-source with no revert/idempotency check beyond the build-tree
+sentinel, which does not help once the *source* tree itself is already
+patched) -- not something this session's fix caused or fixed. Flagged
+here rather than silently left for the next person to rediscover.

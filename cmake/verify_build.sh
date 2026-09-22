@@ -11,6 +11,22 @@ set -e
 AUTOTOOLS="${1:-$(pwd)/build}"
 CMAKE_DIR="${2:-$(pwd)/cmake_build}"
 
+# Guard added 22/09 (audited by a second Claude session): without this,
+# pointing the script at nonexistent directories silently ran all four
+# tests over empty `find`/`ls` results, printed "RESULTS: 0 passed, 0
+# failed", and exited 0 -- a false PASS with zero real checks run.
+# Verified directly against the real (git-tracked) content of this file
+# before this fix: passing two nonexistent paths produced exactly that
+# silent 0/0 success.
+if [ ! -d "$AUTOTOOLS" ]; then
+    echo "verify_build.sh: autotools build dir not found: $AUTOTOOLS" >&2
+    exit 1
+fi
+if [ ! -d "$CMAKE_DIR" ]; then
+    echo "verify_build.sh: cmake build dir not found: $CMAKE_DIR" >&2
+    exit 1
+fi
+
 PASS=0
 FAIL=0
 report() {

@@ -175,8 +175,18 @@ this:
 Highlights:
 
 - **2x2 Hubbard, half-filling, U=4**: DiagHam gives ground-state energy
-  `-5.6568542494924`. Analytical value: `-4*sqrt(2) = -5.656854249492381...`.
-  **Agreement to 1.95×10⁻¹⁴**, the limit of double-precision arithmetic.
+  `-5.6568542494923806`. Analytical value: `-4*sqrt(2) = -5.656854249492381...`.
+  This is a **bit-identical (0 ULP) match** to the double-precision rounding
+  of the exact analytic value (verified with `mpmath`, 50-digit precision).
+  *(Corrected 22/09, audited by a second Claude session: this file
+  previously quoted `-5.6568542494924`, described as agreeing to
+  "1.95×10⁻¹⁴, the limit of double-precision arithmetic." That figure was
+  real output but from a run predating patch 08's precision fix — it is
+  actually 22 ULP (≈1.95×10⁻¹⁴) away from the exact double-rounding, not
+  at the precision limit. A freshly rebuilt, freshly run binary this
+  session reproduced the corrected value above, matching what
+  `benchmarks/BENCHMARK.md`'s own Test 1 section already independently
+  stated.)*
 - **2x4 Hubbard, half-filling, U=4**: DiagHam gives `E_0 = -10.252952955264`.
   Independent Python ED gives `-10.2529529552636`. Match to 4×10⁻¹³.
 - **Strong-coupling U-scaling test (U ∈ {50, 100, 200, 500}):** E₀ · U

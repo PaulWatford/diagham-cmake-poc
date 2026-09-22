@@ -48,18 +48,29 @@ future *build coverage*, not a future *repository*.
 The production Git conversion needs to carry over DiagHam's complete SVN
 revision history (24 years of commits), not a single squashed import.
 
-**This is the one point where the PoC's reference material is explicitly
-not representative of the production plan**, and it's worth stating
-plainly since `DEFERRED.md` leans on this mirror's git log directly:
-`guysoft/DiagHam` has exactly **one commit**
-(`ed78a30`, 2020-10-23, an SVN-to-git import sweep), not real history.
-`DEFERRED.md` already says this outright ("commit-level authorship
-history for the deferred `.cc` files themselves is not available from
-this snapshot") and points to the canonical SVN
-(`nick-ux.org/diagham/websvn`) as the source that does have it — that
-caveat was correct and should stay, it just needed to be tied explicitly
-to this decision so it reads as "expected, and the production conversion
-fixes it" rather than "a gap in this PoC."
+> **Correction (22/09, audited by a second Claude session):** the
+> paragraph originally here claimed `guysoft/DiagHam` "has exactly one
+> commit" and used that to argue this PoC's reference material was not
+> representative of production history needs. **That claim was false**,
+> traced to this engagement's repeated use of `git clone --depth 1`
+> (shallow clone) against the mirror, which truncates history to the tip
+> commit regardless of what the mirror actually has. A full,
+> non-shallow clone shows **4,098 real commits spanning 2003-05-03 to
+> 2020-10-23** (top authors: regnault 2317, moller 714, repellin 375,
+> sterdyni 306, papic 140), i.e. `guysoft/DiagHam` already carries real,
+> rich SVN-derived history — it was never a single squashed import; only
+> this PoC's *view* of it was truncated, by tooling choice, not by what
+> the mirror contains. `DEFERRED.md` has the same correction and a
+> worked example (`QHEFermionsTorusWithSpin.cc`'s real last-touch date,
+> recovered with `git log --follow` against the full clone). This
+> changes the framing below: the production conversion should still use
+> a history-preserving SVN→Git conversion for the canonical authority
+> (`nick-ux.org/diagham/websvn`, which has finer revision detail than
+> even the full git mirror), but it is not correcting a single-commit
+> mirror — it is carrying forward or re-deriving from a mirror that
+> already has most of the real history, just not all of it, and not
+> everything DEFERRED.md said about individual files' last-touch dates
+> was actually checked against that fuller picture in this pass.
 
 **Action for a later step:** the real migration should use a
 history-preserving SVN→Git conversion (`git svn`, `svn2git`, or

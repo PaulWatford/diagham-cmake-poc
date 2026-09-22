@@ -46,7 +46,7 @@ additional point-group symmetry).
 | 1    | -7.297973443536     | -1.8245      |                             |
 | 2    | -6.6816952344967    | -1.6704      |                             |
 | 3    | -6.1381306043251    | -1.5345      |                             |
-| 4    | **-5.6568542494924**| **-1.4142**  | = **-4*sqrt(2)** (exact analytic) |
+| 4    | **-5.6568542494923806**| **-1.4142**  | = **-4*sqrt(2)** (exact analytic), corrected 22/09 -- see note below |
 | 5    | -5.229425774067     | -1.3074      |                             |
 | 6    | -4.8488578017961    | -1.2122      |                             |
 | 7    | -4.5092407162188    | -1.1273      |                             |
@@ -55,9 +55,11 @@ additional point-group symmetry).
 ### The U=4 point
 
 ```
-DiagHam:          E_0 = -5.6568542494924
+DiagHam:          E_0 = -5.6568542494923806
 Exact analytic:   E_0 = -4*sqrt(2) = -5.656854249492381...
-Difference:       1.95 x 10^-14
+Difference:       0 ULP (bit-identical to the double-precision rounding
+                   of the exact value; verified with mpmath at 50-digit
+                   precision)
 ```
 
 This is the **limit of double-precision arithmetic**. The 2x2 Hubbard at
@@ -66,6 +68,20 @@ half-filling is one of the canonical exactly-solvable many-body problems
 tractable analytically). At U=4t, group-theoretic decomposition gives
 ground-state energy -4*sqrt(2) in a clean closed form, and DiagHam reproduces
 that to every digit allowed by IEEE 754 doubles.
+
+**Corrected 22/09, audited by a second Claude session:** this section
+previously quoted `E_0 = -5.6568542494924`, "Difference: 1.95 x 10^-14,"
+and called that the precision limit. That number was real DiagHam output,
+but from before patch 08's IEEE-754 precision fix was applied to the run
+that produced it -- it is actually 22 ULP away from the exact
+double-rounding, not at the limit. A binary rebuilt and rerun fresh this
+session (LAPACK-enabled, same CLI arguments as documented above) gives
+the `-5.6568542494923806` figure now shown, which is 0 ULP from exact --
+this also matches what `benchmarks/BENCHMARK.md`'s own Test 1 section
+already independently stated, so that file was correct the whole time and
+this one was stale. The other U values in the table above (0-3, 5-8) were
+not independently rerun in this pass and are unverified, not confirmed
+wrong.
 
 ### The U=0 point
 

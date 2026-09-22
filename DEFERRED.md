@@ -21,26 +21,55 @@ What is **not** here:
 - No physics intent inferred, only what's explicitly named in the
   option strings or `cout` output strings.
 
-The git snapshot used (`guysoft/DiagHam`) has a single commit
-(`ed78a30`, 2020-10-23, author `moller`), an SVN-to-git import
-sweep, so commit-level authorship history for the deferred `.cc` files
-themselves is **not available from this snapshot**. The canonical DiagHam
-SVN at <https://nick-ux.org/diagham/websvn> has revision-level history
-that could resolve this; it was not consulted for the entries below.
+> **Correction (22/09, audited by a second Claude session):** everything
+> below this point about `guysoft/DiagHam` having "a single commit" is
+> **wrong**, and the "Last-touched in the available snapshot" dates for
+> each file below are consequently unreliable. The claim came from a
+> `git clone --depth 1` (shallow clone) used throughout this PoC's work,
+> which only ever shows the one import-sweep commit regardless of a
+> file's real history. A full, non-shallow clone shows **4,098 real
+> commits spanning 2003-05-03 to 2020-10-23** (authors: regnault 2317,
+> moller 714, repellin 375, sterdyni 306, papic 140, and others), i.e.
+> the mirror already carries genuine SVN-derived history -- it was never
+> actually a single squashed import. Spot-checked directly:
+> `QHEFermionsTorusWithSpin.cc` (Deferred file 1, below) was really
+> last touched **2009-11-27 by `moller`** ("minor improvement for
+> lattice functions, some testing on Torus with Spin"), not 2020-10-23
+> by an import sweep as originally written here from the shallow clone.
+> The per-file "Last-touched in the available snapshot" lines below
+> (and the "2020-10-23 (import sweep)" rows in the summary table) are
+> therefore understated and should be re-derived with
+> `git log --follow -- <path>` against a full clone before being relied
+> on for real authorship/history questions; they were not re-derived for
+> every entry in this pass, so treat every remaining "2020-10-23 (import
+> sweep)" attribution in this file as **unverified, likely wrong**
+> pending that re-check, not as confirmed. The canonical DiagHam SVN at
+> <https://nick-ux.org/diagham/websvn> still has finer revision-level
+> detail than even the full git mirror and was still not consulted.
 
 ## Snapshot of the git history available
 
+**Corrected 22/09** -- the snippet below was captured from a shallow
+(`--depth 1`) clone and is not representative; see the correction note
+above. A full clone's actual tip commit and true commit count:
+
 ```
-$ git log --oneline
-ed78a30 Gunnar: fixed factor of 2 in argument to exponential and
-        Laguerre polynomials in definition of pseudopotentials for
-        perturbed Coulomb Hamiltonian - raising doubts about accuracy
-        of original CoulombHamiltonian also
-        (author: moller, date: 2020-10-23)
+$ git log --oneline | wc -l
+4098
+$ git log -1 --format="%H %ad %an %s" --date=short
+ed78a30... 2020-10-23 moller Gunnar: fixed factor of 2 in argument to exponential and Laguerre
+polynomials in definition of pseudopotentials for perturbed Coulomb
+Hamiltonian - raising doubts about accuracy of original CoulombHamiltonian
+also
+$ git log -1 --reverse --format="%H %ad %an %s" --date=short
+7eedf4f0... 2003-05-03 regnault Initial revision
 ```
 
-This is the only commit. All deferred files appear in this commit; no
-earlier history is available locally.
+`ed78a30` is genuinely the *tip* commit (matches what was shown before),
+but it is one of 4,098, not the only one. Per-file history for the
+deferred files below goes back to real authors and real dates, not a
+single 2020-10-23 import sweep -- see the corrected entry for Deferred
+file 1 as a worked example.
 
 ---
 
@@ -53,8 +82,13 @@ earlier history is available locally.
 **Authorship/date (from grep):**
 - No banner comment in the `.cc` file. Source contains no `Copyright`,
   `Author:`, or `last modification :` lines.
-- Last-touched in the available snapshot: 2020-10-23 by `moller`
-  (SVN-to-git import sweep, not a targeted change).
+- Last-touched in the available snapshot: originally recorded here as
+  2020-10-23 by `moller` (an artifact of a shallow clone -- see the
+  correction note at the top of this file). **Corrected, using
+  `git log --follow` against a full clone:** really last touched
+  **2009-11-27 by `moller`** ("minor improvement for lattice functions,
+  some testing on Torus with Spin"), with real history going back to
+  the file's `Initial revision` by `regnault` on 2003-05-03.
 - `FermionOnTorusWithSpin.h` (the deprecated class this file uses) has
   banner: `Copyright (C) 2001-2002 Nicolas Regnault`,
   `last modification : 10/09/2002`.

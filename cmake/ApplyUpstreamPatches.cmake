@@ -19,17 +19,38 @@
 # Files NOT patched (excluded from the build instead, see DiagHamHelpers.cmake)
 # are listed in DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS and documented in PATCHES.md.
 #
-# Apply strategy: try `patch -p1`, and if that specific patch fails, retry it
-# with `git apply -p1` before giving up. This isn't redundancy for its own
-# sake -- verified against a fresh clone of the upstream mirror, `patch`
-# (GNU patch 2.7.6) and `git apply` each fail on different patches in this
-# series for unrelated reasons (patch 09 trips a CRLF-detection bug in that
-# patch version even though the patch content is valid -- confirmed via
-# `git apply --check`; other patches in the series rely on patch's fuzzier
-# context matching and fail under git apply's stricter one). Neither tool
-# alone gets all 11 patches through cleanly; the fallback does. See
-# patches/PATCHES.md for the dated write-up of this finding.
-# ============================================================================
+# ----------------------------------------------------------------------------
+# Apply strategy (revised 22/09, see patches/PATCHES.md "audited by a second
+# Claude session" entry for the full story -- the first version of this fix
+# was wrong):
+#
+#   1. `patch --binary -p1` on the patch file as committed.
+#   2. If that fails, byte-convert a copy of the SAME patch file to CRLF and
+#      retry with `patch --binary -p1` again.
+#
+# Why: every patch in this series is stored in git as pure LF (confirmed by
+# inspecting the git blobs directly, independent of whatever line endings a
+# particular checkout happens to have on disk). Ten of the eleven patches
+# target upstream files that are themselves LF, so step 1 matches them
+# byte-for-byte. Patch 09 targets exactly one upstream file
+# (FTI/src/Programs/FCI/FCIHofstadterCorrelation.cc) that is CRLF in the
+# canonical DiagHam tree itself -- an LF patch can never match CRLF context,
+# under any tool, no matter how it's invoked. Step 2 exists for exactly that
+# file: convert the patch's own line endings to match its target, and use
+# --binary so GNU patch doesn't strip the CRs back off before comparing
+# (that stripping is documented, deliberate GNU patch behaviour, not a bug
+# in any particular patch version -- an earlier version of this comment
+# wrongly blamed a "GNU patch 2.7.6 CRLF-detection bug").
+#
+# A `git apply` fallback was tried first and looked like it worked, but only
+# because it was verified against a Windows checkout's CRLF working-tree
+# copies of the patches, not the actual LF content git has stored. Against
+# the real git-tracked patches, `git apply` fails on patch 09 for the same
+# reason `patch` alone does (LF patch, CRLF target) -- it was never a fix,
+# it was untested against the actual repository content. This version is
+# verified against fresh clones of both the upstream mirror AND this
+# repository's real git-tracked patch files, not a local working copy.
+# ----------------------------------------------------------------------------
 
 set(DIAGHAM_PATCH_DIR ${CMAKE_SOURCE_DIR}/patches)
 set(DIAGHAM_PATCH_SENTINEL ${CMAKE_BINARY_DIR}/.diagham_upstream_patches_applied)
@@ -64,40 +85,47 @@ else()
 
     if(need_apply)
         find_program(PATCH_EXECUTABLE patch REQUIRED)
-        # Not REQUIRED: if git isn't available, we simply lose the fallback
-        # and behave exactly as before (patch-only, fails loudly on mismatch).
-        find_program(GIT_EXECUTABLE git)
+        find_package(Python3 COMPONENTS Interpreter QUIET)
 
         foreach(p ${patch_files})
             get_filename_component(pname ${p} NAME)
             execute_process(
-                COMMAND ${PATCH_EXECUTABLE} -p1 --silent -i ${p}
+                COMMAND ${PATCH_EXECUTABLE} --binary -p1 --silent -i ${p}
                 WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
                 RESULT_VARIABLE patch_result
                 OUTPUT_VARIABLE patch_output
                 ERROR_VARIABLE patch_error
             )
 
-            if(NOT patch_result EQUAL 0 AND GIT_EXECUTABLE)
-                # `patch` failed on this one -- retry with `git apply` before
-                # treating it as a real failure. See the file header for why
-                # this isn't just belt-and-braces: each tool alone misses
-                # different patches in this series.
+            if(NOT patch_result EQUAL 0 AND Python3_EXECUTABLE)
+                # This specific patch's LF line endings didn't match its
+                # target file's CRLF content. Byte-convert a scratch copy of
+                # the patch to CRLF and retry with --binary (still needed:
+                # --binary stops `patch` re-stripping the CRs we just added).
+                # See the file header for why this is targeted at one patch,
+                # not applied to all of them.
+                set(crlf_copy ${CMAKE_BINARY_DIR}/_diagham_patch_crlf_retry.patch)
                 execute_process(
-                    COMMAND ${GIT_EXECUTABLE} apply -p1 ${p}
-                    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                    RESULT_VARIABLE gitapply_result
-                    OUTPUT_VARIABLE gitapply_output
-                    ERROR_VARIABLE gitapply_error
+                    COMMAND ${Python3_EXECUTABLE} -c
+                        "import sys; data=open(sys.argv[1],'rb').read(); data=data.replace(b'\\r\\n', b'\\n').replace(b'\\n', b'\\r\\n'); open(sys.argv[2],'wb').write(data)"
+                        ${p} ${crlf_copy}
+                    RESULT_VARIABLE convert_result
                 )
-                if(gitapply_result EQUAL 0)
-                    set(patch_result 0)
-                    set(pname "${pname} (via git apply fallback)")
-                else()
-                    # Keep both tools' errors so a real failure is diagnosable
-                    # without having to reproduce the fallback attempt by hand.
-                    set(patch_error
-                        "patch: ${patch_error}\ngit apply (fallback): ${gitapply_error}")
+                if(convert_result EQUAL 0)
+                    execute_process(
+                        COMMAND ${PATCH_EXECUTABLE} --binary -p1 --silent -i ${crlf_copy}
+                        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                        RESULT_VARIABLE retry_result
+                        OUTPUT_VARIABLE retry_output
+                        ERROR_VARIABLE retry_error
+                    )
+                    if(retry_result EQUAL 0)
+                        set(patch_result 0)
+                        set(pname "${pname} (CRLF-converted retry -- its target file is CRLF upstream)")
+                    else()
+                        set(patch_error
+                            "as-committed (LF): ${patch_error}\nCRLF retry: ${retry_error}")
+                    endif()
                 endif()
             endif()
 
@@ -108,7 +136,9 @@ else()
                     "DiagHam: failed to apply ${pname}\n"
                     "  result: ${patch_result}\n"
                     "  output: ${patch_output}\n"
-                    "  error:  ${patch_error}")
+                    "  error:  ${patch_error}\n"
+                    "  (No Python3 interpreter found for the CRLF-retry path -- "
+                    "if this patch needs it, install python3.)")
             endif()
         endforeach()
 

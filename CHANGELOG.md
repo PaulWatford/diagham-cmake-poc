@@ -5,6 +5,56 @@ repo doesn't cut version tags (it's a proof-of-concept, not a release
 train), so entries are grouped by work session rather than by version
 number.
 
+## 2026-09-24 — From PoC toward successor: all modules, all flags, ctest, install, CI
+
+Every number below was produced by running it against the pinned
+upstream mirror revision `ed78a30` (Ubuntu 24.04, GCC 13, Clang 18 for
+the `core` preset).
+
+- **Spin and QuantumDots are built by default.** `extract_autotools.py`
+  now covers them, emitting their programs from `bin_PROGRAMS` (new
+  `diagham_add_programs()` helper) because those directories contain
+  sources upstream deliberately doesn't build. Result: 61/61 libraries
+  and 561 programs (473 + 69 Spin + 19 QuantumDots).
+- **Every configure flag has a CMake equivalent** (`CONFIGURE_FLAGS.md`):
+  new `DIAGHAM_USE_{LAPACK_ONLY,BZ2,GMP,MPACK,FFTW,SCALAPACK,PROFILE}`,
+  `DIAGHAM_COMMAND_LOG`, and `DIAGHAM_*_LIBS` link-line overrides. All
+  external libraries now hang off one `diagham_external_deps` interface
+  target.
+- **ctest suite** (`tests/`, `TESTING.md`): 572 tests with the `default`
+  preset. 13 physics tests (Hubbard -4√2 at ≤4 ulp, U=0, full-spectrum
+  references; Laughlin zero modes on sphere and torus; Heisenberg rings;
+  spinful torus Coulomb vs two independent programs), a real DiagHam-vs-
+  Python ED cross-check (`hubbard_ed.py` only printed before), `--help`
+  on every program, and a `find_package(DiagHam)` consumer build.
+- **Install + export**: `cmake --install` with `Runtime`/`Development`
+  components; `find_package(DiagHam)` → `DiagHam::DiagHam`.
+- **`CMakePresets.json`** (default, core, lapack, full, hpc, mkl, debug),
+  **`scripts_cmake/overlay.py`**, **`HPC.md`**.
+- **CI**: `scripts_cmake/ci.sh` (pinned upstream, overlay, build, ctest),
+  called by GitHub Actions (default, full, hpc with GCC; core with
+  Clang; weekly job against upstream head) and by an equivalent
+  `.gitlab-ci.yml` for the Kent move.
+- **Fixed: configuring a second build directory on the same tree
+  failed.** The patch sentinel lived in the build directory, so a second
+  preset re-applied the series to already-patched sources. It now lives
+  in the source tree; candidates are dry-run before being applied.
+- **New upstream patches 12-15** (`patches/PATCHES.md`, classes H and I):
+  `ThreeDTwoParticles` C++11 compile error; 22 ungated
+  `LapackDiagonalize` calls in 9 Spin programs; **the spinful torus
+  Coulomb defect, root-caused as two bugs and fixed** (basis order vs.
+  `FindStateIndex`; same-orbital up-down terms dropped), verified against
+  the spinless program and `FQHETorusFermionsWithSpinAndTranslations`;
+  and an uninitialised `SpinChainHamiltonianWithTranslations` that
+  crashed every `GenericPeriodicSpinChain` run in the MPI build. 14 and
+  15 change physics code and need maintainer review.
+- **Corrected patch 08**: it put `#include <limits>` inside `#ifdef
+  HAVE_GSL` in two Spin files, so they failed to compile without GSL (the
+  risk the 22/09 "never compile-tested" note flagged).
+- Verified, all 572 tests passing: `default`, `full`, `hpc`; `core`
+  with Clang (34 tests); `core` with `DIAGHAM_LAPACK_LIBS="-llapack
+  -lblas"`.
+
 ## 2026-09-22 — Audit-and-correction pass (second Claude session's findings, independently re-verified)
 
 A second, independent Claude session audited this repo's claims read-only

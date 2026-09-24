@@ -50,6 +50,15 @@ every check still reports green.
 > per-library `nm`-based text-symbol *counts*, and one program's stdout
 > comparison — not the byte-for-byte / binary comparison this file and
 > `README.md` describe elsewhere.
+>
+> **Update 24/09:** point 1 above no longer holds as stated: there is now
+> a real `ctest` suite (`tests/`, `enable_testing()` in `CMakeLists.txt`;
+> 570 tests with the `default` preset, see `TESTING.md`), and the Hubbard
+> golden is enforced by
+> `physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2` (4-ulp tolerance;
+> 0 ulp observed with GCC 13). That suite is **not** the 79-name manifest
+> described below, and `verify_build.sh` is still separate from it; point
+> 2 (the unconfirmed 79 figure) is unchanged.
 
 ## Purpose
 

@@ -1,5 +1,17 @@
 # Bug report: spinful torus Coulomb ground state is wrong for N >= 3
 
+> **Status (24/09): root-caused and patched** by
+> `patches/14-TorusSU2CoulombBasisOrderAndInterSpinInteraction.patch`,
+> pending maintainer review. There were two bugs: a basis-ordering
+> defect in `FermionOnTorusWithSpinNew::RawGenerateStates` that breaks
+> `FindStateIndex` (the one this report was chasing), and a separate
+> error in the up-down interaction of
+> `ParticleOnTorusCoulombWithSpinHamiltonian` that makes every unpolarised
+> result wrong, even for N = 2. See `patches/PATCHES.md`, "Class I", for
+> the diagnosis and the verification table; the regression tests are
+> `physics.fqhe.torus.su2_coulomb.*`. The original report follows
+> unchanged.
+
 This is a physics correctness bug in current DiagHam, independent of the
 CMake migration. It was found while verifying that the canonical program
 `FQHETorusFermionsWithSpin` is a sound replacement for the broken,

@@ -1,0 +1,27 @@
+# GitLab CI for the planned Kent GitLab home (see MIGRATION_ROADMAP.md).
+# Runs the same scripts_cmake/ci.sh as the GitHub workflow. When the
+# repository moves next to the canonical DiagHam sources, point
+# DIAGHAM_UPSTREAM_URL/REF at that repository instead of the mirror.
+
+default:
+  image: ubuntu:24.04
+  before_script:
+    - apt-get update
+    - DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
+        ca-certificates git cmake ninja-build g++ clang patch python3 python3-numpy
+        liblapack-dev libblas-dev libgsl-dev libgmp-dev libfftw3-dev libbz2-dev
+        libopenmpi-dev openmpi-bin libscalapack-openmpi-dev
+
+variables:
+  CMAKE_GENERATOR: Ninja
+
+build-and-test:
+  parallel:
+    matrix:
+      - PRESET: [default, full, hpc, core]
+  script:
+    - scripts_cmake/ci.sh "$PRESET"
+  artifacts:
+    when: on_failure
+    paths:
+      - _ci/DiagHam/build/$PRESET/Testing/Temporary/LastTest.log

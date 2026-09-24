@@ -24,9 +24,9 @@
 # Claude session" entry for the full story -- the first version of this fix
 # was wrong):
 #
-#   1. `patch --binary -p1` on the patch file as committed.
+#   1. `patch --binary -p1 --forward` on the patch file as committed.
 #   2. If that fails, byte-convert a copy of the SAME patch file to CRLF and
-#      retry with `patch --binary -p1` again.
+#      retry with `patch --binary -p1 --forward` again.
 #
 # Why: every patch in this series is stored in git as pure LF (confirmed by
 # inspecting the git blobs directly, independent of whatever line endings a
@@ -53,7 +53,12 @@
 # ----------------------------------------------------------------------------
 
 set(DIAGHAM_PATCH_DIR ${CMAKE_SOURCE_DIR}/patches)
-set(DIAGHAM_PATCH_SENTINEL ${CMAKE_BINARY_DIR}/.diagham_upstream_patches_applied)
+# The sentinel lives in the SOURCE tree, because that is what the patches
+# modify: every build directory configured from one tree (one per preset,
+# say) shares the patched sources. With the sentinel in the build directory,
+# a second build directory re-applied the series to already-patched
+# sources and failed at configure time.
+set(DIAGHAM_PATCH_SENTINEL ${CMAKE_SOURCE_DIR}/.diagham_upstream_patches_applied)
 
 if(NOT EXISTS ${DIAGHAM_PATCH_DIR})
     message(STATUS "DiagHam: no upstream patch directory found, skipping")
@@ -80,6 +85,13 @@ else()
         if("${existing_fingerprint}" STREQUAL "${patch_fingerprint}")
             set(need_apply FALSE)
             message(STATUS "DiagHam: upstream patches already applied (sentinel matches)")
+        else()
+            message(FATAL_ERROR
+                "DiagHam: this source tree was patched with a different patch series "
+                "(${DIAGHAM_PATCH_SENTINEL} does not match patches/). Patches cannot be "
+                "re-applied on top of each other: start again from a pristine upstream "
+                "tree (e.g. `git checkout -- . && git clean -fd` in an upstream clone, "
+                "then scripts_cmake/overlay.py).")
         endif()
     endif()
 
@@ -87,24 +99,28 @@ else()
         find_program(PATCH_EXECUTABLE patch REQUIRED)
         find_package(Python3 COMPONENTS Interpreter QUIET)
 
+        # Runs `patch --binary -p1 <extra args> -i <file>` in the source tree.
+        function(_diagham_run_patch patch_file result_var error_var)
+            execute_process(
+                COMMAND ${PATCH_EXECUTABLE} --binary -p1 --silent ${ARGN} -i ${patch_file}
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                RESULT_VARIABLE result
+                OUTPUT_VARIABLE output
+                ERROR_VARIABLE error
+            )
+            set(${result_var} ${result} PARENT_SCOPE)
+            set(${error_var} "${output}${error}" PARENT_SCOPE)
+        endfunction()
+
         foreach(p ${patch_files})
             get_filename_component(pname ${p} NAME)
-            execute_process(
-                COMMAND ${PATCH_EXECUTABLE} --binary -p1 --silent -i ${p}
-                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                RESULT_VARIABLE patch_result
-                OUTPUT_VARIABLE patch_output
-                ERROR_VARIABLE patch_error
-            )
 
-            if(NOT patch_result EQUAL 0 AND Python3_EXECUTABLE)
-                # This specific patch's LF line endings didn't match its
-                # target file's CRLF content. Byte-convert a scratch copy of
-                # the patch to CRLF and retry with --binary (still needed:
-                # --binary stops `patch` re-stripping the CRs we just added).
-                # See the file header for why this is targeted at one patch,
-                # not applied to all of them.
-                set(crlf_copy ${CMAKE_BINARY_DIR}/_diagham_patch_crlf_retry.patch)
+            # Candidate forms of this patch: as committed (LF) and, for the
+            # one patch whose target is CRLF upstream, a CRLF-converted copy
+            # (see the file header for why this is targeted, not global).
+            set(candidates ${p})
+            if(Python3_EXECUTABLE)
+                set(crlf_copy ${CMAKE_BINARY_DIR}/_diagham_patch_crlf_retry_${pname})
                 execute_process(
                     COMMAND ${Python3_EXECUTABLE} -c
                         "import sys; data=open(sys.argv[1],'rb').read(); data=data.replace(b'\\r\\n', b'\\n').replace(b'\\n', b'\\r\\n'); open(sys.argv[2],'wb').write(data)"
@@ -112,32 +128,36 @@ else()
                     RESULT_VARIABLE convert_result
                 )
                 if(convert_result EQUAL 0)
-                    execute_process(
-                        COMMAND ${PATCH_EXECUTABLE} --binary -p1 --silent -i ${crlf_copy}
-                        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-                        RESULT_VARIABLE retry_result
-                        OUTPUT_VARIABLE retry_output
-                        ERROR_VARIABLE retry_error
-                    )
-                    if(retry_result EQUAL 0)
-                        set(patch_result 0)
-                        set(pname "${pname} (CRLF-converted retry -- its target file is CRLF upstream)")
-                    else()
-                        set(patch_error
-                            "as-committed (LF): ${patch_error}\nCRLF retry: ${retry_error}")
-                    endif()
+                    list(APPEND candidates ${crlf_copy})
                 endif()
             endif()
 
-            if(patch_result EQUAL 0)
-                message(STATUS "DiagHam: applied ${pname}")
+            set(status "")
+            set(errors "")
+            foreach(candidate ${candidates})
+                # Dry run first, so a candidate that only half-matches never
+                # leaves a partially patched file behind.
+                _diagham_run_patch(${candidate} patch_result patch_error --forward --dry-run)
+                if(patch_result EQUAL 0)
+                    _diagham_run_patch(${candidate} patch_result patch_error --forward)
+                endif()
+                if(patch_result EQUAL 0)
+                    if(candidate STREQUAL p)
+                        set(status "applied")
+                    else()
+                        set(status "applied (CRLF-converted retry -- its target file is CRLF upstream)")
+                    endif()
+                    break()
+                endif()
+                string(APPEND errors "  ${candidate}: ${patch_error}\n")
+            endforeach()
+
+            if(status)
+                message(STATUS "DiagHam: ${status}: ${pname}")
             else()
                 message(FATAL_ERROR
-                    "DiagHam: failed to apply ${pname}\n"
-                    "  result: ${patch_result}\n"
-                    "  output: ${patch_output}\n"
-                    "  error:  ${patch_error}\n"
-                    "  (No Python3 interpreter found for the CRLF-retry path -- "
+                    "DiagHam: failed to apply ${pname}\n${errors}"
+                    "  (If no CRLF retry is listed, no Python3 interpreter was found -- "
                     "if this patch needs it, install python3.)")
             endif()
         endforeach()

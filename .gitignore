@@ -24,3 +24,7 @@ Thumbs.db
 *.swp
 .vscode/
 .idea/
+.diagham_upstream_patches_applied
+
+# CI scratch (scripts_cmake/ci.sh)
+_ci/

@@ -148,6 +148,16 @@ file at the build level, but the spinful torus Coulomb energies should
 not be trusted quantitatively for N >= 3 until that operator is fixed
 upstream. N = 2 is correct.
 
+> **Update 24/09:** fixed by patch 14 (pending maintainer review). The
+> localisation above was close but not exact: the operator itself is
+> fine; the basis it searches is generated in an order `FindStateIndex`
+> can't search. A second, separate bug in the up-down interaction made
+> unpolarised results wrong even for N = 2, so "N = 2 is correct" held
+> only for the polarised sector. With patch 14 applied, the replacement
+> agrees with the spinless program and with
+> `FQHETorusFermionsWithSpinAndTranslations` on full spectra; see
+> `patches/PATCHES.md`, "Class I".
+
 ---
 
 ## ~~Deferred file 2: FCIWannierConstruction~~ (RESOLVED IN PATCH 10)

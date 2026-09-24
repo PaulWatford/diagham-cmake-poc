@@ -18,18 +18,55 @@ Usage:
 If SOURCE_ROOT is omitted, defaults to the parent directory of this script.
 
 Limitations:
-- Handles core (Base/src + src) plus FQHE and FTI. Spin and QuantumDots
-  follow the same pattern and are left as future work.
+- Handles core (Base/src + src) plus the FQHE, FTI, Spin and QuantumDots
+  modules. Anyons is referenced by upstream configure.ac but has no
+  sources in the tree (its AC_CONFIG_FILES line is commented out), so
+  there is nothing to generate for it.
 - Strips comment lines before parsing (autotools allows `# foo.cc` to
   comment out a source from a SOURCES list, e.g. LaguerreFunction.cc in
   src/MathTools/Makefile.am).
-- Programs/ subdirectories use file-glob auto-discovery in CMake rather
-  than explicit enumeration; the diagham_add_programs_in_directory()
-  helper finds every .cc in the directory at build time.
+- Programs/ subdirectories of the core, FQHE and FTI modules use
+  file-glob auto-discovery in CMake rather than explicit enumeration; the
+  diagham_add_programs_in_directory() helper finds every .cc in the
+  directory at build time.
+- Programs/ subdirectories of Spin and QuantumDots are emitted from the
+  Makefile.am bin_PROGRAMS list instead, because those directories hold
+  .cc files that upstream deliberately does not build
+  (SUNSpinsOnLatticeCorrelations.cc, ExplicitPeriodic3DQuantumDots.cc,
+  VisualPeriodic2D.cc) and programs whose binary name differs from their
+  source name (e.g. PeriodicQuantumDot2D_SOURCES=Periodic2DQuantumDot.cc).
 """
 import re
 import sys
 from pathlib import Path
+
+
+# Modules whose Programs/ directories are generated from bin_PROGRAMS rather
+# than globbed. See the module docstring for why.
+EXPLICIT_PROGRAM_MODULES = ('Spin/src', 'QuantumDots/src')
+
+
+def parse_bin_programs(path: Path) -> list:
+    """Return [(program_name, source.cc)] from a Makefile.am's bin_PROGRAMS.
+
+    Only single-source programs are supported (every program in the
+    upstream Spin and QuantumDots trees is single-source); anything else is
+    a hard error so a future upstream change can't be silently dropped.
+    """
+    text = re.sub(r'#[^\n]*', '', path.read_text())
+    m = re.search(r'^bin_PROGRAMS[ \t]*=[ \t]*((?:.*\\\n)*.*)$', text, re.MULTILINE)
+    if not m:
+        return []
+    programs = []
+    for prog in m.group(1).replace('\\\n', ' ').split():
+        sm = re.search(r'^' + re.escape(prog) + r'_SOURCES[ \t]*=[ \t]*(.+)$',
+                       text, re.MULTILINE)
+        sources = sm.group(1).split() if sm else []
+        if len(sources) != 1:
+            raise SystemExit(f'{path}: program {prog} has sources {sources!r}; '
+                             'only single-source programs are supported')
+        programs.append((prog, sources[0]))
+    return programs
 
 
 def parse_makefile_am(path: Path) -> tuple:
@@ -120,7 +157,8 @@ def parse_makefile_am(path: Path) -> tuple:
 
 
 def emit_cmakelists(directory: Path, libs: dict, subdirs: list,
-                    is_programs: bool = False) -> str:
+                    is_programs: bool = False, explicit_programs: list = None,
+                    program_prefix: str = '') -> str:
     """Emit the text of a CMakeLists.txt for one directory."""
     rel = directory
     lines = [f'# Auto-generated CMakeLists.txt for {rel}',
@@ -143,7 +181,14 @@ def emit_cmakelists(directory: Path, libs: dict, subdirs: list,
         lines.append(')')
         lines.append('')
 
-    if is_programs:
+    if explicit_programs:
+        lines.append('# Programs listed in the upstream Makefile.am bin_PROGRAMS.')
+        lines.append(f'diagham_add_programs(PREFIX {program_prefix}')
+        lines.append('    PROGRAMS')
+        for prog, src in explicit_programs:
+            lines.append(f'        {prog} {src}')
+        lines.append(')')
+    elif is_programs:
         lines.append('# Auto-discover every .cc as a separate executable.')
         lines.append('diagham_add_programs_in_directory()')
 
@@ -151,7 +196,7 @@ def emit_cmakelists(directory: Path, libs: dict, subdirs: list,
 
 
 def main(source_root: Path):
-    in_scope = ('Base/src', 'src', 'FQHE/src', 'FTI/src')
+    in_scope = ('Base/src', 'src', 'FQHE/src', 'FTI/src') + EXPLICIT_PROGRAM_MODULES
 
     # Walk every Makefile.am in scope, recording both library targets and SUBDIRS
     # children per directory. Both are required: SUBDIRS-only intermediates (with
@@ -207,7 +252,17 @@ def main(source_root: Path):
                 is_programs_leaf = True
         libs = libs_by_dir.get(d, {})
 
-        content = emit_cmakelists(d, libs, children, is_programs=is_programs_leaf)
+        explicit_programs = None
+        program_prefix = ''
+        module = next((m for m in EXPLICIT_PROGRAM_MODULES
+                       if d == m or d.startswith(m + '/')), None)
+        if is_programs_leaf and module:
+            explicit_programs = parse_bin_programs(source_root / d / 'Makefile.am')
+            program_prefix = module.split('/')[0]
+
+        content = emit_cmakelists(d, libs, children, is_programs=is_programs_leaf,
+                                  explicit_programs=explicit_programs,
+                                  program_prefix=program_prefix)
         out_path = source_root / d / 'CMakeLists.txt'
         out_path.parent.mkdir(parents=True, exist_ok=True)
         out_path.write_text(content)

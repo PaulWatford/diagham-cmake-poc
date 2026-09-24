@@ -11,19 +11,50 @@ that.
 
 ## "I want to configure or build DiagHam with this CMake port"
 
+- `scripts_cmake/overlay.py` — copies this repository's build files into
+  an upstream DiagHam checkout and generates the per-directory
+  `CMakeLists.txt` files. Start here.
+- `CMakePresets.json` — named configurations (`default`, `core`,
+  `lapack`, `full`, `hpc`, `mkl`, `debug`): `cmake --preset <name>`,
+  `cmake --build --preset <name>`, `ctest --preset <name>`.
+- `CONFIGURE_FLAGS.md` — every autotools `configure` flag and its CMake
+  replacement. `HPC.md` — the cluster recipe (modules, `hpc` preset).
 - `CMakeLists.txt` — the top-level build: options
   (`DIAGHAM_BUILD_FQHE`, `DIAGHAM_USE_LAPACK`, `DIAGHAM_USE_MPI`,
   `DIAGHAM_USE_GSL`, `DIAGHAM_KENT_DEFAULTS`, ...), `find_package`
   blocks, and the configuration summary printed at the end of
   `cmake -S . -B build`.
-- `cmake/DiagHamHelpers.cmake` — the two functions every
+- `cmake/DiagHamHelpers.cmake` — the functions every
   per-subdirectory `CMakeLists.txt` actually calls:
-  `diagham_add_library()` and `diagham_add_program()`. Read this if a
-  build target isn't showing up or is linking against the wrong
-  libraries.
+  `diagham_add_library()`, `diagham_add_programs_in_directory()` (core,
+  FQHE, FTI) and `diagham_add_programs()` (Spin, QuantumDots, from
+  `bin_PROGRAMS`). Read this if a build target isn't showing up or is
+  linking against the wrong libraries. External libraries are attached
+  to the `diagham_external_deps` interface target in `CMakeLists.txt`,
+  not here.
 - `cmake/verify_build.sh` — the 79-check build-equivalence suite. Run
   this after any build-system change; see `AGENTS.md`'s "Locked facts"
   before touching anything it checks.
+
+## "I want to install DiagHam or use it as a library"
+
+- `cmake/DiagHamInstall.cmake` — install layout (`bin/`,
+  `lib/diagham/`, `include/diagham/`, `lib/cmake/DiagHam/`), the
+  `Runtime`/`Development` components, and the `DiagHam::DiagHam`
+  umbrella target.
+- `cmake/DiagHamConfig.cmake.in` — what `find_package(DiagHam)` runs.
+- `tests/consumer/` — a minimal downstream project, built by the
+  `install.find_package_consumer` test.
+
+## "I want to run or add tests"
+
+- `TESTING.md` — what the ctest suite checks, labels, and how to add a
+  golden.
+- `tests/CMakeLists.txt` — every test registration.
+- `tests/check_spectrum.cc` — the spectrum comparison tool.
+- `scripts_cmake/ci.sh` — the CI pipeline (pinned upstream revision,
+  overlay, configure, build, ctest), called by both
+  `.github/workflows/ci.yml` and `.gitlab-ci.yml`.
 
 ## "I want to add or change a dependency (LAPACK, MPI, GSL, MKL, ...)"
 
@@ -33,10 +64,10 @@ that.
 - `cmake/Find*.cmake` — one file per optional dependency not covered by
   CMake's own bundled Find modules (`FindGSL.cmake`, `FindMKL.cmake`,
   `FindNAG.cmake`, `FindMPC.cmake`, `FindMPFR.cmake`, `FindGMP.cmake`,
-  `FindFFTW3.cmake`, `FindDLR.cmake`). Only `FindGSL.cmake` and
-  `FindMKL.cmake` are currently wired into `CMakeLists.txt` — the rest
-  are staged for when their dependency is actually enabled (see
-  `MIGRATION_ROADMAP.md` for why they're present but unused).
+  `FindFFTW3.cmake`, `FindDLR.cmake`). `FindGSL`, `FindMKL`, `FindGMP`
+  and `FindFFTW3` are wired into `CMakeLists.txt`; `FindNAG`, `FindMPC`,
+  `FindMPFR` and `FindDLR` are staged but unused (DiagHam's
+  `configure.ac` has no flag for them).
 - `cmake/config_ac.h.in` — the generated config header template. A new
   `HAVE_<X>` needs a `#cmakedefine HAVE_<X>` line here, matching the
   `set(HAVE_<X> 1)` pattern in `CMakeLists.txt` (never inject the
@@ -46,9 +77,12 @@ that.
 
 ## "I want to add a new source file / new program"
 
-Nothing to edit for a new `.cc` in an existing `Programs/` directory —
-`diagham_add_programs_in_directory()` in
-`cmake/DiagHamHelpers.cmake` globs `*.cc` automatically. For a new
+Nothing to edit for a new `.cc` in an existing core, FQHE or FTI
+`Programs/` directory — `diagham_add_programs_in_directory()` in
+`cmake/DiagHamHelpers.cmake` globs `*.cc` automatically. Spin and
+QuantumDots programs follow their `Makefile.am` `bin_PROGRAMS` list
+(those directories hold sources upstream deliberately doesn't build), so
+add the program there and re-run `scripts_cmake/overlay.py`. For a new
 *library* source file or a new subdirectory:
 
 - `scripts_cmake/extract_autotools.py` — regenerate the per-subdirectory

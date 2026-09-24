@@ -1,0 +1,46 @@
+# DiagHamConfig.cmake: package configuration for find_package(DiagHam)
+#
+# Provides the imported target DiagHam::DiagHam (headers, compile
+# definitions, every DiagHam static library and its external dependencies).
+#
+# Also sets, for downstream feature checks:
+#   DiagHam_HAS_FQHE, DiagHam_HAS_FTI, DiagHam_HAS_SPIN,
+#   DiagHam_HAS_QUANTUMDOTS, DiagHam_HAS_LAPACK, DiagHam_HAS_MPI,
+#   DiagHam_HAS_GSL, DiagHam_HAS_GMP, DiagHam_HAS_FFTW, DiagHam_HAS_BZ2,
+#   DiagHam_HAS_SCALAPACK
+
+@PACKAGE_INIT@
+
+set(DiagHam_HAS_FQHE        @DIAGHAM_BUILD_FQHE@)
+set(DiagHam_HAS_FTI         @DIAGHAM_BUILD_FTI@)
+set(DiagHam_HAS_SPIN        @DIAGHAM_BUILD_SPIN@)
+set(DiagHam_HAS_QUANTUMDOTS @DIAGHAM_BUILD_QUANTUMDOTS@)
+set(DiagHam_HAS_SMP         @DIAGHAM_USE_SMP@)
+set(DiagHam_HAS_LAPACK      @DIAGHAM_USE_LAPACK@)
+set(DiagHam_HAS_MPI         @DIAGHAM_USE_MPI@)
+set(DiagHam_HAS_GSL         @DIAGHAM_USE_GSL@)
+set(DiagHam_HAS_GMP         @DIAGHAM_USE_GMP@)
+set(DiagHam_HAS_FFTW        @DIAGHAM_USE_FFTW@)
+set(DiagHam_HAS_BZ2         @DIAGHAM_USE_BZ2@)
+set(DiagHam_HAS_SCALAPACK   @DIAGHAM_USE_SCALAPACK@)
+
+# Imported targets referenced by DiagHam::DiagHam's link interface.
+include(CMakeFindDependencyMacro)
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}")
+if(DiagHam_HAS_SMP)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_dependency(Threads)
+endif()
+if(DiagHam_HAS_MPI)
+    find_dependency(MPI COMPONENTS CXX)
+endif()
+if(DiagHam_HAS_BZ2)
+    find_dependency(BZip2)
+endif()
+if(DiagHam_HAS_SCALAPACK)
+    find_package(scalapack CONFIG QUIET)
+endif()
+
+include("${CMAKE_CURRENT_LIST_DIR}/DiagHamTargets.cmake")
+
+check_required_components(DiagHam)

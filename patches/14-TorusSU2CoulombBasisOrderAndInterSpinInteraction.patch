@@ -1,0 +1,396 @@
+--- a/FQHE/src/Hamiltonian/ParticleOnTorusCoulombWithSpinHamiltonian.cc
++++ b/FQHE/src/Hamiltonian/ParticleOnTorusCoulombWithSpinHamiltonian.cc
+@@ -112,6 +112,11 @@
+   delete[] this->M1Value;
+   delete[] this->M2Value;
+   delete[] this->M3Value;
++  delete[] this->InterSpinInteractionFactors;
++  delete[] this->InterSpinM1Value;
++  delete[] this->InterSpinM2Value;
++  delete[] this->InterSpinM3Value;
++  delete[] this->InterSpinM4Value;
+   if (this->FastMultiplicationFlag == true)
+     {
+       for (int i = 0; i < this->Particles->GetHilbertSpaceDimension(); ++i)
+@@ -133,6 +138,11 @@
+ void ParticleOnTorusCoulombWithSpinHamiltonian::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
+ {
+   delete[] this->InteractionFactors;
++  delete[] this->InterSpinInteractionFactors;
++  delete[] this->InterSpinM1Value;
++  delete[] this->InterSpinM2Value;
++  delete[] this->InterSpinM3Value;
++  delete[] this->InterSpinM4Value;
+   if (this->FastMultiplicationFlag == true)
+     {
+       for (int i = 0; i < this->Particles->GetHilbertSpaceDimension(); ++i)
+@@ -284,7 +294,6 @@
+       int m3;
+       int m4;
+       double TmpInteraction;
+-      double TmpInterLayerInteraction;
+       int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;
+       for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
+ 	{
+@@ -293,7 +302,6 @@
+ 	  m3 = this->M3Value[j];
+ 	  m4 = this->M4Value[j];
+ 	  TmpInteraction = this->InteractionFactors[j];
+-	  TmpInterLayerInteraction = this->InterLayerInteractionFactors[j];
+ 	  for (int i = firstComponent; i < LastComponent; ++i)
+ 	    {
+ 	      Index = this->Particles->AduAduAuAu(i, m1, m2, m3, m4, Coefficient);
+@@ -302,18 +310,6 @@
+ 	      Index = this->Particles->AddAddAdAd(i, m1, m2, m3, m4, Coefficient);
+ 	      if (Index < this->Particles->GetHilbertSpaceDimension())
+ 		vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+-	      Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
+-	      if (Index < this->Particles->GetHilbertSpaceDimension())
+-		vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
+-	      Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
+-	      if (Index < this->Particles->GetHilbertSpaceDimension())
+-		vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
+-	      Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
+-	      if (Index < this->Particles->GetHilbertSpaceDimension())
+-		vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
+-	      Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
+-	      if (Index < this->Particles->GetHilbertSpaceDimension())
+-		vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
+ 	    }
+ 	}
+       m1 = this->M1Value[ReducedNbrInteractionFactors];
+@@ -321,7 +317,6 @@
+       m3 = this->M3Value[ReducedNbrInteractionFactors];
+       m4 = this->M4Value[ReducedNbrInteractionFactors];
+       TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
+-      TmpInterLayerInteraction = this->InterLayerInteractionFactors[ReducedNbrInteractionFactors];
+       for (int i = firstComponent; i < LastComponent; ++i)
+ 	{
+ 	  Index = this->Particles->AduAduAuAu(i, m1, m2, m3, m4, Coefficient);
+@@ -330,21 +325,23 @@
+ 	  Index = this->Particles->AddAddAdAd(i, m1, m2, m3, m4, Coefficient);
+ 	  if (Index < this->Particles->GetHilbertSpaceDimension())
+ 	    vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
+-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
+-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
+-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
+ 	  this->Particles->SumAduAu(i, Coefficient);
+ 	  vDestination[i] += (Shift + 2.0 * this->MagneticG * Coefficient) * vSource[i];
+ 	}
++      for (int j = 0; j < this->NbrInterSpinInteractionFactors; ++j) 
++	{
++	  m1 = this->InterSpinM1Value[j];
++	  m2 = this->InterSpinM2Value[j];
++	  m3 = this->InterSpinM3Value[j];
++	  m4 = this->InterSpinM4Value[j];
++	  TmpInteraction = this->InterSpinInteractionFactors[j];
++	  for (int i = firstComponent; i < LastComponent; ++i)
++	    {
++	      Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
++	      if (Index < this->Particles->GetHilbertSpaceDimension())
++		vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
++	    }
++	}
+     }
+   else
+     {
+@@ -437,7 +434,6 @@
+       this->M3Value = new int [Pos];
+       this->M4Value = new int [Pos];
+       this->InteractionFactors = new double [Pos];
+-      this->InterLayerInteractionFactors = new double [Pos];
+       cout << "nbr interaction = " << Pos << endl;
+       Pos = 0;
+       MaxCoefficient *= MACHINE_PRECISION;
+@@ -456,11 +452,6 @@
+ 		  if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
+ 		    {
+ 		      this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
+-		      this->InterLayerInteractionFactors[this->NbrInteractionFactors]
+-			= (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
+-			   + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, LayerSeparation)
+-			   - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, LayerSeparation)
+-			   - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, LayerSeparation));
+ 		      this->M1Value[this->NbrInteractionFactors] = m1;
+ 		      this->M2Value[this->NbrInteractionFactors] = m2;
+ 		      this->M3Value[this->NbrInteractionFactors] = m3;
+@@ -521,7 +512,6 @@
+       this->M3Value = new int [Pos];
+       this->M4Value = new int [Pos];
+       this->InteractionFactors = new double [Pos];
+-      this->InterLayerInteractionFactors = new double [Pos];
+       cout << "nbr interaction = " << Pos << endl;
+       Pos = 0;
+       MaxCoefficient *= MACHINE_PRECISION;
+@@ -540,32 +530,6 @@
+ 		  if (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
+ 		    {
+ 		      this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
+-		      if (m3 > m4)
+-			{
+-			  if (m1 != m2)
+-			    {
+-			      this->InterLayerInteractionFactors[this->NbrInteractionFactors] 
+-				= (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
+-				   + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, LayerSeparation)
+-				   + this->EvaluateInteractionCoefficient(m1, m2, m4, m3, LayerSeparation)
+-				   + this->EvaluateInteractionCoefficient(m2, m1, m3, m4, LayerSeparation));
+-			    }
+-			  else
+-			    this->InterLayerInteractionFactors[this->NbrInteractionFactors] 
+-			      = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
+-				 + this->EvaluateInteractionCoefficient(m1, m2, m4, m3, LayerSeparation));
+-			}
+-		      else
+-			if (m3 == m4)
+-			  {
+-			    if (m1 != m2)
+-			      this->InterLayerInteractionFactors[this->NbrInteractionFactors]
+-				= (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
+-				   + this->EvaluateInteractionCoefficient(m2, m1, m3, m4, LayerSeparation));
+-			    else
+-			      this->InterLayerInteractionFactors[this->NbrInteractionFactors]
+-				= this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation);
+-			  }
+ 		      this->M1Value[this->NbrInteractionFactors] = m1;
+ 		      this->M2Value[this->NbrInteractionFactors] = m2;
+ 		      this->M3Value[this->NbrInteractionFactors] = m3;
+@@ -584,8 +548,71 @@
+ 	    }
+     }
+   cout << "nbr interaction = " << this->NbrInteractionFactors << endl;
+-  cout << "====================================" << endl;
+   delete[] TmpCoefficient;
++
++  // inter-spin (up-down) interaction. Summing the density-density interaction over both spin species gives
++  //   H_ud = 2 sum_{m1,m2,m3,m4} V(m1,m2,m3,m4) a^+_{u,m1} a^+_{d,m2} a_{d,m3} a_{u,m4}
++  // where V(m1,m2,m3,m4) = EvaluateInteractionCoefficient(m1,m2,m3,m4) (m1 <-> m4 and m2 <-> m3 being the same particle).
++  // Up and down particles are distinguishable, so no (anti)symmetrization over m1 <-> m2 or m3 <-> m4 must be done
++  // and the m1 == m2 or m3 == m4 terms must be kept. AduAddAuAd(m1, m2, n1, n2) = a^+_{u,m1} a^+_{d,m2} a_{u,n1} a_{d,n2},
++  // hence n1 = m4 and n2 = m3, with an extra minus sign for fermions from the reordering of the annihilation operators.
++  double InterSpinSign = 2.0;
++  if (this->Particles->GetParticleStatistic() == ParticleOnTorusWithSpin::FermionicStatistic)
++    InterSpinSign = -2.0;
++  TmpCoefficient = new double [this->MaxMomentum * this->MaxMomentum * this->MaxMomentum];
++  MaxCoefficient = 0.0;
++  Pos = 0;
++  for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
++    for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
++      for (int n1 = 0; n1 < this->MaxMomentum; ++n1)
++	{
++	  int n2 = m1 + m2 - n1;
++	  if (n2 < 0)
++	    n2 += this->MaxMomentum;
++	  else
++	    if (n2 >= this->MaxMomentum)
++	      n2 -= this->MaxMomentum;
++	  TmpCoefficient[Pos] = InterSpinSign * this->EvaluateInteractionCoefficient(m1, m2, n2, n1, this->LayerSeparation);
++	  if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
++	    MaxCoefficient = fabs(TmpCoefficient[Pos]);
++	  ++Pos;
++	}
++  MaxCoefficient *= MACHINE_PRECISION;
++  this->NbrInterSpinInteractionFactors = 0;
++  for (int i = 0; i < Pos; ++i)
++    if (fabs(TmpCoefficient[i]) > MaxCoefficient)
++      ++this->NbrInterSpinInteractionFactors;
++  this->InterSpinM1Value = new int [this->NbrInterSpinInteractionFactors];
++  this->InterSpinM2Value = new int [this->NbrInterSpinInteractionFactors];
++  this->InterSpinM3Value = new int [this->NbrInterSpinInteractionFactors];
++  this->InterSpinM4Value = new int [this->NbrInterSpinInteractionFactors];
++  this->InterSpinInteractionFactors = new double [this->NbrInterSpinInteractionFactors];
++  this->NbrInterSpinInteractionFactors = 0;
++  Pos = 0;
++  for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
++    for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
++      for (int n1 = 0; n1 < this->MaxMomentum; ++n1)
++	{
++	  if (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
++	    {
++	      int n2 = m1 + m2 - n1;
++	      if (n2 < 0)
++		n2 += this->MaxMomentum;
++	      else
++		if (n2 >= this->MaxMomentum)
++		  n2 -= this->MaxMomentum;
++	      this->InterSpinM1Value[this->NbrInterSpinInteractionFactors] = m1;
++	      this->InterSpinM2Value[this->NbrInterSpinInteractionFactors] = m2;
++	      this->InterSpinM3Value[this->NbrInterSpinInteractionFactors] = n1;
++	      this->InterSpinM4Value[this->NbrInterSpinInteractionFactors] = n2;
++	      this->InterSpinInteractionFactors[this->NbrInterSpinInteractionFactors] = TmpCoefficient[Pos];
++	      ++this->NbrInterSpinInteractionFactors;
++	    }
++	  ++Pos;
++	}
++  delete[] TmpCoefficient;
++  cout << "nbr inter-spin interaction = " << this->NbrInterSpinInteractionFactors << endl;
++  cout << "====================================" << endl;
+ }
+ 
+ // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
+@@ -796,30 +823,22 @@
+ 	      ++memory;
+ 	      ++this->NbrInteractionPerComponent[i];
+ 	    }
++	}    
++    }
++  for (int j = 0; j < this->NbrInterSpinInteractionFactors; ++j) 
++    {
++      m1 = this->InterSpinM1Value[j];
++      m2 = this->InterSpinM2Value[j];
++      m3 = this->InterSpinM3Value[j];
++      m4 = this->InterSpinM4Value[j];
++      for (int i = 0; i < this->Particles->GetHilbertSpaceDimension(); ++i)
++	{
+ 	  Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
+ 	  if (Index < this->Particles->GetHilbertSpaceDimension())
+ 	    {
+ 	      ++memory;
+ 	      ++this->NbrInteractionPerComponent[i];
+ 	    }
+-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    {
+-	      ++memory;
+-	      ++this->NbrInteractionPerComponent[i];
+-	    }
+-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    {
+-	      ++memory;
+-	      ++this->NbrInteractionPerComponent[i];
+-	    }
+-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    {
+-	      ++memory;
+-	      ++this->NbrInteractionPerComponent[i];
+-	    }
+ 	}    
+     }
+   memory = ((sizeof (int*) + sizeof (int) + 2 * sizeof(double*)) * this->Particles->GetHilbertSpaceDimension() + 
+@@ -870,32 +889,18 @@
+ 	      TmpCoefficientArray[Pos] = Coefficient * this->InteractionFactors[j];
+ 	      ++Pos;
+ 	    }
++	}
++      for (int j = 0; j < this->NbrInterSpinInteractionFactors; ++j) 
++	{
++	  m1 = this->InterSpinM1Value[j];
++	  m2 = this->InterSpinM2Value[j];
++	  m3 = this->InterSpinM3Value[j];
++	  m4 = this->InterSpinM4Value[j];
+ 	  Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
+ 	  if (Index < this->Particles->GetHilbertSpaceDimension())
+ 	    {
+ 	      TmpIndexArray[Pos] = Index;
+-	      TmpCoefficientArray[Pos] = Coefficient * this->InterLayerInteractionFactors[j];
+-	      ++Pos;
+-	    }
+-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    {
+-	      TmpIndexArray[Pos] = Index;
+-	      TmpCoefficientArray[Pos] = -Coefficient * this->InterLayerInteractionFactors[j];
+-	      ++Pos;
+-	    }
+-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    {
+-	      TmpIndexArray[Pos] = Index;
+-	      TmpCoefficientArray[Pos] = -Coefficient * this->InterLayerInteractionFactors[j];
+-	      ++Pos;
+-	    }
+-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
+-	  if (Index < this->Particles->GetHilbertSpaceDimension())
+-	    {
+-	      TmpIndexArray[Pos] = Index;
+-	      TmpCoefficientArray[Pos] = Coefficient * this->InterLayerInteractionFactors[j];
++	      TmpCoefficientArray[Pos] = Coefficient * this->InterSpinInteractionFactors[j];
+ 	      ++Pos;
+ 	    }
+ 	}
+--- a/FQHE/src/Hamiltonian/ParticleOnTorusCoulombWithSpinHamiltonian.h
++++ b/FQHE/src/Hamiltonian/ParticleOnTorusCoulombWithSpinHamiltonian.h
+@@ -77,8 +77,6 @@
+ 
+   // array containing all interaction factors 
+   double* InteractionFactors;
+-  // array containing all interaction factors 
+-  double* InterLayerInteractionFactors;  
+   // number of interaction factors
+   int NbrInteractionFactors;
+   // arrays for indices attached to each interaction factor
+@@ -87,6 +85,16 @@
+   int* M3Value;
+   int* M4Value;
+ 
++  // array containing all inter-spin (up-down) interaction factors, to be used with AduAddAuAd
++  double* InterSpinInteractionFactors;
++  // number of inter-spin interaction factors
++  int NbrInterSpinInteractionFactors;
++  // arrays for indices attached to each inter-spin interaction factor
++  int* InterSpinM1Value;
++  int* InterSpinM2Value;
++  int* InterSpinM3Value;
++  int* InterSpinM4Value;
++
+   // flag for fast multiplication algorithm
+   bool FastMultiplicationFlag;
+   // number of non-null term in the hamiltonian for each state
+--- a/FQHE/src/HilbertSpace/FermionOnTorusWithSpinNew.cc
++++ b/FQHE/src/HilbertSpace/FermionOnTorusWithSpinNew.cc
+@@ -1849,12 +1849,17 @@
+     }
+ 
+   // enter recursion, here:
+-  // put two particles
+-  long TmpPos = this->RawGenerateStates(nbrFermions - 2, lzMax - 1, totalMomentum + (2 * lzMax), totalSpinUp - 1,  pos);
+-  unsigned long Mask = 0x3ul << (lzMax << 1);
++  // states have to be generated in increasing order of their binary representation (within each
++  // highest bit sector), as assumed by GenerateLookUpTable and FindStateIndex
++  // do not put any particles
++  long TmpPos = this->RawGenerateStates(nbrFermions, lzMax - 1, totalMomentum, totalSpinUp, pos);
++  pos = TmpPos;
++  // put one particle with spin down
++  TmpPos = this->RawGenerateStates(nbrFermions - 1, lzMax - 1, totalMomentum + lzMax, totalSpinUp,  pos);
++  unsigned long Mask = 0x1ul << (lzMax << 1);
+   for (; pos < TmpPos; ++pos)
+     {
+-      this->StateHighestBit[pos] = (lzMax << 1)+1;
++      this->StateHighestBit[pos] = (lzMax << 1);
+       this->StateDescription[pos] |= Mask;
+     }
+   // put one particle with spin up
+@@ -1865,17 +1870,15 @@
+       this->StateHighestBit[pos] = (lzMax << 1)+1;
+       this->StateDescription[pos] |= Mask;
+     }
+-  // put one particle with spin down
+-  TmpPos = this->RawGenerateStates(nbrFermions - 1, lzMax - 1, totalMomentum + lzMax, totalSpinUp,  pos);
+-  Mask = 0x1ul << (lzMax << 1);
++  // put two particles
++  TmpPos = this->RawGenerateStates(nbrFermions - 2, lzMax - 1, totalMomentum + (2 * lzMax), totalSpinUp - 1,  pos);
++  Mask = 0x3ul << (lzMax << 1);
+   for (; pos < TmpPos; ++pos)
+     {
+-      this->StateHighestBit[pos] = (lzMax << 1);
++      this->StateHighestBit[pos] = (lzMax << 1)+1;
+       this->StateDescription[pos] |= Mask;
+     }
+-  // do not put any particles
+-  return this->RawGenerateStates(nbrFermions, lzMax - 1, totalMomentum, totalSpinUp, pos);  
+-  
++  return pos;
+ }
+ 
+ // generate look-up table associated to current Hilbert space

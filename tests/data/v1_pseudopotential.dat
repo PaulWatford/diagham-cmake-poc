@@ -1,0 +1,4 @@
+# Pure V1 pseudopotential (Haldane). The Laughlin nu=1/3 state is its exact,
+# unique zero-energy ground state at 2S = 3(N-1) on the sphere, and a
+# 3-fold degenerate zero-energy multiplet at Nphi = 3N on the torus.
+Pseudopotentials = 0 1

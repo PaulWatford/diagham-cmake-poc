@@ -24,91 +24,102 @@ those pieces into a CMake build and verifies that the result is correct.
 
 ```
 .
-|---- CMakeLists.txt              top-level, ~230 lines
+|---- CMakeLists.txt              top-level build: options, dependencies, modules
+|---- CMakePresets.json           default / core / lapack / full / hpc / mkl / debug
 |---- cmake/
 |   |---- DiagHamHelpers.cmake          helper macros (diagham_add_library, ...)
+|   |---- DiagHamInstall.cmake          install rules + find_package(DiagHam) export
+|   |---- DiagHamConfig.cmake.in        package config template
 |   |---- ApplyUpstreamPatches.cmake    applies upstream-bug patches at configure time
 |   |---- config_ac.h.in                autoconf-equivalent header template
-|   +---- verify_build.sh               79-check build-equivalence verification script
+|   |---- Find*.cmake                   GMP, FFTW3, GSL, MKL, ... find modules
+|   +---- verify_build.sh               CMake-vs-autotools build-parity script
 |---- scripts_cmake/
-|   +---- extract_autotools.py     reads upstream Makefile.am, emits CMakeLists.txt
+|   |---- overlay.py               lays this build over an upstream DiagHam tree
+|   |---- extract_autotools.py     reads upstream Makefile.am, emits CMakeLists.txt
+|   +---- ci.sh                    the CI pipeline (GitHub Actions and GitLab CI call it)
+|---- tests/                       ctest suite: physics goldens, smoke, install (TESTING.md)
 |---- patches/
-|   |---- PATCHES.md                11 upstream-bug patches, with audit trail
-|   |---- 01-FQHECylinderDensity.patch
-|   |---- 02-FQHECylinderWithSU2SpinDensity.patch
-|   |---- 03-FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity.patch
-|   |---- 04-FCIHofstadterModelCompositeFermions.patch
-|   |---- 05-HubbardSquareLatticeModelJ2S2.patch
-|   |---- 06-FCIDiceLatticeModel.patch
-|   |---- 07-FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition.patch
-|   |---- 08-IEEE754PrecisionForEigenvalueOutput.patch
-|   |---- 09-FCIHofstadterCorrelationPrecision.patch
+|   |---- PATCHES.md                15 upstream-bug patches, with audit trail
+|   +---- 01-...15-*.patch
 |---- benchmarks/
 |   |---- BENCHMARK.md             physics verification log + independent Python ED
 |   |---- hubbard_ed.py            100-line independent reference implementation
-|   |---- fermions_hubbard_square_x_2_y_2*.dat.txt   (saved 2x2 DiagHam output)
-|   +---- fermions_hubbard_square_x_2_y_4*.dat.txt   (saved 2x4 DiagHam output)
+|   +---- fermions_hubbard_square_x_2_y_{2,4}*.dat.txt   (saved DiagHam output)
+|---- .github/workflows/ci.yml     GitHub Actions
+|---- .gitlab-ci.yml               same pipeline for the Kent GitLab move
+|---- CONFIGURE_FLAGS.md           every configure.ac flag -> its CMake option
+|---- HPC.md                       cluster build recipe
+|---- TESTING.md                   what ctest checks and how to add a golden
 |---- DEFERRED.md                  1 excluded file: what it does, what's missing
+|---- BUG_torus_su2_coulomb.md     spinful torus Coulomb defect report
 |---- HUBBARD_BENCHMARK.md         Hubbard ED demonstration with physics output
 +---- README.md                    this file
 ```
 
-When the extract script is run against an upstream DiagHam checkout it
-generates a set of per-subdirectory `CMakeLists.txt` files under
-`Base/src/`, `src/`, and `FTI/src/` (**70 files** as of a fresh run this
-session -- re-run `python3 scripts_cmake/extract_autotools.py` to
-regenerate; this number tracks upstream's own `Makefile.am` count and
-drifts as upstream changes, so it's not pinned here as a fact to keep in
-sync by hand. *Corrected 22/09, audited by a second Claude session: this
-line previously said "47 files," confirmed stale by actually running the
-script.*). Those generated files live in the DiagHam tree, not in this
-repository.
+`scripts_cmake/overlay.py` copies this repository's build files into an
+upstream DiagHam checkout and runs `extract_autotools.py`, which generates
+the per-subdirectory `CMakeLists.txt` files under `Base/src/`, `src/`,
+`FQHE/src/`, `FTI/src/`, `Spin/src/` and `QuantumDots/src/` from
+upstream's own `Makefile.am` files (88 files against the pinned upstream
+revision; the number tracks upstream). Those generated files live in the
+DiagHam tree, not in this repository.
 
 ## What works
 
 ```
-cd /path/to/DiagHam
-cmake -B build .                  # patches apply at configure time
-cmake --build build -j4
-build/cmake/verify_build.sh
+git clone https://github.com/guysoft/DiagHam.git
+python3 scripts_cmake/overlay.py DiagHam
+cd DiagHam
+cmake --preset default            # patches apply at configure time
+cmake --build --preset default -j4
+ctest --preset default            # 572 tests: physics goldens, smoke, install
 ```
 
-Current build outcome (with patches applied, default config: no LAPACK,
-SMP enabled, FQHE and FTI modules enabled):
+`scripts_cmake/ci.sh` does exactly this against a pinned upstream
+revision (`ed78a30`, the mirror's head) and is what CI runs.
 
-- **50 of 50 static libraries** build cleanly (Base/src + src + FQHE/src + FTI/src)
-- **473 of 474 programs** build cleanly. 1 is explicitly skipped at
-  configure time with documented rationale, see `DEFERRED.md`.
-- The verification script's per-library symbol-count checks pass on the
-  core (Base/src + src) libraries where they're meaningful.
+Current outcome with the `default` preset (every module on, SMP, no
+optional libraries), GCC 13, Ubuntu 24.04:
+
+- **61 of 61 static libraries** build (Base/src, src, FQHE, FTI, Spin,
+  QuantumDots).
+- **561 programs** build: 473 core/FQHE/FTI + 69 Spin + 19 QuantumDots.
+  1 legacy program is explicitly skipped (`DEFERRED.md`). Bringing Spin
+  and QuantumDots in surfaced two more upstream compile defects and one
+  defect in this PoC's own patch 08, now fixed (patches 12, 13; see
+  `patches/PATCHES.md`, "Class H").
+- **572 of 572 ctest tests pass**, including 13 physics tests with
+  analytic, independently computed, or cross-implementation answers
+  across Hubbard, FQHE (sphere and torus Laughlin zero modes, spinful
+  torus Coulomb) and Spin (Heisenberg rings), an independent Python ED
+  cross-check, `--help` on every program, and a `find_package(DiagHam)`
+  downstream-consumer build. See `TESTING.md`.
+- **The spinful torus Coulomb defect is fixed** (patch 14, pending
+  maintainer review): two independent upstream bugs, one in the basis
+  ordering behind `FindStateIndex` and one that dropped same-orbital
+  up-down interaction terms, so every `FQHETorusFermionsWithSpin` result
+  was wrong for N >= 3 and every unpolarised one even for N = 2. After
+  the fix the program agrees with the spinless program and with the
+  independent `FQHETorusFermionsWithSpinAndTranslations` to 1e-10-1e-12
+  on full spectra. The ctest suite also caught an uninitialised-member
+  bug in `SpinChainHamiltonianWithTranslations` (patch 15).
+- The same suite passes with the `full` (LAPACK, GSL, GMP, FFTW3, bzip2)
+  and `hpc` (MPI, LAPACK, ScaLAPACK, GSL) presets, and the `core`
+  preset builds and passes with Clang.
 - Hubbard 2x2 U=4 benchmark: ground state `-5.6568542494923806`, a
   bit-identical (0 ULP) match to the analytical answer
-  `-4√2 = -5.656854249492381...` (see `benchmarks/BENCHMARK.md` for the
-  full verification log including an independent Python ED cross-check).
-  *(Corrected 22/09: this line previously quoted the pre-patch-08 stale
-  value `-5.6568542494924` alongside a parenthetical claiming a
-  post-patch match, which was self-contradictory; see the
-  "Corrected 22/09" note further down this file for the underlying
-  fix.)*
+  `-4√2 = -5.656854249492381...`, now enforced by
+  `physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2`.
+- `cmake --install` gives `bin/`, `lib/diagham/`, `include/diagham/`
+  and `lib/cmake/DiagHam/`; downstream projects use
+  `find_package(DiagHam)` and link `DiagHam::DiagHam`.
 
-If `DIAGHAM_BUILD_FQHE=OFF` and `DIAGHAM_BUILD_FTI=OFF`, the build
-reduces to the original core-only scope (32 libraries + 34 programs).
-`verify_build.sh` runs against that scope, but two things about it are
-overstated elsewhere in this repo and corrected here: there is no
-`ctest`/`enable_testing()` wiring anywhere in the CMake build (confirmed
-by grepping `CMakeLists.txt` and `cmake/`; `ctest` itself reports 0
-tests), and the script's checks are existence checks, per-library
-`nm`-based text-symbol *counts*, and a single program's stdout
-comparison -- not a byte-for-byte or binary comparison of build
-artifacts, despite `AGENTS.md` and elsewhere describing it that way. The
-exact number of checks the script reports depends on the autotools
-comparison build it's pointed at, which this session could not
-reproduce independently (`autoconf`/`automake`/`libtool` are not
-installed in this sandbox and there's no root to add them), so the
-"79" figure quoted elsewhere in this repo is not independently confirmed
-here -- see `AGENTS.md`'s "locked facts" section, which should be
-treated as unverified pending someone actually running both builds
-side by side.
+`cmake --preset core` reduces the build to the original core-only scope.
+`cmake/verify_build.sh` (CMake vs autotools build parity: library
+existence and `nm` symbol counts) is separate from ctest and still needs
+an autotools build to compare against; the "79 checks" figure quoted in
+`AGENTS.md` is still not independently confirmed (see the note there).
 
 ## Why CMake (and what the autotools build does today)
 
@@ -117,15 +128,16 @@ The upstream `configure.ac` has **36 `AC_ARG_ENABLE` / `AC_ARG_WITH` flags**:
 `--enable-gmp`, `--enable-mpack`, `--enable-fftw`, `--enable-scalapack`,
 `--with-blas-libs=...`, and so on. Each flag is some cluster admin's
 hard-won dependency chain. Any CMake migration must preserve every one of
-them, this PoC implements the three most-used (`__SMP__`, `__LAPACK__`,
-`__MPI__`) and stubs out the rest, with clear comments showing where the
-others slot in.
+them; `CONFIGURE_FLAGS.md` maps each of the 34 distinct flags to its CMake
+option or standard CMake variable, and `HPC.md` gives the cluster recipe.
 
 The autotools build also relies on two custom Perl scripts
 (`scripts/genmake.pl` and `scripts/genam.pl`) that auto-generate
 `Makefile.am` entries from directory contents. Under CMake, that whole
 layer goes away: adding a new program is just dropping a `.cc` file in the
-relevant Programs directory.
+relevant Programs directory. (Spin and QuantumDots follow their `bin_PROGRAMS`
+list instead, because those directories contain sources upstream
+deliberately doesn't build.)
 
 ## Methodology
 
@@ -146,7 +158,9 @@ The CMake port surfaced **thirteen** long-standing issues in the upstream
 codebase that the autotools build either silently hid or fenced off
 behind broken include paths. Three are pre-existing notes from the
 core-only iteration of this PoC; ten emerged after FQHE and FTI were
-brought into scope.
+brought into scope. More (classes H and I in the table below,
+24/09) came from building Spin and QuantumDots and from the new ctest
+suite, two of them wrong-physics bugs rather than compile errors.
 
 ### Three from the core iteration
 
@@ -173,8 +187,10 @@ brought into scope.
 | F | 1 | `FCIWannierConstruction.cc` (Wannier construction for fractional Chern insulators) references public getter methods that were never defined on parent Hilbert-space classes | Patched (patch 10); adds 4 inline getters to existing classes |
 | G | 1 | `FCIDiceLatticeModel.cc` (Dice-lattice \|C\|=2 FCI) had unwired tight-binding parameters, depended on an abandoned stub Hilbert-space class, and on 3 classes orphaned from every Makefile.am | Patched (patch 11); wires t1/t2/l1/l2 from the Kagome sibling, routes to the completed SU2 boson class, recovers the 3 orphaned classes via allowlisted build-system recovery |
 | - | 1 | `HAVE_FTI` macro not defined in our CMake config | Fixed in `cmake/config_ac.h.in` |
+| H | 2 (+1) | Found once Spin and QuantumDots were built (24/09): a C++11-invalid `ostream << ostream&` in `ThreeDTwoParticles.cc` that broke every QuantumDots program; 22 more ungated `LapackDiagonalize` calls in 9 Spin programs; and a misplaced `#include <limits>` in this PoC's own patch 08 | Patches 12, 13; patch 08 corrected |
+| I | 2 | Wrong physics / undefined behaviour caught by the ctest suite (24/09): the spinful torus Coulomb defect (basis order + up-down interaction) and an uninitialised `SpinChainHamiltonianWithTranslations` | Patches 14, 15 (need maintainer physics review) |
 
-11 are patched in `patches/` with full audit trails in
+15 are patched in `patches/` with full audit trails in
 [`patches/PATCHES.md`](patches/PATCHES.md). 1 is deferred to the
 maintainer's review (a legacy duplicate with a canonical replacement), documented in [`DEFERRED.md`](DEFERRED.md) with
 grep-verified evidence: file sizes, inline TODO/FIXME markers,
@@ -246,42 +262,36 @@ static linking) and what, if anything, changes as a result.
 
 ## Beyond this iteration
 
-The current PoC covers the core build chain plus the FQHE and FTI
-subsets, with 11 patches for surfaced upstream issues and one file
-excluded from the build (recommended for upstream removal). The following
-remain out of scope:
+Still open, roughly in order of importance:
 
-- **Spin and QuantumDots modules.** Same pattern as FQHE/FTI, just more
-  source files. The pattern is established and the migration extends
-  trivially.
-- **Optional features beyond pthread.** LAPACK/BLAS, MPI, GSL, GMP,
-  FFTW, MPACK, ScaLAPACK each need a `find_package()` block plus
-  appropriate `target_link_libraries` calls. Stubs are in the
-  top-level CMakeLists.txt with comments showing the pattern.
-  **Note:** turning on `DIAGHAM_USE_LAPACK=ON` currently exposes
-  5000+ further compilation errors inside `src/Matrix/HermitianMatrix.h`
-  (a `doublecomplex` typedef gap unrelated to our patches). LAPACK
-  enablement is its own scoped task.
-- **The 1 remaining deferred file.** Two of the originally-deferred
-  files have since been resolved (patch 10 adds the getter methods that
-  unblock `FCIWannierConstruction`; patch 11 wires the tight-binding
-  parameters and recovers the orphaned classes for `FCIDiceLatticeModel`).
-  The one file left deferred is `QHEFermionsTorusWithSpin`, recommended
-  for upstream removal since `FQHETorusFermionsWithSpin` supersedes it.
-  See `DEFERRED.md` for the full disposition.
-- **Spack/Linux distribution packaging.**
-- **GitHub Actions CI workflow.**
-- **Doxygen documentation extraction.** Every class in DiagHam has a
-  license header and method-level docstring; running Doxygen on the
-  existing tree produces a real API manual with no source changes.
+- **Maintainer review of patches 14 and 15**, which change upstream
+  physics code (the spinful torus Coulomb fix and the spin-chain
+  initialisation fix). Both are verified against independent
+  implementations, but the sign-off is the maintainers'.
+- **Physics sign-off** on the Dice-lattice defaults and the leftover
+  `// IS IT CORRECT?` interaction mapping (patch 11).
+- **Broader goldens**: overlaps, entanglement spectra, FTI/FCI
+  (Chern-insulator) spectra; today's goldens cover Hubbard, Laughlin
+  zero modes and Heisenberg rings.
+- **MPI runtime tests**: the `hpc` preset compiles and links the MPI and
+  ScaLAPACK paths, but no test launches a program under `mpirun`.
+- **Production hosting and history** (Kent GitLab, history-preserving
+  SVN->Git conversion; see `MIGRATION_ROADMAP.md`) and maintainer
+  adoption of the patch series.
+- **Packaging**: Spack / EasyBuild recipes, a container image, a binary
+  cache.
+- **Library API / bindings**: `find_package(DiagHam)` exposes the C++
+  libraries, but there is no curated stable API or Python/Julia binding.
+- **Doxygen documentation extraction.**
 
 ## Build dependencies
 
-- CMake >= 3.16
-- C++11 compiler (gcc, clang, etc.)
-- pthread
+- CMake >= 3.16 (>= 3.21 for `CMakePresets.json`)
+- C++11 compiler (GCC, Clang)
+- pthread, `patch`, Python 3 (overlay and extraction scripts)
 
-Optional: LAPACK, MPI (toggle via `-DDIAGHAM_USE_LAPACK=ON`, `-DDIAGHAM_USE_MPI=ON`).
+Optional: LAPACK/BLAS or MKL, MPI, ScaLAPACK, GSL, GMP, MPACK, FFTW3,
+bzip2 (see `CONFIGURE_FLAGS.md`); numpy for the Python cross-check test.
 
 See [`CHANGELOG.md`](CHANGELOG.md) for what's changed and when.
 

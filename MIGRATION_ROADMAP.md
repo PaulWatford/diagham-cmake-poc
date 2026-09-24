@@ -28,9 +28,11 @@ port; it is explicitly not where the migrated project will live.
 
 **Action for a later step:** once this CMake work is judged ready, it
 needs to be re-hosted (or re-applied) against a Kent GitLab repository,
-not merged into anything on GitHub. Nothing in this PoC assumes GitHub
-specifically (no GitHub Actions, no GitHub-only tooling), so this is a
-hosting/transfer step, not a rework.
+not merged into anything on GitHub. CI is the one host-specific
+piece, and it is kept thin on purpose: the whole pipeline is
+`scripts_cmake/ci.sh`, which `.github/workflows/ci.yml` and an equivalent
+`.gitlab-ci.yml` both just call, so the move is a hosting/transfer step,
+not a rework.
 
 ## 3. Single repository, not split by module
 

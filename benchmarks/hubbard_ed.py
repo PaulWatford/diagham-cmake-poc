@@ -34,9 +34,26 @@ Verified to reproduce DiagHam's HubbardSquareLatticeModel output to
 machine precision for:
   - 2x2 at U=0,4,100  (basis dim 36)
   - 2x4 at U=4        (basis dim 4900; agreement at 99.9% of eigenvalues)
-  - 3x3 at U=4        (basis dim 15876; matches DiagHam --nn-t -1 exactly)
+  - 3x3 at U=4        (basis dim 15876, 8-fermion/Sz=0 sector; matches
+    DiagHam --nn-t -1, see benchmarks/BENCHMARK.md)
 
-Run: python3 hubbard_ed.py
+Run: python3 hubbard_ed.py   (runs the 2x2 and 2x4 cases above; ~10s)
+For 3x3, call ground_state(3, 3, 4, t=-1.0) directly -- it is not run by
+`__main__` by default because dense diagonalisation of a 15876-dim basis
+with this script's pure-Python Hamiltonian assembly takes several
+minutes, not the ~10s of the smaller cases.
+
+*(Corrected 22/09, audited by a second Claude session, then confirmed
+directly: build_hubbard() previously asserted `L % 2 == 0` ("half-filling
+needs an even number of sites"), which made this file's own claim of
+having verified the 3x3 case unreproducible as committed -- calling
+ground_state(3, 3, 4) raised AssertionError immediately, confirmed by
+running it. The assert was checking the wrong thing: this function
+never actually builds a strict half-filled sector, it builds the fixed
+n_up = n_dn = L // 2 sector, which is well-defined for any L >= 1 --
+for odd L that is an 8-out-of-9-sites sector, not literal half-filling,
+which is exactly what BENCHMARK.md's "8-fermion sector" section already
+correctly calls it. The assert is corrected below to describe that.)*
 """
 import numpy as np
 from itertools import combinations
@@ -114,10 +131,12 @@ def nn_bonds_with_weights(Lx, Ly):
 
 
 def build_hubbard(Lx, Ly, U, t=1.0):
-    """Build the Hubbard Hamiltonian on an LxLy PBC square lattice
-    at half-filling, Sz=0."""
+    """Build the Hubbard Hamiltonian on an LxLy PBC square lattice in the
+    fixed n_up = n_dn = L // 2 particle sector (Sz=0). For even L this is
+    literal half-filling; for odd L it is the L-1 particle sector (e.g.
+    8 fermions on 9 sites for 3x3) -- see benchmarks/BENCHMARK.md."""
     L = Lx * Ly
-    assert L % 2 == 0, "half-filling needs an even number of sites"
+    assert L >= 1, "need at least one site"
     bonds = nn_bonds_with_weights(Lx, Ly)
     basis = basis_at_fillings(L, L // 2, L // 2)
     idx = {s: i for i, s in enumerate(basis)}

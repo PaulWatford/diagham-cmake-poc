@@ -668,3 +668,19 @@ applied in-source with no revert/idempotency check beyond the build-tree
 sentinel, which does not help once the *source* tree itself is already
 patched) -- not something this session's fix caused or fixed. Flagged
 here rather than silently left for the next person to rediscover.
+
+## Patch 08: the Spin/QuantumDots portion has never been compile-tested (22/09, audited by a second Claude session)
+
+Patch 08's own file-count breakdown above lists `Spin/src/Programs/`
+(~65 files) and `QuantumDots/src/` (~27 files) among the 447 files it
+touches -- 92 files total. Confirmed by checking `CMakeLists.txt`: there
+is no `add_subdirectory` for `Spin` or `QuantumDots` anywhere in this
+build (`grep` for both returns nothing). Neither module is built by this
+CMake port at all, in any configuration, so the precision-site edits in
+those 92 files have never actually been compiled, let alone run, by
+anything in this repository -- they're verified only by the same
+code-reading review that produced the file-count table above, not by a
+compiler. This isn't a defect in the patch itself (the transformation
+pattern is mechanical and consistent with the other 355 files, which
+have been compiled), it's an honest gap in verification coverage that
+was implicit before and is now explicit.

@@ -55,9 +55,14 @@ those pieces into a CMake build and verifies that the result is correct.
 
 When the extract script is run against an upstream DiagHam checkout it
 generates a set of per-subdirectory `CMakeLists.txt` files under
-`Base/src/`, `src/`, and `FTI/src/` (47 files in total: 1 top-level + 46
-per-subdirectory). Those generated files live in the DiagHam tree, not
-in this repository.
+`Base/src/`, `src/`, and `FTI/src/` (**70 files** as of a fresh run this
+session -- re-run `python3 scripts_cmake/extract_autotools.py` to
+regenerate; this number tracks upstream's own `Makefile.am` count and
+drifts as upstream changes, so it's not pinned here as a fact to keep in
+sync by hand. *Corrected 22/09, audited by a second Claude session: this
+line previously said "47 files," confirmed stale by actually running the
+script.*). Those generated files live in the DiagHam tree, not in this
+repository.
 
 ## What works
 
@@ -76,15 +81,34 @@ SMP enabled, FQHE and FTI modules enabled):
   configure time with documented rationale, see `DEFERRED.md`.
 - The verification script's per-library symbol-count checks pass on the
   core (Base/src + src) libraries where they're meaningful.
-- Hubbard 2x2 U=4 benchmark: ground state `-5.6568542494924`, matching
-  the analytical answer `-4√2 = -5.6568542494923806` (matched to full IEEE-754 double precision after patch 08)
-  (machine precision). See `benchmarks/BENCHMARK.md` for the full
-  verification log including an independent Python ED cross-check.
+- Hubbard 2x2 U=4 benchmark: ground state `-5.6568542494923806`, a
+  bit-identical (0 ULP) match to the analytical answer
+  `-4√2 = -5.656854249492381...` (see `benchmarks/BENCHMARK.md` for the
+  full verification log including an independent Python ED cross-check).
+  *(Corrected 22/09: this line previously quoted the pre-patch-08 stale
+  value `-5.6568542494924` alongside a parenthetical claiming a
+  post-patch match, which was self-contradictory; see the
+  "Corrected 22/09" note further down this file for the underlying
+  fix.)*
 
 If `DIAGHAM_BUILD_FQHE=OFF` and `DIAGHAM_BUILD_FTI=OFF`, the build
-reduces to the original core-only scope (32 libraries + 34 programs)
-that matches `verify_build.sh`'s 79 byte-level checks against the
-autotools build.
+reduces to the original core-only scope (32 libraries + 34 programs).
+`verify_build.sh` runs against that scope, but two things about it are
+overstated elsewhere in this repo and corrected here: there is no
+`ctest`/`enable_testing()` wiring anywhere in the CMake build (confirmed
+by grepping `CMakeLists.txt` and `cmake/`; `ctest` itself reports 0
+tests), and the script's checks are existence checks, per-library
+`nm`-based text-symbol *counts*, and a single program's stdout
+comparison -- not a byte-for-byte or binary comparison of build
+artifacts, despite `AGENTS.md` and elsewhere describing it that way. The
+exact number of checks the script reports depends on the autotools
+comparison build it's pointed at, which this session could not
+reproduce independently (`autoconf`/`automake`/`libtool` are not
+installed in this sandbox and there's no root to add them), so the
+"79" figure quoted elsewhere in this repo is not independently confirmed
+here -- see `AGENTS.md`'s "locked facts" section, which should be
+treated as unverified pending someone actually running both builds
+side by side.
 
 ## Why CMake (and what the autotools build does today)
 

@@ -23,6 +23,34 @@ them:
 If a change affects either number, that is Damage (see below) even if
 every check still reports green.
 
+> **Flagged, not corrected, 22/09 (audited by a second Claude session):**
+> two things about the "79/79" fact above do not currently hold and
+> should be re-verified by whoever next has a real autotools toolchain
+> available, before anyone relies on it as enforced:
+> 1. **There is no `ctest`/`enable_testing()` wiring anywhere in this
+>    build** (`grep -c "enable_testing\|add_test" CMakeLists.txt`
+>    returns 0, confirmed directly). `ctest` reports 0 tests. The
+>    "manifest of 79 test names" this file and the pipeline spec below
+>    describe does not exist as `add_test` entries — `verify_build.sh`
+>    is a hand-rolled shell script, run directly, not through `ctest`.
+> 2. **The 79 figure itself is unconfirmed.** A second Claude session
+>    reported getting 73 real passes (0 fails) running `verify_build.sh`
+>    core-only against a real autotools build, and that 79 only appears
+>    when 6 FTI libraries are also present — which would contradict the
+>    stated `FTI=OFF` scope. This session could not independently
+>    reproduce either number: `autoconf`/`automake`/`libtool` are not
+>    installed in this sandbox and there is no root to add them, so no
+>    real autotools build was available to compare against. Until
+>    someone runs both builds side by side and gets a repeatable number,
+>    treat "79" as **not currently enforced by anything** rather than as
+>    a locked, machine-checked fact — the enforcement this file describes
+>    (step 1: "Worktree + cmake + ctest + 79-name manifest") does not
+>    exist yet, only `verify_build.sh` does.
+> Also worth knowing: `verify_build.sh`'s checks are existence checks,
+> per-library `nm`-based text-symbol *counts*, and one program's stdout
+> comparison — not the byte-for-byte / binary comparison this file and
+> `README.md` describe elsewhere.
+
 ## Purpose
 
 Any AI review of a suggested change here is a **maintainer mailer and

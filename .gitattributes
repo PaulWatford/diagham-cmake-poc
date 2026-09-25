@@ -1,0 +1,5 @@
+# Line endings: these files are compared byte-for-byte or applied with patch(1).
+patches/*.patch        -text
+benchmarks/*.dat.txt   -text
+tests/data/*           -text
+*.sh                   eol=lf

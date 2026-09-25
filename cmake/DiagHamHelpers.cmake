@@ -43,7 +43,6 @@ function(diagham_add_library target_name)
     # unambiguous when comparing binaries to the autotools build.
     set_target_properties(${target_name} PROPERTIES
         ARCHIVE_OUTPUT_NAME ${target_name}
-        POSITION_INDEPENDENT_CODE ON
     )
 
     # Track this library globally

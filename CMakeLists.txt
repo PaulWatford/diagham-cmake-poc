@@ -37,6 +37,11 @@ project(DiagHam
     LANGUAGES CXX C
 )
 
+# Out-of-source builds only (AGENTS.md lists an in-source build as Damage).
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_BINARY_DIR)
+    message(FATAL_ERROR "In-source builds are not allowed. Use: cmake -S . -B build  (or a preset)")
+endif()
+
 # cmake/ holds our own Find*.cmake modules, including FindMKL.cmake taken
 # (with attribution) from Gunnar Möller & Lars Schonenberg's BDMC_UFL
 # project, which already solves MKL-as-LAPACK/BLAS/FFTW3-provider for this
@@ -56,7 +61,7 @@ endif()
 # ----------------------------------------------------------------------------
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_CXX_EXTENSIONS ON)   # gnu++11, as upstream's g++ default (M_PI on non-glibc)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
@@ -67,6 +72,13 @@ endif()
 # itself). Included here, after the default above, because it validates
 # whatever CMAKE_BUILD_TYPE is already set rather than choosing one.
 include(CompilerDefaults)
+
+# Flags stated explicitly rather than inheriting CMake's Release (-O3 -DNDEBUG):
+# autotools' default is " -O2 -Wall " with no NDEBUG (DiagHam's asserts stay live);
+# --enable-debug appends "-g -fPIC" to that, which RelWithDebInfo mirrors.
+set(CMAKE_CXX_FLAGS_RELEASE        "-O2"    CACHE STRING "Release flags (autotools default -O2)" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g" CACHE STRING "Optimised with symbols (autotools --enable-debug)" FORCE)
+set(CMAKE_CXX_FLAGS_RELWITHCHECKS  "-O2 -g" CACHE STRING "RelWithChecks (was accepted but undefined)" FORCE)
 
 # ----------------------------------------------------------------------------
 # Options, mirroring the autotools AC_ARG_ENABLE / AC_ARG_WITH flags.
@@ -161,10 +173,9 @@ if(IS_BIG_ENDIAN)
         "not actually supported here despite this check existing.")
 endif()
 
-# 64-bit pointers
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    list(APPEND DIAGHAM_COMPILE_DEFS "__64_BITS__")
-endif()
+# __64_BITS__ is NOT injected here: upstream src/config.h derives it from the
+# compiler's own macros (__x86_64__, __LP64__, __aarch64__); injecting it from
+# CMAKE_SIZEOF_VOID_P duplicated that on Linux and was wrong on LLP64 (Win64).
 
 # __int128 support, gcc/clang have it, MSVC does not
 #
@@ -229,7 +240,7 @@ list(APPEND DIAGHAM_COMPILE_DEFS "MACHINE_PRECISION=1e-14")
 # a bigger change than this pass's scope (documentation + the three safe
 # removals above only).
 if(DIAGHAM_USE_DEBUG)
-    list(APPEND DIAGHAM_COMPILE_DEFS "__DEBUG__")
+    # (__DEBUG__ itself is defined unconditionally by src/config.h; nothing to inject)
 endif()
 
 # Pthread (DiagHam's misleadingly-named "SMP" mode is actually pthreads,
@@ -237,7 +248,7 @@ endif()
 if(DIAGHAM_USE_SMP)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
-    list(APPEND DIAGHAM_COMPILE_DEFS "__SMP__")
+    # (__SMP__ itself is defined unconditionally by src/config.h; nothing to inject)
     target_link_libraries(diagham_external_deps INTERFACE Threads::Threads)
 endif()
 
@@ -501,7 +512,10 @@ include(${CMAKE_SOURCE_DIR}/cmake/DiagHamHelpers.cmake)
 # Apply upstream-bug patches and set the exclusion list. See patches/PATCHES.md
 # for what each patch does and why each excluded file was excluded.
 # ----------------------------------------------------------------------------
-include(${CMAKE_SOURCE_DIR}/cmake/ApplyUpstreamPatches.cmake)
+# Upstream fixes are ordinary commits on this branch (see patches/PATCHES.md for
+# the audit trail); nothing is patched at configure time. One legacy program is
+# excluded from the build (dead duplicate of FQHETorusFermionsWithSpin, DEFERRED.md).
+set(DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS "QHEFermionsTorusWithSpin" CACHE INTERNAL "Programs excluded from the build")
 
 # ----------------------------------------------------------------------------
 # Build the libraries

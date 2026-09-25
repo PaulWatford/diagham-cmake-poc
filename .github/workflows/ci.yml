@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+  # Weekly drift check: rebuild against the upstream branch head instead of
+  # the pinned revision, so a Makefile.am change upstream shows up here
+  # before anyone bumps the pin.
+  schedule:
+    - cron: "17 4 * * 1"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: ${{ matrix.preset }} (${{ matrix.compiler }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Every module, no optional libraries: the configuration the
+          # physics goldens are pinned against.
+          - preset: default
+            compiler: gcc
+          # LAPACK, GSL, GMP, FFTW3, bzip2 all on.
+          - preset: full
+            compiler: gcc
+          # MPI + ScaLAPACK + LAPACK + GSL (OpenMPI).
+          - preset: hpc
+            compiler: gcc
+          # Core-only scope, with clang, to catch GCC-only assumptions.
+          - preset: core
+            compiler: clang
+    env:
+      CMAKE_GENERATOR: Ninja
+      CCACHE_DIR: ${{ github.workspace }}/.ccache
+      CCACHE_MAXSIZE: 2G
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake ninja-build ccache clang patch python3-numpy \
+            liblapack-dev libblas-dev libgsl-dev libgmp-dev libfftw3-dev libbz2-dev \
+            libopenmpi-dev openmpi-bin libscalapack-openmpi-dev
+
+      - name: Select compiler
+        run: |
+          if [ "${{ matrix.compiler }}" = clang ]; then
+            echo "CC=clang"  >> "$GITHUB_ENV"
+            echo "CXX=clang++" >> "$GITHUB_ENV"
+          fi
+          echo "CMAKE_C_COMPILER_LAUNCHER=ccache"   >> "$GITHUB_ENV"
+          echo "CMAKE_CXX_COMPILER_LAUNCHER=ccache" >> "$GITHUB_ENV"
+
+      - name: ccache
+        uses: actions/cache@v4
+        with:
+          path: .ccache
+          key: ccache-${{ matrix.preset }}-${{ matrix.compiler }}-${{ github.sha }}
+          restore-keys: ccache-${{ matrix.preset }}-${{ matrix.compiler }}-
+
+      - name: Track upstream head (scheduled runs only)
+        if: github.event_name == 'schedule'
+        run: echo "DIAGHAM_UPSTREAM_REF=master" >> "$GITHUB_ENV"
+
+      - name: Build and test
+        run: scripts_cmake/ci.sh ${{ matrix.preset }}
+
+      - name: Upload test log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ctest-log-${{ matrix.preset }}-${{ matrix.compiler }}
+          path: _ci/DiagHam/build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
+          if-no-files-found: ignore

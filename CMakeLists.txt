@@ -14,14 +14,19 @@
 #      hamiltonians and operators are derived from FQHE's, so FTI needs
 #      FQHE built and linked)
 #
+#    - Spin module (spin chains, SU(N) spins, PEPS/MPS tools)
+#    - QuantumDots module (single-particle quantum dot / well programs)
+#    - Every autotools configure flag except the defunct --enable-m64 (see
+#      CONFIGURE_FLAGS.md for the one-to-one mapping)
+#    - ctest suite (tests/), install + find_package(DiagHam) export,
+#      CMakePresets.json
+#
 #  Out of scope (deferred to a real production CMake rollout):
-#    - Spin and QuantumDots modules (same pattern, more code)
-#    - Optional libraries: LAPACK/BLAS, GSL, GMP, MPACK, FFTW, ScaLAPACK
-#    - MPI parallel build (toggled via __MPI__; needs find_package(MPI))
-#    - Spack/distribution packaging metadata
+#    - Anyons module: referenced by configure.ac but has no sources in the
+#      tree (its AC_CONFIG_FILES entry is commented out upstream)
+#    - Spack/EasyBuild packaging metadata
 #
 #  Author: Paul Watford
-#  Reference build: matches autotools output binary-for-binary on Linux/x86_64
 # ============================================================================
 
 cmake_minimum_required(VERSION 3.16)
@@ -64,16 +69,14 @@ endif()
 include(CompilerDefaults)
 
 # ----------------------------------------------------------------------------
-# Options, mirroring the autotools AC_ARG_ENABLE flags
-#
-# NOTE for SSI work: the autotools configure.ac has 36 such flags. A full
-# production CMake migration must preserve every one of them. This PoC
-# implements pthread (__SMP__), debug mode, 64-bit pointers, and the
-# stub for LAPACK. Others to be added: --enable-gsl, --enable-bz2,
-# --enable-gmp, --enable-mpack, --enable-fftw, --enable-scalapack, --enable-mpi.
+# Options, mirroring the autotools AC_ARG_ENABLE / AC_ARG_WITH flags.
+# CONFIGURE_FLAGS.md maps every configure.ac flag to its CMake equivalent.
 # ----------------------------------------------------------------------------
 option(DIAGHAM_BUILD_FQHE     "Build the FQHE module (sphere/disk/torus/cylinder/lattice)" ON)
 option(DIAGHAM_BUILD_FTI      "Build the FTI module (Hubbard models, FCI, FTI; requires FQHE)" ON)
+option(DIAGHAM_BUILD_SPIN     "Build the Spin module (spin chains, SU(N) spins, PEPS/MPS)" ON)
+option(DIAGHAM_BUILD_QUANTUMDOTS "Build the QuantumDots module" ON)
+option(DIAGHAM_BUILD_TESTS    "Register the ctest suite in tests/ (needs DIAGHAM_BUILD_PROGRAMS)" ON)
 
 # FTI's hamiltonians and operators inherit from FQHE's, so FTI cannot build
 # or link without FQHE. Enforce the dependency at configure time.
@@ -90,6 +93,45 @@ option(DIAGHAM_USE_LAPACK     "Enable LAPACK support (optional)" OFF)
 option(DIAGHAM_USE_MKL        "When LAPACK is enabled, get BLAS/LAPACK (and FFTW3) from Intel MKL instead of plain find_package(LAPACK) -- matches Gunnar's BDMC_UFL precedent" OFF)
 option(DIAGHAM_USE_MPI        "Enable MPI support (optional)" OFF)
 option(DIAGHAM_BUILD_PROGRAMS "Build executables (not just libraries)" ON)
+option(DIAGHAM_USE_LAPACK_ONLY "Use LAPACK routines instead of DiagHam's own (--enable-lapack-only; requires LAPACK)" OFF)
+option(DIAGHAM_USE_BZ2        "Enable bzip2 support (--enable-bz2)" OFF)
+option(DIAGHAM_USE_GMP        "Enable GMP arbitrary-precision support (--enable-gmp)" OFF)
+option(DIAGHAM_USE_MPACK      "Enable MPACK arbitrary-precision LAPACK (--enable-mpack; requires LAPACK)" OFF)
+option(DIAGHAM_USE_FFTW       "Enable FFTW3 support (--enable-fftw)" OFF)
+option(DIAGHAM_USE_SCALAPACK  "Enable ScaLAPACK support (--enable-scalapack; requires MPI and LAPACK)" OFF)
+option(DIAGHAM_USE_PROFILE    "Build with gprof instrumentation, -g -pg (--enable-profile)" OFF)
+set(DIAGHAM_COMMAND_LOG "" CACHE STRING
+    "Global logfile where DiagHam commands are stored (--with-cmd-log); empty disables it")
+
+# Library overrides, the equivalents of --with-<pkg>-libs="...". When set,
+# they replace what find_package would pick, exactly like the configure
+# flags do. Each is a ;-list (or space-separated string) of link items.
+set(DIAGHAM_LAPACK_LIBS    "" CACHE STRING "Override LAPACK+BLAS link line (--with-lapack-libs/--with-blas-libs)")
+set(DIAGHAM_GSL_LIBS       "" CACHE STRING "Override GSL link line (--with-gsl-libs)")
+set(DIAGHAM_GMP_LIBS       "" CACHE STRING "Override GMP link line (--with-gmp-libs)")
+set(DIAGHAM_MPACK_LIBS     "mlapack_gmp;mblas_gmp" CACHE STRING "MPACK link line (--with-mpack-libs)")
+set(DIAGHAM_SCALAPACK_LIBS "" CACHE STRING "Override ScaLAPACK link line (--with-scalapack-libs)")
+set(DIAGHAM_FORTRAN2C_LIBS "" CACHE STRING "Extra Fortran runtime libraries (--with-fortran2c-libs)")
+
+if(DIAGHAM_USE_LAPACK_ONLY AND NOT DIAGHAM_USE_LAPACK)
+    message(FATAL_ERROR "DIAGHAM_USE_LAPACK_ONLY requires DIAGHAM_USE_LAPACK=ON")
+endif()
+if(DIAGHAM_USE_MPACK AND NOT DIAGHAM_USE_LAPACK)
+    message(FATAL_ERROR "DIAGHAM_USE_MPACK requires DIAGHAM_USE_LAPACK=ON (configure.ac appends MPACK to the LAPACK link line)")
+endif()
+if(DIAGHAM_USE_SCALAPACK AND NOT (DIAGHAM_USE_MPI AND DIAGHAM_USE_LAPACK))
+    message(FATAL_ERROR "DIAGHAM_USE_SCALAPACK requires DIAGHAM_USE_MPI=ON and DIAGHAM_USE_LAPACK=ON (same rule as configure.ac)")
+endif()
+if(DIAGHAM_BUILD_TESTS AND NOT DIAGHAM_BUILD_PROGRAMS)
+    message(STATUS "DiagHam: DIAGHAM_BUILD_PROGRAMS=OFF, so the ctest suite is not registered")
+    set(DIAGHAM_BUILD_TESTS OFF)
+endif()
+
+# Every external library any DiagHam program links against is attached to
+# this one interface target; diagham_add_program() links it, and the
+# exported DiagHam::DiagHam target forwards it to downstream projects.
+add_library(diagham_external_deps INTERFACE)
+target_link_libraries(diagham_external_deps INTERFACE m)
 
 # ----------------------------------------------------------------------------
 # Compile-time macros for src/config.h, corresponds to autoconf's config_ac.h
@@ -196,6 +238,7 @@ if(DIAGHAM_USE_SMP)
     set(THREADS_PREFER_PTHREAD_FLAG ON)
     find_package(Threads REQUIRED)
     list(APPEND DIAGHAM_COMPILE_DEFS "__SMP__")
+    target_link_libraries(diagham_external_deps INTERFACE Threads::Threads)
 endif()
 
 # MPI
@@ -205,8 +248,13 @@ endif()
 # block. Dormant today only because DIAGHAM_USE_MPI defaults OFF, but it
 # would misbehave the moment someone turns MPI on, the same way LAPACK did.
 if(DIAGHAM_USE_MPI)
-    find_package(MPI REQUIRED)
+    find_package(MPI REQUIRED COMPONENTS CXX)
     set(HAVE_MPI 1)
+    # Compile, not just link, against MPI: sources with __MPI__ blocks
+    # include <mpi.h>. (--with-mpi-cxx maps to CMAKE_CXX_COMPILER=mpicxx,
+    # which also works; this path works with a plain compiler too.)
+    include_directories(${MPI_CXX_INCLUDE_DIRS})
+    target_link_libraries(diagham_external_deps INTERFACE MPI::MPI_CXX)
 endif()
 
 # LAPACK
@@ -250,10 +298,17 @@ if(DIAGHAM_USE_LAPACK)
             set(DIAGHAM_LAPACK_LIBRARIES ${MKL_LIBRARIES})
             message(STATUS "LAPACK/BLAS provider: Intel MKL (${MKL_VERSION})")
         endif()
+    elseif(DIAGHAM_LAPACK_LIBS)
+        separate_arguments(DIAGHAM_LAPACK_LIBRARIES UNIX_COMMAND "${DIAGHAM_LAPACK_LIBS}")
+        message(STATUS "LAPACK/BLAS provider: user-supplied DIAGHAM_LAPACK_LIBS")
     else()
         find_package(LAPACK REQUIRED)
         set(DIAGHAM_LAPACK_LIBRARIES ${LAPACK_LIBRARIES})
         message(STATUS "LAPACK/BLAS provider: plain find_package(LAPACK)")
+    endif()
+    target_link_libraries(diagham_external_deps INTERFACE ${DIAGHAM_LAPACK_LIBRARIES})
+    if(DIAGHAM_USE_LAPACK_ONLY)
+        set(HAVE_LAPACK_ONLY 1)
     endif()
 endif()
 
@@ -273,10 +328,96 @@ endif()
 # is also on.
 option(DIAGHAM_USE_GSL "Enable GSL support (optional)" OFF)
 if(DIAGHAM_USE_GSL)
-    find_package(GSL 2.0 REQUIRED)
     set(HAVE_GSL 1)
-    include_directories(${GSL_INCLUDE_DIRS})
-    message(STATUS "GSL: ${GSL_VERSION} (${GSL_INCLUDE_DIRS})")
+    if(DIAGHAM_GSL_LIBS)
+        separate_arguments(_gsl_libs UNIX_COMMAND "${DIAGHAM_GSL_LIBS}")
+        target_link_libraries(diagham_external_deps INTERFACE ${_gsl_libs})
+    else()
+        find_package(GSL 2.0 REQUIRED)
+        include_directories(${GSL_INCLUDE_DIRS})
+        target_link_libraries(diagham_external_deps INTERFACE ${GSL_LIBRARIES})
+        message(STATUS "GSL: ${GSL_VERSION} (${GSL_INCLUDE_DIRS})")
+    endif()
+endif()
+
+# bzip2 (--enable-bz2)
+if(DIAGHAM_USE_BZ2)
+    find_package(BZip2 REQUIRED)
+    set(HAVE_BZ2 1)
+    target_link_libraries(diagham_external_deps INTERFACE BZip2::BZip2)
+    include_directories(${BZIP2_INCLUDE_DIRS})
+endif()
+
+# GMP (--enable-gmp). configure.ac links "-lgmp -lgmpxx"; DiagHam uses the
+# C++ interface (gmpxx.h), so gmpxx is required, not optional.
+if(DIAGHAM_USE_GMP)
+    set(HAVE_GMP 1)
+    if(DIAGHAM_GMP_LIBS)
+        separate_arguments(_gmp_libs UNIX_COMMAND "${DIAGHAM_GMP_LIBS}")
+    else()
+        find_package(GMP REQUIRED)
+        find_library(GMPXX_LIBRARIES NAMES gmpxx HINTS ${GMP_LIBRARIES_DIR} REQUIRED)
+        include_directories(${GMP_INCLUDE_DIR})
+        set(_gmp_libs ${GMPXX_LIBRARIES} ${GMP_LIBRARIES})
+    endif()
+    target_link_libraries(diagham_external_deps INTERFACE ${_gmp_libs})
+endif()
+
+# MPACK (--enable-mpack): multiple-precision LAPACK, appended to the LAPACK
+# link line exactly as configure.ac does. No upstream find module exists
+# for it, so DIAGHAM_MPACK_LIBS is the link line (default matches
+# configure.ac's "-lmlapack_gmp -lmblas_gmp").
+if(DIAGHAM_USE_MPACK)
+    set(HAVE_MPACK 1)
+    separate_arguments(_mpack_libs UNIX_COMMAND "${DIAGHAM_MPACK_LIBS}")
+    target_link_libraries(diagham_external_deps INTERFACE ${_mpack_libs})
+endif()
+
+# FFTW3 (--enable-fftw). MKL already provides the FFTW3 interface when
+# DIAGHAM_USE_MKL is on, so only look for libfftw3 otherwise.
+if(DIAGHAM_USE_FFTW)
+    set(HAVE_FFTW 1)
+    if(NOT (DIAGHAM_USE_LAPACK AND DIAGHAM_USE_MKL))
+        find_package(FFTW3 REQUIRED)
+        include_directories(${FFTW3_INCLUDE_DIR})
+        target_link_libraries(diagham_external_deps INTERFACE ${FFTW3_LIBRARIES})
+    endif()
+endif()
+
+# ScaLAPACK (--enable-scalapack). Prefers a CMake package config (as shipped
+# by Netlib ScaLAPACK >= 2.1 and most HPC module stacks), then a plain
+# library search, then the DIAGHAM_SCALAPACK_LIBS override.
+if(DIAGHAM_USE_SCALAPACK)
+    set(HAVE_SCALAPACK 1)
+    if(DIAGHAM_SCALAPACK_LIBS)
+        separate_arguments(_scalapack_libs UNIX_COMMAND "${DIAGHAM_SCALAPACK_LIBS}")
+    else()
+        find_package(scalapack CONFIG QUIET)
+        if(TARGET scalapack)
+            set(_scalapack_libs scalapack)
+        else()
+            find_library(SCALAPACK_LIBRARY NAMES scalapack scalapack-openmpi scalapack-mpich REQUIRED)
+            set(_scalapack_libs ${SCALAPACK_LIBRARY})
+        endif()
+    endif()
+    target_link_libraries(diagham_external_deps INTERFACE ${_scalapack_libs})
+endif()
+
+if(DIAGHAM_FORTRAN2C_LIBS)
+    separate_arguments(_f2c_libs UNIX_COMMAND "${DIAGHAM_FORTRAN2C_LIBS}")
+    target_link_libraries(diagham_external_deps INTERFACE ${_f2c_libs})
+endif()
+
+# Profiling (--enable-profile adds -g -pg to CXXFLAGS)
+if(DIAGHAM_USE_PROFILE)
+    add_compile_options(-g -pg)
+    target_link_options(diagham_external_deps INTERFACE -pg)
+endif()
+
+# Global command log (--with-cmd-log=FILE)
+if(DIAGHAM_COMMAND_LOG)
+    set(HAVE_GLOBAL_COMMAND_LOG 1)
+    set(GLOBAL_COMMAND_LOG "${DIAGHAM_COMMAND_LOG}")
 endif()
 
 # Apply globally to every target in this project
@@ -317,6 +458,14 @@ if(DIAGHAM_BUILD_FTI)
     # bug: `make -C FTI/src` fails out of the box on a clean autotools setup.
     # The CMake migration is the right moment to fix this.
     include_directories(${CMAKE_SOURCE_DIR}/FTI/src)
+endif()
+
+if(DIAGHAM_BUILD_QUANTUMDOTS)
+    include_directories(${CMAKE_SOURCE_DIR}/QuantumDots/src)
+endif()
+
+if(DIAGHAM_BUILD_SPIN)
+    include_directories(${CMAKE_SOURCE_DIR}/Spin/src)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -360,12 +509,32 @@ include(${CMAKE_SOURCE_DIR}/cmake/ApplyUpstreamPatches.cmake)
 add_subdirectory(Base/src)
 add_subdirectory(src)
 
+# Same order as the autotools top-level SUBDIRS:
+#   Base src QuantumDots Spin FQHE Anyons FTI
+if(DIAGHAM_BUILD_QUANTUMDOTS)
+    add_subdirectory(QuantumDots/src)
+endif()
+
+if(DIAGHAM_BUILD_SPIN)
+    add_subdirectory(Spin/src)
+endif()
+
 if(DIAGHAM_BUILD_FQHE)
     add_subdirectory(FQHE/src)
 endif()
 
 if(DIAGHAM_BUILD_FTI)
     add_subdirectory(FTI/src)
+endif()
+
+# ----------------------------------------------------------------------------
+# Install rules, find_package(DiagHam) export, and the ctest suite
+# ----------------------------------------------------------------------------
+include(DiagHamInstall)
+
+if(DIAGHAM_BUILD_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
 
 # ----------------------------------------------------------------------------
@@ -379,8 +548,19 @@ message(STATUS "  C++ standard:   ${CMAKE_CXX_STANDARD}")
 message(STATUS "  SMP (pthreads): ${DIAGHAM_USE_SMP}")
 message(STATUS "  LAPACK:         ${DIAGHAM_USE_LAPACK}")
 message(STATUS "  MPI:            ${DIAGHAM_USE_MPI}")
+message(STATUS "  LAPACK only:    ${DIAGHAM_USE_LAPACK_ONLY}")
+message(STATUS "  ScaLAPACK:      ${DIAGHAM_USE_SCALAPACK}")
 message(STATUS "  GSL:            ${DIAGHAM_USE_GSL}")
+message(STATUS "  GMP:            ${DIAGHAM_USE_GMP}")
+message(STATUS "  MPACK:          ${DIAGHAM_USE_MPACK}")
+message(STATUS "  FFTW:           ${DIAGHAM_USE_FFTW}")
+message(STATUS "  bzip2:          ${DIAGHAM_USE_BZ2}")
+message(STATUS "  Profile:        ${DIAGHAM_USE_PROFILE}")
+message(STATUS "  Command log:    ${DIAGHAM_COMMAND_LOG}")
 message(STATUS "  FQHE module:    ${DIAGHAM_BUILD_FQHE}")
 message(STATUS "  FTI module:     ${DIAGHAM_BUILD_FTI}")
+message(STATUS "  Spin module:    ${DIAGHAM_BUILD_SPIN}")
+message(STATUS "  QuantumDots:    ${DIAGHAM_BUILD_QUANTUMDOTS}")
 message(STATUS "  Build programs: ${DIAGHAM_BUILD_PROGRAMS}")
+message(STATUS "  Tests (ctest):  ${DIAGHAM_BUILD_TESTS}")
 message(STATUS "")

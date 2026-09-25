@@ -21,6 +21,14 @@
 # easily link against "everything" without enumerating per-binary.
 set_property(GLOBAL PROPERTY DIAGHAM_ALL_LIBS "")
 
+# A registry of every program target, used by tests/ (the --help smoke
+# test) and by the install rules.
+set_property(GLOBAL PROPERTY DIAGHAM_ALL_PROGRAMS "")
+
+# Every DiagHam target installs under one export set so downstream projects
+# can find_package(DiagHam); see cmake/DiagHamInstall.cmake.
+include(GNUInstallDirs)
+
 function(diagham_add_library target_name)
     cmake_parse_arguments(ARG "" "" "SOURCES" ${ARGN})
 
@@ -42,6 +50,12 @@ function(diagham_add_library target_name)
     get_property(libs GLOBAL PROPERTY DIAGHAM_ALL_LIBS)
     list(APPEND libs ${target_name})
     set_property(GLOBAL PROPERTY DIAGHAM_ALL_LIBS "${libs}")
+
+    install(TARGETS ${target_name}
+        EXPORT DiagHamTargets
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}/diagham
+        COMPONENT Development
+    )
 endfunction()
 
 
@@ -71,23 +85,70 @@ function(diagham_add_program target_name source)
         target_link_libraries(${target_name} PRIVATE ${all_libs})
     endif()
 
-    # Common system libs that DiagHam uses everywhere
-    target_link_libraries(${target_name} PRIVATE m)
+    # External dependencies (libm, pthreads, LAPACK/MKL, MPI, GSL, GMP,
+    # FFTW, bz2, ScaLAPACK, ...) are collected on one interface target in
+    # the top-level CMakeLists.txt, so adding an optional library there is
+    # the only change needed to link it into every program.
+    target_link_libraries(${target_name} PRIVATE diagham_external_deps)
 
-    if(DIAGHAM_USE_SMP)
-        target_link_libraries(${target_name} PRIVATE Threads::Threads)
+    get_property(programs GLOBAL PROPERTY DIAGHAM_ALL_PROGRAMS)
+    list(APPEND programs ${target_name})
+    set_property(GLOBAL PROPERTY DIAGHAM_ALL_PROGRAMS "${programs}")
+
+    install(TARGETS ${target_name}
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        COMPONENT Runtime
+    )
+endfunction()
+
+
+# Whether a program is on the upstream-exclusion list (see
+# cmake/ApplyUpstreamPatches.cmake and DEFERRED.md).
+function(_diagham_program_excluded prog_name out_var)
+    set(${out_var} FALSE PARENT_SCOPE)
+    if(DEFINED DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS)
+        list(FIND DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS "${prog_name}" excluded_idx)
+        if(NOT excluded_idx EQUAL -1)
+            message(STATUS "DiagHam: skipping ${prog_name} (upstream issue, see patches/PATCHES.md)")
+            set(${out_var} TRUE PARENT_SCOPE)
+        endif()
     endif()
-    if(DIAGHAM_USE_LAPACK)
-        # DIAGHAM_LAPACK_LIBRARIES is set in the top-level CMakeLists.txt to
-        # either MKL_LIBRARIES or LAPACK_LIBRARIES depending on DIAGHAM_USE_MKL.
-        target_link_libraries(${target_name} PRIVATE ${DIAGHAM_LAPACK_LIBRARIES})
+endfunction()
+
+
+# Explicit program list, emitted by extract_autotools.py from a Makefile.am
+# bin_PROGRAMS line (used for Spin and QuantumDots, whose Programs/
+# directories hold sources upstream deliberately does not build):
+#
+#    diagham_add_programs(PREFIX Spin
+#        PROGRAMS
+#            Cobalt Cobalt.cc
+#            PeriodicQuantumDot2D Periodic2DQuantumDot.cc
+#    )
+#
+# PREFIX keeps target names unique across modules (src/Programs,
+# Spin/src/Programs and QuantumDots/src/Programs all share the leaf name
+# "Programs"); the output executable keeps the upstream binary name.
+function(diagham_add_programs)
+    if(NOT DIAGHAM_BUILD_PROGRAMS)
+        return()
     endif()
-    if(DIAGHAM_USE_MPI)
-        target_link_libraries(${target_name} PRIVATE MPI::MPI_CXX)
+    cmake_parse_arguments(ARG "" "PREFIX" "PROGRAMS" ${ARGN})
+    list(LENGTH ARG_PROGRAMS n)
+    math(EXPR odd "${n} % 2")
+    if(NOT odd EQUAL 0)
+        message(FATAL_ERROR "diagham_add_programs: PROGRAMS must be name/source pairs")
     endif()
-    if(DIAGHAM_USE_GSL)
-        target_link_libraries(${target_name} PRIVATE ${GSL_LIBRARIES})
-    endif()
+    while(ARG_PROGRAMS)
+        list(POP_FRONT ARG_PROGRAMS prog_name src)
+        _diagham_program_excluded(${prog_name} excluded)
+        if(excluded)
+            continue()
+        endif()
+        set(target_name "${ARG_PREFIX}_${prog_name}")
+        diagham_add_program(${target_name} ${src})
+        set_target_properties(${target_name} PROPERTIES OUTPUT_NAME ${prog_name})
+    endwhile()
 endfunction()
 
 
@@ -116,12 +177,9 @@ function(diagham_add_programs_in_directory)
 
         # Skip files known to be broken upstream where patching is deferred
         # (see patches/PATCHES.md for the rationale on each excluded file).
-        if(DEFINED DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS)
-            list(FIND DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS "${prog_name}" excluded_idx)
-            if(NOT excluded_idx EQUAL -1)
-                message(STATUS "DiagHam: skipping ${prog_name} (upstream issue, see patches/PATCHES.md)")
-                continue()
-            endif()
+        _diagham_program_excluded(${prog_name} excluded)
+        if(excluded)
+            continue()
         endif()
 
         set(target_name "${leaf}_${prog_name}")

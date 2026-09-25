@@ -43,19 +43,24 @@
 #cmakedefine HAVE_FQHE
 #cmakedefine HAVE_FTI
 
-/* Optional features, kept commented out in the PoC; a production
- * migration adds find_package() blocks for each and toggles these. */
-/* #undef HAVE_BZ2 */
-/* #undef HAVE_FFTW */
-/* #undef HAVE_GMP */
+/* Optional features, one per configure.ac AC_DEFINE; each is toggled by
+ * the matching DIAGHAM_USE_* option (see CONFIGURE_FLAGS.md). */
+#cmakedefine HAVE_BZ2
+#cmakedefine HAVE_FFTW
+#cmakedefine HAVE_GMP
 #cmakedefine HAVE_LAPACK
-/* #undef HAVE_LAPACK_ONLY */
-/* #undef HAVE_MPACK */
+#cmakedefine HAVE_LAPACK_ONLY
+#cmakedefine HAVE_MPACK
 #cmakedefine HAVE_MPI
 #cmakedefine HAVE_GSL
-/* #undef HAVE_SCALAPACK */
+#cmakedefine HAVE_SCALAPACK
 #cmakedefine HAVE_INTELMKL
-/* #undef HAVE_FORTRAN2C */
+
+/* --with-cmd-log=FILE */
+#cmakedefine HAVE_GLOBAL_COMMAND_LOG
+#ifdef HAVE_GLOBAL_COMMAND_LOG
+#define GLOBAL_COMMAND_LOG "@GLOBAL_COMMAND_LOG@"
+#endif
 
 /* Package identity */
 #define PACKAGE "diagham"

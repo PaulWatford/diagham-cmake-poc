@@ -45,6 +45,20 @@ from pathlib import Path
 # than globbed. See the module docstring for why.
 EXPLICIT_PROGRAM_MODULES = ('Spin/src', 'QuantumDots/src')
 
+# Sources that upstream never lists in bin_PROGRAMS but that this migration
+# builds deliberately (each compiles and is smoke-tested; audit R2.2 / F20).
+# Anything not in a Makefile.am and not here is NOT built -- one policy for
+# every module. QHEFermionsTorusWithSpin is excluded via
+# DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS (dead duplicate, DEFERRED.md).
+EXTRA_PROGRAMS = {
+    "FQHE/src/Programs/FQHEOnDisk": ("QHEBosonsDiskDelta",),   # 2006 duplicate of FQHEDiskBosonsDelta; retirement candidate
+    "FQHE/src/Programs/FQHEOnLattice": ("FQHELatticeEntanglementSpectrum",),
+    "FQHE/src/Programs/FQHEOnSphere": ("FQHESphereFermionMonteCarloEnergy",
+                                       "FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition"),
+    "FQHE/src/Programs/FQHEOnTorus": ("FQHETorusWithSU2SpinSingleModeApproximation",),
+    "FTI/src/Programs/FCI": ("FCIDiceLatticeModel", "FCIWannierConstruction"),
+}
+
 
 def parse_bin_programs(path: Path) -> list:
     """Return [(program_name, source.cc)] from a Makefile.am's bin_PROGRAMS.
@@ -58,7 +72,7 @@ def parse_bin_programs(path: Path) -> list:
     if not m:
         return []
     programs = []
-    for prog in m.group(1).replace('\\\n', ' ').split():
+    for prog in dict.fromkeys(m.group(1).replace('\\\n', ' ').split()):
         sm = re.search(r'^' + re.escape(prog) + r'_SOURCES[ \t]*=[ \t]*(.+)$',
                        text, re.MULTILINE)
         sources = sm.group(1).split() if sm else []
@@ -205,7 +219,7 @@ def main(source_root: Path):
     subdirs_by_dir = {}
     for makefile in source_root.rglob('Makefile.am'):
         rel = makefile.relative_to(source_root)
-        rel_dir = str(rel.parent)
+        rel_dir = rel.parent.as_posix()
         if not any(rel_dir == p or rel_dir.startswith(p + '/') for p in in_scope):
             continue
         libs, subdirs = parse_makefile_am(makefile)
@@ -223,7 +237,7 @@ def main(source_root: Path):
     # even when Foo itself is empty (has no libraries and no further subdirs).
     for parent, children in list(subdirs_by_dir.items()):
         for child in children:
-            child_path = str(Path(parent) / child)
+            child_path = (Path(parent) / child).as_posix()
             if (source_root / child_path).is_dir():
                 directories.add(child_path)
 
@@ -240,25 +254,30 @@ def main(source_root: Path):
             if c not in seen:
                 children.append(c)
                 seen.add(c)
-        # A directory is a "programs leaf" if it sits under any /Programs/
-        # ancestor, declares no libraries, and contains .cc files. This covers
-        # src/Programs/, FTI/src/Programs/HubbardModels/, FTI/src/Programs/FCI/
-        # and FTI/src/Programs/FTI/ uniformly, without hardcoding their names.
-        is_programs_leaf = False
-        path_parts = d.split('/')
-        if 'Programs' in path_parts and d not in libs_by_dir:
-            cc_files = list((source_root / d).glob('*.cc'))
-            if cc_files:
-                is_programs_leaf = True
+        # A directory is a programs directory iff its Makefile.am lists
+        # bin_PROGRAMS (the same rule autotools uses; directory names are not
+        # consulted, so QuantumDots/src/Tools/Analysis is covered too).
         libs = libs_by_dir.get(d, {})
-
         explicit_programs = None
-        program_prefix = ''
-        module = next((m for m in EXPLICIT_PROGRAM_MODULES
-                       if d == m or d.startswith(m + '/')), None)
-        if is_programs_leaf and module:
-            explicit_programs = parse_bin_programs(source_root / d / 'Makefile.am')
-            program_prefix = module.split('/')[0]
+        program_prefix = ""
+        mk = source_root / d / "Makefile.am"
+        bin_programs = parse_bin_programs(mk) if mk.is_file() else []
+        extras = [(name, name + ".cc") for name in EXTRA_PROGRAMS.get(d, ())
+                  if (source_root / d / (name + ".cc")).is_file()]
+        if bin_programs or extras:
+            seen = set()
+            explicit_programs = []
+            for prog, src in bin_programs + extras:
+                if prog not in seen:
+                    seen.add(prog)
+                    explicit_programs.append((prog, src))
+            leaf = d.split("/")[-1]
+            top = d.split("/")[0]
+            # Target names: <leaf>_<program>, except that a leaf literally called
+            # "Programs" takes its module name (Spin, QuantumDots) so the three
+            # such directories do not collide; src/Programs keeps "Programs".
+            program_prefix = leaf if leaf != "Programs" or top == "src" else top
+        is_programs_leaf = explicit_programs is not None
 
         content = emit_cmakelists(d, libs, children, is_programs=is_programs_leaf,
                                   explicit_programs=explicit_programs,

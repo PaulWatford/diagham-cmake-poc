@@ -17,7 +17,7 @@
 #    - Spin module (spin chains, SU(N) spins, PEPS/MPS tools)
 #    - QuantumDots module (single-particle quantum dot / well programs)
 #    - Every autotools configure flag except the defunct --enable-m64 (see
-#      CONFIGURE_FLAGS.md for the one-to-one mapping)
+#      docs/reference/configure-flag-map.md for the one-to-one mapping)
 #    - ctest suite (tests/), install + find_package(DiagHam) export,
 #      CMakePresets.json
 #
@@ -82,7 +82,7 @@ set(CMAKE_CXX_FLAGS_RELWITHCHECKS  "-O2 -g" CACHE STRING "RelWithChecks (was acc
 
 # ----------------------------------------------------------------------------
 # Options, mirroring the autotools AC_ARG_ENABLE / AC_ARG_WITH flags.
-# CONFIGURE_FLAGS.md maps every configure.ac flag to its CMake equivalent.
+# docs/reference/configure-flag-map.md maps every configure.ac flag to its CMake equivalent.
 # ----------------------------------------------------------------------------
 option(DIAGHAM_BUILD_FQHE     "Build the FQHE module (sphere/disk/torus/cylinder/lattice)" ON)
 option(DIAGHAM_BUILD_FTI      "Build the FTI module (Hubbard models, FCI, FTI; requires FQHE)" ON)

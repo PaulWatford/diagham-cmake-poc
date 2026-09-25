@@ -43,7 +43,8 @@ Two branches matter:
 |---- patches/                    audit trail of the upstream fixes (PATCHES.md); the fixes themselves are commits
 |---- benchmarks/                 Hubbard verification log + independent Python exact diagonalisation
 |---- Base/ src/ FQHE/ FTI/ Spin/ QuantumDots/   DiagHam itself, as in upstream, with generated CMakeLists.txt in each directory
-+---- CONFIGURE_FLAGS.md, HPC.md, TESTING.md, DEFERRED.md, MIGRATION_ROADMAP.md, AGENTS.md
+|---- docs/                     knowledge base: how-to, reference, explanation, tutorials, history (docs/README.md)
++---- TESTING.md, DEFERRED.md, MIGRATION_ROADMAP.md, AGENTS.md, CONTRIBUTING.md
 ```
 
 The per-directory `CMakeLists.txt` files are generated from upstream's own
@@ -89,7 +90,7 @@ The upstream `configure.ac` has **34 `AC_ARG_ENABLE` / `AC_ARG_WITH` flags**:
 `--enable-gmp`, `--enable-mpack`, `--enable-fftw`, `--enable-scalapack`,
 `--with-blas-libs=...`, and so on. Each flag is some cluster admin's hard-won
 dependency chain. Every one of them has a CMake equivalent; the mapping is in
-`CONFIGURE_FLAGS.md`.
+`docs/reference/configure-flag-map.md`.
 
 The autotools build also relies on two custom Perl scripts
 (`scripts/genmake.pl` and `scripts/genam.pl`) that generate `Makefile.am`
@@ -148,7 +149,7 @@ checks run as ctest goldens on every build.
 
 `MODULE_MAP.md` is organised by task ("I want to add a dependency", "I want
 to verify the physics", ...) and points at the file for each.
-`CONFIGURE_FLAGS.md` maps every configure flag; `HPC.md` is the cluster
+`docs/reference/configure-flag-map.md` maps every configure flag; `docs/how-to/build/` has the per-platform build guides and the cluster
 recipe; `TESTING.md` explains the test suite. The DiagHam user manual —
 program-by-program pages — is on the upstream wiki at nick-ux.org and is
 being brought into `docs/` (see `MIGRATION_ROADMAP.md`).
@@ -187,7 +188,7 @@ remains the Subversion repository at nick-ux.org and `upstream` mirrors it.
 - CMake >= 3.21 (presets), a C++11 compiler (GCC or Clang), pthreads,
   Python 3 (generator and cross-check; numpy for the Python test).
 - Optional: LAPACK/BLAS or Intel MKL, MPI, ScaLAPACK, GSL, GMP, MPACK,
-  FFTW3, bzip2 — see `CONFIGURE_FLAGS.md`.
+  FFTW3, bzip2 — see `docs/reference/configure-flag-map.md`.
 
 See `CHANGELOG.md` for what changed and when.
 

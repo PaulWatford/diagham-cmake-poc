@@ -21,7 +21,7 @@
       "name": "core",
       "inherits": "base",
       "displayName": "Core only",
-      "description": "Base/src + src only (the scope verify_build.sh was written for)",
+      "description": "Base/src + src only (no physics module)",
       "cacheVariables": {
         "DIAGHAM_BUILD_FQHE": "OFF",
         "DIAGHAM_BUILD_FTI": "OFF",
@@ -55,7 +55,7 @@
       "name": "hpc",
       "inherits": "base",
       "displayName": "HPC cluster (MPI + ScaLAPACK)",
-      "description": "MPI, LAPACK, ScaLAPACK, GSL; see HPC.md for the module-load recipe",
+      "description": "MPI, LAPACK, ScaLAPACK, GSL; see docs/how-to/build/hpc-cluster.md",
       "cacheVariables": {
         "DIAGHAM_USE_MPI": "ON",
         "DIAGHAM_USE_LAPACK": "ON",
@@ -78,7 +78,7 @@
       "name": "debug",
       "inherits": "base",
       "displayName": "Debug",
-      "description": "Default modules, -O0 -g",
+      "description": "Default modules, CMake Debug (-g, no optimisation); upstream --enable-debug is RelWithDebInfo",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Debug"
       }

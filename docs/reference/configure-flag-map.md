@@ -1,5 +1,7 @@
 # configure.ac → CMake flag map
 
+Source: `CONFIGURE_FLAGS.md` (2026-09-24), moved to the reference section 2026-09-25 with two corrections (MKL interface note; --enable-debug mapping).
+
 Every `AC_ARG_ENABLE` / `AC_ARG_WITH` in upstream `configure.ac` (34
 distinct flags, pinned upstream revision `ed78a30`), and what to pass to
 CMake instead. The "Tested" column says where the option was built and the
@@ -31,7 +33,7 @@ gives the core-only build.
 | `--with-lapack-libs="..."`, `--with-blas-libs="..."` | `DIAGHAM_LAPACK_LIBS="..."` | by hand (`core` + `-llapack -lblas`) | replaces `find_package(LAPACK)`; give the whole LAPACK+BLAS link line |
 | `--with-lapack-libdir=DIR`, `--with-blas-libdir=DIR` | `CMAKE_PREFIX_PATH=DIR/..` or `CMAKE_LIBRARY_PATH=DIR` | | standard CMake search paths |
 | `--enable-lapack-only` | `DIAGHAM_USE_LAPACK_ONLY=ON` | | requires LAPACK |
-| `--enable-intelmkl` | `DIAGHAM_USE_LAPACK=ON DIAGHAM_USE_MKL=ON` (preset `mkl`) | | `cmake/FindMKL.cmake`, from Gunnar Möller's BDMC_UFL |
+| `--enable-intelmkl` | `DIAGHAM_USE_LAPACK=ON DIAGHAM_USE_MKL=ON` (preset `mkl`) | | `cmake/FindMKL.cmake`, from Gunnar Möller's BDMC_UFL. **Interface differs from upstream**: configure links the ILP64 MKL interface with `-DMKL_ILP64`; FindMKL is LP64-only. Untested against a real MKL — see `docs/how-to/build/intel-mkl.md` |
 | `--with-intelmkl-libdir=DIR` | `MKLROOT` environment variable | | what `FindMKL.cmake` reads |
 | `--enable-gsl` | `DIAGHAM_USE_GSL=ON` | CI (`full`) | `find_package(GSL)` |
 | `--with-gsl-libs="..."` | `DIAGHAM_GSL_LIBS="..."` | | |
@@ -53,7 +55,7 @@ gives the core-only build.
 
 | configure | CMake | Notes |
 |---|---|---|
-| `--enable-debug` | `CMAKE_BUILD_TYPE=Debug` (preset `debug`) | configure adds `-g -fPIC`; every CMake target is already PIC |
+| `--enable-debug` | `CMAKE_BUILD_TYPE=RelWithDebInfo` (`-O2 -g`) | configure keeps the default `-O2 -Wall` and appends `-g -fPIC`, i.e. an optimised build with symbols; `Debug` (preset `debug`) is `-g` without optimisation, which is *not* what `--enable-debug` did |
 | `--enable-profile` | `DIAGHAM_USE_PROFILE=ON` | `-g -pg` on compile and link |
 | `--enable-m64` | `CMAKE_CXX_FLAGS=-m64` | obsolete on every 64-bit toolchain; not given its own option |
 | `--with-cmd-log=FILE` | `DIAGHAM_COMMAND_LOG=FILE` | defines `HAVE_GLOBAL_COMMAND_LOG` and `GLOBAL_COMMAND_LOG` |

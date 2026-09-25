@@ -1,0 +1,19 @@
+# docs/history — upstream files kept as found
+
+These files are preserved unchanged from the DiagHam Subversion tree (r4493)
+for the record. They are not maintained; the living equivalents are named.
+
+| File | What it is | Living equivalent |
+|---|---|---|
+| `INSTALL` | the generic GNU autotools installation text (2003) | `docs/how-to/build/` and `README.md` |
+| `ChangeLog-upstream` | DiagHam's ChangeLog, 2003-05-03 to 2005-04-26, generated from CVS by `scripts/docs/CreateChangelog.pl`; not updated since | `CHANGELOG.md`, and the Subversion commit log: `git log upstream` (4,477 trunk commits to r4493) |
+| `TODO-2007` | the maintainers' to-do list dated 2007-11-29 (GM and NR) | none; kept for context ("Torus with spin" is still on it) |
+| `NEWS` | one line ("Zlatko's first commit", 2009) | none |
+
+The upstream `README` was empty and has been removed. `AUTHORS` and `COPYING`
+stay at the repository root (AUTHORS updated from the commit log).
+
+Source of the SVN history: https://www.nick-ux.org/diagham/svn/DiagHam
+(trunk, branches, tags). The canonical DiagHam documentation is the wiki at
+https://www.nick-ux.org/diagham/; its pages are being brought into `docs/`
+with a provenance line each.

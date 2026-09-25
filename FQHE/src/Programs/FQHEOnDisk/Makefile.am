@@ -4,13 +4,13 @@ bin_PROGRAMS=FQHEDiskBosonsNBodyHardCore FQHEDiskBosonsDelta QHEBosonsOverlap FQ
 
 FQHEDiskBosonsNBodyHardCore_SOURCES=FQHEDiskBosonsNBodyHardCore.cc
 
-QHEBosonsDelta_SOURCES=FQHEDiskBosonsDelta.cc
+FQHEDiskBosonsDelta_SOURCES=FQHEDiskBosonsDelta.cc
 
 QHEBosonsOverlap_SOURCES=QHEBosonsOverlap.cc
 
 FQHEDiskFermionsLaplacianDelta_SOURCES=FQHEDiskFermionsLaplacianDelta.cc
 
-QHEFermionsOverlap_SOURCES=FQHEDiskLaughlinMonteCarloOverlap.cc
+FQHEDiskLaughlinMonteCarloOverlap_SOURCES=FQHEDiskLaughlinMonteCarloOverlap.cc
 
 FQHEDiskDensity_SOURCES=FQHEDiskDensity.cc
 

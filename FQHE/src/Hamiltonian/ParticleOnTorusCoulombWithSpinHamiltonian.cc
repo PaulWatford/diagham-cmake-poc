@@ -112,6 +112,11 @@ ParticleOnTorusCoulombWithSpinHamiltonian::~ParticleOnTorusCoulombWithSpinHamilt
   delete[] this->M1Value;
   delete[] this->M2Value;
   delete[] this->M3Value;
+  delete[] this->InterSpinInteractionFactors;
+  delete[] this->InterSpinM1Value;
+  delete[] this->InterSpinM2Value;
+  delete[] this->InterSpinM3Value;
+  delete[] this->InterSpinM4Value;
   if (this->FastMultiplicationFlag == true)
     {
       for (int i = 0; i < this->Particles->GetHilbertSpaceDimension(); ++i)
@@ -133,6 +138,11 @@ ParticleOnTorusCoulombWithSpinHamiltonian::~ParticleOnTorusCoulombWithSpinHamilt
 void ParticleOnTorusCoulombWithSpinHamiltonian::SetHilbertSpace (AbstractHilbertSpace* hilbertSpace)
 {
   delete[] this->InteractionFactors;
+  delete[] this->InterSpinInteractionFactors;
+  delete[] this->InterSpinM1Value;
+  delete[] this->InterSpinM2Value;
+  delete[] this->InterSpinM3Value;
+  delete[] this->InterSpinM4Value;
   if (this->FastMultiplicationFlag == true)
     {
       for (int i = 0; i < this->Particles->GetHilbertSpaceDimension(); ++i)
@@ -284,7 +294,6 @@ RealVector& ParticleOnTorusCoulombWithSpinHamiltonian::LowLevelAddMultiply(RealV
       int m3;
       int m4;
       double TmpInteraction;
-      double TmpInterLayerInteraction;
       int ReducedNbrInteractionFactors = this->NbrInteractionFactors - 1;
       for (int j = 0; j < ReducedNbrInteractionFactors; ++j) 
 	{
@@ -293,7 +302,6 @@ RealVector& ParticleOnTorusCoulombWithSpinHamiltonian::LowLevelAddMultiply(RealV
 	  m3 = this->M3Value[j];
 	  m4 = this->M4Value[j];
 	  TmpInteraction = this->InteractionFactors[j];
-	  TmpInterLayerInteraction = this->InterLayerInteractionFactors[j];
 	  for (int i = firstComponent; i < LastComponent; ++i)
 	    {
 	      Index = this->Particles->AduAduAuAu(i, m1, m2, m3, m4, Coefficient);
@@ -302,18 +310,6 @@ RealVector& ParticleOnTorusCoulombWithSpinHamiltonian::LowLevelAddMultiply(RealV
 	      Index = this->Particles->AddAddAdAd(i, m1, m2, m3, m4, Coefficient);
 	      if (Index < this->Particles->GetHilbertSpaceDimension())
 		vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
-	      Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
-	      if (Index < this->Particles->GetHilbertSpaceDimension())
-		vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
-	      Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
-	      if (Index < this->Particles->GetHilbertSpaceDimension())
-		vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
-	      Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
-	      if (Index < this->Particles->GetHilbertSpaceDimension())
-		vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
-	      Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
-	      if (Index < this->Particles->GetHilbertSpaceDimension())
-		vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
 	    }
 	}
       m1 = this->M1Value[ReducedNbrInteractionFactors];
@@ -321,7 +317,6 @@ RealVector& ParticleOnTorusCoulombWithSpinHamiltonian::LowLevelAddMultiply(RealV
       m3 = this->M3Value[ReducedNbrInteractionFactors];
       m4 = this->M4Value[ReducedNbrInteractionFactors];
       TmpInteraction = this->InteractionFactors[ReducedNbrInteractionFactors];
-      TmpInterLayerInteraction = this->InterLayerInteractionFactors[ReducedNbrInteractionFactors];
       for (int i = firstComponent; i < LastComponent; ++i)
 	{
 	  Index = this->Particles->AduAduAuAu(i, m1, m2, m3, m4, Coefficient);
@@ -330,20 +325,22 @@ RealVector& ParticleOnTorusCoulombWithSpinHamiltonian::LowLevelAddMultiply(RealV
 	  Index = this->Particles->AddAddAdAd(i, m1, m2, m3, m4, Coefficient);
 	  if (Index < this->Particles->GetHilbertSpaceDimension())
 	    vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    vDestination[Index] -= Coefficient * TmpInterLayerInteraction * vSource[i];
-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    vDestination[Index] += Coefficient * TmpInterLayerInteraction * vSource[i];
 	  this->Particles->SumAduAu(i, Coefficient);
 	  vDestination[i] += (Shift + 2.0 * this->MagneticG * Coefficient) * vSource[i];
+	}
+      for (int j = 0; j < this->NbrInterSpinInteractionFactors; ++j) 
+	{
+	  m1 = this->InterSpinM1Value[j];
+	  m2 = this->InterSpinM2Value[j];
+	  m3 = this->InterSpinM3Value[j];
+	  m4 = this->InterSpinM4Value[j];
+	  TmpInteraction = this->InterSpinInteractionFactors[j];
+	  for (int i = firstComponent; i < LastComponent; ++i)
+	    {
+	      Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
+	      if (Index < this->Particles->GetHilbertSpaceDimension())
+		vDestination[Index] += Coefficient * TmpInteraction * vSource[i];
+	    }
 	}
     }
   else
@@ -437,7 +434,6 @@ void ParticleOnTorusCoulombWithSpinHamiltonian::EvaluateInteractionFactors()
       this->M3Value = new int [Pos];
       this->M4Value = new int [Pos];
       this->InteractionFactors = new double [Pos];
-      this->InterLayerInteractionFactors = new double [Pos];
       cout << "nbr interaction = " << Pos << endl;
       Pos = 0;
       MaxCoefficient *= MACHINE_PRECISION;
@@ -456,11 +452,6 @@ void ParticleOnTorusCoulombWithSpinHamiltonian::EvaluateInteractionFactors()
 		  if  (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
 		    {
 		      this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
-		      this->InterLayerInteractionFactors[this->NbrInteractionFactors]
-			= (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
-			   + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, LayerSeparation)
-			   - this->EvaluateInteractionCoefficient(m1, m2, m4, m3, LayerSeparation)
-			   - this->EvaluateInteractionCoefficient(m2, m1, m3, m4, LayerSeparation));
 		      this->M1Value[this->NbrInteractionFactors] = m1;
 		      this->M2Value[this->NbrInteractionFactors] = m2;
 		      this->M3Value[this->NbrInteractionFactors] = m3;
@@ -521,7 +512,6 @@ void ParticleOnTorusCoulombWithSpinHamiltonian::EvaluateInteractionFactors()
       this->M3Value = new int [Pos];
       this->M4Value = new int [Pos];
       this->InteractionFactors = new double [Pos];
-      this->InterLayerInteractionFactors = new double [Pos];
       cout << "nbr interaction = " << Pos << endl;
       Pos = 0;
       MaxCoefficient *= MACHINE_PRECISION;
@@ -540,32 +530,6 @@ void ParticleOnTorusCoulombWithSpinHamiltonian::EvaluateInteractionFactors()
 		  if (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
 		    {
 		      this->InteractionFactors[this->NbrInteractionFactors] = TmpCoefficient[Pos];
-		      if (m3 > m4)
-			{
-			  if (m1 != m2)
-			    {
-			      this->InterLayerInteractionFactors[this->NbrInteractionFactors] 
-				= (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
-				   + this->EvaluateInteractionCoefficient(m2, m1, m4, m3, LayerSeparation)
-				   + this->EvaluateInteractionCoefficient(m1, m2, m4, m3, LayerSeparation)
-				   + this->EvaluateInteractionCoefficient(m2, m1, m3, m4, LayerSeparation));
-			    }
-			  else
-			    this->InterLayerInteractionFactors[this->NbrInteractionFactors] 
-			      = (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
-				 + this->EvaluateInteractionCoefficient(m1, m2, m4, m3, LayerSeparation));
-			}
-		      else
-			if (m3 == m4)
-			  {
-			    if (m1 != m2)
-			      this->InterLayerInteractionFactors[this->NbrInteractionFactors]
-				= (this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation)
-				   + this->EvaluateInteractionCoefficient(m2, m1, m3, m4, LayerSeparation));
-			    else
-			      this->InterLayerInteractionFactors[this->NbrInteractionFactors]
-				= this->EvaluateInteractionCoefficient(m1, m2, m3, m4, LayerSeparation);
-			  }
 		      this->M1Value[this->NbrInteractionFactors] = m1;
 		      this->M2Value[this->NbrInteractionFactors] = m2;
 		      this->M3Value[this->NbrInteractionFactors] = m3;
@@ -584,8 +548,71 @@ void ParticleOnTorusCoulombWithSpinHamiltonian::EvaluateInteractionFactors()
 	    }
     }
   cout << "nbr interaction = " << this->NbrInteractionFactors << endl;
-  cout << "====================================" << endl;
   delete[] TmpCoefficient;
+
+  // inter-spin (up-down) interaction. Summing the density-density interaction over both spin species gives
+  //   H_ud = 2 sum_{m1,m2,m3,m4} V(m1,m2,m3,m4) a^+_{u,m1} a^+_{d,m2} a_{d,m3} a_{u,m4}
+  // where V(m1,m2,m3,m4) = EvaluateInteractionCoefficient(m1,m2,m3,m4) (m1 <-> m4 and m2 <-> m3 being the same particle).
+  // Up and down particles are distinguishable, so no (anti)symmetrization over m1 <-> m2 or m3 <-> m4 must be done
+  // and the m1 == m2 or m3 == m4 terms must be kept. AduAddAuAd(m1, m2, n1, n2) = a^+_{u,m1} a^+_{d,m2} a_{u,n1} a_{d,n2},
+  // hence n1 = m4 and n2 = m3, with an extra minus sign for fermions from the reordering of the annihilation operators.
+  double InterSpinSign = 2.0;
+  if (this->Particles->GetParticleStatistic() == ParticleOnTorusWithSpin::FermionicStatistic)
+    InterSpinSign = -2.0;
+  TmpCoefficient = new double [this->MaxMomentum * this->MaxMomentum * this->MaxMomentum];
+  MaxCoefficient = 0.0;
+  Pos = 0;
+  for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
+    for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
+      for (int n1 = 0; n1 < this->MaxMomentum; ++n1)
+	{
+	  int n2 = m1 + m2 - n1;
+	  if (n2 < 0)
+	    n2 += this->MaxMomentum;
+	  else
+	    if (n2 >= this->MaxMomentum)
+	      n2 -= this->MaxMomentum;
+	  TmpCoefficient[Pos] = InterSpinSign * this->EvaluateInteractionCoefficient(m1, m2, n2, n1, this->LayerSeparation);
+	  if (MaxCoefficient < fabs(TmpCoefficient[Pos]))
+	    MaxCoefficient = fabs(TmpCoefficient[Pos]);
+	  ++Pos;
+	}
+  MaxCoefficient *= MACHINE_PRECISION;
+  this->NbrInterSpinInteractionFactors = 0;
+  for (int i = 0; i < Pos; ++i)
+    if (fabs(TmpCoefficient[i]) > MaxCoefficient)
+      ++this->NbrInterSpinInteractionFactors;
+  this->InterSpinM1Value = new int [this->NbrInterSpinInteractionFactors];
+  this->InterSpinM2Value = new int [this->NbrInterSpinInteractionFactors];
+  this->InterSpinM3Value = new int [this->NbrInterSpinInteractionFactors];
+  this->InterSpinM4Value = new int [this->NbrInterSpinInteractionFactors];
+  this->InterSpinInteractionFactors = new double [this->NbrInterSpinInteractionFactors];
+  this->NbrInterSpinInteractionFactors = 0;
+  Pos = 0;
+  for (int m1 = 0; m1 < this->MaxMomentum; ++m1)
+    for (int m2 = 0; m2 < this->MaxMomentum; ++m2)
+      for (int n1 = 0; n1 < this->MaxMomentum; ++n1)
+	{
+	  if (fabs(TmpCoefficient[Pos]) > MaxCoefficient)
+	    {
+	      int n2 = m1 + m2 - n1;
+	      if (n2 < 0)
+		n2 += this->MaxMomentum;
+	      else
+		if (n2 >= this->MaxMomentum)
+		  n2 -= this->MaxMomentum;
+	      this->InterSpinM1Value[this->NbrInterSpinInteractionFactors] = m1;
+	      this->InterSpinM2Value[this->NbrInterSpinInteractionFactors] = m2;
+	      this->InterSpinM3Value[this->NbrInterSpinInteractionFactors] = n1;
+	      this->InterSpinM4Value[this->NbrInterSpinInteractionFactors] = n2;
+	      this->InterSpinInteractionFactors[this->NbrInterSpinInteractionFactors] = TmpCoefficient[Pos];
+	      ++this->NbrInterSpinInteractionFactors;
+	    }
+	  ++Pos;
+	}
+  delete[] TmpCoefficient;
+  cout << "nbr inter-spin interaction = " << this->NbrInterSpinInteractionFactors << endl;
+  cout << "====================================" << endl;
 }
 
 // evaluate the numerical coefficient  in front of the a+_m1 a+_m2 a_m3 a_m4 coupling term
@@ -796,25 +823,17 @@ long ParticleOnTorusCoulombWithSpinHamiltonian::FastMultiplicationMemory()
 	      ++memory;
 	      ++this->NbrInteractionPerComponent[i];
 	    }
+	}    
+    }
+  for (int j = 0; j < this->NbrInterSpinInteractionFactors; ++j) 
+    {
+      m1 = this->InterSpinM1Value[j];
+      m2 = this->InterSpinM2Value[j];
+      m3 = this->InterSpinM3Value[j];
+      m4 = this->InterSpinM4Value[j];
+      for (int i = 0; i < this->Particles->GetHilbertSpaceDimension(); ++i)
+	{
 	  Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    {
-	      ++memory;
-	      ++this->NbrInteractionPerComponent[i];
-	    }
-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    {
-	      ++memory;
-	      ++this->NbrInteractionPerComponent[i];
-	    }
-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    {
-	      ++memory;
-	      ++this->NbrInteractionPerComponent[i];
-	    }
-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
 	  if (Index < this->Particles->GetHilbertSpaceDimension())
 	    {
 	      ++memory;
@@ -870,32 +889,18 @@ void ParticleOnTorusCoulombWithSpinHamiltonian::EnableFastMultiplication()
 	      TmpCoefficientArray[Pos] = Coefficient * this->InteractionFactors[j];
 	      ++Pos;
 	    }
+	}
+      for (int j = 0; j < this->NbrInterSpinInteractionFactors; ++j) 
+	{
+	  m1 = this->InterSpinM1Value[j];
+	  m2 = this->InterSpinM2Value[j];
+	  m3 = this->InterSpinM3Value[j];
+	  m4 = this->InterSpinM4Value[j];
 	  Index = this->Particles->AduAddAuAd(i, m1, m2, m3, m4, Coefficient);
 	  if (Index < this->Particles->GetHilbertSpaceDimension())
 	    {
 	      TmpIndexArray[Pos] = Index;
-	      TmpCoefficientArray[Pos] = Coefficient * this->InterLayerInteractionFactors[j];
-	      ++Pos;
-	    }
-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m3, m4, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    {
-	      TmpIndexArray[Pos] = Index;
-	      TmpCoefficientArray[Pos] = -Coefficient * this->InterLayerInteractionFactors[j];
-	      ++Pos;
-	    }
-	  Index = this->Particles->AduAddAuAd(i, m1, m2, m4, m3, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    {
-	      TmpIndexArray[Pos] = Index;
-	      TmpCoefficientArray[Pos] = -Coefficient * this->InterLayerInteractionFactors[j];
-	      ++Pos;
-	    }
-	  Index = this->Particles->AduAddAuAd(i, m2, m1, m4, m3, Coefficient);
-	  if (Index < this->Particles->GetHilbertSpaceDimension())
-	    {
-	      TmpIndexArray[Pos] = Index;
-	      TmpCoefficientArray[Pos] = Coefficient * this->InterLayerInteractionFactors[j];
+	      TmpCoefficientArray[Pos] = Coefficient * this->InterSpinInteractionFactors[j];
 	      ++Pos;
 	    }
 	}

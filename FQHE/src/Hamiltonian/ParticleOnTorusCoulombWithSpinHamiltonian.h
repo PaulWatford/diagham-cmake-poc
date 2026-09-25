@@ -77,8 +77,6 @@ class ParticleOnTorusCoulombWithSpinHamiltonian : public AbstractHamiltonian
 
   // array containing all interaction factors 
   double* InteractionFactors;
-  // array containing all interaction factors 
-  double* InterLayerInteractionFactors;  
   // number of interaction factors
   int NbrInteractionFactors;
   // arrays for indices attached to each interaction factor
@@ -86,6 +84,16 @@ class ParticleOnTorusCoulombWithSpinHamiltonian : public AbstractHamiltonian
   int* M2Value;
   int* M3Value;
   int* M4Value;
+
+  // array containing all inter-spin (up-down) interaction factors, to be used with AduAddAuAd
+  double* InterSpinInteractionFactors;
+  // number of inter-spin interaction factors
+  int NbrInterSpinInteractionFactors;
+  // arrays for indices attached to each inter-spin interaction factor
+  int* InterSpinM1Value;
+  int* InterSpinM2Value;
+  int* InterSpinM3Value;
+  int* InterSpinM4Value;
 
   // flag for fast multiplication algorithm
   bool FastMultiplicationFlag;

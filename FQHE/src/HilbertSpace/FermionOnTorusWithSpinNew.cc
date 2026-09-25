@@ -1849,12 +1849,17 @@ long FermionOnTorusWithSpinNew::RawGenerateStates(int nbrFermions, int lzMax, in
     }
 
   // enter recursion, here:
-  // put two particles
-  long TmpPos = this->RawGenerateStates(nbrFermions - 2, lzMax - 1, totalMomentum + (2 * lzMax), totalSpinUp - 1,  pos);
-  unsigned long Mask = 0x3ul << (lzMax << 1);
+  // states have to be generated in increasing order of their binary representation (within each
+  // highest bit sector), as assumed by GenerateLookUpTable and FindStateIndex
+  // do not put any particles
+  long TmpPos = this->RawGenerateStates(nbrFermions, lzMax - 1, totalMomentum, totalSpinUp, pos);
+  pos = TmpPos;
+  // put one particle with spin down
+  TmpPos = this->RawGenerateStates(nbrFermions - 1, lzMax - 1, totalMomentum + lzMax, totalSpinUp,  pos);
+  unsigned long Mask = 0x1ul << (lzMax << 1);
   for (; pos < TmpPos; ++pos)
     {
-      this->StateHighestBit[pos] = (lzMax << 1)+1;
+      this->StateHighestBit[pos] = (lzMax << 1);
       this->StateDescription[pos] |= Mask;
     }
   // put one particle with spin up
@@ -1865,17 +1870,15 @@ long FermionOnTorusWithSpinNew::RawGenerateStates(int nbrFermions, int lzMax, in
       this->StateHighestBit[pos] = (lzMax << 1)+1;
       this->StateDescription[pos] |= Mask;
     }
-  // put one particle with spin down
-  TmpPos = this->RawGenerateStates(nbrFermions - 1, lzMax - 1, totalMomentum + lzMax, totalSpinUp,  pos);
-  Mask = 0x1ul << (lzMax << 1);
+  // put two particles
+  TmpPos = this->RawGenerateStates(nbrFermions - 2, lzMax - 1, totalMomentum + (2 * lzMax), totalSpinUp - 1,  pos);
+  Mask = 0x3ul << (lzMax << 1);
   for (; pos < TmpPos; ++pos)
     {
-      this->StateHighestBit[pos] = (lzMax << 1);
+      this->StateHighestBit[pos] = (lzMax << 1)+1;
       this->StateDescription[pos] |= Mask;
     }
-  // do not put any particles
-  return this->RawGenerateStates(nbrFermions, lzMax - 1, totalMomentum, totalSpinUp, pos);  
-  
+  return pos;
 }
 
 // generate look-up table associated to current Hilbert space

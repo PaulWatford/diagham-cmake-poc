@@ -262,13 +262,6 @@ class FermionOnSphere :  public ParticleOnSphere
   // return value = number of particles
   virtual int GetNbrParticles();
 
-  // get the underlying many-body state description (used by Wannier construction
-  // and other tools that need direct access to the Fock representation)
-  //
-  // index = state index in the Hilbert space
-  // return value = unsigned long bit-pattern representing the Fock state
-  virtual unsigned long GetStateDescription(int index);
-
   // get the particle statistic 
   //
   // return value = particle statistic
@@ -1435,17 +1428,6 @@ inline int FermionOnSphere::GetNbrOrbitals()
 inline int FermionOnSphere::GetNbrParticles()
 {
   return this->NbrFermions;
-}
-
-// get the underlying many-body state description (used by Wannier construction
-// and other tools that need direct access to the Fock representation)
-//
-// index = state index in the Hilbert space
-// return value = unsigned long bit-pattern representing the Fock state
-
-inline unsigned long FermionOnSphere::GetStateDescription(int index)
-{
-  return this->StateDescription[index];
 }
 
 // get the particle statistic 

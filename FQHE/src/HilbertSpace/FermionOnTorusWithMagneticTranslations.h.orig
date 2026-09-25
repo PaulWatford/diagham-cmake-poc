@@ -192,26 +192,6 @@ class FermionOnTorusWithMagneticTranslations :  public ParticleOnTorusWithMagnet
   // 
   // return avlue = maximum momentum along the y axis
   virtual int GetMaxYMomentum();
-
-  // get the underlying many-body state description for the canonical 
-  // representative in an orbit (used by Wannier construction)
-  //
-  // orbit = orbit index
-  // return value = unsigned long bit-pattern of the canonical Fock state
-  unsigned long GetStateDescription(int orbit);
-
-  // get the reordering sign for an orbit (sign convention used by 
-  // magnetic-translation orbit canonicalisation)
-  //
-  // orbit = orbit index
-  // return value = bit-packed reordering sign data for translations
-  unsigned long GetReorderingSign(int orbit);
-
-  // get the number of distinct momentum-translated states inside one orbit
-  //
-  // orbit = orbit index
-  // return value = number of states in the orbit (1, 2, ..., MaxMomentum)
-  int GetNbrStateInOrbit(int orbit);
   
   // return a list of all possible quantum numbers 
   //
@@ -539,37 +519,6 @@ inline int FermionOnTorusWithMagneticTranslations::GetMaxXMomentum()
 inline int FermionOnTorusWithMagneticTranslations::GetMaxYMomentum()
 {
   return this->MaxMomentum;
-}
-
-// get the underlying many-body state description for the canonical
-// representative in an orbit
-//
-// orbit = orbit index
-// return value = unsigned long bit-pattern of the canonical Fock state
-
-inline unsigned long FermionOnTorusWithMagneticTranslations::GetStateDescription(int orbit)
-{
-  return this->StateDescription[orbit];
-}
-
-// get the reordering sign for an orbit
-//
-// orbit = orbit index
-// return value = bit-packed reordering sign data for translations
-
-inline unsigned long FermionOnTorusWithMagneticTranslations::GetReorderingSign(int orbit)
-{
-  return this->ReorderingSign[orbit];
-}
-
-// get the number of distinct momentum-translated states inside one orbit
-//
-// orbit = orbit index
-// return value = number of states in the orbit
-
-inline int FermionOnTorusWithMagneticTranslations::GetNbrStateInOrbit(int orbit)
-{
-  return this->NbrStateInOrbit[orbit];
 }
   
 // find canonical form of a state description

@@ -264,7 +264,10 @@ endif()
 #   TestDiagHamVectors  a vector-routine benchmark whose main() takes no
 #                       arguments and runs for minutes
 # ----------------------------------------------------------------------------
-set(DIAGHAM_SMOKE_NO_OPTION_PARSER QHEBosons MultipleSpinChain TestDiagHamVectors)
+#   EvaluateBroadening  (QuantumDots/src/Tools/Analysis) tests for its required
+#                       --input before it looks at --help, so --help returns -1
+#                       (upstream quirk; register entry U26)
+set(DIAGHAM_SMOKE_NO_OPTION_PARSER QHEBosons MultipleSpinChain TestDiagHamVectors EvaluateBroadening)
 
 get_property(programs GLOBAL PROPERTY DIAGHAM_ALL_PROGRAMS)
 foreach(program ${programs})

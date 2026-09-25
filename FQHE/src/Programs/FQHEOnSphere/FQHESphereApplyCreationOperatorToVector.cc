@@ -1,5 +1,6 @@
 
 #include "config.h"
+#include <limits>
 
 #include "Vector/RealVector.h"
 
@@ -374,7 +375,6 @@ int main(int argc, char** argv)
 #include <cstring>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;

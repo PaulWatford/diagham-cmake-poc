@@ -203,7 +203,11 @@ int main(int argc, char** argv)
  	  TmpHamiltonian.SetMatrixElement(i - 1, i, TmpNorm);
 	  HPlusNStates[i] /= TmpNorm;
 	}
+#ifdef __LAPACK__
      TmpHamiltonian.LapackDiagonalize(TmpDiag);
+#else
+     TmpHamiltonian.Diagonalize(TmpDiag);
+#endif
       File.precision(std::numeric_limits<double>::max_digits10);
       for (int i = 0; i < NbrStates; ++i)
 	{

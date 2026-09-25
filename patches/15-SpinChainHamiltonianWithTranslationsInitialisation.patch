@@ -1,0 +1,23 @@
+--- a/Spin/src/Hamiltonian/SpinChainHamiltonianWithTranslations.cc
++++ b/Spin/src/Hamiltonian/SpinChainHamiltonianWithTranslations.cc
+@@ -89,6 +89,20 @@
+   if (this->NNNCoupling != 0)
+     cout << "Adding NNN interaction: " << this->NNNCoupling << endl;
+ 
++  // same initialisation as the default constructor: without it the destructor
++  // tests an uninitialised FastMultiplicationFlag (and deletes uninitialised
++  // pointers), and IsHermitian() returns an uninitialised HermitianSymmetryFlag
++  this->PrecalculationShift = 0;
++  this->FastMultiplicationFlag = false;
++  this->FastMultiplicationStep = 1;
++  this->NbrInteractionPerComponent = 0;
++  this->NbrBalancedTasks = 0;
++  this->LoadBalancingArray = 0;
++  this->InteractionPerComponentIndex = 0;
++  this->InteractionPerComponentCoefficient = 0;
++  this->HermitianSymmetryFlag = false;
++  this->Architecture = 0;
++
+   this->SzSzContributions = new double [this->Chain->GetHilbertSpaceDimension()];
+   this->EvaluateDiagonalMatrixElements();
+   this->EvaluateCosinusTable();

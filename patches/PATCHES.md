@@ -371,6 +371,157 @@ dimensions per momentum sector and producing a full momentum-resolved
 spectrum with no recursion or crash. The clean-room binary is bit-identical
 (SHA256 4441516506...) to the working-tree build.
 
+## Class H: surfaced by building Spin and QuantumDots (2 patches + a fix to patch 08, 24/09)
+
+Spin and QuantumDots were not built by this PoC before 24/09. Turning them
+on surfaced the following; after these, all 61 libraries and 561 programs
+(473 + 69 Spin + 19 QuantumDots) build with no errors against the pinned
+upstream revision `ed78a30`.
+
+### 12-QuantumDotsThreeDTwoParticlesPrintState.patch
+
+`QuantumDots/src/HilbertSpace/ThreeDTwoParticles.cc:144` streams the
+`ostream&` returned by `PrintState` into the same stream:
+
+```cpp
+Str << "'" << this->FirstParticle->PrintState (Str, state1) << ", " << ...;
+```
+
+Before C++11 this compiled through `basic_ios::operator void*` and printed
+a pointer value in the middle of the state; since C++11 that conversion is
+`explicit operator bool` and the line does not compile, which takes the
+whole `QuantumDotHilbertSpace` library (and every QuantumDots program) down
+with it. The patch prints the two sub-states in sequence, and uses `(`
+instead of the unbalanced `'` so the output reads `(a, b)`. Output format
+only; no physics.
+
+### 13-SpinLapackDiagonalizeGating.patch
+
+Class A again (see patches 01-05): 22 `LapackDiagonalize` calls on
+`RealSymmetricMatrix` / `HermitianMatrix` in 9 Spin programs
+(`2DToricCodeEntanglementEntropy`, `HaahCodeEntropy`,
+`PEPSComputeS2LocalEigenstate`, `PairHoppingModelFSA`,
+`Spin1_2ChainFloquet`, `Spin1_2ChainFullFloquet`, `SpinChainComputeS2`,
+`SpinChainMultipleComputeS2`, `XCubeEntanglementEntropy`) with no
+`#ifdef __LAPACK__` guard. Each is wrapped in the canonical
+
+```cpp
+#ifdef __LAPACK__
+  M.LapackDiagonalize(D[, Q]);
+#else
+  M.Diagonalize(D[, Q]);
+#endif
+```
+
+with identical arguments (both methods have matching overloads on both
+classes). Only the call sites the compiler rejected were wrapped: the
+patch was generated from the build log's error locations, so calls on
+types that declare `LapackDiagonalize` unconditionally are untouched.
+
+### Fix to patch 08 (two Spin files)
+
+Patch 08 added `std::numeric_limits` to
+`Spin/src/Programs/GenericOpenSpinChainWithDisorder.cc` and
+`GenericOpenSpinChainWithDisorderLongRangeInteraction.cc`, but put the
+matching `#include <limits>` inside those files' `#ifdef HAVE_GSL` block,
+so both failed to compile whenever GSL was off. This was exactly the risk
+the "never been compile-tested" note below flagged. The include now sits
+unconditionally after `#include <iostream>`; those two file sections of
+patch 08 were regenerated against pristine upstream. No other file in
+patches 08/09 adds `<limits>` inside a conditional block (checked).
+
+## Class I: physics / memory-safety defects found by the ctest suite (2 patches, 24/09)
+
+Unlike classes A-H, these are not compile errors: the programs built and
+ran, and produced wrong numbers or undefined behaviour. **They change
+physics code and need a DiagHam maintainer's review before going
+upstream**; the evidence for each is below and in the regression tests
+named.
+
+### 14-TorusSU2CoulombBasisOrderAndInterSpinInteraction.patch
+
+Fixes the spinful torus Coulomb defect of `../BUG_torus_su2_coulomb.md`,
+which turned out to be two independent bugs, both only reachable through
+`FQHETorusFermionsWithSpin` (the only user of `FermionOnTorusWithSpinNew`
+and `ParticleOnTorusCoulombWithSpinHamiltonian`, apart from
+`FQHETorusShowBasis`, which only prints the basis).
+
+1. **Basis order vs. lookup** (`FermionOnTorusWithSpinNew.cc`,
+   `RawGenerateStates`). `GenerateLookUpTable` and the binary search in
+   `FindStateIndex` assume that states with the same highest bit are
+   stored in increasing order. The recursion generated them in
+   decreasing order, while its one-particle base case generated them
+   increasing, so the order was non-monotonic and lookups landed on the
+   wrong state. `FindStateIndex` returns `PosMax`, a valid index, when a
+   state is not found, so the error was silent. With at most one state
+   per highest-bit sector (N = 2, polarised) this was harmless, which is
+   why N = 2 agreed. An exact Python port of the generation and search
+   code counts, for N = 4, Sz = 0, about 345 of 360-366 basis states per
+   Ky sector whose own lookup returns the wrong index; after the fix, 0
+   for every case tried. The fix reorders the four recursion branches
+   (empty, down, up, both) so that generation is increasing.
+2. **Up-down interaction** (`ParticleOnTorusCoulombWithSpinHamiltonian`).
+   The inter-spin term was built from the same-spin, antisymmetrised
+   combination V1234 + V2143 - V1243 - V2134, stored only for m1 > m2,
+   m3 > m4 and only where the same-spin term was non-zero, and applied
+   through four `AduAddAuAd` calls. Up and down electrons are
+   distinguishable, so that keeps only the orbital-antisymmetric channel
+   and drops every m1 == m2 or m3 == m4 term (an up and a down electron in
+   the same orbital). The fix builds a separate, unsymmetrised inter-spin
+   list over all (m1, m2, n1), with n2 = m1 + m2 - n1 mod Nphi and
+   coefficient -2 V(m1, m2, n2, n1, d) (the factor 2 sums the ud and du
+   terms; the sign is the fermionic reordering of the annihilation
+   operators, +2 for bosons, though no bosonic class implements this
+   interface), and applies it with one `AduAddAuAd` call in the plain and
+   both fast-multiplication paths. `InterLayerInteractionFactors` is
+   removed; the new arrays are freed in the destructor and in
+   `SetHilbertSpace`.
+
+Verification (full spectra, `--full-diag`, square torus):
+
+| Check | Before | After |
+|---|---|---|
+| polarised vs spinless `FQHETorusFermionsCoulomb`, N = 3, Nphi = 9 (84 states) | off by up to 0.25 | max diff 4e-14 |
+| polarised vs spinless, N = 2 / N = 4 | 5e-12 / wrong | 5e-12 / 1.3e-13 |
+| Sz = 0 vs `FQHETorusFermionsWithSpinAndTranslations` (different Hilbert-space and Hamiltonian classes), N = 4, Nphi = 12 (4356 states) | GS -1.2734 (vs -0.7624) | max diff 2.4e-12, GS -0.762419667465 |
+| same, N = 3, Sz = 1 (324 states) | off by up to 0.43 | max diff 1.3e-10 |
+| same, N = 3, Sz = 1, layer separation d = 1 | | max diff 1.5e-9 |
+| SU(2) multiplet nesting Sz = 4 ⊂ 2 ⊂ 0, N = 4 | broken (2e-2, 5e-2) | 7.9e-14 |
+
+Fast multiplication on (`--memory 500`) and off (`--memory 0`) give the
+same spectra. Two of these checks are ctest regressions
+(`physics.fqhe.torus.su2_coulomb.*`); both fail against the unpatched
+binary.
+
+**Consequences worth a maintainer's attention:** every
+`FQHETorusFermionsWithSpin` result is wrong for N >= 3, and every
+unpolarised result is wrong even for N = 2. The basis order changes, so
+eigenvector files written by the old code do not index the new basis.
+
+**Not fixed, flagged:** `FindStateIndex` returning a valid index
+(`PosMax`) rather than the not-found sentinel is what made bug 1 silent;
+it is harmless once the order is right, but fragile. The leftover debug
+output in `AduAduAuAuV` / `AuAuV` is untouched (not in code this patch
+changes).
+
+### 15-SpinChainHamiltonianWithTranslationsInitialisation.patch
+
+`SpinChainHamiltonianWithTranslations`'s data constructor (used by
+`GenericPeriodicSpinChain` and others) never initialised
+`FastMultiplicationFlag`, `HermitianSymmetryFlag`, `Architecture` or the
+fast-multiplication arrays; only the default constructor did. So the
+destructor tested an uninitialised flag and could `delete[]` garbage
+pointers, and `IsHermitian()` returned garbage, which can send the
+complex Lanczos path into the unimplemented
+`AbstractHamiltonian::HermitianLowLevelAddMultiply` dummy. valgrind
+reports both uses of uninitialised values in the default build; in the
+`hpc` (MPI) build the heap contents differ and every
+`GenericPeriodicSpinChain` run aborted with `free(): invalid pointer`,
+which is how the ctest suite caught it. The patch copies the default
+constructor's initialisation into the data constructor. `false` is the
+right `HermitianSymmetryFlag`: this class does not implement the
+hermitian-symmetry multiply methods.
+
 ## Excluded from build (1 file: see `cmake/ApplyUpstreamPatches.cmake`)
 
 For per-file authorship/date data, inline markers, and other
@@ -670,6 +821,11 @@ patched) -- not something this session's fix caused or fixed. Flagged
 here rather than silently left for the next person to rediscover.
 
 ## Patch 08: the Spin/QuantumDots portion has never been compile-tested (22/09, audited by a second Claude session)
+
+> **Resolved 24/09:** Spin and QuantumDots are now built by default, so
+> patch 08's edits to those 92 files are compiled on every build. Doing so
+> found one defect in them (a misplaced `#include <limits>` in two Spin
+> files, fixed; see "Class H" above).
 
 Patch 08's own file-count breakdown above lists `Spin/src/Programs/`
 (~65 files) and `QuantumDots/src/` (~27 files) among the 447 files it

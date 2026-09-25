@@ -9684,14 +9684,14 @@
  		  double Tmp;
 --- a/Spin/src/Programs/GenericOpenSpinChainWithDisorder.cc
 +++ b/Spin/src/Programs/GenericOpenSpinChainWithDisorder.cc
-@@ -3,6 +3,7 @@
- #include "Matrix/RealMatrix.h"
- #ifdef HAVE_GSL  
- #include <gsl/gsl_rng.h>
-+#include <limits>
- #include <gsl/gsl_randist.h>
- #endif
+@@ -26,6 +26,7 @@
  
+ 
+ #include <iostream>
++#include <limits>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <math.h>
 @@ -42,7 +43,7 @@
  
  int main(int argc, char** argv)
@@ -9703,14 +9703,14 @@
    OptionManager Manager ("GenericOpenSpinChainWithDisorder" , "0.01");
 --- a/Spin/src/Programs/GenericOpenSpinChainWithDisorderLongRangeInteraction.cc
 +++ b/Spin/src/Programs/GenericOpenSpinChainWithDisorderLongRangeInteraction.cc
-@@ -3,6 +3,7 @@
- #include "Matrix/RealMatrix.h"
- #ifdef HAVE_GSL  
- #include <gsl/gsl_rng.h>
-+#include <limits>
- #include <gsl/gsl_randist.h>
- #endif
+@@ -26,6 +26,7 @@
  
+ 
+ #include <iostream>
++#include <limits>
+ #include <stdlib.h>
+ #include <string.h>
+ #include <math.h>
 @@ -42,7 +43,7 @@
  
  int main(int argc, char** argv)

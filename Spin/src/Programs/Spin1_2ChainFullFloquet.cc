@@ -443,7 +443,11 @@ int main(int argc, char** argv)
 	      cout << "done in " << Dt << "sec" << endl;      
 	      cout << "diagonalizing H" << j << " Hamiltonian" <<  endl;
 	      gettimeofday (&(TotalStartingTime), 0);
+#ifdef __LAPACK__
 	      HRep.LapackDiagonalize(HamiltonianEigenvalues[j], TmpBasis);
+#else
+	      HRep.Diagonalize(HamiltonianEigenvalues[j], TmpBasis);
+#endif
 	      delete Hamiltonian;
 	      if (StepMatrices[j].GetNbrRow() == 0)
 		{
@@ -471,7 +475,11 @@ int main(int argc, char** argv)
 	  cout << "done in " << Dt << "sec" << endl;      
 	  cout << "diagonalizing H" << j << " Hamiltonian" <<  endl;
 	  gettimeofday (&(TotalStartingTime), 0);
+#ifdef __LAPACK__
 	  HRep.LapackDiagonalize(HamiltonianEigenvalues[j], StepMatrices[j + 1]);
+#else
+	  HRep.Diagonalize(HamiltonianEigenvalues[j], StepMatrices[j + 1]);
+#endif
 	  delete Hamiltonian;
 	  if (StepMatrices[j].GetNbrRow() == 0)
 	    {

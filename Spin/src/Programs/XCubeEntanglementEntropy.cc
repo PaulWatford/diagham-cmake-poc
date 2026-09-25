@@ -360,7 +360,11 @@ int main(int argc, char** argv)
 		  gettimeofday (&(StartingTime), 0);
 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
+#ifdef __LAPACK__
 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
+#else
+		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
+#endif
 		  gettimeofday (&(EndingTime), 0);	      
 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
@@ -568,7 +572,11 @@ int main(int argc, char** argv)
 		  gettimeofday (&(StartingTime), 0);
 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
+#ifdef __LAPACK__
 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
+#else
+		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
+#endif
 		  gettimeofday (&(EndingTime), 0);	      
 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
@@ -811,7 +819,11 @@ int main(int argc, char** argv)
 		  gettimeofday (&(StartingTime), 0);
 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
+#ifdef __LAPACK__
 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
+#else
+		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
+#endif
 		  gettimeofday (&(EndingTime), 0);	      
 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
@@ -1040,7 +1052,11 @@ int main(int argc, char** argv)
 		  gettimeofday (&(StartingTime), 0);
 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
+#ifdef __LAPACK__
 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
+#else
+		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
+#endif
 		  gettimeofday (&(EndingTime), 0);	      
 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));

@@ -196,7 +196,11 @@ int main(int argc, char** argv)
 	  RealSymmetricMatrix HRep2 (Hamiltonian2->GetHilbertSpaceDimension(), true);
 	  RealDiagonalMatrix TmpDiag2 (Hamiltonian2->GetHilbertSpaceDimension());
 	  Hamiltonian2->GetHamiltonian(HRep2);
+#ifdef __LAPACK__
 	  HRep2.LapackDiagonalize(TmpDiag2, Basis2);
+#else
+	  HRep2.Diagonalize(TmpDiag2, Basis2);
+#endif
 	  delete Hamiltonian2;
 	  gettimeofday (&(TotalEndingTime), 0);
 	  Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
@@ -214,7 +218,11 @@ int main(int argc, char** argv)
 	      HermitianMatrix HRep3 (Hamiltonian3->GetHilbertSpaceDimension(), true);
 	      TmpDiag3 = RealDiagonalMatrix(Hamiltonian3->GetHilbertSpaceDimension());
 	      Hamiltonian3->GetHamiltonian(HRep3);
+#ifdef __LAPACK__
 	      HRep3.LapackDiagonalize(TmpDiag3, Basis3);
+#else
+	      HRep3.Diagonalize(TmpDiag3, Basis3);
+#endif
 	      delete Hamiltonian3;
 	      gettimeofday (&(TotalEndingTime), 0);
 	      Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 

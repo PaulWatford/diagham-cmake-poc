@@ -1615,7 +1615,11 @@ void SolveS2Degeneracy(RealMatrix& realEigenstates, int index, int degeneracy, d
   RealMatrix TmpS2Eigenstates(degeneracy, degeneracy, true);	      
   RealMatrix TmpBasis2 (TmpBasis, degeneracy);
   TmpS2Eigenstates.SetToIdentity();
+#ifdef __LAPACK__
   S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
+#else
+  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
+#endif
   for (int i = 0; i < degeneracy; ++i)
     {
       s2Values[index + i] = TmpS2Eigenvalues[i];
@@ -1651,7 +1655,11 @@ void SolveS2Degeneracy(ComplexMatrix& realEigenstates, int index, int degeneracy
   ComplexMatrix TmpS2Eigenstates(degeneracy, degeneracy, true);	      
   ComplexMatrix TmpBasis2 (TmpBasis, degeneracy);
   TmpS2Eigenstates.SetToIdentity();
+#ifdef __LAPACK__
   S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
+#else
+  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
+#endif
   for (int i = 0; i < degeneracy; ++i)
     {
       s2Values[index + i] = TmpS2Eigenvalues[i];

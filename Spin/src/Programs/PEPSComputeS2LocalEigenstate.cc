@@ -99,7 +99,11 @@ int main(int argc, char** argv)
   RealDiagonalMatrix TmpS2Eigenvalues(NbrStates);
   ComplexMatrix TmpBasis (NbrStates, NbrStates);
   TmpBasis.SetToIdentity();
+#ifdef __LAPACK__
   S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpBasis);
+#else
+  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpBasis);
+#endif
   int NbrS0State = 0;
   for (int i = 0; i < NbrStates; ++i)
     {
@@ -154,7 +158,11 @@ int main(int argc, char** argv)
   RealDiagonalMatrix TmpC2Eigenvalues(NbrS0State);
   ComplexMatrix TmpBasisC2 (NbrS0State,NbrS0State);
   TmpBasisC2.SetToIdentity();
+#ifdef __LAPACK__
   C2Matrix.LapackDiagonalize(TmpC2Eigenvalues, TmpBasisC2);
+#else
+  C2Matrix.Diagonalize(TmpC2Eigenvalues, TmpBasisC2);
+#endif
   int Nbr1Eigenvalue=0;
   for(int i =0; i <NbrS0State; i++)
     {

@@ -1,0 +1,71 @@
+# Auto-generated CMakeLists.txt for FQHE/src/Programs/FQHEOnTorus
+# Regenerate with: python3 scripts_cmake/extract_autotools.py
+
+# Programs listed in the upstream Makefile.am bin_PROGRAMS.
+diagham_add_programs(PREFIX FQHEOnTorus
+    PROGRAMS
+        FQHETorusFermionsCoulomb FQHETorusFermionsCoulomb.cc
+        FQHETorusFermionsWithSpin FQHETorusFermionsWithSpin.cc
+        FQHETorusFermionsWithSpinAndTranslations FQHETorusFermionsWithSpinAndTranslations.cc
+        FQHETorusFermionsWithTranslations FQHETorusFermionsWithTranslations.cc
+        FQHETorusBosonsWithTranslations FQHETorusBosonsWithTranslations.cc
+        FQHETorusGetDimension FQHETorusGetDimension.cc
+        FQHETorusShowBasis FQHETorusShowBasis.cc
+        FQHETwistedTorusBosonsTwoBodyGeneric FQHETwistedTorusBosonsTwoBodyGeneric.cc
+        FQHETorusBosonsTwoBodyGeneric FQHETorusBosonsTwoBodyGeneric.cc
+        FQHETorusBosonsEntanglementEntropyParticlePartition FQHETorusBosonsEntanglementEntropyParticlePartition.cc
+        FQHETorusEntanglementSpectrum FQHETorusEntanglementSpectrum.cc
+        FQHETorusBosonsEntanglementEntropy FQHETorusBosonsEntanglementEntropy.cc
+        FQHETorusBosonsThreeBodyDelta FQHETorusBosonsThreeBodyDelta.cc
+        FQHETorusFermionsTwoBodyGeneric FQHETorusFermionsTwoBodyGeneric.cc
+        FQHETorusFermionsEntanglementEntropy FQHETorusFermionsEntanglementEntropy.cc
+        FQHETorusFermionsWithSpinTwoBodyGeneric FQHETorusFermionsWithSpinTwoBodyGeneric.cc
+        FQHETorusFermionsWithSpinSValue FQHETorusFermionsWithSpinSValue.cc
+        FQHETorusBosonsCoulomb FQHETorusBosonsCoulomb.cc
+        FQHETorusEntanglementEntropyParticlePartition FQHETorusEntanglementEntropyParticlePartition.cc
+        FQHETorusBosonsTwoLandauLevels FQHETorusBosonsTwoLandauLevels.cc
+        FQHETorusTwoLandauLevelProjection FQHETorusTwoLandauLevelProjection.cc
+        FQHETorusBosonsWithSpinTwoBodyGeneric FQHETorusBosonsWithSpinTwoBodyGeneric.cc
+        FQHETorusBosonsWithSU3SpinTwoBodyGeneric FQHETorusBosonsWithSU3SpinTwoBodyGeneric.cc
+        FQHETorusWithSU3SpinEntanglementEntropyParticlePartition FQHETorusWithSU3SpinEntanglementEntropyParticlePartition.cc
+        FQHETorusBosonsWithSU4SpinTwoBodyGeneric FQHETorusBosonsWithSU4SpinTwoBodyGeneric.cc
+        FQHETorusWithSU4SpinEntanglementEntropyParticlePartition FQHETorusWithSU4SpinEntanglementEntropyParticlePartition.cc
+        FQHETorusWithSU2SpinEntanglementEntropyParticlePartition FQHETorusWithSU2SpinEntanglementEntropyParticlePartition.cc
+        FQHETorusBosonsThreeLandauLevels FQHETorusBosonsThreeLandauLevels.cc
+        FQHETorusSingleModeApproximation FQHETorusSingleModeApproximation.cc
+        FQHETorusComputeKx FQHETorusComputeKx.cc
+        FQHETorusComputeC4 FQHETorusComputeC4.cc
+        FQHETorusBosonsWithSpinAndTranslations FQHETorusBosonsWithSpinAndTranslations.cc
+        FQHETorusMultipleU1ToU1 FQHETorusMultipleU1ToU1.cc
+        FQHETorusBosonsWithTranslationsGenericThreeBody FQHETorusBosonsWithTranslationsGenericThreeBody.cc
+        FQHETorusMinimalModelQuantumDimensions FQHETorusMinimalModelQuantumDimensions.cc
+        FQHETorusNematicOrderParameter FQHETorusNematicOrderParameter.cc
+        FQHETorusBosonsWithTranslationsNBodyHardCore FQHETorusBosonsWithTranslationsNBodyHardCore.cc
+        FQHETorusBosonsWithSU3SpinAndTranslations FQHETorusBosonsWithSU3SpinAndTranslations.cc
+        FQHETorusFermionsWithTranslationsGenericNBody FQHETorusFermionsWithTranslationsGenericNBody.cc
+        FQHETorusBosonsWithTranslationsGenericNBody FQHETorusBosonsWithTranslationsGenericNBody.cc
+        FQHETorusWithSU2SpinSMinus FQHETorusWithSU2SpinSMinus.cc
+        FQHETorusFermionsWithTranslationsNBodyHollowCore FQHETorusFermionsWithTranslationsNBodyHollowCore.cc
+        FQHETorusMPSCreateState FQHETorusMPSCreateState.cc
+        FQHETorusChangeAngle FQHETorusChangeAngle.cc
+        FQHETorusMPSEntanglementSpectrum FQHETorusMPSEntanglementSpectrum.cc
+        FQHETorusMPSOverlap FQHETorusMPSOverlap.cc
+        FQHETorusWithSU2SpinComputeS2 FQHETorusWithSU2SpinComputeS2.cc
+        FQHETorusStructureFactor FQHETorusStructureFactor.cc
+        FQHETorusBosonsWithSpinAndTranslationsNBodyHardCore FQHETorusBosonsWithSpinAndTranslationsNBodyHardCore.cc
+        FQHETorusWignerEnergy FQHETorusWignerEnergy.cc
+        FQHETorusMPSGeometricEntanglement FQHETorusMPSGeometricEntanglement.cc
+        FQHETorusWithSU2SpinComputeSx FQHETorusWithSU2SpinComputeSx.cc
+        FQHETorusWithSU2SpinRotation FQHETorusWithSU2SpinRotation.cc
+        FQHETorusBosonsFilterOccupation FQHETorusBosonsFilterOccupation.cc
+        FQHETorusFermionsTwoBodyGenericAllMomenta FQHETorusFermionsTwoBodyGenericAllMomenta.cc
+        FQHET2xT2BosonsTwoBodyGeneric FQHET2xT2BosonsTwoBodyGeneric.cc
+        FQHET2xS2BosonsTwoBodyGeneric FQHET2xS2BosonsTwoBodyGeneric.cc
+        FQHET2xCylinderBosonsTwoBodyGeneric FQHET2xCylinderBosonsTwoBodyGeneric.cc
+        FQHETorusCorrelation FQHETorusCorrelation.cc
+        FQHETwistedTorusFermionsTwoBodyGeneric FQHETwistedTorusFermionsTwoBodyGeneric.cc
+        FQHETorusSpectralResponse FQHETorusSpectralResponse.cc
+        FQHETorusFermionsPairHopping FQHETorusFermionsPairHopping.cc
+        FQHETorusFermionsPairHoppingKrylovSubspace FQHETorusFermionsPairHoppingKrylovSubspace.cc
+        FQHETorusWithSU2SpinSingleModeApproximation FQHETorusWithSU2SpinSingleModeApproximation.cc
+)

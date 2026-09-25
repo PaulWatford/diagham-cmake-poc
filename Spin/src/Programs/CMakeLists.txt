@@ -1,0 +1,78 @@
+# Auto-generated CMakeLists.txt for Spin/src/Programs
+# Regenerate with: python3 scripts_cmake/extract_autotools.py
+
+# Programs listed in the upstream Makefile.am bin_PROGRAMS.
+diagham_add_programs(PREFIX Spin
+    PROGRAMS
+        Cobalt Cobalt.cc
+        MultipleSpinChain MultipleSpinChain.cc
+        SandGlassSpinChain SandGlassSpinChain.cc
+        SpinChainWithTranslation SpinChainWithTranslation.cc
+        NDMAPSpinChain NDMAPSpinChain.cc
+        SUNSpinsOnLattice SUNSpinsOnLattice.cc
+        SUNSpinsOnLatticeCyclic SUNSpinsOnLatticeCyclic.cc
+        GenericOpenSpinChain GenericOpenSpinChain.cc
+        GenericPeriodicSpinChain GenericPeriodicSpinChain.cc
+        DoubleTriangleSpinChain DoubleTriangleSpinChain.cc
+        HaldaneShastrySpinChain HaldaneShastrySpinChain.cc
+        Potts3ChainModel Potts3ChainModel.cc
+        GenericSpinChainShowBasis GenericSpinChainShowBasis.cc
+        SpinChainEntanglementEntropy SpinChainEntanglementEntropy.cc
+        SpinChainAKLT SpinChainAKLT.cc
+        GenericOpenSpinChainWithDisorder GenericOpenSpinChainWithDisorder.cc
+        GenericOpenSpinChainWithDisorderLongRangeInteraction GenericOpenSpinChainWithDisorderLongRangeInteraction.cc
+        Z2InteractingChain Z2InteractingChain.cc
+        Z2InteractingChainComputeInvariant Z2InteractingChainComputeInvariant.cc
+        SpinChainXYZ SpinChainXYZ.cc
+        PottsChainEntanglementEntropy PottsChainEntanglementEntropy.cc
+        PottsChainShowBasis PottsChainShowBasis.cc
+        DMRGSixVertexModelTransferMatrixSquare DMRGSixVertexModelTransferMatrixSquare.cc
+        DMRGMPOGivenByInputFile DMRGMPOGivenByInputFile.cc
+        PottsChainNonLocalOccupationNumber PottsChainNonLocalOccupationNumber.cc
+        Spin1_2ChainFloquet Spin1_2ChainFloquet.cc
+        GenericOpenSpinChainTripleProduct GenericOpenSpinChainTripleProduct.cc
+        SpinSystemSzToS SpinSystemSzToS.cc
+        FullGenericOpenSpinChain FullGenericOpenSpinChain.cc
+        Spin1_2ChainFullFloquet Spin1_2ChainFullFloquet.cc
+        PeriodicSpinChainAKLT PeriodicSpinChainAKLT.cc
+        SpinChainMultipleEntanglementSpectra SpinChainMultipleEntanglementSpectra.cc
+        SpinChainMultipleEntanglementSpectrumLevelStatistics SpinChainMultipleEntanglementSpectrumLevelStatistics.cc
+        TwoDimensionalTransverseFieldIsingModel TwoDimensionalTransverseFieldIsingModel.cc
+        SpinSystemConvertFromTranslationInvariantBasis SpinSystemConvertFromTranslationInvariantBasis.cc
+        EDTransfertMatrixMPOGivenByInputFile EDTransfertMatrixMPOGivenByInputFile.cc
+        PEPSEntanglementSpectrum PEPSEntanglementSpectrum.cc
+        SpinChainComputeS2 SpinChainComputeS2.cc
+        PEPSCheckSU2Invariance PEPSCheckSU2Invariance.cc
+        PEPSComputeS2LocalEigenstate PEPSComputeS2LocalEigenstate.cc
+        SpinChainMultipleComputeS2 SpinChainMultipleComputeS2.cc
+        SpinTriangleLatticeProjectedFromKagome SpinTriangleLatticeProjectedFromKagome.cc
+        SpinKagomeLattice SpinKagomeLattice.cc
+        PeriodicSpinChainJ1J2 PeriodicSpinChainJ1J2.cc
+        EDTransfertMatrixSU2InvariantWithSublatticeQuantumNumbersPEPS EDTransfertMatrixSU2InvariantWithSublatticeQuantumNumbersPEPS.cc
+        SpinProjectKagomeOntoTriangleLattice SpinProjectKagomeOntoTriangleLattice.cc
+        PeriodicSpinChainGeneralizedAKLT PeriodicSpinChainGeneralizedAKLT.cc
+        SpinKagomeComputeSpinSpinCorrelations SpinKagomeComputeSpinSpinCorrelations.cc
+        PEPSComputeState PEPSComputeState.cc
+        SpinComputeBondEnergyTriangleLatticeProjectedFromKagome SpinComputeBondEnergyTriangleLatticeProjectedFromKagome.cc
+        SpinApplyMirrorSymmetry SpinApplyMirrorSymmetry.cc
+        Unconventional3DToricCode Unconventional3DToricCode.cc
+        ShastrySutherlandModel ShastrySutherlandModel.cc
+        HaahCodeEntropy HaahCodeEntropy.cc
+        XCubeEntanglementEntropy XCubeEntanglementEntropy.cc
+        2DToricCodeEntanglementEntropy 2DToricCodeEntanglementEntropy.cc
+        SpinChainAKLTAsStabilizer SpinChainAKLTAsStabilizer.cc
+        SU3SpinOnLattice SU3SpinOnLattice.cc
+        SpinChain4QbitsStabilizer SpinChain4QbitsStabilizer.cc
+        TwoDimensionalHeisenbergModel TwoDimensionalHeisenbergModel.cc
+        TwoDimensionalSquareLatticeSpin3_2Model TwoDimensionalSquareLatticeSpin3_2Model.cc
+        PairHoppingModel PairHoppingModel.cc
+        PeriodicPairHoppingModel PeriodicPairHoppingModel.cc
+        PeriodicPairHoppingModelTimeEvolution PeriodicPairHoppingModelTimeEvolution.cc
+        PairHoppingMultipleEntanglementSpectra PairHoppingMultipleEntanglementSpectra.cc
+        PairHoppingModelFSA PairHoppingModelFSA.cc
+        PeriodicSpinChainOBrienFendley PeriodicSpinChainOBrienFendley.cc
+        Potts3DualOBrienFendleyModel Potts3DualOBrienFendleyModel.cc
+        PottsChainMultipleEntanglementSpectra PottsChainMultipleEntanglementSpectra.cc
+        SpinChainLongRangeXYZ SpinChainLongRangeXYZ.cc
+        SpinChainWithIntegerHamiltonian SpinChainWithIntegerHamiltonian.cc
+)

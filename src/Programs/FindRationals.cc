@@ -12,6 +12,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -21,7 +22,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("FindRationals" , "0.01");
@@ -86,7 +87,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(Manager.GetString("output-file"), ios::binary | ios::out); 
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (int i = 0; i < NbrLines; ++i)
 	{
 	  double Error = TmpRational.GetClosestRational((TmpNumbers[i] + Shift) * Rescale, MaxDenominator);

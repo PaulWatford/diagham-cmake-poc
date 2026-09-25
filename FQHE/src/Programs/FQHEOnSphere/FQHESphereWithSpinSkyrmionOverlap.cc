@@ -45,6 +45,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 double dsqrarg;
 #define DSQR(a) ((dsqrarg=(a)) == 0.0 ? 0.0 : dsqrarg*dsqrarg)
@@ -70,7 +71,7 @@ double OverlapError(WeightedComplexObservable &ScalarProduct, WeightedRealObserv
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereWithSpinSkyrmionOverlap" , "0.01");
@@ -728,7 +729,7 @@ int main(int argc, char** argv)
       RecordedOverlap[RecordIndex] = OverlapValue(ScalarProduct, NormExact);
       RecordedOverlapError[RecordIndex] = OverlapError(ScalarProduct, NormExact);
       ofstream OverlapRecordFile;
-      OverlapRecordFile.precision(14);
+      OverlapRecordFile.precision(std::numeric_limits<double>::max_digits10);
       OverlapRecordFile.open(Manager.GetString("record-file"), ios::out | ios::binary);
       int NbrRecords = NbrIter / RecordStep;
       OverlapRecordFile << "# Monte Carlo overlap calculation" << endl

@@ -32,6 +32,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -40,7 +41,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHECheckerboardLatticeModelForgeState" , "0.01");
@@ -143,7 +144,7 @@ int main(int argc, char** argv)
     sprintf (EigenstateListOutputFile, "fermions_singleband_checkerboardlattice_twoparticles_n_%d_x_%d_y_%d_t1_%f_t2_%f_gx_%f_gy_%f_mus_%f.linear", NbrParticles, NbrSitesX, NbrSitesY, 
 	     Manager.GetDouble("t1"), Manager.GetDouble("t2"), Manager.GetDouble("gamma-x"), Manager.GetDouble("gamma-y"), Manager.GetDouble("mu-s"));
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File.open(EigenstateListOutputFile, ios::binary | ios::out);
   File << "# vector_name coefficient" << endl;
 

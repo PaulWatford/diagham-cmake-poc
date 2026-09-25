@@ -36,6 +36,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -65,7 +66,7 @@ bool FCIImpuritiesGetHilbertSpace(char* inputState, int& nbrParticles, int& nbrS
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FCIImpurities" , "0.01");
@@ -297,7 +298,7 @@ int main(int argc, char** argv)
   if (Manager.GetString("use-precomputed") == 0)
     {	  
       ofstream File;
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File.open(OutputName, ios::binary | ios::out);
       File << "# density coefficients for " << Manager.GetString("input-states") << endl;
       File << "#" << endl << "# state_index_left state_index_right m  n  <left|c^+_m c_n|right>" << endl;
@@ -366,7 +367,7 @@ int main(int argc, char** argv)
   char* OutputNamePrefix = ReplaceExtensionToFileName(TmpOutputNamePrefix, ".dat", "");
   char* OutputNameSpectrum = AddExtensionToFileName(OutputNamePrefix, "dat");
   ofstream File2;
-  File2.precision(14);
+  File2.precision(std::numeric_limits<double>::max_digits10);
   File2.open(OutputNameSpectrum, ios::binary | ios::out);
   for (int i = 0; i < TmpHilbertSpaceDimension; ++i)
     {
@@ -387,7 +388,7 @@ int main(int argc, char** argv)
 	  sprintf (VectorSuffix, "%d.vec.txt", i);
 	  char* OutputNameVector = AddExtensionToFileName(OutputNamePrefix, VectorSuffix);
 	  ofstream File3;
-	  File3.precision(14);
+	  File3.precision(std::numeric_limits<double>::max_digits10);
 	  File3.open(OutputNameVector, ios::binary | ios::out);
 	  File3 << "# vector coefficient" << endl;
 	  for (int j = 0; j < InputVectors.GetNbrLines(); ++j)

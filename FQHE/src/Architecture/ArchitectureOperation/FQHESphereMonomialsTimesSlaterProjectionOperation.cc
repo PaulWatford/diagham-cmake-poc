@@ -45,6 +45,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -379,7 +380,7 @@ bool FQHESphereMonomialsTimesSlaterProjectionOperation::ArchitectureDependentApp
 	this->OutputLongRationalVector->WriteVector(OutputFileName);
       ofstream File;
       File.open(LogFile, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File << TmpFirstComponent;
       File.close();
 		}

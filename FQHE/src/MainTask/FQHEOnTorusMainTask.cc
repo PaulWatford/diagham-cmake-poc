@@ -70,6 +70,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <limits>
 
 
 using std::ios;
@@ -479,8 +480,8 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	{
 	  File.open(this->OutputFileName, ios::binary | ios::out | ios::app);
 	}
-      File.precision(14);
-      cout.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
+      cout.precision(std::numeric_limits<double>::max_digits10);
       cout << "----------------------------------------------------------------" << endl;
       cout << " Ky = " << this->KyValue << endl;
       cout << " Hilbert space dimension = " << this->Space->GetHilbertSpaceDimension() << endl;
@@ -500,8 +501,8 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	{
 	  File.open(this->OutputFileName, ios::binary | ios::out | ios::app);
 	}
-      File.precision(14);
-      cout.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
+      cout.precision(std::numeric_limits<double>::max_digits10);
       cout << "----------------------------------------------------------------" << endl;
       cout << " Kx = " << this->KxValue << " Ky = " << this->KyValue << endl;
       cout << " Hilbert space dimension = " << this->Space->GetHilbertSpaceDimension() << endl;
@@ -737,7 +738,7 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 		  char* TmpName = new char [strlen(this->EigenvectorFileName) + 16];
                   sprintf (TmpName, "%s.omega_%g-%g_eps_%g.ni_%d.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, CurrentNbrIterLanczos);
 	          ofstream File(TmpName, ios::out);
-	          File.precision(14);
+	          File.precision(std::numeric_limits<double>::max_digits10);
          	  Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 		  File.close();
 		  delete [] TmpName;
@@ -852,7 +853,7 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	      char* TmpName = new char [strlen(this->EigenvectorFileName) + 64];
 	      sprintf (TmpName, "%s.omega_%g-%g_eps_%g.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon);
 	      ofstream File(TmpName, ios::out);
-	      File.precision(14);
+	      File.precision(std::numeric_limits<double>::max_digits10);
 	      Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 	      File.close();
 	      delete [] TmpName;
@@ -1061,7 +1062,7 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 		  char* TmpName = new char [strlen(this->EigenvectorFileName) + 64];
                   sprintf (TmpName, "%s.omega_%g-%g_eps_%g.ni_%d.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, CurrentNbrIterLanczos);
 	          ofstream File(TmpName, ios::out);
-	          File.precision(14);
+	          File.precision(std::numeric_limits<double>::max_digits10);
          	  Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 		  File.close();
 		  delete [] TmpName;
@@ -1179,7 +1180,7 @@ int FQHEOnTorusMainTask::ExecuteMainTask()
 	      char* TmpName = new char [strlen(this->EigenvectorFileName) + 64];
 	      sprintf (TmpName, "%s.omega_%g-%g_eps_%g.sr", this->EigenvectorFileName,SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon);
 	      ofstream File(TmpName, ios::out);
-	      File.precision(14);
+	      File.precision(std::numeric_limits<double>::max_digits10);
 	      Lanczos->SampleSpectralResponse(File, SpectralResponseOmegaMin, SpectralResponseOmegaMax, SpectralResponseEpsilon, SpectralResponseOmegaInterval, SpectralResponseSpectralResolution);
 	      File.close();
 	      delete [] TmpName;

@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -48,7 +49,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereFermionsWithSpinAllSzSxValue" , "0.01");
@@ -256,7 +257,7 @@ int main(int argc, char** argv)
 	           PrecalculatedValues[i] = Operator.MatrixElement(State, State) * TmpValue * Conj(TmpValue);
                  }
 		
-  		cout.precision(14);
+  		cout.precision(std::numeric_limits<double>::max_digits10);
 		double NbrParticlesOddChannel = (0.5 * NbrParticles - meanSxvalue );
       		double Factor1 = (16.0 * M_PI * M_PI) / (NbrParticlesOddChannel * NbrParticlesOddChannel);
       		double Factor2 = 1.0;		
@@ -313,7 +314,7 @@ int main(int argc, char** argv)
 	           PrecalculatedValues[i] = Operator.MatrixElement(State, State);
                  }
 		
-  		cout.precision(14);
+  		cout.precision(std::numeric_limits<double>::max_digits10);
       		double Factor1 = (16.0 * M_PI * M_PI) / ((double) (NbrParticles * NbrParticles));
       		double Factor2 = 1.0;		
       		if (((BooleanOption*) Manager["radians"])->GetBoolean() == true)

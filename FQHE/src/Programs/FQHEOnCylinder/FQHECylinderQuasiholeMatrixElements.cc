@@ -32,6 +32,7 @@
 #include <fstream>
 #include <string.h>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -60,7 +61,7 @@ RealMatrix FQHECylinderQuasiholeMatrixElementsComputeQuasiholeStates(ParticleOnS
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("FQHECylinderQuasiholeMatrixElements" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

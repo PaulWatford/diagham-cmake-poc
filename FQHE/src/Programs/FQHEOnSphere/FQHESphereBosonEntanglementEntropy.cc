@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -407,8 +408,8 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   int MeanSubsystemSize = LzMax >> 1;
   if ((LzMax & 1) != 0)
     ++MeanSubsystemSize;
@@ -586,7 +587,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream RankEntanglementMatrixFile;
 			      RankEntanglementMatrixFile.open(RankEntanglementMatrixFileName, ios::binary | ios::out | ios::app); 
-			      RankEntanglementMatrixFile.precision(14);
+			      RankEntanglementMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			      RankEntanglementMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << PartialEntanglementMatrix.Rank() << " "
 							 <<  PartialEntanglementMatrix.GetNbrRow()<< " " << PartialEntanglementMatrix.GetNbrColumn() << endl;
 			      RankEntanglementMatrixFile.close();
@@ -629,7 +630,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(14);
+			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 			    DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
 			  DensityMatrixFile.close();
@@ -645,7 +646,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(14);
+			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			      DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -761,7 +762,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(14);
+			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 				DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
 			      DensityMatrixFile.close();
@@ -776,7 +777,7 @@ int main(int argc, char** argv)
 			      {
 				ofstream DensityMatrixFile;
 				DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-				DensityMatrixFile.precision(14);
+				DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 				DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
 				DensityMatrixFile.close();
 			      }		  
@@ -793,7 +794,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream RankEntanglementMatrixFile;
 			      RankEntanglementMatrixFile.open(RankEntanglementMatrixFileName, ios::binary | ios::out | ios::app); 
-			      RankEntanglementMatrixFile.precision(14);
+			      RankEntanglementMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			      RankEntanglementMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << PartialRationalEntanglementMatrix.Rank() << " "
 							 <<  PartialRationalEntanglementMatrix.GetNbrRow()<< " " << PartialRationalEntanglementMatrix.GetNbrColumn() << endl;
 			      RankEntanglementMatrixFile.close();
@@ -835,7 +836,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(14);
+			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 				DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
 			      DensityMatrixFile.close();

@@ -34,6 +34,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <limits>
 
 using std::ofstream;
 using std::ios;
@@ -140,7 +141,7 @@ bool Spectra::WriteSpectra(char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   for (int i = 0; i < this->PointNumber; ++i)
     {
       File << (*AxeX)[i] << '\t';

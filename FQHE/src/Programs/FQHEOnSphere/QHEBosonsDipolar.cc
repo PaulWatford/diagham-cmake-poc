@@ -24,6 +24,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -34,7 +35,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   BooleanOption HelpOption ('h', "help", "display this help");
   BooleanOption SMPOption ('S', "SMP", "enable SMP mode");
   BooleanOption GroundOption ('g', "ground", "restrict to the largest subspace");
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
   const char* OutputNameL = "bosons_l.dat";
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   int Max = ((LzMax - NbrBosons + 1) * NbrBosons);
   int TotalSize = 0;
   double** Eigenvalues = new double* [2 * Max + 1];

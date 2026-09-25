@@ -28,6 +28,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -38,7 +39,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity" , "0.01");
@@ -112,7 +113,7 @@ int main(int argc, char** argv)
       OutputName = new char[strlen(Manager.GetString("output")) + 1];
       strcpy (OutputName, Manager.GetString("output"));
       FileChargeImbalance.open(OutputName, ios::binary | ios::out); 
-      FileChargeImbalance.precision(14); 
+      FileChargeImbalance.precision(std::numeric_limits<double>::max_digits10); 
       FileChargeImbalance << "# i (Q_L-Q_R)_orb (Q_L-Q_R)_real" << endl;
     }
   if (Manager.GetString("input-state") != 0)
@@ -402,7 +403,7 @@ int main(int argc, char** argv)
       char* DensityMatrixTextFileName = ReplaceExtensionToFileName(InputStateNames[0], "vec", "density.dat");
       ofstream File;
       File.open(DensityMatrixTextFileName, ios::binary | ios::out); 
-      File.precision(14); 
+      File.precision(std::numeric_limits<double>::max_digits10); 
       File << "# layer_index m i j <i|a^+_m a_m|j>" << endl;
       if (Manager.GetBoolean("disable-binary") == true)
 	{
@@ -693,7 +694,7 @@ int main(int argc, char** argv)
       char* OutputFileName = 0;
       OutputFileName = ReplaceExtensionToFileName(InputStateNames[0], "vec", "rho.dat");
       ofstream File;
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File.open(OutputFileName, ios::binary | ios::out);
       File << "# x";
       for (int i = 0; i < NbrInputStates; ++i)

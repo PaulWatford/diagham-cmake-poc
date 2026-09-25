@@ -16,6 +16,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -26,7 +27,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("VectorBinary2Ascii" , "0.01");
@@ -106,7 +107,7 @@ int main(int argc, char** argv)
 	{
 	  ofstream File;
 	  File.open(Manager.GetString("output-vector"), ios::out);
-	  File.precision(14);
+	  File.precision(std::numeric_limits<double>::max_digits10);
 	  if (Manager.GetBoolean("add-index") == true)
 	    for (long i = MinValue; i < MaxValue; ++i)
 	      File << i << " " << State[(i - MinValue)] << endl;
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  cout.precision(14);
+	  cout.precision(std::numeric_limits<double>::max_digits10);
 	  if (Manager.GetDouble("hide-component") == 0.0)
 	    {
 	      if (Manager.GetBoolean("add-index") == true)
@@ -185,7 +186,7 @@ int main(int argc, char** argv)
 	{
 	  ofstream File;
 	  File.open(Manager.GetString("output-vector"), ios::out);
-	  File.precision(14);
+	  File.precision(std::numeric_limits<double>::max_digits10);
 	  if (Manager.GetBoolean("two-columns") == false)
 	    {
 	      if (Manager.GetBoolean("add-index") == true)
@@ -208,7 +209,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  cout.precision(14);
+	  cout.precision(std::numeric_limits<double>::max_digits10);
 	  if (Manager.GetDouble("hide-component") == 0.0)
 	    {
 	      if (Manager.GetBoolean("two-columns") == false)
@@ -316,7 +317,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream File;
 	      File.open(Manager.GetString("output-vector"), ios::out);
-	      File.precision(14);
+	      File.precision(std::numeric_limits<double>::max_digits10);
 	      if (Manager.GetBoolean("two-columns") == false)
 		{
 		  if (Manager.GetBoolean("add-index") == true)
@@ -339,7 +340,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout.precision(14);
+	      cout.precision(std::numeric_limits<double>::max_digits10);
 	      if (Manager.GetBoolean("two-columns") == false)
 		{
 		  if (Manager.GetBoolean("add-index") == true)
@@ -395,7 +396,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream File;
 	      File.open(Manager.GetString("output-vector"), ios::out);
-	      File.precision(14);
+	      File.precision(std::numeric_limits<double>::max_digits10);
 	      if (Manager.GetBoolean("add-index") == true)
 		for (long i = MinValue; i < MaxValue; ++i)
 		  File << i << " " << State[(i - MinValue)] << endl;
@@ -406,7 +407,7 @@ int main(int argc, char** argv)
 	    }
 	  else
 	    {
-	      cout.precision(14);
+	      cout.precision(std::numeric_limits<double>::max_digits10);
 	      if (Manager.GetBoolean("add-index") == true)
 		for (long i = MinValue; i < MaxValue; ++i)
 		  cout << i << " " << State[(i - MinValue)] << endl;

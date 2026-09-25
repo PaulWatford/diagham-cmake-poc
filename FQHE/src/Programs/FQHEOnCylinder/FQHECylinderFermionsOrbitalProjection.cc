@@ -37,6 +37,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -47,7 +48,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
 
 
@@ -131,7 +132,7 @@ int main(int argc, char** argv)
   sprintf (OutputNameLz, "fermions_cylinder_ky_%s_n_%d_2s_%d_ratio_%f.dat", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio);
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
 
   int Max = ((MaxMomentum - NbrParticles + 1) * NbrParticles);
 

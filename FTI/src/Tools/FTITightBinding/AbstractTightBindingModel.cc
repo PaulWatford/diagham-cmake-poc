@@ -40,6 +40,7 @@
 
 #include <sys/time.h>
 #include <fstream>
+#include <limits>
 
 
 using std::ofstream;
@@ -158,7 +159,7 @@ bool AbstractTightBindingModel::WriteAsciiSpectrum(char* fileName)
 {
   ofstream File;
   File.open(fileName);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   this->WriteASCIIHeader(File, '#');
   File << "# index";
   for (int i = 0; i < this->NbrBands; ++i)

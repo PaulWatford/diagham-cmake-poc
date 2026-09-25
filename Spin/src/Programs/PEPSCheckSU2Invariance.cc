@@ -9,6 +9,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -21,7 +22,7 @@ int InitializeTensorsElements(MultiColumnASCIIFile & tensorElementsFile, Complex
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   // some running options and help
   OptionManager Manager ("EDTransfertMatrixMPOGivenByInputFile" , "0.01");

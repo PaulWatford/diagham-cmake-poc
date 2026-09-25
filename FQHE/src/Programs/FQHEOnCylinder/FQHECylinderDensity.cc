@@ -39,6 +39,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -49,7 +50,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHECylinderDensity" , "0.01");
@@ -224,7 +225,7 @@ int main(int argc, char** argv)
 
 
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File.open(OutputFileName, ios::binary | ios::out);
   File << "# Length = " << CylinderLength << ", Perimeter = " << Perimeter  << ", Aspect ratio = " << Ratio << endl;
   HermitianMatrix* OccupationMatrixElements = new HermitianMatrix[KyMax + 1];

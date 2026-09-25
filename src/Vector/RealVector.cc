@@ -3792,7 +3792,7 @@ bool RealVector::WriteAsciiVector (const char* fileName)
 {
   this->Localize();
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File.open(fileName, ios::binary | ios::out);
   if (!File.is_open())
     {

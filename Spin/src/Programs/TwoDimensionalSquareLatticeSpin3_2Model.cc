@@ -31,6 +31,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -59,7 +60,7 @@ void TwoDimensionalSquareLatticeSpin3_2ModelGet2DCoordinates(int index, int& xPo
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("TwoDimensionalSquareLatticeSpin3_2Model" , "0.01");

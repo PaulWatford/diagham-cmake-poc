@@ -55,6 +55,7 @@
 #include <cstring>
 #include <cmath>
 #include <fstream>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -64,7 +65,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("FTIShowBasis" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

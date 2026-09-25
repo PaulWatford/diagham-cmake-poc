@@ -38,6 +38,7 @@
 #include "GeneralTools/ArrayTools.h"
 
 #include <iostream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -142,7 +143,7 @@ bool TightBindingModelSquareLatticeFullOBCAndFullC4Symmetry::WriteAsciiSpectrum(
 {
   ofstream File;
   File.open(fileName);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   this->WriteASCIIHeader(File, '#');
   File << "# C4 Energy";
   File << endl;

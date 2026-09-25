@@ -42,6 +42,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -355,8 +356,8 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   double TotalTrace = 0.0;
   SubsystemNbrParticlesA = 1;
@@ -436,7 +437,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 			DensityMatrixFile <<SubsystemNbrParticlesA <<" "<< SubsystemNbrParticlesB << " " << SubsystemTotalLzC << " " << TmpDiag[i] << endl;
 		      DensityMatrixFile.close();
@@ -466,7 +467,7 @@ int main(int argc, char** argv)
 		  {
 		    ofstream DensityMatrixFile;
 		    DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		    DensityMatrixFile.precision(14);
+		    DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		    if (ComputeLValueFlag == false)
 		      {
 			DensityMatrixFile  <<SubsystemNbrParticlesA <<" "<< SubsystemNbrParticlesB << " " << SubsystemTotalLzC << " "  << TmpValue << endl;
@@ -758,7 +759,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 			DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
 		      DensityMatrixFile.close();
@@ -783,7 +784,7 @@ int main(int argc, char** argv)
 		  ParticleOnSphereSquareTotalMomentumOperator OperMomentum (&TmpDestinationHilbertSpace, LzMax);
 		  ofstream DensityMatrixFile;
 		  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		  DensityMatrixFile.precision(14);
+		  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		  char* TmpEigenstateName = new char[512];
 		  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 		    {
@@ -827,7 +828,7 @@ int main(int argc, char** argv)
 		  {
 		    ofstream DensityMatrixFile;
 		    DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		    DensityMatrixFile.precision(14);
+		    DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		    if (ComputeLValueFlag == false)
 		      {
 			DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;

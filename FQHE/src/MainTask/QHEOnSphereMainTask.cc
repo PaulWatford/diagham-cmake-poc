@@ -77,6 +77,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <limits>
 
 
 using std::ios;
@@ -411,8 +412,8 @@ int QHEOnSphereMainTask::ExecuteMainTask()
     {
       File.open(this->OutputFileName, ios::binary | ios::out | ios::app);
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   cout << "----------------------------------------------------------------" << endl;
   cout << " LzTotal = " << this->LValue << endl;
   if (this->ReducedHilbertSpaceDescription != 0)
@@ -490,7 +491,7 @@ int QHEOnSphereMainTask::ExecuteMainTask()
 			{
 			  ofstream TmpFile;
 			  TmpFile.open(TmpVectorName, ios::binary | ios::out);
-			  TmpFile.precision(14);
+			  TmpFile.precision(std::numeric_limits<double>::max_digits10);
 			  for (int k = 0; k < this->Space->GetHilbertSpaceDimension(); ++k)
 			    {
 			      this->Space->PrintState(TmpFile, k) << " : " << Eigenstates[j][k] << endl;

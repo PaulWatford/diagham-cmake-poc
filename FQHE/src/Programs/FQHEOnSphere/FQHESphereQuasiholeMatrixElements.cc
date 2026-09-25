@@ -22,6 +22,7 @@
 #include <math.h>
 #include <fstream>
 #include <string.h>
+#include <limits>
 
 
 using std::cout;
@@ -47,7 +48,7 @@ RealMatrix FQHESphereQuasiholeMatrixElementsComputeQuasiholeStates(ParticleOnSph
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("FQHESphereQuasiholeMatrixElements" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

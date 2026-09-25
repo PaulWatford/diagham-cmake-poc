@@ -36,6 +36,7 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -63,7 +64,7 @@ bool FQHEDiskDensityGetHilbertSpace(char* inputState, int& nbrParticles, int& fo
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHEDiskDensity" , "0.01");
@@ -170,7 +171,7 @@ int main(int argc, char** argv)
 	}
       
       ofstream File;
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       if (OutputName == 0)
 	OutputName = ReplaceExtensionToFileName(Manager.GetString("state"), "vec", "rho.dat");
       File.open(OutputName, ios::binary | ios::out);
@@ -424,7 +425,7 @@ int main(int argc, char** argv)
 	    }
 	}
       ofstream File;
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       if (OutputName == 0)
 	OutputName = ReplaceExtensionToFileName(Manager.GetString("input-states"), "dat", "rho.dat");
       File.open(OutputName, ios::binary | ios::out);

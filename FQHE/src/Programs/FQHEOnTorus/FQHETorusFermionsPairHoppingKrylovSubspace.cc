@@ -46,6 +46,7 @@
 #include <sys/time.h>
 #include <cstdio>
 #include <fstream>
+#include <limits>
 
 
 using std::cout;
@@ -82,7 +83,7 @@ int* FQHPairHoppingKrylovParseProductState(char* productState, int& nbrFermions,
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHETorusFermionsPairHoppingKrylovSubspace" , "0.01");

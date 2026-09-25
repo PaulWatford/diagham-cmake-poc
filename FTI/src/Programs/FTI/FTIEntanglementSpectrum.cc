@@ -18,6 +18,7 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -184,7 +185,7 @@ int main(int argc, char** argv)
 	    }
 	  ofstream File;
 	  File.open(OutputFileName, ios::out);
-	  File.precision(14);
+	  File.precision(std::numeric_limits<double>::max_digits10);
 	  if (Flag3d == true)
 	    File << "# na kx ky kz linearized_k lambda -log(lambda)";
 	  else

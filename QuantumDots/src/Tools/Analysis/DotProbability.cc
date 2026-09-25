@@ -15,6 +15,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::ifstream;
@@ -24,7 +25,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {  
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("DotProbability" , "0.01");
   OptionGroup* PotentialGroup = new OptionGroup ("potential options");
   OptionGroup* HilbertSpaceGroup = new OptionGroup ("Hilbert space options");

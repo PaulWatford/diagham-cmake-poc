@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -41,7 +42,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("QHENBodyQuasiHoleOverlap" , "0.01");
@@ -123,7 +124,7 @@ int main(int argc, char** argv)
   if (((SingleStringOption*) Manager["output-file"])->GetString() != 0)
     {
        File.open(((SingleStringOption*) Manager["output-file"])->GetString(), ios::binary | ios::out);
-       File.precision(14);     
+       File.precision(std::numeric_limits<double>::max_digits10);     
     }
 
   if (LSortFlag == true)

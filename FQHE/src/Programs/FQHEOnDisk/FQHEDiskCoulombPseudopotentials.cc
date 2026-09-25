@@ -16,6 +16,7 @@
 #include <cstring>
 #include <stdlib.h>
 #include <math.h>
+#include <limits>
 
 using std::ofstream;
 using std::ios;
@@ -109,7 +110,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputFile, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File << "# pseudopotentials on the disk for coulomb interaction " << endl
 	   << "# in the Landau level N=" << LandauLevel << " and up to angular momentum Lz=" << MaxMomentum << endl;
       File << "#" << endl
@@ -138,7 +139,7 @@ int main(int argc, char** argv)
     }
   else
     {
-      cout.precision(14);
+      cout.precision(std::numeric_limits<double>::max_digits10);
       cout << "# pseudopotentials on the disk for coulomb interaction "
 	   << "# in the Landau level N=" << LandauLevel << " and up to angular momentum Lz=" << MaxMomentum << endl;
       cout << "#" << endl

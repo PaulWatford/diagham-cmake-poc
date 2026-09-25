@@ -41,6 +41,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -58,7 +59,7 @@ void FlipCoordinates (ComplexVector& uv, int i, int j);
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereSUKToU1MCOverlap" , "0.01");
@@ -574,7 +575,7 @@ int main(int argc, char** argv)
 	   if ((RecordStep != 0) && (ResumeFlag == false))
 	     {
 	       ofstream OverlapRecordFile;
-	       OverlapRecordFile.precision(14);
+	       OverlapRecordFile.precision(std::numeric_limits<double>::max_digits10);
 	       OverlapRecordFile.open(((SingleStringOption*) Manager["record-file"])->GetString(), ios::out | ios::binary);
 	       OverlapRecordFile << "# Monte Carlo overlap calculation" << endl
 				 << "# step overlap.Re overlap.Im error.Re error.Im [(scalar_product.Re scalar_product.Im error_scalar_product.Re error_scalar_product.Im normalization_exact error_normalization_exact) per state] normalization error_normalization" << endl;
@@ -679,7 +680,7 @@ int main(int argc, char** argv)
 	       if (RecordWaveFunctions != 0)
 		 {
 		   ofstream RecordFile;
-		   RecordFile.precision(14);
+		   RecordFile.precision(std::numeric_limits<double>::max_digits10);
 		   RecordFile.open(RecordWaveFunctions, ios::out | ios::binary | ios::app);
 		   for (int j = 0; j < (NbrParticles << 1); ++j)
 		     RecordFile << TmpUV[j] << "|a";
@@ -753,7 +754,7 @@ int main(int argc, char** argv)
 	   if ((i > 0) && ((RecordStep != 0) && ((i % RecordStep) == 0)))
 	     {
 	       ofstream OverlapRecordFile;
-	       OverlapRecordFile.precision(14);
+	       OverlapRecordFile.precision(std::numeric_limits<double>::max_digits10);
 	       OverlapRecordFile.open(((SingleStringOption*) Manager["record-file"])->GetString(), ios::out | ios::binary | ios::app);
 	       OverlapRecordFile << i ;
 	       double Tmp6 = Normalization  / ((double) i);
@@ -941,7 +942,7 @@ int main(int argc, char** argv)
        if (((RecordStep != 0) && ((NbrIter % RecordStep) == 0)))
 	 {
 	   ofstream OverlapRecordFile;
-	   OverlapRecordFile.precision(14);
+	   OverlapRecordFile.precision(std::numeric_limits<double>::max_digits10);
 	   OverlapRecordFile.open(((SingleStringOption*) Manager["record-file"])->GetString(), ios::out | ios::binary | ios::app);
 	   OverlapRecordFile << NbrIter ;
 	   double Tmp6 = Normalization  / ((double) NbrIter);

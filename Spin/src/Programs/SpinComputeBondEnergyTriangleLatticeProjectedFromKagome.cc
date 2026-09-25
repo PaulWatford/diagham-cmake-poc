@@ -32,6 +32,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -202,8 +203,8 @@ int main(int argc, char** argv)
 	  File.open(OutputFileName, ios::binary | ios::out);
 	}
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   File << "# i j <S_{0,0} S_{i,j}}>" << endl;
   double* SpinSpinCorrelations = new double[NbrSites];  
@@ -243,8 +244,8 @@ int main(int argc, char** argv)
     return 0;
   }
   File.open(OutputFileName, ios::binary | ios::out);
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   File << "# l_0 i j l_{i,j} <S_{0,0} S_{1,0} S_{i,j}S_{i,j,l}}>" << endl;
   int* TmpIndex2b = new int[3];
@@ -308,7 +309,7 @@ int main(int argc, char** argv)
     int* TmpIndex2 = new int[6];
     KagomeDimer = new double[6];
     
-    cout.precision(14);
+    cout.precision(std::numeric_limits<double>::max_digits10);
 
     for (int l = 0; l < 6 ; ++l)
     {
@@ -361,7 +362,7 @@ int main(int argc, char** argv)
 	  File.open(OutputFileName, ios::binary | ios::out);
 	}
       
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (int l = 0; l < 6; ++l)
 	File << KagomeDimer[l] << " " ;
       File << endl;
@@ -388,7 +389,7 @@ int main(int argc, char** argv)
 	  File.open(OutputFileName, ios::binary | ios::out);
 	}
     }
-    File.precision(14);
+    File.precision(std::numeric_limits<double>::max_digits10);
     
     for (int i = 0; i < XPeriodicity; ++i)
     {
@@ -428,8 +429,8 @@ int main(int argc, char** argv)
 	return 0;
       }
       File.open(OutputFileName, ios::binary | ios::out);
-      File.precision(14);
-      cout.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
+      cout.precision(std::numeric_limits<double>::max_digits10);
   
       File << "# l_0 i j l_{i,j} <S_{0,0} S_{1,0} S_{i,j}S_{i,j,l}}>" << endl;
       File << "# Column 3 is wrong!! finish debugging" << endl;

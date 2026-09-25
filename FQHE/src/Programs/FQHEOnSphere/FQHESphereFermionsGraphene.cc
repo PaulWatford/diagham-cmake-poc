@@ -27,6 +27,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 #ifdef __MPI__
 #include <mpi.h>
 #endif
@@ -54,7 +55,7 @@ bool GetPopulations(int nbrParticles, int szTotal, int isoSzTotal, int pzTotal, 
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   OptionManager Manager ("FQHESphereFermionsGraphene" , "0.01");
   OptionGroup* LanczosGroup  = new OptionGroup ("Lanczos options");

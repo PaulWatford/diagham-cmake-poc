@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
+#include <limits>
 
 
 using std::cout;
@@ -45,7 +46,7 @@ using std::ifstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   OptionManager Manager ("FQHESphereBosonsFuseParticles" , "0.01");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
@@ -146,7 +147,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputTxtFileName, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (long i = 0; i < FinalSpace->GetLargeHilbertSpaceDimension(); ++i)
 	{
 	  File << OutputVector[i] << " ";

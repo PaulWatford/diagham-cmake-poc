@@ -28,6 +28,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -297,8 +298,8 @@ int main(int argc, char** argv)
 	}
     }
 
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   if ((NbrLeftStates == 1) && (NbrRightStates == 1))
     {
       File << "# <Psi_L| c^+_{i,sigma} c_{j,sigma'} |Psi_R> with sigma,sigma' = 0 (down) or 1 (up)" << endl

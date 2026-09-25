@@ -35,6 +35,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
+#include <limits>
 
 
 using std::cout;
@@ -46,7 +47,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
     
   // some running options and help
   OptionManager Manager ("FQHETorusBosonsWithSU3SpinAndTranslations" , "0.01");
@@ -189,7 +190,7 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(OutputFileName, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
 
 
   int MomentumModulo = FindGCD(NbrBosons, MaxMomentum);

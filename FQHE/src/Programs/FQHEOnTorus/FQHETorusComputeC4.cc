@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <cstring> 
+#include <limits>
 
 using std::cout;
 using std::cin;
@@ -46,7 +47,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHETorusComputeC4" , "0.01");
@@ -287,7 +288,7 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(OutputName, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File << "# eigenvalue Norm Arg (2 * Arg/pi) round(C4)" << endl;
 
   ComplexDiagonalMatrix Eigenvalues(NbrInputStates, true);

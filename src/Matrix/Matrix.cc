@@ -43,6 +43,7 @@
 
 
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::ofstream;
@@ -352,7 +353,7 @@ bool Matrix::WriteMatrix (char* fileName)
 bool Matrix::WriteAsciiMatrix (char* fileName, bool gnuplotFlag)
 {
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File.open(fileName, ios::binary | ios::out);
   if ((this->MatrixType & Matrix::RealElements) == Matrix::RealElements)
     {
@@ -761,7 +762,7 @@ long Matrix::ComputeNbrNonZeroMatrixElements()
 bool Matrix::SparseWriteAsciiMatrix (char* fileName, double error, bool zeroBased)
 {
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File.open(fileName, ios::binary | ios::out);
   if ((this->MatrixType & Matrix::RealElements) == Matrix::RealElements)
     {

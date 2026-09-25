@@ -47,6 +47,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -697,7 +698,7 @@ int main(int argc, char** argv)
 	{
 	  TmpOutputState = OutputSpace->ConvertFromNbodyBasis(InitialStates[i], *InputSpace);
 	  double TmpNorm = TmpOutputState.Norm();
-	  cout.precision(14);
+	  cout.precision(std::numeric_limits<double>::max_digits10);
 	  cout << "Weight of projected " << GroundStateFiles[i] << " : " << (TmpNorm * TmpNorm) << endl;
 	  if (Manager.GetBoolean("normalize"))
 	    {

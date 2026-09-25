@@ -20,6 +20,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -150,10 +151,10 @@ int main(int argc, char** argv)
 	  cout << "Cannot create file " << OutputFileName << endl;
 	  return -1;
 	}
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
     }
   else
-    cout.precision(14);
+    cout.precision(std::numeric_limits<double>::max_digits10);
   if (((SingleStringOption*) Manager["state"])->GetString() == 0)
     if (((BooleanOption*) Manager["save-disk"])->GetBoolean() == true)
       for (int i = 0; i < Space->GetHilbertSpaceDimension(); ++i)

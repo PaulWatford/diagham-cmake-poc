@@ -38,6 +38,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -48,7 +49,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereFermionsTwoBodyGeneric" , "0.01");

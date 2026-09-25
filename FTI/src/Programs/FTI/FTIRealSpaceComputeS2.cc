@@ -31,6 +31,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -41,7 +42,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("FTIRealSpaceComputeS2" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

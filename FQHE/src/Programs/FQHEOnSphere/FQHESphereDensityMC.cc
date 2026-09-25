@@ -46,6 +46,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 #define M_2PI 6.283185307179586477
 
@@ -68,7 +69,7 @@ void FlipLzMinusLz (ComplexVector& uv);
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereDensityMC" , "0.01");
@@ -389,7 +390,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream RecordFile;
 	      RecordFile.open(RecordWaveFunctions, ios::out | ios::binary | ios::app);
-	      RecordFile.precision(14);
+	      RecordFile.precision(std::numeric_limits<double>::max_digits10);
 	      RecordFile << i << " " << TotalProbability;
 	      for (int j = 0; j < NbrOrbitals; ++j)
 		RecordFile << " " << FunctionBasisDecomposition[j] << " " << FunctionBasisDecompositionError[j];
@@ -427,7 +428,7 @@ int main(int argc, char** argv)
 	FunctionBasisDecompositionGrid[k] *= TotalProbability;
 
       ofstream DensityRecordFile;
-      DensityRecordFile.precision(14);
+      DensityRecordFile.precision(std::numeric_limits<double>::max_digits10);
       DensityRecordFile.open(((SingleStringOption*) Manager["output"])->GetString(), ios::out);
 
       RealVector TmpPos(2, true);

@@ -10,6 +10,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::ifstream;
@@ -19,7 +20,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);  
+  cout.precision(std::numeric_limits<double>::max_digits10);  
   OptionManager Manager ("Spectrum" , "0.01");
   OptionGroup* SpectrumGroup = new OptionGroup ("Spectrum");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");

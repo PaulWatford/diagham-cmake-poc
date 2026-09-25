@@ -33,6 +33,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -351,8 +352,8 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(EntropyFileName, ios::binary | ios::out);
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
 
   int MaxSubsystemNbrParticles = 2 * NbrKeptOrtbitals;
@@ -433,7 +434,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      for (int i = 0; i < TmpDimension; ++i)
 			DensityMatrixFile << SubsystemNbrParticles << " " << TmpDiag[i] << endl;
 		      DensityMatrixFile.close();
@@ -513,7 +514,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(14);
+			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			  for (int i = 0; i < TmpDimension; ++i)
 			    DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalSz << " " << TmpDiag[i] << endl;
 			  DensityMatrixFile.close();

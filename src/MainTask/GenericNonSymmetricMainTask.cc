@@ -51,6 +51,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::ofstream;
@@ -387,7 +388,7 @@ int GenericNonSymmetricMainTask::ExecuteMainTask()
       if (this->EigenstateFileHeader != 0)
 	File << "# "<< this->EigenstateFileHeader << endl;
       File << "# E |E| arg(E)/pi" << endl;
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (int i = 0; i < LocalNbrEigenvalues; ++i)
 	{
 	  File << TmpEigenvalues[i] << " " << Norm(TmpEigenvalues[i]) << " " << (Arg(TmpEigenvalues[i]) / M_PI) << endl;

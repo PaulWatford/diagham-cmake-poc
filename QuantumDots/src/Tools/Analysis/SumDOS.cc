@@ -18,6 +18,7 @@
 #endif
 #include <cstring>
 #include <unistd.h>
+#include <limits>
 
 
 using std::cout;
@@ -29,7 +30,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);  
+  cout.precision(std::numeric_limits<double>::max_digits10);  
   OptionManager Manager ("SumDOS" , "0.01");
   OptionGroup* SumDOSGroup = new OptionGroup ("SumDOS");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");

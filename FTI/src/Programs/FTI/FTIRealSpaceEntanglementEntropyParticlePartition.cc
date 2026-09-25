@@ -48,6 +48,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -679,10 +680,10 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputFileName, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File.close();
     }
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   int MaxSubsystemNbrParticles = (NbrParticles >> 1) + (NbrParticles & 1);
   if (Manager.GetInteger("max-na") > 0)
@@ -1757,7 +1758,7 @@ int main(int argc, char** argv)
 	    { 
 	      ofstream DensityMatrixFile;
 	      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 		      
-	      DensityMatrixFile.precision(14);
+	      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 	      double Trace = 0.0;
 	      if (TwoDTranslationFlag == false)
 		{
@@ -1829,7 +1830,7 @@ int main(int argc, char** argv)
 	      if ((DensityMatrixFileName != 0) &&(Architecture.GetArchitecture()->CanWriteOnDisk()))
 		{
 		  ofstream DensityMatrixFile;
-		  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 		DensityMatrixFile.precision(14);
+		  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 		DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		  if (TwoDTranslationFlag == false)
 		    {
 		      if ((SU2SpinFlag == false) || (Manager.GetBoolean("decoupled") == false))
@@ -1881,7 +1882,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputFileName, ios::binary | ios::out | ios::app);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (int SubsystemNbrParticles = MinSubsystemNbrParticles; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
 	{
 	  File << SubsystemNbrParticles << " " << (-EntanglementEntropies[SubsystemNbrParticles - MinSubsystemNbrParticles]) 

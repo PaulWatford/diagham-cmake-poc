@@ -33,6 +33,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -310,8 +311,8 @@ else
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   int MaxSubsystemNbrParticles = (NbrParticles >> 1) + (NbrParticles & 1);
   if (Manager.GetInteger("max-na") > 0)
@@ -513,7 +514,7 @@ else
 			  {
 			    ofstream DensityMatrixFile;
 			    DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			    DensityMatrixFile.precision(14);
+			    DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			    for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalTz << " " << SubsystemTotalY << " " << SubsystemNbrN1 << " " <<  SubsystemNbrN2 << " " <<  SubsystemNbrN3 << " " << SubsystemTotalKy << " " << TmpDiag[i] << endl;
 			    DensityMatrixFile.close();
@@ -542,7 +543,7 @@ else
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(14);
+			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalTz << " " << SubsystemTotalY << " " << SubsystemNbrN1 << " " <<  SubsystemNbrN2 << " " <<  SubsystemNbrN3 << " " << SubsystemTotalKy << " " << TmpValue << endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -691,7 +692,7 @@ else
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(14);
+			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			  if (NoSzFlag == false)
 			    {
 			      for (int i = 0; i < ComplexPartialDensityMatrix.GetNbrRow(); ++i)
@@ -728,7 +729,7 @@ else
 			  {
 			    ofstream DensityMatrixFile;
 			    DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			    DensityMatrixFile.precision(14);
+			    DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			    if (NoSzFlag == false)
 			      {
 				DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalTz << " " << SubsystemTotalY << " " << SubsystemNbrN1 << " " <<  SubsystemNbrN2 << " " <<  SubsystemNbrN3 << " " << SubsystemTotalKy << " " << TmpValue << endl;

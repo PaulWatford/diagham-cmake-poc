@@ -17,6 +17,7 @@
 #include <iostream>
 #include <cstdlib>
 #include <string>
+#include <limits>
 
 using std::abs;
 using std::cout;
@@ -34,7 +35,7 @@ using std::sin;
 
 double* EvaluatePseudopotentials(int nbrFlux, int landauLevel, double layerSeparation, bool quiet)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   int MaxMomentum = nbrFlux + (landauLevel << 1);
   double* Pseudopotentials = new double [MaxMomentum + 1];
   ClebschGordanCoefficients MainCoefficients(MaxMomentum, MaxMomentum);
@@ -474,7 +475,7 @@ double* EvaluateFiniteWidthPseudoPotentials(int nbrFlux, int landauLevel, Abstra
 double* EvaluateFiniteWidthPseudoPotentialsNoInterpolation(int nbrFlux, int landauLevel, AbstractZDensityProfile *zDensity, int points, double multiplier, double layerSeparation, AbstractZDensityProfile *zDensity2, double epsRel)
 {
 #ifdef HAVE_GSL
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   double Z1min, Z1max, Width1, Z2min, Z2max, Width2;
   zDensity->GetSupport(Z1min, Z1max);
   if (zDensity2==0) zDensity2 = zDensity;
@@ -554,7 +555,7 @@ double* EvaluateFiniteWidthPseudoPotentialsNoInterpolation(int nbrFlux, int land
 //
 double* EvaluateGrapheneBilayerPseudopotentials(int nbrFlux, int& nbrPseudopotentials, int llindex1, int llindex2, int llindex3, int llindex4, bool verbose)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
   double Q = 0.5 * nbrFlux;
   double l1 = Q + llindex1;
   double l2 = Q + llindex2;
@@ -984,7 +985,7 @@ double** Evaluate2LLSphereCoulombPseudopotentials(int nbrFlux, bool quiet)
 
 double* EvaluateTriangularWellPseudopotentials(int nbrFlux, int landauLevel, double width, double bias, int* pseudospins, int nbrPointsInteg, bool quiet)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   int MaxMomentum = nbrFlux + (landauLevel << 1);
   double* Pseudopotentials = new double [MaxMomentum+1];

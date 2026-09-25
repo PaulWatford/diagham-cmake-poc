@@ -31,6 +31,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -431,8 +432,8 @@ int main(int argc, char** argv)
 	  File.open(OutputFileName, ios::binary | ios::out);
 	}
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   ofstream FileFourierTransform;
   if ((RightMomentumFlag == true) && (LeftMomentumFlag == true))
@@ -444,7 +445,7 @@ int main(int argc, char** argv)
 	  return 0;
 	}
       FileFourierTransform.open(TmpFileName, ios::binary | ios::out);
-      FileFourierTransform.precision(14);
+      FileFourierTransform.precision(std::numeric_limits<double>::max_digits10);
     }
 
   if (Manager.GetBoolean("only-cc") == true)

@@ -24,6 +24,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::ifstream;
@@ -33,7 +34,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);  
+  cout.precision(std::numeric_limits<double>::max_digits10);  
   OptionManager Manager ("PeriodicOscillatorForce" , "0.01");
   OptionGroup* HilbertSpaceGroup = new OptionGroup ("Hilbert space options");
   OptionGroup* FileGroup =  new OptionGroup ("File options");

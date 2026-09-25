@@ -33,6 +33,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <cassert>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -43,7 +44,7 @@ using std::setw;
 
 int main ( int argc, char** argv )
 {
-    cout.precision ( 14 );
+    cout.precision(std::numeric_limits<double>::max_digits10);
 
     // some running options and help
     OptionManager Manager ( "FCIHofstadterCorrelation" , "0.01" );
@@ -196,7 +197,7 @@ int main ( int argc, char** argv )
     
     delete Space;
     ofstream File;
-    File.precision ( 14 );
+    File.precision(std::numeric_limits<double>::max_digits10);
     RealVector Position ( 2, true );
     RealVector Position_start ( 2, true );
     RealVector q(2,true);

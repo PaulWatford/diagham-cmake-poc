@@ -62,6 +62,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -85,7 +86,7 @@ int SpinChainMultipleEntanglementSpectraGetLinearizedIndex(int xPosition, int xP
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("SpinChainMultipleEntanglementSpectra" , "0.01");
@@ -708,7 +709,7 @@ int main(int argc, char** argv)
 	{
 	  ofstream FileEntropy;
 	  FileEntropy.open(EntropyFileName, ios::binary | ios::out | ios::app);
-	  FileEntropy.precision(14);
+	  FileEntropy.precision(std::numeric_limits<double>::max_digits10);
 	  FileEntropy << Index << " " << TmpEntanglementEntropy << " " << TmpTrace << endl;
 	  FileEntropy.close();
 	}

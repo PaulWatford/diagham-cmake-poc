@@ -22,6 +22,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
+#include <limits>
 
 #define M1_12 0.08333333333333333
 
@@ -36,7 +37,7 @@ double MadelungEnergy(double costheta, double aspect);
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("WignerEnergy" , "0.01");

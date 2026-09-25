@@ -72,6 +72,7 @@
 #include <stdio.h>
 #include <fstream>
 #include <cstring> 
+#include <limits>
 
 
 using std::cout;
@@ -83,7 +84,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereTimeEvolutionTwoBodyGeneric" , "0.01");
@@ -430,14 +431,14 @@ int main(int argc, char** argv)
 	
   ofstream File;
   File.open(NormName, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File << "# t Norm dNorm" << endl;
   
   ofstream FileEnergy;
   if (Manager.GetBoolean("compute-energy"))
   {
     FileEnergy.open(EnergyName, ios::binary | ios::out);
-    FileEnergy.precision(14);
+    FileEnergy.precision(std::numeric_limits<double>::max_digits10);
     FileEnergy << "# t E "<< endl;
   }
   

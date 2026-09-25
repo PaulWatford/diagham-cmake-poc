@@ -23,6 +23,7 @@
 #include <string>
 #include <stdlib.h>
 #include <math.h>
+#include <limits>
 
 using std::ofstream;
 using std::ios;
@@ -117,7 +118,7 @@ int main(int argc, char** argv)
   ss << "pseudopotential_2ll_" << InteractionName << "_2s_" << NbrFluxQuanta << ".dat" ;  
   ofstream File;
   File.open(ss.str().c_str(), ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   
   for ( int j = 0; j < 10; j++ ) 
     {

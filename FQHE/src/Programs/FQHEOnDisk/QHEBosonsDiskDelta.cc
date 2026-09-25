@@ -27,6 +27,7 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
+#include <limits>
 
 
 using std::cout;
@@ -36,7 +37,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("QHEBosonsDiskDelta" , "0.01");

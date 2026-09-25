@@ -18,6 +18,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -89,7 +90,7 @@ ULONGLONG GetSpin1Parity(ULONGLONG state);
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("HaahCodeEntropy" , "0.01");
@@ -811,7 +812,7 @@ int main(int argc, char** argv)
 	}
       ofstream File;
       File.open(ReducedDensityMatrixOutputFileName, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File << "# Trace of the reduced density matrix before normalization = " << ReducedDensityMatrixTrace << endl;
       File << "# Number of non zero eigenvalues for the reduced density matrix = " << ReducedDensityMatrixNbrNonZeroEigenvalues << endl;
       File << "# Entangement entropy = " << (ReducedDensityMatrixEntanglementEntropy / log(2.0)) << " * log 2" << endl;

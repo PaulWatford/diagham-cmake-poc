@@ -26,6 +26,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 #ifdef __MPI__
 #include <mpi.h>
 #endif
@@ -40,7 +41,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
 
   OptionManager Manager ("FQHESphereBosonsWithSpin" , "0.01");

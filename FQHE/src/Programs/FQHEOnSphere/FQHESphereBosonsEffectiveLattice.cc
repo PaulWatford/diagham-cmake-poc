@@ -25,6 +25,7 @@
 #include <cmath>
 #include <sys/time.h>
 #include <cstdio>
+#include <limits>
 #ifdef __MPI__
 #include <mpi.h>
 #endif
@@ -39,7 +40,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
 
   OptionManager Manager ("FQHESphereBosonsEffectiveLattice" , "0.01");

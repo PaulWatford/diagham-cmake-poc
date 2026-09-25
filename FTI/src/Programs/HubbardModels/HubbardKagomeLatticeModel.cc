@@ -37,6 +37,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
+#include <limits>
 
 #ifndef M_PI
 #    define M_PI 3.14159265358979323846
@@ -77,7 +78,7 @@ void GetRealSpaceIndex (int i, int j, int& p, int& q, int offsetReal);
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("HubbardKagomeLatticeModel" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

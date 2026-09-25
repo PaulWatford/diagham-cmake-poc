@@ -29,6 +29,7 @@ using std::ofstream;
 
 
 #include "Matrix/ComplexMatrix.h"
+#include <limits>
 
 // store imaginary Hamiltonian into a complex matrix
 //
@@ -77,7 +78,7 @@ ComplexMatrix& GetHamiltonian (AbstractHamiltonian *H, ComplexMatrix& M)
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   OptionManager Manager ("FQHELatticeBosonsKySym" , "0.01");  
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");

@@ -20,6 +20,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::ifstream;
@@ -29,7 +30,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   BooleanOption HelpOption ('h', "help", "display this help");
   SingleStringOption InputFile('\n', "input", "name of the input file", 0);
   SingleIntegerOption NumberRValueOption ('R', "R-states", "number of states in plane", 100);

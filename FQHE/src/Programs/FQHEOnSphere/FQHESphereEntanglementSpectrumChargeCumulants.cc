@@ -19,6 +19,7 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -195,7 +196,7 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(OutputFileName, ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File << "# i <(N_A-<N_A>)^i> <N_A^i> <<N_A^i>>" << endl;
   for (int i = 0; i <= NbrCumulant; ++i)
     {

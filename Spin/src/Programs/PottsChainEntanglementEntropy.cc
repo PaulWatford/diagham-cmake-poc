@@ -27,6 +27,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -258,8 +259,8 @@ int main(int argc, char** argv)
   
   
 
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   File << "# N_A S_A Tr(\\rho_A)" << endl;
 
   int SubsystemSize = Manager.GetInteger("min-la");
@@ -507,7 +508,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream DensityMatrixFile;
 	      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-	      DensityMatrixFile.precision(14);
+	      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 	      for (int i = 0; i <TmpDiag.GetNbrRow(); ++i)
 		DensityMatrixFile << SubsystemSize << " " << MinSzA << " " << TmpDiag[i] << endl;
 	      DensityMatrixFile.close();

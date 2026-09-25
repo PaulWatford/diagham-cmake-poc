@@ -30,6 +30,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -223,9 +224,9 @@ int main(int argc, char** argv)
 	  File1.open(OutputFileName, ios::binary | ios::out);
 	}
     }
-  File.precision(14);
-  File1.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  File1.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   cout << "NbrSites = " << NbrSites << " " << " XPeriodicity = " << XPeriodicity << " YPeriodicity  = " << YPeriodicity << " Sz = " << SzValue << " SzParitySector = " << SzParitySector << " XMomentum = " << XMomentum << " YMomentum = " << YMomentum << endl;
   
@@ -352,8 +353,8 @@ int main(int argc, char** argv)
       return 0;
     }
     File.open(OutputFileName, ios::binary | ios::out);
-    File.precision(14);
-    cout.precision(14);
+    File.precision(std::numeric_limits<double>::max_digits10);
+    cout.precision(std::numeric_limits<double>::max_digits10);
   
     File << "# l_0 i j l_{i,j} <S_{0,a} S_{0,b} S_{i,j}S_{i,j,l}}> <S_{0,b} S_{0,c} S_{i,j}S_{i,j,l}}> <S_{0,a} S_{0,c} S_{i,j}S_{i,j,l}}>" << endl;
     int** TmpIndex2 = new int*[6];

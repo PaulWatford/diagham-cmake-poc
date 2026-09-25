@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -57,7 +58,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereWithSpinCorrelation" , "0.01");
@@ -417,7 +418,7 @@ int main(int argc, char** argv)
     }
 
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   if (((SingleStringOption*) Manager["output-file"])->GetString() != 0)
     File.open(((SingleStringOption*) Manager["output-file"])->GetString(), ios::binary | ios::out);
   else
@@ -547,7 +548,7 @@ int main(int argc, char** argv)
 	    }
 
 	  ofstream File;
-	  File.precision(14);
+	  File.precision(std::numeric_limits<double>::max_digits10);
 	  File.open(OutputNameCorr, ios::binary | ios::out);
 	  X=0.0;
 	  for (int x = 0; x < NbrPoints; ++x)

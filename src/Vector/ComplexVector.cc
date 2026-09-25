@@ -2766,7 +2766,7 @@ bool ComplexVector::WriteVector (const char* fileName)
 bool ComplexVector::WriteAsciiVector (const char* fileName)
 {
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   if (!File.is_open())
     {
       cout << "Cannot create file: " << fileName << endl;

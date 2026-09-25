@@ -18,6 +18,7 @@
 #include <cmath>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::ios;
@@ -37,7 +38,7 @@ int GetSiteIndex(int SiteIndex)
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("PlotDiceLatticeMeanField" , "0.01");
@@ -196,7 +197,7 @@ int main(int argc, char** argv)
   // now, go on to plot things
   
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File.open(OutputNamePlot, ios::binary | ios::out);
 
   int CellPosition[2];

@@ -20,11 +20,12 @@
 #include <math.h>
 #include <sys/time.h>
 #include <cstring>
+#include <limits>
 
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   // some running options and help
   OptionManager Manager ("FQHESphereWithSpinMonteCarlo" , "0.01");

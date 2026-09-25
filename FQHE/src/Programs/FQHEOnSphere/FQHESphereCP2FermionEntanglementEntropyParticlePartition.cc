@@ -34,6 +34,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -412,8 +413,8 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(14);
-  cout.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   
   double TotalTrace = 0.0;
   for (; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
@@ -629,7 +630,7 @@ int main(int argc, char** argv)
 		      TmpDiag.SortMatrixDownOrder();
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 			DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalTz << " " << SubsystemTotalY << " " << TmpDiag[i] << endl;
 		      DensityMatrixFile.close();
@@ -660,7 +661,7 @@ int main(int argc, char** argv)
 		  {
 		    ofstream DensityMatrixFile;
 		    DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		    DensityMatrixFile.precision(14);
+		    DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 // 		    if (ComputeLValueFlag == false)
 // 		      {
 			DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalTz << " " << SubsystemTotalY << " " << TmpValue << endl;

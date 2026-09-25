@@ -48,6 +48,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -60,7 +61,7 @@ Complex EvaluateInteractionCoefficient(AbstractFunctionBasis* Basis, int m1, int
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("FQHESphereMPSCorrelation" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
 
@@ -395,7 +396,7 @@ int main(int argc, char** argv)
     }
   
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
 
   if (Manager.GetString("output-file") != 0)
     File.open(Manager.GetString("output-file"), ios::binary | ios::out);

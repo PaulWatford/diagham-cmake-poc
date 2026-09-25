@@ -17,6 +17,7 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -133,7 +134,7 @@ int main(int argc, char** argv)
 	    }
 	  ofstream File;
 	  File.open(OutputFileName, ios::out);
-	  File.precision(14);
+	  File.precision(std::numeric_limits<double>::max_digits10);
 	  File << "# na kx ky linearized_k lambda -log(lambda)";
 	  File << endl;
 	  int TmpIndex = Index;

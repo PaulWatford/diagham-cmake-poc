@@ -47,6 +47,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -706,10 +707,10 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputFileName, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File.close();
     }
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   double TotalTrace = 0.0;
   double TotalEntanglementEntropy = 0.0;
@@ -1059,7 +1060,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      if (NoSzFlag == false)
 			{
 			  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
@@ -1590,7 +1591,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      if (NoSzFlag == false)
 			{
 			  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
@@ -1637,7 +1638,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(14);
+			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			  if (NoSzFlag == false)
 			    {
 			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalSz << " " << SubsystemSzSymmetrySector << " " << SubsystemNbrNUp << " " 
@@ -1802,7 +1803,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(14);
+		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 		      if (NoSzFlag == false)
 			{
 			  for (int i = 0; i < ComplexPartialDensityMatrix.GetNbrRow(); ++i)
@@ -1841,7 +1842,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(14);
+			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
 			  if (NoSzFlag == false)
 			    {
 			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalSz << " " << SubsystemNbrNUp << " " 
@@ -1867,7 +1868,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputFileName, ios::binary | ios::out | ios::app);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (int SubsystemNbrParticles = MinSubsystemNbrParticles; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
 	{
 	  File << SubsystemNbrParticles << " " << (-EntanglementEntropies[SubsystemNbrParticles - MinSubsystemNbrParticles]) 
@@ -1885,7 +1886,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputFileName, ios::binary | ios::out | ios::app);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       cout <<" Total density matrix trace is equal to " << TotalTrace << endl;
       File << "# Total density matrix trace = " << TotalTrace << endl;
       File << "# Total entanglement entropy = " << TotalEntanglementEntropy << endl;

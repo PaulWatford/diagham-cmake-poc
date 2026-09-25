@@ -32,6 +32,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -43,7 +44,7 @@ void RotateCouplingConstants (double phi, double psi, double theta, double jx, d
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   BooleanOption HelpOption ('h', "help", "display this help");
   BooleanOption SMPOption ('S', "SMP", "enable SMP mode");
   SingleIntegerOption SMPNbrProcessorOption ('\n', "processors", "number of processors to use in SMP mode", 2);

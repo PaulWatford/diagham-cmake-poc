@@ -51,6 +51,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::ofstream;
@@ -432,7 +433,7 @@ int GenericNonHermitianMainTask::ExecuteMainTask()
 	{
 	  File.open(this->EigenstateFileName, ios::binary | ios::out | ios::app);
 	}
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       for (int i = 0; i < LocalNbrEigenvalues; ++i)
 	{
 	  this->WriteResult(File,TmpEigenvalues[i]);

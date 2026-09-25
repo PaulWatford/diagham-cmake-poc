@@ -33,6 +33,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -43,7 +44,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {  
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
 
   OptionManager Manager ("EllipticalDot" , "0.01");
@@ -266,7 +267,7 @@ int main(int argc, char** argv)
       if (EigenstateFlag == true)
         {
           ofstream OutputFile;
-          OutputFile.precision(14);
+          OutputFile.precision(std::numeric_limits<double>::max_digits10);
           OutputFile.open("eigenvalues", ios::binary | ios::out);
           for (int i = 0; i < NbrEigenvalue; ++i)
             OutputFile << Eigenvalues[i] << " ";

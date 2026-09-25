@@ -41,6 +41,7 @@
 #include <fstream>
 #include <math.h>
 #include <stdlib.h>
+#include <limits>
 
 using std::ifstream;
 using std::ios;
@@ -235,7 +236,7 @@ bool QuantumWellBFieldEscapeProbability::WriteSpectra(char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   for (int i = 0; i < this->PointNumber; ++i)
     {
       File << (*AxeX)[i] << '\t';

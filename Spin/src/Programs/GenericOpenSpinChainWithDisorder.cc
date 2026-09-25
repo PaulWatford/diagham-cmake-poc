@@ -33,6 +33,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits>
 
 
 using std::cout;
@@ -42,7 +43,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("GenericOpenSpinChainWithDisorder" , "0.01");

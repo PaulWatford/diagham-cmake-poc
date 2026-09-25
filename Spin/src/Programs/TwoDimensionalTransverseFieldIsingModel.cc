@@ -31,6 +31,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -40,7 +41,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("TwoDimensionalTransverseFieldIsingModel" , "0.01");
@@ -240,7 +241,7 @@ int main(int argc, char** argv)
 	      sprintf (HOutputFileName, "%s_%s.hvalues", OutputFileName, OutputParameterFileName);
 	      ofstream File;
 	      File.open(HOutputFileName, ios::binary | ios::out); 
-	      File.precision(14); 
+	      File.precision(std::numeric_limits<double>::max_digits10); 
 	      for (int i = 0; i < NbrSitesX; ++i)
 		{
 		  for (int j = 0; j < NbrSitesY; ++j)

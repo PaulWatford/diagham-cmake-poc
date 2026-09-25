@@ -24,6 +24,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -62,7 +63,7 @@ int main(int argc, char** argv)
       return 0;
     }
     
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   int NbrSpaces = 1;
   ComplexVector* InputStates = 0;

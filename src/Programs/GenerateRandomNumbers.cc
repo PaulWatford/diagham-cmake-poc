@@ -13,6 +13,7 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::ios;
 using std::cout;
@@ -29,7 +30,7 @@ using std::ifstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   OptionManager Manager ("GenerateRandomNumbers" , "0.01");
   OptionGroup* MonteCarloGroup = new OptionGroup ("Monte Carlo options");

@@ -33,6 +33,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -140,7 +141,7 @@ int main(int argc, char** argv)
   sprintf(FileName, "transition_elements_hofstadter_X_%d_Y_%d_q_%d_x_%d_y_%d_nbrgx_%d_nbrgy_%d.dat", UnitCellX, UnitCellY, FluxPerCell, NbrCellX, NbrCellY, NbrPointX, NbrPointY);
   ofstream File;
   File.open(FileName, ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File << "# omega band kx ky V+ V+/omega V- V-/omega"<< endl;
      
   Abstract2DTightBindingModel *TightBindingModel;

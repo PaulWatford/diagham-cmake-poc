@@ -45,6 +45,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -55,7 +56,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
   
   OptionManager Manager ("FQHEMPSEMatrix" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
@@ -424,7 +425,7 @@ int main(int argc, char** argv)
 	      MPSMatrixManager.GetCylinderPerimeter(NbrFluxQuanta), TruncationName);
       ofstream File;
       File.open(TmpFileName, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       double GeometricalEntropy = -(log(SqrNorm(MixedEigenvalues[0]) / Norm(Eigenvalues[0])) / ((double) NbrOrbitals)) * (MPSMatrixManager.GetCylinderPerimeter(NbrFluxQuanta) / (2.0 * M_PI));
       cout << "Geometrical entropy = " << GeometricalEntropy << endl;
       File << "# Geo.Ent. Norm(Mixed Eigenvalue)  SqrNorm(Mixed Eigenvalue)" << endl;

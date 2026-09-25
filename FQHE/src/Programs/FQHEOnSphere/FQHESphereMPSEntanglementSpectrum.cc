@@ -43,6 +43,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -54,7 +55,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
   
   OptionManager Manager ("FQHESphereMPSEntanglementSpectrum" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
@@ -143,7 +144,7 @@ int main(int argc, char** argv)
   NbrEigenstates = MPSMatrix->GetTransferMatrixLargestEigenvalueDegeneracy();
 
   ofstream File;
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   
   if (Manager.GetString("output-file") != 0)
     File.open(Manager.GetString("output-file"), ios::binary | ios::out);

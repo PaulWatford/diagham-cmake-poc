@@ -14,6 +14,7 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
+#include <limits>
 
 
 using std::cout;
@@ -67,7 +68,7 @@ void LevelStatisticsPerformLevelStatistics(double** spectrum, int* spectrumSize,
 
 int main(int argc, char** argv)
 {
-  cout.precision(14); 
+  cout.precision(std::numeric_limits<double>::max_digits10); 
 
   // some running options and help
   OptionManager Manager ("LevelStatistics" , "0.01");
@@ -302,7 +303,7 @@ int main(int argc, char** argv)
       char* OutputRFileName = ReplaceExtensionToFileName(OutputFileName, "levelstat", "rvalue");
       ofstream File;
       File.open(OutputRFileName, ios::binary | ios::out);
-      File.precision(14);
+      File.precision(std::numeric_limits<double>::max_digits10);
       File << "# Average r = " << (AverageR / SpectraFile.GetNbrLines()) << " " 
 	   << sqrt (((VarianceAverageR / SpectraFile.GetNbrLines()) - ((AverageR / SpectraFile.GetNbrLines()) * (AverageR / SpectraFile.GetNbrLines()))) / (SpectraFile.GetNbrLines() - 1)) << endl;
       File << "# file name <r>" << endl;
@@ -338,7 +339,7 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(OutputFileName, ios::binary | ios::out);
-  File.precision(14);
+  File.precision(std::numeric_limits<double>::max_digits10);
   File << "# Min spacing " << MinAverageSpacing << endl;
   File << "# Max spacing " << MaxAverageSpacing << endl;
   File << "# Average spacing = " << AverageSpacing << endl;

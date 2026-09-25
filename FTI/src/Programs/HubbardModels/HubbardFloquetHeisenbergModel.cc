@@ -28,6 +28,7 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
+#include <limits>
 
 
 using std::cout;
@@ -38,7 +39,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
   OptionManager Manager ("HubbardFloquetHeisenbergModel" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
@@ -217,7 +218,7 @@ int main(int argc, char** argv)
 	      char* HzOutputFileName = ReplaceExtensionToFileName(EigenvalueOutputFile, ".dat", TmpExtention);
 	      ofstream File;
 	      File.open(HzOutputFileName, ios::binary | ios::out); 
-	      File.precision(14); 
+	      File.precision(std::numeric_limits<double>::max_digits10); 
 	      for (int i = 0; i < NbrSites; ++i)
 		{
 		  double Tmp;
@@ -319,7 +320,7 @@ int main(int argc, char** argv)
 	{
 	  ofstream File;
 	  File.open(TauOutputFileNames[i], ios::out);
-	  File.precision(14);  
+	  File.precision(std::numeric_limits<double>::max_digits10);  
 	  File << "# Z2 lambda norm(lambda) phase(lambda)" << endl;
 	  File.close();
 	}
@@ -448,7 +449,7 @@ int main(int argc, char** argv)
 	      SortArrayUpOrdering<Complex>(TmpPhases, TmpDiagUnitaryEvolution.GetDiagonalElements(), Lim);
 	      ofstream File;
 	      File.open(TauOutputFileNames[j], ios::out | ios::app);
-	      File.precision(14);  
+	      File.precision(std::numeric_limits<double>::max_digits10);  
 	      for (int i = 0; i < Lim; ++i)
 		{
 		  File << ParitySector << " " << i << " " << TmpDiagUnitaryEvolution[i] << " " << Norm(TmpDiagUnitaryEvolution[i]) << " " << TmpPhases[i] << endl;

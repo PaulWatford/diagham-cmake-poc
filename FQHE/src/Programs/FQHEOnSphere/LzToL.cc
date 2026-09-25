@@ -11,6 +11,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <limits>
 
 using std::cout;
 using std::endl;
@@ -20,7 +21,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(14);
+  cout.precision(std::numeric_limits<double>::max_digits10);
 
   BooleanOption HelpOption ('h', "help", "display this help");
   SingleStringOption InputFileOption ('\0', "lz-file", "name of the file containing the lz sorted spectrum", 0);

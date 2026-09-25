@@ -1,0 +1,244 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                            DiagHam  version 0.01                           //
+//                                                                            //
+//                  Copyright (C) 2001-2002 Nicolas Regnault                  //
+//                                                                            //
+//                                                                            //
+//                          global configuration file                         //
+//                                                                            //
+//                        last modification : 18/01/2001                      //
+//                                                                            //
+//                                                                            //
+//    This program is free software; you can redistribute it and/or modify    //
+//    it under the terms of the GNU General Public License as published by    //
+//    the Free Software Foundation; either version 2 of the License, or       //
+//    (at your option) any later version.                                     //
+//                                                                            //
+//    This program is distributed in the hope that it will be useful,         //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of          //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           //
+//    GNU General Public License for more details.                            //
+//                                                                            //
+//    You should have received a copy of the GNU General Public License       //
+//    along with this program; if not, write to the Free Software             //
+//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.               //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+#include "config.h"
+
+#include <iostream>
+using std::cout;
+using std::endl;
+
+int main()
+{
+
+// all options
+
+// byte ordering
+#ifdef HAVE_LITTLEENDIAN 
+  cout <<"__LITTLEENDIAN__ defined"<<endl;
+#else
+  cout <<"__BIGENDIAN__ defined"<<endl;
+#endif
+
+// use sstream instead of strstream
+#ifdef __SSTREAM_STYLE__ 
+  cout <<"__SSTREAM_STYLE__ defined"<<endl;
+#endif
+
+// machine precision
+  cout <<"MACHINE_PRECISION " << MACHINE_PRECISION << " defined"<<endl;
+
+// SMP flag
+#ifdef __SMP__
+  cout <<"__SMP__ defined"<<endl;
+#endif
+  
+// debug flag
+#ifdef __DEBUG__
+  cout <<"__DEBUG__ defined"<<endl;
+#endif
+
+// 64 bits architecture
+#ifdef __64_BITS__
+  cout <<"__64_BITS__ defined"<<endl;
+#endif
+
+// MPI flag
+#ifdef HAVE_MPI
+  cout <<"__MPI__ defined"<<endl;
+#endif
+
+// MPI no broadcast flag
+#ifdef  __MPI_NOBROADCAST__
+  cout <<" __MPI_NOBROADCAST__ defined"<<endl;
+#endif
+
+// MPI buffer maximum size
+#ifdef  HAVE_MPI
+  cout <<" MPI_MAXIMUM_DOUBLE_BUFFER " <<  MPI_MAXIMUM_DOUBLE_BUFFER << endl;
+  cout <<" MPI_MAXIMUM_COMPLEX_BUFFER " <<  MPI_MAXIMUM_COMPLEX_BUFFER << endl;
+#endif
+
+
+// LAPACK flag
+#ifdef HAVE_LAPACK
+  cout <<"__LAPACK__ defined"<<endl;
+#endif
+
+// use LAPACK routines instead of DiagHam routines
+#ifdef HAVE_LAPACK_ONLY
+  cout <<"__LAPACKONLY__ defined"<<endl;
+#endif
+
+// SCALAPACK flag
+#ifdef HAVE_SCALAPACK
+  cout <<"__SCALAPACK__ defined"<<endl;
+#endif
+
+// use BZ2 routines
+#ifdef HAVE_BZ2
+  cout << "__BZ2LIB__ defined" << endl;
+#endif
+  
+// use GMP routines
+#ifdef HAVE_GMP
+  cout << "__GMP__ defined" << endl;
+#endif
+  
+// use MPACK routines
+#ifdef HAVE_MPACK
+  cout << "__MPACK__ defined" << endl;
+#endif
+  
+// use FFTW routines
+#ifdef HAVE_FFTW
+  cout << "__FFTW__ defined" << endl;
+#endif
+
+// use GSL routines
+#ifdef HAVE_GSL
+  cout << "__GSL__ defined" << endl;
+#endif
+  
+
+// architecture dependant options
+//
+
+// DEC CXX specific options
+
+# if defined __DECC || defined __DECCXX
+
+  cout << "DEC system detected"<<endl;
+// enable cxx options
+  cout <<"__USE_STD_IOSTREAM defined"<<endl;
+
+// 64 bits architecture
+  cout <<"__64_BITS__ defined"<<endl;
+
+#endif
+
+
+
+// xlC and AIX specific options (assume 64bits compilation)
+
+# if defined __TOS_AIX__ && __xlC__
+  cout <<"AIX system detected"<<endl;
+// 64 bits architecture
+  cout <<"__64_BITS__ defined"<<endl;
+
+#endif
+
+
+
+// gcc and x86_64 specific options (assume 64bits compilation)
+
+#ifdef __x86_64__
+
+  cout <<"x86-64 architecture detected"<<endl;
+
+  // 64 bits architecture
+  cout <<"__64_BITS__ defined"<<endl;
+
+#endif
+
+// llvm and arm64 specific options (assume 64bits compilation)
+
+#ifdef __aarch64__
+
+  cout <<"arm64 architecture detected"<<endl;
+
+  // 64 bits architecture
+  cout <<"__64_BITS__ defined"<<endl;
+
+#endif
+
+#ifdef __INTEL_COMPILER
+
+  cout << "Intel compiler found"<<endl;
+
+#endif
+
+// define long long types (128 bits on x86_64 architecture, 64 bits elsewhere)
+
+#ifdef __x86_64__
+
+
+#ifdef __INTEL_COMPILER
+
+  cout <<"__128_BIT_LONGLONG__ defined"<<endl;
+  cout <<"LONGLONG __m128i defined"<<endl;
+  cout <<"ULONGLONG __m128i defined"<<endl;
+
+#else
+
+ cout <<"__128_BIT_LONGLONG__ defined"<<endl;
+ cout <<"LONGLONG int128_t defined"<<endl;
+ cout <<"ULONGLONG uint128_t defined"<<endl;
+
+#endif
+
+#else
+
+#ifdef __aarch64__
+
+ cout <<"__128_BIT_LONGLONG__ defined"<<endl;
+ cout <<"LONGLONG int128_t defined"<<endl;
+ cout <<"ULONGLONG uint128_t defined"<<endl;
+
+#else
+ cout <<"LONGLONG long long defined"<<endl;
+ cout <<"ULONGLONG unsigned long long defined"<<endl;
+#endif
+ 
+#endif
+
+// package option
+//
+
+// provide output package
+#ifdef USE_OUTPUT
+ cout <<"USE_OUTPUT defined"<<endl;
+#endif
+
+
+
+// provide polynomial package
+#ifdef USE_POLYNOMIAL
+ cout <<"USE_POLYNOMIAL defined"<<endl;
+#endif
+
+// provide use of the cluster architecture package
+#ifdef USE_CLUSTER_ARCHITECTURE
+ cout <<"USE_CLUSTER_ARCHITECTURE defined"<<endl;
+#endif
+
+// provide use of the generic Hilbert space package
+#ifdef USE_HILBERT_SPACE
+ cout <<"USE_HILBERT_SPACE defined"<<endl;
+#endif
+
+}

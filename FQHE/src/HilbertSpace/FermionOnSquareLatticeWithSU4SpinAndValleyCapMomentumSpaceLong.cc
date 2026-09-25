@@ -1,0 +1,1367 @@
+////////////////////////////////////////////////////////////////////////////////
+//                                                                            //
+//                                                                            //
+//                            DiagHam  version 0.01                           //
+//                                                                            //
+//                    Copyright (C) 2001-2011 Nicolas Regnault                //
+//                                                                            //
+//                                                                            //
+//              class of fermions on a square lattice with SU(4) spin         //
+//   in momentum space with a cap on the number of particles in each valley   //
+//                      that allows a number of sites up to                   //
+//                  31 (for systems with 128 bit integer support)             //
+//               or 15 (on 32 bit systems without 128 bit integer support)    //
+//                                                                            //
+//                        last modification : 17/11/2023                      //
+//                                                                            //
+//                                                                            //
+//    This program is free software; you can redistribute it and/or modify    //
+//    it under the terms of the GNU General Public License as published by    //
+//    the Free Software Foundation; either version 2 of the License, or       //
+//    (at your option) any later version.                                     //
+//                                                                            //
+//    This program is distributed in the hope that it will be useful,         //
+//    but WITHOUT ANY WARRANTY; without even the implied warranty of          //
+//    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the           //
+//    GNU General Public License for more details.                            //
+//                                                                            //
+//    You should have received a copy of the GNU General Public License       //
+//    along with this program; if not, write to the Free Software             //
+//    Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.               //
+//                                                                            //
+////////////////////////////////////////////////////////////////////////////////
+
+
+#include "config.h"
+#include "HilbertSpace/FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong.h"
+#include "QuantumNumber/AbstractQuantumNumber.h"
+#include "QuantumNumber/SzQuantumNumber.h"
+#include "Matrix/ComplexMatrix.h"
+#include "Matrix/ComplexLapackDeterminant.h"
+#include "Vector/RealVector.h"
+#include "FunctionBasis/AbstractFunctionBasis.h"
+#include "MathTools/BinomialCoefficients.h"
+#include "GeneralTools/UnsignedIntegerTools.h"
+#include "MathTools/FactorialCoefficient.h"
+#include "GeneralTools/Endian.h"
+#include "GeneralTools/FilenameTools.h"
+#include "GeneralTools/ArrayTools.h"
+
+#include <math.h>
+#include <cstdlib>
+#include <fstream>
+
+using std::cout;
+using std::endl;
+using std::hex;
+using std::dec;
+using std::ofstream;
+using std::ifstream;
+using std::ios;
+
+
+// default constructor
+//
+
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong ()
+{
+  this->MinNbrParticlesPlus = 0;
+  this->MinNbrParticlesMinus = 0;
+  this->MaxNbrParticlesPlus = 0;
+  this->MaxNbrParticlesMinus = 0;
+}
+
+// basic constructor
+// 
+// nbrFermions = number of fermions
+// nbrSiteX = number of sites in the x direction
+// nbrSiteY = number of sites in the y direction
+// maxNbrParticlesPlus = maximum number of particles in valley plus
+// maxNbrParticlesMinus = maximum number of particles in valley minus
+// kxMomentum = momentum along the x direction
+// kyMomentum = momentum along the y direction
+// outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
+// memory = amount of memory granted for precalculations
+
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesPlus, int maxNbrParticlesMinus, int kxMomentum, int kyMomentum, char* outputDirectory, unsigned long memory)
+{  
+  this->NbrFermions = nbrFermions;
+  this->IncNbrFermions = this->NbrFermions + 1;
+  this->SzFlag = false;
+  this->PzFlag = false;
+  this->TotalLz = 0;
+  this->TotalSpin = 0;
+  this->NbrFermionsUpPlus = 0;
+  this->NbrFermionsDownPlus = 0;
+  this->NbrFermionsUpMinus = 0;
+  this->NbrFermionsDownMinus = 0;
+  this->NbrSiteX = nbrSiteX;
+  this->NbrSiteY = nbrSiteY;
+  this->MinNbrParticlesPlus = 0;
+  this->MinNbrParticlesMinus = 0;
+  this->MaxNbrParticlesPlus = maxNbrParticlesPlus;
+  this->MaxNbrParticlesMinus = maxNbrParticlesMinus;
+  this->KxMomentum = kxMomentum;
+  this->KyMomentum = kyMomentum;
+  this->HighestBit = (4 * this->NbrSiteX * this->NbrSiteY) - 1;
+  this->LzMax = this->NbrSiteX * this->NbrSiteY;
+  this->NbrLzValue = this->LzMax + 1;
+  this->MaximumSignLookUp = 16;
+  if (outputDirectory == 0)
+    {
+      if (this->NbrFermions <= (2 * this->NbrSiteX * this->NbrSiteY))
+	{
+	  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+	}
+      else
+	{
+	  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,
+										      ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1) * this->NbrSiteY, ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1) * this->NbrSiteX);
+	}
+      if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+      if (this->LargeHilbertSpaceDimension > 0l)
+	{
+	  this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
+	  this->StateHighestBit = new int [this->HilbertSpaceDimension];  
+	  long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	    {
+	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	    }
+	}
+    }
+  else
+    {
+      char* TmpName = this->GetDefaultHilbertSpaceFileName();
+      char* FullName = new char[strlen(TmpName) + strlen(outputDirectory) + 16];
+      sprintf (FullName, "%s/%s", outputDirectory, TmpName);
+      if (IsFile(FullName))
+	{
+	  this->ReadCoreHilbertSpace(FullName);	  
+	}
+      else
+	{
+	  if (this->NbrFermions <= (2 * this->NbrSiteX * this->NbrSiteY))
+	    {
+	      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+	    }
+	  else
+	    {
+	      this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,
+											  ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1) * this->NbrSiteY, ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1) * this->NbrSiteX);
+	    }
+	  if (this->LargeHilbertSpaceDimension >= (1l << 30))
+	    this->HilbertSpaceDimension = 0;
+	  else
+	    this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+	  if (this->LargeHilbertSpaceDimension > 0l)
+	    {
+	      this->StateDescription = new ULONGLONG [this->HilbertSpaceDimension];
+	      this->StateHighestBit = new int [this->HilbertSpaceDimension];  
+	      long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+	      if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+		{
+		  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+		}
+	    }
+	  this->WriteCoreHilbertSpace(FullName);
+	}
+    }
+  if (this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->Flag.Initialize();
+//       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+// 	this->PrintState(cout, i) << " " << hex << this->StateDescription[i] << dec << endl;
+      this->GenerateLookUpTable(memory);
+      
+#ifdef __DEBUG__
+      long UsedMemory = 0;
+      UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(ULONGLONG) + sizeof(int));
+      cout << "memory requested for Hilbert space = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+      UsedMemory = this->NbrLzValue * sizeof(int);
+      UsedMemory += this->NbrLzValue * this->LookUpTableMemorySize * sizeof(int);
+      cout << "memory requested for lookup table = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+#endif
+    }
+}
+
+// constructor when preserving only spin
+// 
+// nbrFermions = number of fermions
+// nbrSiteX = number of sites in the x direction
+// nbrSiteY = number of sites in the y direction
+// maxNbrParticlesPlus = maximum number of particles in valley plus
+// maxNbrParticlesMinus = maximum number of particles in valley minus
+// kxMomentum = momentum along the x direction
+// kyMomentum = momentum along the y direction
+// totalSpin = twice the total spin value
+// outputDirectory = if non-zero, the constructor looks for a previously saved Hilbert space and if not avaliable, will save the current one after generation
+// memory = amount of memory granted for precalculations
+
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong (int nbrFermions, int nbrSiteX, int nbrSiteY, int maxNbrParticlesPlus, int maxNbrParticlesMinus, int kxMomentum, int kyMomentum, int totalSpin, char* outputDirectory, unsigned long memory)
+{
+  this->NbrFermions = nbrFermions;
+  this->IncNbrFermions = this->NbrFermions + 1;
+  this->SzFlag = true;
+  this->PzFlag = false;
+  this->TotalLz = 0;
+  this->TotalSpin = totalSpin;
+  this->TotalIsospin = 0;
+  this->NbrFermionsUpPlus = ((this->NbrFermions+this->TotalSpin)/2 + this->TotalIsospin)/2;
+  this->NbrFermionsDownPlus = ((this->NbrFermions-this->TotalSpin)/2 + this->TotalIsospin)/2;
+  this->NbrFermionsUpMinus = ((this->NbrFermions+this->TotalSpin)/2 - this->TotalIsospin)/2;
+  this->NbrFermionsDownMinus = ((this->NbrFermions-this->TotalSpin)/2 - this->TotalIsospin)/2;
+  this->NbrSiteX = nbrSiteX;
+  this->NbrSiteY = nbrSiteY;
+  this->MinNbrParticlesPlus = 0;
+  this->MinNbrParticlesMinus = 0;
+  this->MaxNbrParticlesPlus = maxNbrParticlesPlus;
+  this->MaxNbrParticlesMinus = maxNbrParticlesMinus;
+  this->HighestBit = (4 * this->NbrSiteX * this->NbrSiteY) - 1;
+  this->KxMomentum = kxMomentum;
+  this->KyMomentum = kyMomentum;
+  this->LzMax = this->NbrSiteX * this->NbrSiteY;
+  this->NbrLzValue = this->LzMax + 1;
+  this->MaximumSignLookUp = 16;
+  if (outputDirectory == 0)
+    {
+      this->GenerateStatesFromSingleBandHilbertSpaces();
+      // if (this->NbrFermions <= (2 * this->NbrSiteX * this->NbrSiteY))
+      // 	{
+      // 	  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0,
+      // 										 (this->NbrFermions + this->TotalSpin) / 2, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+      // 	}
+      // else
+      // 	{
+      // 	  cout << "using holes to generate the Hilbert space" << endl;
+      // 	  this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,
+      // 										      this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1), this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1),
+      // 										      (2 * this->NbrSiteX * this->NbrSiteY) - ((this->NbrFermions + this->TotalSpin) / 2));
+      // 	}
+      // if (this->LargeHilbertSpaceDimension >= (1l << 31))
+      // 	this->HilbertSpaceDimension = 0;
+      // else
+      // 	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+      // if (this->LargeHilbertSpaceDimension > 0l)
+      // 	{
+      // 	  cout << "Hilbert space dimension " << this->LargeHilbertSpaceDimension << endl;
+      // 	  this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
+      // 	  this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];
+	  
+      // 	  long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l, (this->NbrFermions+this->TotalSpin)/2, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+      // 	  if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+      // 	    {
+      // 	      cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+      // 	    }
+      // 	}
+    }
+  else
+    {
+      char* TmpName = this->GetDefaultHilbertSpaceFileName();
+      char* FullName = new char[strlen(TmpName) + strlen(outputDirectory) + 16];
+      sprintf (FullName, "%s/%s", outputDirectory, TmpName);
+      if (IsFile(FullName))
+	{
+	  this->ReadCoreHilbertSpace(FullName);	  
+	}
+      else
+	{
+	  this->GenerateStatesFromSingleBandHilbertSpaces();
+	  // if (this->NbrFermions <= (2 * this->NbrSiteX * this->NbrSiteY))
+	  //   {
+	  //     this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimension(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0,
+	  // 									     (this->NbrFermions + this->TotalSpin) / 2, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+	  //   }
+	  // else
+	  //   {
+	  //     cout << "using holes to generate the Hilbert space" << endl;
+	  //     this->LargeHilbertSpaceDimension = this->EvaluateHilbertSpaceDimensionHoles((4 * this->NbrSiteX * this->NbrSiteY) - this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1,
+	  // 										  this->NbrSiteY * ((this->NbrSiteX * (this->NbrSiteX - 1)) << 1), this->NbrSiteX * ((this->NbrSiteY * (this->NbrSiteY - 1)) << 1),
+	  // 										  (2 * this->NbrSiteX * this->NbrSiteY) - ((this->NbrFermions + this->TotalSpin) / 2));
+	  //   }
+	  // if (this->LargeHilbertSpaceDimension >= (1l << 31))
+	  //   this->HilbertSpaceDimension = 0;
+	  // else
+	  //   this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+	  // if (this->LargeHilbertSpaceDimension > 0l)
+	  //   {
+	  //     cout << "Hilbert space dimension " << this->LargeHilbertSpaceDimension << endl;
+	  //     this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
+	  //     this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];
+	      
+	  //     long TmpLargeHilbertSpaceDimension = this->GenerateStates(this->NbrFermions, this->NbrSiteX - 1, this->NbrSiteY - 1, 0, 0, 0l, (this->NbrFermions+this->TotalSpin)/2, this->MaxNbrParticlesPlus, this->MaxNbrParticlesMinus);
+	  //     if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	  // 	{
+	  // 	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	  // 	}
+	  //   }
+	  this->WriteCoreHilbertSpace(FullName);
+	}
+    }
+  
+  if (this->LargeHilbertSpaceDimension > 0l)
+    {
+      this->Flag.Initialize();      
+//       for (int i = 0; i < this->HilbertSpaceDimension; ++i)
+// 	this->PrintState(cout, i) << endl;
+      this->GenerateLookUpTable(memory);
+      cout << "Hilbert space generated successfully" << endl;
+      
+#ifdef __DEBUG__
+      long UsedMemory = 0;
+      UsedMemory += (long) this->HilbertSpaceDimension * (sizeof(ULONGLONG) + sizeof(int));
+      cout << "memory requested for Hilbert space = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+      UsedMemory = this->NbrLzValue * sizeof(int);
+      UsedMemory += this->NbrLzValue * this->LookUpTableMemorySize * sizeof(int);
+      cout << "memory requested for lookup table = ";
+      if (UsedMemory >= 1024)
+	if (UsedMemory >= 1048576)
+	  cout << (UsedMemory >> 20) << "Mo" << endl;
+	else
+	  cout << (UsedMemory >> 10) << "ko" <<  endl;
+      else
+	cout << UsedMemory << endl;
+#endif
+    }
+}
+
+
+// copy constructor (without duplicating datas)
+//
+// fermions = reference on the hilbert space to copy to copy
+
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong(const FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong& fermions)
+{
+  this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
+  this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
+  this->Flag = fermions.Flag;
+  this->NbrFermions = fermions.NbrFermions;
+  this->IncNbrFermions = fermions.IncNbrFermions;
+  this->TotalLz = fermions.TotalLz;
+  this->NbrSiteX = fermions.NbrSiteX;
+  this->NbrSiteY = fermions.NbrSiteY;
+  this->KxMomentum = fermions.KxMomentum;
+  this->KyMomentum = fermions.KyMomentum;
+  this->LzMax = fermions.LzMax;
+  this->NbrLzValue = fermions.NbrLzValue;
+  this->TotalSpin = fermions.TotalSpin;
+  this->TotalIsospin = fermions.TotalIsospin;
+  this->TotalEntanglement = fermions.TotalEntanglement;
+  this->SzFlag = fermions.SzFlag;
+  this->PzFlag = fermions.PzFlag;
+  this->NbrFermionsUpPlus = fermions.NbrFermionsUpPlus;
+  this->NbrFermionsDownPlus = fermions.NbrFermionsDownPlus;
+  this->NbrFermionsUpMinus = fermions.NbrFermionsUpMinus;
+  this->NbrFermionsDownMinus = fermions.NbrFermionsDownMinus;
+  this->StateDescription = fermions.StateDescription;
+  this->StateHighestBit = fermions.StateHighestBit;
+  this->HighestBit = fermions.HighestBit;
+  this->MaximumLookUpShift = fermions.MaximumLookUpShift;
+  this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
+  this->LookUpTableShift = fermions.LookUpTableShift;
+  this->LookUpTable = fermions.LookUpTable;  
+  this->SignLookUpTable = fermions.SignLookUpTable;
+  this->SignLookUpTableMask = fermions.SignLookUpTableMask;
+  this->MaximumSignLookUp = fermions.MaximumSignLookUp;
+  this->MinNbrParticlesPlus = fermions.MinNbrParticlesPlus;
+  this->MinNbrParticlesMinus = fermions.MinNbrParticlesMinus;
+  this->MaxNbrParticlesPlus = fermions.MaxNbrParticlesPlus;
+  this->MaxNbrParticlesMinus = fermions.MaxNbrParticlesMinus;
+}
+
+// destructor
+//
+
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::~FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong ()
+{
+}
+
+// assignement (without duplicating datas)
+//
+// fermions = reference on the hilbert space to copy to copy
+// return value = reference on current hilbert space
+
+FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong& FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::operator = (const FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong& fermions)
+{
+  if ((this->HilbertSpaceDimension != 0) && (this->Flag.Shared() == false) && (this->Flag.Used() == true))
+    {
+      delete[] this->StateDescription;
+      delete[] this->StateHighestBit;
+    }
+  this->HilbertSpaceDimension = fermions.HilbertSpaceDimension;
+  this->LargeHilbertSpaceDimension = fermions.LargeHilbertSpaceDimension;
+  this->Flag = fermions.Flag;
+  this->NbrFermions = fermions.NbrFermions;
+  this->IncNbrFermions = fermions.IncNbrFermions;
+  this->TotalLz = fermions.TotalLz;
+  this->LzMax = fermions.LzMax;
+  this->NbrSiteX = fermions.NbrSiteX;
+  this->NbrSiteY = fermions.NbrSiteY;
+  this->KxMomentum = fermions.KxMomentum;
+  this->KyMomentum = fermions.KyMomentum;
+  this->NbrLzValue = fermions.NbrLzValue;
+  this->SzFlag = fermions.SzFlag;
+  this->PzFlag = fermions.PzFlag;
+  this->TotalSpin = fermions.TotalSpin;
+  this->TotalIsospin = fermions.TotalIsospin;
+  this->TotalEntanglement = fermions.TotalEntanglement;
+  this->NbrFermionsUpPlus = fermions.NbrFermionsUpPlus;
+  this->NbrFermionsDownPlus = fermions.NbrFermionsDownPlus;
+  this->NbrFermionsUpMinus = fermions.NbrFermionsUpMinus;
+  this->NbrFermionsDownMinus = fermions.NbrFermionsDownMinus;
+  this->StateDescription = fermions.StateDescription;
+  this->StateHighestBit = fermions.StateHighestBit;
+  this->HighestBit = fermions.HighestBit;
+  this->MaximumLookUpShift = fermions.MaximumLookUpShift;
+  this->LookUpTableMemorySize = fermions.LookUpTableMemorySize;
+  this->LookUpTableShift = fermions.LookUpTableShift;
+  this->LookUpTable = fermions.LookUpTable;  
+  this->MinNbrParticlesPlus = fermions.MinNbrParticlesPlus;
+  this->MinNbrParticlesMinus = fermions.MinNbrParticlesMinus;
+  this->MaxNbrParticlesPlus = fermions.MaxNbrParticlesPlus;
+  this->MaxNbrParticlesMinus = fermions.MaxNbrParticlesMinus;
+  return *this;
+}
+
+// clone Hilbert space (without duplicating datas)
+//
+// return value = pointer to cloned Hilbert space
+
+AbstractHilbertSpace* FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::Clone()
+{
+  return new FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong(*this);
+}
+
+
+// generate all states corresponding to the constraints
+// 
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// pos = position in StateDescription array where to store states
+// maxNbrParticlesPlus = current maximum number of particles in valley plus
+// maxNbrParticlesMinus = current maximum number of particles in valley minus
+// return value = position from which new states have to be stored
+
+long FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos, int maxNbrParticlesPlus, int maxNbrParticlesMinus)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrFermions < 0) || (maxNbrParticlesPlus < 0) || (maxNbrParticlesMinus < 0))
+    return pos;
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	{
+	  this->StateDescription[pos] = ((ULONGLONG) 0x0ul);	  
+	  return (pos + 1l);
+	}
+      else	
+	return pos;
+    }
+  if (currentKx < 0)
+    return pos;
+  if (nbrFermions == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+	    {
+	      if (maxNbrParticlesPlus > 0)
+		{
+		  this->StateDescription[pos] = ((ULONGLONG) 0x8ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		  ++pos;
+		}
+	      if (maxNbrParticlesMinus > 0)
+		{
+		  this->StateDescription[pos] = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		  ++pos;
+		}
+	      if (maxNbrParticlesPlus > 0)
+		{
+		  this->StateDescription[pos] = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		  ++pos;
+		}
+	      if (maxNbrParticlesMinus > 0)
+		{
+		  this->StateDescription[pos] = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		  ++pos;
+		}
+	    }
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		{
+		  if (maxNbrParticlesPlus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x8ul) << (((i * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesMinus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x4ul) << (((i * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesPlus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x2ul) << (((i * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesMinus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x1ul) << (((i * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		}
+	    }
+	}
+      return pos;
+    }
+
+  // u-p u-m d-p d-m
+  long TmpPos = this->GenerateStates(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), pos, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 2);
+  ULONGLONG Mask = ((ULONGLONG) 0xful) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p u-m d-p
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0xeul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p u-m d-m
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2);
+  Mask = ((ULONGLONG) 0xdul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p u-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0xcul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p d-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0xbul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p d-p
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, maxNbrParticlesPlus - 2, maxNbrParticlesMinus);
+  Mask = ((ULONGLONG) 0xaul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x9ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus);
+  Mask = ((ULONGLONG) 0x8ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m d-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2);
+  Mask = ((ULONGLONG) 0x7ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m d-p
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x6ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m d-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, maxNbrParticlesPlus, maxNbrParticlesMinus - 2);
+  Mask = ((ULONGLONG) 0x5ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, maxNbrParticlesPlus, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // d-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x3ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // d-p
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, maxNbrParticlesPlus - 1, maxNbrParticlesMinus);
+  Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // d-m
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, maxNbrParticlesPlus, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, pos, maxNbrParticlesPlus, maxNbrParticlesMinus);
+}
+
+// generate all states corresponding to the constraints
+// 
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// nbrFermionsUp = current number of fermions with a spin up
+// pos = position in StateDescription array where to store states
+// maxNbrParticlesPlus = current maximum number of particles in valley plus
+// maxNbrParticlesMinus = current maximum number of particles in valley minus
+// return value = position from which new states have to be stored
+
+long FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::GenerateStates(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, long pos, int nbrFermionsUp, int maxNbrParticlesPlus, int maxNbrParticlesMinus)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrFermions < 0) || (nbrFermionsUp < 0) || (nbrFermionsUp > nbrFermions) || (maxNbrParticlesPlus < 0) || (maxNbrParticlesMinus < 0))
+    return pos;
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+        {
+	  this->StateDescription[pos] = ((ULONGLONG) 0x0ul);	  
+            return (pos + 1l);
+        }
+      else
+	{
+          return pos;
+	}
+    }
+  if (currentKx < 0)
+    return pos;
+  if (nbrFermions == 1)
+    {
+      if (nbrFermionsUp == 1)
+	{
+	  for (int j = currentKy; j >= 0; --j)
+	    {
+	      if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) &&
+		  (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		{
+		  if (maxNbrParticlesPlus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x8ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesMinus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		}
+	    }
+	  for (int i = currentKx - 1; i >= 0; --i)
+	    {
+	      for (int j = this->NbrSiteY - 1; j >= 0; --j)
+		{
+		  if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) &&
+		      (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		    {
+		      if (maxNbrParticlesPlus > 0)
+			{
+			  this->StateDescription[pos] = ((ULONGLONG) 0x8ul) << (((i * this->NbrSiteY) + j) << 2);
+			  ++pos;
+			}
+		      if (maxNbrParticlesMinus > 0)
+			{
+			  this->StateDescription[pos] = ((ULONGLONG) 0x4ul) << (((i * this->NbrSiteY) + j) << 2);
+			  ++pos;
+			}
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  for (int j = currentKy; j >= 0; --j)
+	    {
+	      if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) &&
+		  (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		{
+		  if (maxNbrParticlesPlus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		  if (maxNbrParticlesMinus > 0)
+		    {
+		      this->StateDescription[pos] = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + j) << 2);
+		      ++pos;
+		    }
+		}
+	    }
+	  for (int i = currentKx - 1; i >= 0; --i)
+	    {
+	      for (int j = this->NbrSiteY - 1; j >= 0; --j)
+		{
+		  if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) &&
+		      (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		    {
+		      if (maxNbrParticlesPlus > 0)
+			{
+			  this->StateDescription[pos] = ((ULONGLONG) 0x2ul) << (((i * this->NbrSiteY) + j) << 2);
+			  ++pos;
+			}
+		      if (maxNbrParticlesMinus > 0)
+			{
+			  this->StateDescription[pos] = ((ULONGLONG) 0x1ul) << (((i * this->NbrSiteY) + j) << 2);
+			  ++pos;
+			}
+		    }
+		}
+	    }
+	}
+      return pos;
+    }
+
+  // u-p u-m d-p d-m
+  long TmpPos = this->GenerateStates(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), pos, nbrFermionsUp - 2, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 2);
+  ULONGLONG Mask = ((ULONGLONG) 0xful) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p u-m d-p
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, nbrFermionsUp - 2, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0xeul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p u-m d-m
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, nbrFermionsUp - 2, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2);
+  Mask = ((ULONGLONG) 0xdul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p u-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, nbrFermionsUp - 2, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0xcul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p d-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, nbrFermionsUp - 1, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0xbul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p d-p
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, nbrFermionsUp - 1, maxNbrParticlesPlus - 2, maxNbrParticlesMinus);
+  Mask = ((ULONGLONG) 0xaul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+  
+  // u-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x9ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-p
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus);
+  Mask = ((ULONGLONG) 0x8ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m d-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), pos, nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2);
+  Mask = ((ULONGLONG) 0x7ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m d-p
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x6ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+  
+  // u-m d-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, nbrFermionsUp - 1, maxNbrParticlesPlus, maxNbrParticlesMinus - 2);
+  Mask = ((ULONGLONG) 0x5ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // u-m
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, nbrFermionsUp - 1, maxNbrParticlesPlus, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x4ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // d-p d-m
+  TmpPos = this->GenerateStates(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), pos, nbrFermionsUp, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x3ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  // d-p
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, nbrFermionsUp, maxNbrParticlesPlus - 1, maxNbrParticlesMinus);
+  Mask = ((ULONGLONG) 0x2ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+  
+  // d-m
+  TmpPos = this->GenerateStates(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, pos, nbrFermionsUp, maxNbrParticlesPlus, maxNbrParticlesMinus - 1);
+  Mask = ((ULONGLONG) 0x1ul) << (((currentKx * this->NbrSiteY) + currentKy) << 2);
+  for (; pos < TmpPos; ++pos)
+    this->StateDescription[pos] |= Mask;
+
+  return this->GenerateStates(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, pos, nbrFermionsUp, maxNbrParticlesPlus, maxNbrParticlesMinus);
+}
+
+
+// evaluate Hilbert space dimension
+//
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// maxNbrParticlesPlus = current maximum number of particles in valley plus
+// maxNbrParticlesMinus = current maximum number of particles in valley minus
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int maxNbrParticlesPlus, int maxNbrParticlesMinus)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrFermions < 0) || (maxNbrParticlesPlus < 0) || (maxNbrParticlesMinus < 0))
+    return 0l;
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	{
+	  return 1l;
+	}
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      long TmpIncrement = 0l;
+      if (maxNbrParticlesPlus > 0)
+	{
+	  TmpIncrement += 2l;
+	}
+      if (maxNbrParticlesMinus > 0)
+	{
+	  TmpIncrement += 2l;
+	}
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+	    Count += TmpIncrement;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		Count += TmpIncrement;
+	    }
+	}
+      return Count;
+    }
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 2);
+  
+  Count += (2 * this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1));
+  Count += (2 * this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2));
+  
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesPlus - 2, maxNbrParticlesMinus));
+  Count += (4 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), maxNbrParticlesPlus, maxNbrParticlesMinus - 2));
+  
+  Count += (2 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesPlus - 1, maxNbrParticlesMinus));
+  Count += (2 * this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, maxNbrParticlesPlus, maxNbrParticlesMinus - 1));
+
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, maxNbrParticlesPlus, maxNbrParticlesMinus);
+  return Count;
+}
+
+// evaluate Hilbert space dimension
+//
+// nbrFermions = number of fermions
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// nbrFermionsUp = current number of fermions with a spin up
+// maxNbrParticlesPlus = current maximum number of particles in valley plus
+// maxNbrParticlesMinus = current maximum number of particles in valley minus
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::EvaluateHilbertSpaceDimension(int nbrFermions, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrFermionsUp, int maxNbrParticlesPlus, int maxNbrParticlesMinus)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrFermions < 0)|| (nbrFermionsUp < 0) ||  (nbrFermionsUp > nbrFermions) || (maxNbrParticlesPlus < 0) || (maxNbrParticlesMinus < 0))
+    return 0l;
+  if (nbrFermions == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	{
+	  return 1l;
+	}
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrFermions == 1)
+    {
+      long TmpIncrement = 0l;
+      if (maxNbrParticlesPlus > 0)
+	{
+	  TmpIncrement++;
+	}
+      if (maxNbrParticlesMinus > 0)
+	{
+	  TmpIncrement++;
+	}
+
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentKx + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+	    Count += TmpIncrement;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((i + currentTotalKx) % this->NbrSiteX) == this->KxMomentum) && (((j + currentTotalKy) % this->NbrSiteY) == this->KyMomentum))
+		Count += TmpIncrement;
+	    }
+	}
+      return Count;
+    }
+  
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), nbrFermionsUp - 2, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 2);
+  
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrFermionsUp - 2, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrFermionsUp - 2, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrFermionsUp - 1, maxNbrParticlesPlus - 2, maxNbrParticlesMinus - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 2));
+  
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrFermionsUp - 2, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrFermionsUp - 1, maxNbrParticlesPlus - 2, maxNbrParticlesMinus));
+  Count += (2 * this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrFermionsUp - 1, maxNbrParticlesPlus, maxNbrParticlesMinus - 2));
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrFermionsUp, maxNbrParticlesPlus - 1, maxNbrParticlesMinus - 1);
+  
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrFermionsUp, maxNbrParticlesPlus - 1, maxNbrParticlesMinus));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrFermionsUp, maxNbrParticlesPlus, maxNbrParticlesMinus - 1));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrFermionsUp - 1, maxNbrParticlesPlus - 1, maxNbrParticlesMinus));
+  Count += (this->EvaluateHilbertSpaceDimension(nbrFermions - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrFermionsUp - 1, maxNbrParticlesPlus, maxNbrParticlesMinus - 1));
+    
+  Count += this->EvaluateHilbertSpaceDimension(nbrFermions, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrFermionsUp, maxNbrParticlesPlus, maxNbrParticlesMinus);
+  return Count;
+}
+
+
+// evaluate Hilbert space dimension with a fixed number of holes
+//
+// nbrHoles = number of holes
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// return value = Hilbert space dimension
+ 
+long FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if (nbrHoles < 0)
+    return 0l;
+  if (nbrHoles == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	{
+	  return 1l;
+	}
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrHoles == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentTotalKx - currentKx) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
+	    Count += 4l;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((currentTotalKx - i) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
+		Count += 4l;
+	    }
+	}
+      return Count;
+    }
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy));
+  Count += (4 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy)));
+  Count += (6 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy)));
+  Count += (4 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy));
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles, currentKx, currentKy - 1, currentTotalKx, currentTotalKy);
+  return Count;
+}
+  
+// evaluate Hilbert space dimension with a fixed number of holes
+//
+// nbrHoles = number of holes
+// currentKx = current momentum along x for a single particle
+// currentKy = current momentum along y for a single particle
+// currentTotalKx = current total momentum along x
+// currentTotalKy = current total momentum along y
+// nbrHolesUp = current number of holes with a spin up
+// return value = Hilbert space dimension
+
+long FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::EvaluateHilbertSpaceDimensionHoles(int nbrHoles, int currentKx, int currentKy, int currentTotalKx, int currentTotalKy, int nbrHolesUp)
+{
+  if (currentKy < 0)
+    {
+      currentKy = this->NbrSiteY - 1;
+      currentKx--;
+    }
+  if ((nbrHoles < 0)|| (nbrHolesUp < 0) ||  (nbrHolesUp > nbrHoles))
+    return 0l;
+  if (nbrHoles == 0)
+    {
+      if (((currentTotalKx % this->NbrSiteX) == this->KxMomentum) && ((currentTotalKy % this->NbrSiteY) == this->KyMomentum))
+	{
+	  return 1l;
+	}
+      else	
+	return 0l;
+    }
+  if (currentKx < 0)
+    return 0l;
+  long Count = 0;
+  if (nbrHoles == 1)
+    {
+      for (int j = currentKy; j >= 0; --j)
+	{
+	  if ((((currentTotalKx - currentKx) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
+	    Count += 2l;
+	}
+      for (int i = currentKx - 1; i >= 0; --i)
+	{
+	  for (int j = this->NbrSiteY - 1; j >= 0; --j)
+	    {
+	      if ((((currentTotalKx - i) % this->NbrSiteX) == this->KxMomentum) && (((currentTotalKy - j) % this->NbrSiteY) == this->KyMomentum))
+		Count += 2l;
+	    }
+	}
+      return Count;
+    }
+  
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 4, currentKx, currentKy - 1, currentTotalKx + (4 * currentKx), currentTotalKy + (4 * currentKy), nbrHolesUp - 2);
+  
+  Count += (2 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrHolesUp - 2));
+  Count += (2 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 3, currentKx, currentKy - 1, currentTotalKx + (3 * currentKx), currentTotalKy + (3 * currentKy), nbrHolesUp - 1));
+  
+  Count += (2 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrHolesUp - 1));
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrHolesUp - 2);
+  Count += (2 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrHolesUp - 1));
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 2, currentKx, currentKy - 1, currentTotalKx + (2 * currentKx), currentTotalKy + (2 * currentKy), nbrHolesUp);
+  
+  Count += (2 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrHolesUp));
+  Count += (2 * this->EvaluateHilbertSpaceDimensionHoles(nbrHoles - 1, currentKx, currentKy - 1, currentTotalKx + currentKx, currentTotalKy + currentKy, nbrHolesUp - 1));
+  
+  Count += this->EvaluateHilbertSpaceDimensionHoles(nbrHoles, currentKx, currentKy - 1, currentTotalKx, currentTotalKy, nbrHolesUp);
+  return Count;
+}
+
+// generate all states using the single band hilbert spaces
+//
+
+void FermionOnSquareLatticeWithSU4SpinAndValleyCapMomentumSpaceLong::GenerateStatesFromSingleBandHilbertSpaces()
+{  
+  int TmpMaxBandOccupation = this->MaxNbrParticlesPlus;
+  if (TmpMaxBandOccupation < this->MaxNbrParticlesMinus)
+    {
+      TmpMaxBandOccupation = this->MaxNbrParticlesMinus;
+    }
+  if (this->SzFlag == false)
+    {
+      if (TmpMaxBandOccupation > NbrFermions)
+	{
+	  TmpMaxBandOccupation = NbrFermions;
+	}
+    }
+  else
+    {
+      int TmpNbrFermionsUp = (NbrFermions + this->TotalSpin) >> 1;
+      int TmpNbrFermionsDown = (NbrFermions - this->TotalSpin) >> 1;
+      if ((TmpMaxBandOccupation > TmpNbrFermionsUp) && (TmpNbrFermionsUp > TmpNbrFermionsDown))
+	{
+	  TmpMaxBandOccupation = TmpNbrFermionsUp;
+	}
+      if ((TmpMaxBandOccupation > TmpNbrFermionsDown) && (TmpNbrFermionsDown > TmpNbrFermionsUp))
+	{
+	  TmpMaxBandOccupation = TmpNbrFermionsDown;
+	}
+    }
+  if (TmpMaxBandOccupation > (this->NbrSiteX * this->NbrSiteY))
+    {
+      TmpMaxBandOccupation = this->NbrSiteX * this->NbrSiteY;
+    }
+  
+  int* TmpSingleBandTotalKxMax = 0;
+  int* TmpSingleBandTotalKyMax = 0;
+  long*** TmpSingleBandHilbertDimensions = 0;
+  ULONGLONG**** TmpSingleBandStates = 0;
+  this->GenerateAllSingleBandHilbertSpaces(TmpMaxBandOccupation, TmpSingleBandTotalKxMax, TmpSingleBandTotalKyMax, TmpSingleBandHilbertDimensions, TmpSingleBandStates);
+  
+  long TmpLargeHilbertSpaceDimension = 0l;
+  for (int TmpN0 = this->MinNbrParticlesPlus; TmpN0 <= this->MaxNbrParticlesPlus; ++TmpN0)
+    {
+      int TmpN1 = this->NbrFermions - TmpN0;
+      if ((TmpN1 >= this->MinNbrParticlesMinus) && (TmpN1 <=  this->MaxNbrParticlesMinus))
+	{
+	  for (int TmpN0Up = 0; TmpN0Up <= TmpN0; ++TmpN0Up)
+	    {
+	      int TmpN0Down = TmpN0 - TmpN0Up;
+	      for (int TmpN1Up = 0; TmpN1Up <= TmpN1; ++TmpN1Up)
+		{
+		  int TmpN1Down = TmpN1 - TmpN1Up;
+		  if (((this->SzFlag == false) || (((TmpN0Up + TmpN1Up) - (TmpN0Down + TmpN1Down)) == this->TotalSpin))
+		      && (TmpN0Up <= TmpMaxBandOccupation) && (TmpN0Down <= TmpMaxBandOccupation)
+		      && (TmpN1Up <= TmpMaxBandOccupation) && (TmpN1Down <= TmpMaxBandOccupation))
+		    {
+		      for (int TmpKx0Up = 0; TmpKx0Up <= TmpSingleBandTotalKxMax[TmpN0Up]; ++TmpKx0Up)
+			{
+			  for (int TmpKx1Up = 0; TmpKx1Up <= TmpSingleBandTotalKxMax[TmpN1Up]; ++TmpKx1Up)
+			    {
+			      for (int TmpKx0Down = 0; TmpKx0Down <= TmpSingleBandTotalKxMax[TmpN0Down]; ++TmpKx0Down)
+				{
+				  for (int TmpKx1Down = 0; TmpKx1Down <= TmpSingleBandTotalKxMax[TmpN1Down]; ++TmpKx1Down)
+				    {
+				      if (((TmpKx0Up + TmpKx1Up + TmpKx0Down + TmpKx1Down) % this->NbrSiteX) == this->KxMomentum)
+					{
+					  for (int TmpKy0Up = 0; TmpKy0Up <= TmpSingleBandTotalKyMax[TmpN0Up]; ++TmpKy0Up)
+					    {
+					      if (TmpSingleBandHilbertDimensions[TmpN0Up][TmpKx0Up][TmpKy0Up] > 0l)
+						{
+						  for (int TmpKy1Up = 0; TmpKy1Up <= TmpSingleBandTotalKyMax[TmpN1Up]; ++TmpKy1Up)
+						    {
+						      if (TmpSingleBandHilbertDimensions[TmpN1Up][TmpKx1Up][TmpKy1Up] > 0l)
+							{
+							  for (int TmpKy0Down = 0; TmpKy0Down <= TmpSingleBandTotalKyMax[TmpN0Down]; ++TmpKy0Down)
+							    {
+							      if (TmpSingleBandHilbertDimensions[TmpN0Down][TmpKx0Down][TmpKy0Down] > 0l)
+								{
+								  for (int TmpKy1Down = 0; TmpKy1Down <= TmpSingleBandTotalKyMax[TmpN1Down]; ++TmpKy1Down)
+								    {
+								      if ((((TmpKy0Up + TmpKy1Up + TmpKy0Down + TmpKy1Down) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN1Down][TmpKx1Down][TmpKy1Down] > 0l))
+									{
+									  TmpLargeHilbertSpaceDimension += (TmpSingleBandHilbertDimensions[TmpN0Up][TmpKx0Up][TmpKy0Up]
+													    * TmpSingleBandHilbertDimensions[TmpN1Up][TmpKx1Up][TmpKy1Up]
+													    * TmpSingleBandHilbertDimensions[TmpN0Down][TmpKx0Down][TmpKy0Down]
+													    * TmpSingleBandHilbertDimensions[TmpN1Down][TmpKx1Down][TmpKy1Down]);
+									}
+								    }
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+
+  this->LargeHilbertSpaceDimension = TmpLargeHilbertSpaceDimension;  
+  cout << "Temporary Hilbert space dimension=" << TmpLargeHilbertSpaceDimension << endl;
+  if (TmpLargeHilbertSpaceDimension > 0l)
+    {
+      this->Flag.Initialize();
+      this->StateDescription = new ULONGLONG [this->LargeHilbertSpaceDimension];
+      this->StateHighestBit = new int [this->LargeHilbertSpaceDimension];  
+      TmpLargeHilbertSpaceDimension = 0l;
+      for (int TmpN0 = this->MinNbrParticlesPlus; TmpN0 <= this->MaxNbrParticlesPlus; ++TmpN0)
+	{
+	  int TmpN1 = this->NbrFermions - TmpN0;
+	  if ((TmpN1 >= this->MinNbrParticlesMinus) && (TmpN1 <=  this->MaxNbrParticlesMinus))
+	    {
+	      for (int TmpN0Up = 0; TmpN0Up <= TmpN0; ++TmpN0Up)
+		{
+		  int TmpN0Down = TmpN0 - TmpN0Up;
+		  for (int TmpN1Up = 0; TmpN1Up <= TmpN1; ++TmpN1Up)
+		    {
+		      int TmpN1Down = TmpN1 - TmpN1Up;
+		      if (((this->SzFlag == false) || (((TmpN0Up + TmpN1Up) - (TmpN0Down + TmpN1Down)) == this->TotalSpin))
+			  && (TmpN0Up <= TmpMaxBandOccupation) && (TmpN0Down <= TmpMaxBandOccupation)
+			  && (TmpN1Up <= TmpMaxBandOccupation) && (TmpN1Down <= TmpMaxBandOccupation))
+			{
+			  for (int TmpKx0Up = 0; TmpKx0Up <= TmpSingleBandTotalKxMax[TmpN0Up]; ++TmpKx0Up)
+			    {
+			      for (int TmpKx1Up = 0; TmpKx1Up <= TmpSingleBandTotalKxMax[TmpN1Up]; ++TmpKx1Up)
+				{
+				  for (int TmpKx0Down = 0; TmpKx0Down <= TmpSingleBandTotalKxMax[TmpN0Down]; ++TmpKx0Down)
+				    {
+				      for (int TmpKx1Down = 0; TmpKx1Down <= TmpSingleBandTotalKxMax[TmpN1Down]; ++TmpKx1Down)
+					{
+					  if (((TmpKx0Up + TmpKx1Up + TmpKx0Down + TmpKx1Down) % this->NbrSiteX) == this->KxMomentum)
+					    {
+					      for (int TmpKy0Up = 0; TmpKy0Up <= TmpSingleBandTotalKyMax[TmpN0Up]; ++TmpKy0Up)
+						{
+						  if (TmpSingleBandHilbertDimensions[TmpN0Up][TmpKx0Up][TmpKy0Up] > 0l)
+						    {
+						      for (int TmpKy1Up = 0; TmpKy1Up <= TmpSingleBandTotalKyMax[TmpN1Up]; ++TmpKy1Up)
+							{
+							  if (TmpSingleBandHilbertDimensions[TmpN1Up][TmpKx1Up][TmpKy1Up] > 0l)
+							    {
+							      for (int TmpKy0Down = 0; TmpKy0Down <= TmpSingleBandTotalKyMax[TmpN0Down]; ++TmpKy0Down)
+								{
+								  if (TmpSingleBandHilbertDimensions[TmpN0Down][TmpKx0Down][TmpKy0Down] > 0l)
+								    {
+								      for (int TmpKy1Down = 0; TmpKy1Down <= TmpSingleBandTotalKyMax[TmpN1Down]; ++TmpKy1Down)
+									{
+									  if ((((TmpKy0Up + TmpKy1Up + TmpKy0Down + TmpKy1Down) % this->NbrSiteY) == this->KyMomentum) && (TmpSingleBandHilbertDimensions[TmpN1Down][TmpKx1Down][TmpKy1Down] > 0l))
+									    {
+									      for (int Pos0Up = 0; Pos0Up < TmpSingleBandHilbertDimensions[TmpN0Up][TmpKx0Up][TmpKy0Up]; ++Pos0Up)
+										{
+										  for (int Pos1Up = 0; Pos1Up < TmpSingleBandHilbertDimensions[TmpN1Up][TmpKx1Up][TmpKy1Up]; ++Pos1Up)
+										    {
+										      for (int Pos0Down = 0; Pos0Down < TmpSingleBandHilbertDimensions[TmpN0Down][TmpKx0Down][TmpKy0Down]; ++Pos0Down)
+											{
+											  for (int Pos1Down = 0; Pos1Down < TmpSingleBandHilbertDimensions[TmpN1Down][TmpKx1Down][TmpKy1Down]; ++Pos1Down)
+											    {
+											      this->StateDescription[TmpLargeHilbertSpaceDimension] =  ((TmpSingleBandStates[TmpN0Up][TmpKx0Up][TmpKy0Up][Pos0Up] << 3)
+																			| (TmpSingleBandStates[TmpN1Up][TmpKx1Up][TmpKy1Up][Pos1Up] << 2)
+																			| (TmpSingleBandStates[TmpN0Down][TmpKx0Down][TmpKy0Down][Pos0Down] << 1) 
+																			| (TmpSingleBandStates[TmpN1Down][TmpKx1Down][TmpKy1Down][Pos1Down]));
+											      TmpLargeHilbertSpaceDimension++;
+											    }
+											}
+										    }
+										}
+									    }
+									}
+								    }
+								}
+							    }
+							}
+						    }
+						}
+					    }
+					}
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+      
+      SortArrayDownOrdering<ULONGLONG>(this->StateDescription, TmpLargeHilbertSpaceDimension);
+      if (this->LargeHilbertSpaceDimension != TmpLargeHilbertSpaceDimension)
+	{
+	  cout << "error while generating the Hilbert space " << this->LargeHilbertSpaceDimension << " " << TmpLargeHilbertSpaceDimension << endl;
+	}
+      else
+	{
+	  cout << "Hilbert space dimension " << this->LargeHilbertSpaceDimension << endl;
+	}
+      if (this->LargeHilbertSpaceDimension >= (1l << 31))
+	this->HilbertSpaceDimension = 0;
+      else
+	this->HilbertSpaceDimension = (int) this->LargeHilbertSpaceDimension;
+    }
+  for (int i = 0; i <= TmpMaxBandOccupation; ++i)
+    {
+      for (int j = 0; j <= TmpSingleBandTotalKxMax[i]; ++j)
+	{
+	  for (int k = 0; k <= TmpSingleBandTotalKyMax[i]; ++k)
+	    {
+	      if (TmpSingleBandStates[i][j][k] != 0)
+		{
+		  delete[] TmpSingleBandStates[i][j][k];
+		}
+	    }
+	  delete[] TmpSingleBandHilbertDimensions[i][j];
+	  delete[] TmpSingleBandStates[i][j];
+	}
+      delete[] TmpSingleBandHilbertDimensions[i];
+      delete[] TmpSingleBandStates[i];
+    }
+  delete[] TmpSingleBandHilbertDimensions;
+  delete[] TmpSingleBandStates;
+  delete[] TmpSingleBandTotalKxMax;
+  delete[] TmpSingleBandTotalKyMax;
+}    
+

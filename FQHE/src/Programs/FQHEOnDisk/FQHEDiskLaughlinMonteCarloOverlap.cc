@@ -41,7 +41,7 @@ int main(int argc, char** argv)
   cout.precision(14);
 
   // some running options and help
-  OptionManager Manager ("QHEFermionsOverlap" , "0.01");
+  OptionManager Manager ("FQHEDiskLaughlinMonteCarloOverlap" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
   OptionGroup* MonteCarloGroup = new OptionGroup ("Monte Carlo options");
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 
   if (Manager.ProceedOptions(argv, argc, cout) == false)
     {
-      cout << "see man page for option syntax or type QHEFermionsOverlap -h" << endl;
+      cout << "see man page for option syntax or type FQHEDiskLaughlinMonteCarloOverlap -h" << endl;
       return -1;
     }
   
@@ -89,7 +89,7 @@ int main(int argc, char** argv)
 
   if (((SingleStringOption*) Manager["exact-state"])->GetString() == 0)
     {
-      cout << "QHEFermionsOverlap requires an exact state" << endl;
+      cout << "FQHEDiskLaughlinMonteCarloOverlap requires an exact state" << endl;
       return -1;
     }
   RealVector State;

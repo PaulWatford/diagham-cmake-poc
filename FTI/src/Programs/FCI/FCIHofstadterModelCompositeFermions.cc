@@ -248,7 +248,11 @@ if(NoTranslationFlag == true)
       ComplexMatrix TmpMatrix( Lx* Ly, Lx* Ly,true);
       TmpMatrix.SetToIdentity();
       RealDiagonalMatrix TmpDiag;
+#ifdef __LAPACK__
       TmpHam.LapackDiagonalize(TmpDiag, TmpMatrix);
+#else
+      TmpHam.Diagonalize(TmpDiag, TmpMatrix);
+#endif
       
       Space.GetCompositeFermionWavefunction(TrialState, JastrowEigenVecs, CFEigenVecs,PhaseTranslationX );
       cout <<"State Norm " << TrialState.Norm()<<endl;

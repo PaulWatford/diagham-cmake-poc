@@ -1,299 +1,210 @@
-# DiagHam: CMake Migration Proof-of-Concept
+# DiagHam: CMake migration
 
-[DiagHam](http://www.nick-ux.org/diagham/wiki) is an exact-diagonalization
-toolkit for strongly correlated quantum systems, fractional quantum Hall,
-fractional Chern insulators, Hubbard models, spin chains. It is ~573,000
-lines of C++ across ~2,350 classes and 565 executables, built on a 24-year-old
-GNU autotools system that the upstream community has identified as a
-modernisation target.
+[DiagHam](https://www.nick-ux.org/diagham/) is an exact-diagonalization
+toolkit for strongly correlated quantum systems: fractional quantum Hall,
+fractional Chern insulators, Hubbard models, spin chains, quantum dots. It is
+some 1.5 million lines of C++ (headers included) across ~1,450 classes and
+603 programs at SVN r4493, developed since
+2003 (CVS, then Subversion) by Nicolas Regnault, Gunnar Möller, Zlatko Papić
+and collaborators, and built with a GNU autotools system that the upstream
+community has identified as a modernisation target.
 
-This repository holds initial work on replacing that autotools build with
-a clean CMake build, following discussion with Gunnar Möller (University
-of Kent). It also exercises one of DiagHam's Hubbard-model executables
-end-to-end to confirm the build chain produces correct physics output.
-
-A note on scope: most of this is assembly rather than invention. The
-build fixes restore patterns already present in DiagHam's own working
-files, and the physics, the algorithms, and the bulk of the engineering
-remain the work of the DiagHam authors. This proof of concept collects
-those pieces into a CMake build and verifies that the result is correct.
+This repository is the migration of that code base to Git and CMake, done in
+discussion with Gunnar Möller (University of Kent). It contains the complete
+DiagHam source with its full history, a CMake build for every module, a test
+suite with physics goldens, and a small set of upstream fixes. The physics,
+the algorithms and the bulk of the engineering remain the work of the DiagHam
+authors; this repository collects them into a modern build and verifies that
+the result is correct.
 
 ---
 
-## What this repository contains
+## Repository layout
+
+Two branches matter:
+
+- **`upstream`** — a faithful `git svn` conversion of the canonical DiagHam
+  Subversion repository (trunk, branches and tag; 4,477 commits, 2003-05-03
+  to 2026-09-18, currently SVN r4493). It is never edited by hand; it is
+  refreshed from SVN with `git svn fetch`.
+- **`main`** — this CMake work, merged with `upstream`, plus the accepted
+  fixes as ordinary commits. `main` is where the project is developed and
+  what CI builds.
 
 ```
 .
-|---- CMakeLists.txt              top-level, ~230 lines
-|---- cmake/
-|   |---- DiagHamHelpers.cmake          helper macros (diagham_add_library, ...)
-|   |---- ApplyUpstreamPatches.cmake    applies upstream-bug patches at configure time
-|   |---- config_ac.h.in                autoconf-equivalent header template
-|   +---- verify_build.sh               79-check build-equivalence verification script
+|---- CMakeLists.txt              top-level build: options, modules, dependencies
+|---- CMakePresets.json           default / core / lapack / full / hpc / mkl / debug
+|---- cmake/                      helpers, install/export, config header template, Find modules
 |---- scripts_cmake/
-|   +---- extract_autotools.py     reads upstream Makefile.am, emits CMakeLists.txt
-|---- patches/
-|   |---- PATCHES.md                11 upstream-bug patches, with audit trail
-|   |---- 01-FQHECylinderDensity.patch
-|   |---- 02-FQHECylinderWithSU2SpinDensity.patch
-|   |---- 03-FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity.patch
-|   |---- 04-FCIHofstadterModelCompositeFermions.patch
-|   |---- 05-HubbardSquareLatticeModelJ2S2.patch
-|   |---- 06-FCIDiceLatticeModel.patch
-|   |---- 07-FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition.patch
-|   |---- 08-IEEE754PrecisionForEigenvalueOutput.patch
-|   |---- 09-FCIHofstadterCorrelationPrecision.patch
-|---- benchmarks/
-|   |---- BENCHMARK.md             physics verification log + independent Python ED
-|   |---- hubbard_ed.py            100-line independent reference implementation
-|   |---- fermions_hubbard_square_x_2_y_2*.dat.txt   (saved 2x2 DiagHam output)
-|   +---- fermions_hubbard_square_x_2_y_4*.dat.txt   (saved 2x4 DiagHam output)
-|---- DEFERRED.md                  1 excluded file: what it does, what's missing
-|---- HUBBARD_BENCHMARK.md         Hubbard ED demonstration with physics output
-+---- README.md                    this file
+|   |---- extract_autotools.py    reads upstream Makefile.am, emits the per-directory CMakeLists.txt
+|   +---- ci.sh                   the CI pipeline (GitHub Actions and GitLab CI call it)
+|---- tests/                      ctest suite: physics goldens, smoke, install (TESTING.md)
+|---- patches/                    audit trail of the upstream fixes (PATCHES.md); the fixes themselves are commits
+|---- benchmarks/                 Hubbard verification log + independent Python exact diagonalisation
+|---- Base/ src/ FQHE/ FTI/ Spin/ QuantumDots/   DiagHam itself, as in upstream, with generated CMakeLists.txt in each directory
++---- CONFIGURE_FLAGS.md, HPC.md, TESTING.md, DEFERRED.md, MIGRATION_ROADMAP.md, AGENTS.md
 ```
 
-When the extract script is run against an upstream DiagHam checkout it
-generates a set of per-subdirectory `CMakeLists.txt` files under
-`Base/src/`, `src/`, and `FTI/src/` (**70 files** as of a fresh run this
-session -- re-run `python3 scripts_cmake/extract_autotools.py` to
-regenerate; this number tracks upstream's own `Makefile.am` count and
-drifts as upstream changes, so it's not pinned here as a fact to keep in
-sync by hand. *Corrected 22/09, audited by a second Claude session: this
-line previously said "47 files," confirmed stale by actually running the
-script.*). Those generated files live in the DiagHam tree, not in this
-repository.
+The per-directory `CMakeLists.txt` files are generated from upstream's own
+`Makefile.am` files by `scripts_cmake/extract_autotools.py` (88 files at
+r4493) and are committed, so the repository builds without running the
+generator. Re-run it after an upstream `Makefile.am` change.
 
-## What works
+## Build and test
 
 ```
-cd /path/to/DiagHam
-cmake -B build .                  # patches apply at configure time
-cmake --build build -j4
-build/cmake/verify_build.sh
+git clone <this repository> DiagHam && cd DiagHam
+cmake --preset default            # every module, SMP, no optional libraries
+cmake --build --preset default -j
+ctest --preset default            # physics goldens, --help smoke test, install test
 ```
 
-Current build outcome (with patches applied, default config: no LAPACK,
-SMP enabled, FQHE and FTI modules enabled):
+Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
 
-- **50 of 50 static libraries** build cleanly (Base/src + src + FQHE/src + FTI/src)
-- **473 of 474 programs** build cleanly. 1 is explicitly skipped at
-  configure time with documented rationale, see `DEFERRED.md`.
-- The verification script's per-library symbol-count checks pass on the
-  core (Base/src + src) libraries where they're meaningful.
-- Hubbard 2x2 U=4 benchmark: ground state `-5.6568542494923806`, a
-  bit-identical (0 ULP) match to the analytical answer
-  `-4√2 = -5.656854249492381...` (see `benchmarks/BENCHMARK.md` for the
-  full verification log including an independent Python ED cross-check).
-  *(Corrected 22/09: this line previously quoted the pre-patch-08 stale
-  value `-5.6568542494924` alongside a parenthetical claiming a
-  post-patch match, which was self-contradictory; see the
-  "Corrected 22/09" note further down this file for the underlying
-  fix.)*
+- **61 of 61 static libraries** build (Base/src, src, FQHE, FTI, Spin, QuantumDots).
+- **603 of 603 programs** build (including the 19 QuantumDots analysis
+  tools). Five sources are deliberately not built: one
+  legacy duplicate (`QHEFermionsTorusWithSpin`, see `DEFERRED.md`) and four
+  that upstream itself never lists in `bin_PROGRAMS`.
+- **613 of 613 ctest tests pass**: 13 physics tests with analytic,
+  independently computed or cross-implementation answers (Hubbard, Laughlin
+  zero modes on sphere and torus, Heisenberg rings, spinful torus Coulomb),
+  an independent Python exact-diagonalisation cross-check, `--help` on every
+  program, and a `find_package(DiagHam)` consumer build. See `TESTING.md`.
+- The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical
+  (0 ULP) match to the analytic `-4√2` (see `benchmarks/BENCHMARK.md`).
+- The `lapack` preset (system LAPACK/BLAS) builds with no errors and passes
+  the same suite; `full` and `hpc` (MPI + ScaLAPACK) were verified in CI.
 
-If `DIAGHAM_BUILD_FQHE=OFF` and `DIAGHAM_BUILD_FTI=OFF`, the build
-reduces to the original core-only scope (32 libraries + 34 programs).
-`verify_build.sh` runs against that scope, but two things about it are
-overstated elsewhere in this repo and corrected here: there is no
-`ctest`/`enable_testing()` wiring anywhere in the CMake build (confirmed
-by grepping `CMakeLists.txt` and `cmake/`; `ctest` itself reports 0
-tests), and the script's checks are existence checks, per-library
-`nm`-based text-symbol *counts*, and a single program's stdout
-comparison -- not a byte-for-byte or binary comparison of build
-artifacts, despite `AGENTS.md` and elsewhere describing it that way. The
-exact number of checks the script reports depends on the autotools
-comparison build it's pointed at, which this session could not
-reproduce independently (`autoconf`/`automake`/`libtool` are not
-installed in this sandbox and there's no root to add them), so the
-"79" figure quoted elsewhere in this repo is not independently confirmed
-here -- see `AGENTS.md`'s "locked facts" section, which should be
-treated as unverified pending someone actually running both builds
-side by side.
+`cmake/verify_build.sh` compares a CMake build against an autotools build of
+the same tree (library coverage and `nm` symbol counts). It reports
+79 passed / 0 failed on the default configuration (FQHE and FTI on); it needs
+an autotools build to compare against and is not part of `ctest`.
 
-## Why CMake (and what the autotools build does today)
+## Why CMake (and what the autotools build does)
 
-The upstream `configure.ac` has **36 `AC_ARG_ENABLE` / `AC_ARG_WITH` flags**:
+The upstream `configure.ac` has **34 `AC_ARG_ENABLE` / `AC_ARG_WITH` flags**:
 `--enable-lapack`, `--enable-gsl`, `--enable-mpi`, `--enable-bz2`,
 `--enable-gmp`, `--enable-mpack`, `--enable-fftw`, `--enable-scalapack`,
-`--with-blas-libs=...`, and so on. Each flag is some cluster admin's
-hard-won dependency chain. Any CMake migration must preserve every one of
-them, this PoC implements the three most-used (`__SMP__`, `__LAPACK__`,
-`__MPI__`) and stubs out the rest, with clear comments showing where the
-others slot in.
+`--with-blas-libs=...`, and so on. Each flag is some cluster admin's hard-won
+dependency chain. Every one of them has a CMake equivalent; the mapping is in
+`CONFIGURE_FLAGS.md`.
 
 The autotools build also relies on two custom Perl scripts
-(`scripts/genmake.pl` and `scripts/genam.pl`) that auto-generate
-`Makefile.am` entries from directory contents. Under CMake, that whole
-layer goes away: adding a new program is just dropping a `.cc` file in the
-relevant Programs directory.
+(`scripts/genmake.pl` and `scripts/genam.pl`) that generate `Makefile.am`
+entries from directory contents. Under CMake that layer is replaced by the
+generator above, which reads the `Makefile.am` files rather than the
+directories: a program is built if upstream lists it in `bin_PROGRAMS`, plus
+a short, documented allow-list of sources upstream never listed.
 
 ## Methodology
 
-The per-subdirectory CMakeLists.txt files are auto-generated by
-`scripts_cmake/extract_autotools.py`, which parses every upstream `Makefile.am`
-to extract its `libFOO_a_SOURCES` lists and emits the equivalent CMake.
-The Python script is itself part of the PoC, a real migration
-benefits from a *reproducible* derivation of CMake from autotools, not
-just a one-shot hand-port. Re-running the script after any upstream
-`Makefile.am` change gives an updated CMake snapshot.
+The per-subdirectory CMakeLists.txt files are generated, not hand-written,
+because a real migration benefits from a *reproducible* derivation of CMake
+from autotools rather than a one-shot port: after any upstream change, one
+script run gives the updated build. The generated files are deliberately
+thin (a few `diagham_add_library` / `diagham_add_programs` calls); all
+complexity lives in `cmake/DiagHamHelpers.cmake`.
 
-The generated files are deliberately thin (each one a few `diagham_add_library`
-calls); all complexity lives in `cmake/DiagHamHelpers.cmake`.
+Correctness is checked at three levels: the build (every library and program
+upstream builds, we build), build parity with autotools (`verify_build.sh`),
+and physics (the ctest goldens and the independent Python diagonaliser).
 
-## Upstream issues surfaced during the migration
+## Upstream issues found during the migration
 
-The CMake port surfaced **thirteen** long-standing issues in the upstream
-codebase that the autotools build either silently hid or fenced off
-behind broken include paths. Three are pre-existing notes from the
-core-only iteration of this PoC; ten emerged after FQHE and FTI were
-brought into scope.
+Moving to a stricter build surfaced a number of long-standing issues in the
+upstream code base. Each fix is an ordinary commit on `main` with an
+`Upstream-Patch:` trailer; `patches/PATCHES.md` is the audit trail (root
+cause, what was compared, how it was verified) and `DEFERRED.md` records the
+one file excluded instead of fixed.
 
-### Three from the core iteration
-
-- **`Fermions.cc` orphan from May 2001**, still listed in
-  `libQHEHilbertSpace_a_SOURCES` but its include path is missing from
-  the upstream `Makefile.am`. A 24-year-old orphan in the build list.
-- **`DelocalizedRealVector.cc` dormant dead code**, entirely wrapped
-  in `#ifdef USE_CLUSTER_ARCHITECTURE`. The file doesn't
-  `#include "config.h"`, so the macro never reaches it and the build
-  produces a 1456-byte object file with no symbols.
-- **`make -C FTI/src` fails out of the box**, FTI's `Makefile.am`
-  only sets `-I src -I Base/src`, but FTI sources include from
-  `FQHE/src` too. A clean `./configure && make -C FTI/src` fails.
-
-### Thirteen more surfaced once FQHE + FTI came into scope, plus deeper inspection
-
-| Class | Count | Issue | Resolution |
+| Class | Count | Issue | Status |
 |---|---:|---|---|
-| A | 5 | Missing `#ifdef __LAPACK__` gating around `LapackDiagonalize` | Patched (canonical pattern lift) |
-| B | 3 | Stale constructor / API mismatches | 1 patched; 2 since resolved (now Classes F, G via patches 10, 11) |
-| C | 1 | `#include` of a header that never existed (`*New.h`) | Patched (author left the working version commented out) |
-| D | 1 | Undeclared variable `SubsystemSize` (copy-paste from sibling) | Patched (matched to working twin's convention) |
-| E | 2 | `precision(14)` hardcoded at result-output sites, silently truncating output below IEEE-754 double precision | Patched in 2 parts (patches 08, 09) across 448 result-writing files; uses `std::numeric_limits<double>::max_digits10` |
-| F | 1 | `FCIWannierConstruction.cc` (Wannier construction for fractional Chern insulators) references public getter methods that were never defined on parent Hilbert-space classes | Patched (patch 10); adds 4 inline getters to existing classes |
-| G | 1 | `FCIDiceLatticeModel.cc` (Dice-lattice \|C\|=2 FCI) had unwired tight-binding parameters, depended on an abandoned stub Hilbert-space class, and on 3 classes orphaned from every Makefile.am | Patched (patch 11); wires t1/t2/l1/l2 from the Kagome sibling, routes to the completed SU2 boson class, recovers the 3 orphaned classes via allowlisted build-system recovery |
-| - | 1 | `HAVE_FTI` macro not defined in our CMake config | Fixed in `cmake/config_ac.h.in` |
+| A | 5 + 9 | Missing `#ifdef __LAPACK__` gating around `LapackDiagonalize` (FQHE/FTI, then Spin) | fixed; one Spin file was fixed upstream after 2020 |
+| C | 1 | `#include` of a header that never existed | fixed |
+| D | 1 | Undeclared variable (copy-paste from a sibling) | fixed |
+| E | 1 | `precision(14)` at result-output sites, truncating output below double precision | fixed at the 14-digit sites only (978 sites, 544 files at r4493); deliberate display widths left alone |
+| F, G | 2 | `FCIWannierConstruction` and `FCIDiceLatticeModel` never compiled or linked upstream | enabled; the Dice-lattice defaults need a maintainer's sign-off |
+| H | 1 | Invalid C++ (`ostream << ostream&`) that broke every QuantumDots program | fixed |
+| I | 1 | **Physics defect**: spinful torus Coulomb wrong for N ≥ 3 and for every unpolarised case (basis order vs `FindStateIndex`; dropped same-orbital up-down terms) | fixed, verified against two independent programs to 1e-12; **pending maintainer review** |
 
-11 are patched in `patches/` with full audit trails in
-[`patches/PATCHES.md`](patches/PATCHES.md). 1 is deferred to the
-maintainer's review (a legacy duplicate with a canonical replacement), documented in [`DEFERRED.md`](DEFERRED.md) with
-grep-verified evidence: file sizes, inline TODO/FIXME markers,
-git-history snapshots, and the specific missing-input physics
-parameters where applicable.
+Several of the "hidden" failures turned out to be programs upstream had
+dropped from its build lists rather than failures autotools concealed; the
+distinction is recorded per file in `PATCHES.md`. One earlier fix (an
+uninitialised member in `SpinChainHamiltonianWithTranslations`) was dropped
+because upstream fixed it after 2020.
 
-## Demonstration: Hubbard ED with machine-precision physics output
+## Demonstration: Hubbard ED at machine precision
 
-With the build working, the next check is that the produced binaries
-give correct physics on problems with known answers. Two documents cover
-this:
-
-- **`HUBBARD_BENCHMARK.md`** (repo root), original U-sweep across
-  `{0,1,2,3,4,5,6,7,8}` at 2x2 half-filling.
-- **`benchmarks/BENCHMARK.md`**, physics verification log for this
-  iteration of the PoC, including an independent **100-line Python
-  exact diagonalisation** (`benchmarks/hubbard_ed.py`) that builds
-  the Hubbard Hamiltonian from scratch in the 2nd-quantised Fock basis
-  and reproduces DiagHam's output to machine precision on both 2x2
-  (basis dim 36) and 2x4 (basis dim 4900) test cases.
-
-Highlights:
-
-- **2x2 Hubbard, half-filling, U=4**: DiagHam gives ground-state energy
-  `-5.6568542494923806`. Analytical value: `-4*sqrt(2) = -5.656854249492381...`.
-  This is a **bit-identical (0 ULP) match** to the double-precision rounding
-  of the exact analytic value (verified with `mpmath`, 50-digit precision).
-  *(Corrected 22/09, audited by a second Claude session: this file
-  previously quoted `-5.6568542494924`, described as agreeing to
-  "1.95×10⁻¹⁴, the limit of double-precision arithmetic." That figure was
-  real output but from a run predating patch 08's precision fix — it is
-  actually 22 ULP (≈1.95×10⁻¹⁴) away from the exact double-rounding, not
-  at the precision limit. A freshly rebuilt, freshly run binary this
-  session reproduced the corrected value above, matching what
-  `benchmarks/BENCHMARK.md`'s own Test 1 section already independently
-  stated.)*
-- **2x4 Hubbard, half-filling, U=4**: DiagHam gives `E_0 = -10.252952955264`.
-  Independent Python ED gives `-10.2529529552636`. Match to 4×10⁻¹³.
-- **Strong-coupling U-scaling test (U ∈ {50, 100, 200, 500}):** E₀ · U
-  converges to a constant (≈ −48.14) confirming the expected 1/U scaling
-  in the Heisenberg limit.
+`benchmarks/BENCHMARK.md` is the physics verification log: the 2x2 Hubbard
+model at U=4 reproduces the analytic `-4√2` bit for bit; the 2x4 model
+(basis dimension 4,900) and the 3x3 model agree with a from-scratch
+100-line Python exact diagonalisation (`benchmarks/hubbard_ed.py`) on full
+spectra; and the strong-coupling limit E₀·U → −48 is recovered. The same
+checks run as ctest goldens on every build.
 
 ## Finding your way around
 
-The directory tree above is what's on disk; [`MODULE_MAP.md`](MODULE_MAP.md)
-is organised by task instead ("I want to add a dependency", "I want to
-verify the physics", ...) and points at the specific file for each.
+`MODULE_MAP.md` is organised by task ("I want to add a dependency", "I want
+to verify the physics", ...) and points at the file for each.
+`CONFIGURE_FLAGS.md` maps every configure flag; `HPC.md` is the cluster
+recipe; `TESTING.md` explains the test suite. The DiagHam user manual —
+program-by-program pages — is on the upstream wiki at nick-ux.org and is
+being brought into `docs/` (see `MIGRATION_ROADMAP.md`).
 
 ## AI-assisted contribution rules
 
-This repository accepts AI-assisted contributions under a strict
-review policy: see [`AGENTS.md`](AGENTS.md) for the full rules. In
-short — an AI agent may describe a diff and judge its usefulness, but
-it never sets pass/fail, never edits a golden file, and never merges;
-every suggested change is held for a named human maintainer to
-approve, reject, or ask for tests to be restored. The automated
-mailer/hold pipeline described there is not yet built; `AGENTS.md` is
-the specification for it.
+AI tools were used heavily in this migration and the rules for their use are
+explicit and versioned with the code: see `AGENTS.md`. In short, the build
+and the tests decide pass or fail, an AI agent may describe a change and
+judge its usefulness but never sets pass/fail, never edits a golden and
+never merges, and DiagHam's physics code is out of bounds for automated
+changes; every proposed change is held for a named human maintainer.
+`CONTRIBUTING.md` has the human workflow.
 
 ## Production migration context
 
-This repository is a personal proof-of-concept on GitHub, developed
-against a read-only git mirror for ground truth. It is not the
-production repository. See
-[`MIGRATION_ROADMAP.md`](MIGRATION_ROADMAP.md) for how this work
-reconciles with what was actually agreed for the production migration
-(Kent GitLab hosting, single-repo, full SVN history preservation, and
-static linking) and what, if anything, changes as a result.
+The agreed plan (see `MIGRATION_ROADMAP.md`): Git first, then CMake on top;
+a single repository; the full SVN history preserved (done — the `upstream`
+branch); static linking retained; the production home to be the University
+of Kent's GitLab, with this GitHub repository as the development home in the
+meantime. Until the maintainers move to Git themselves, the canonical source
+remains the Subversion repository at nick-ux.org and `upstream` mirrors it.
 
-## Beyond this iteration
+## Still open
 
-The current PoC covers the core build chain plus the FQHE and FTI
-subsets, with 11 patches for surfaced upstream issues and one file
-excluded from the build (recommended for upstream removal). The following
-remain out of scope:
-
-- **Spin and QuantumDots modules.** Same pattern as FQHE/FTI, just more
-  source files. The pattern is established and the migration extends
-  trivially.
-- **Optional features beyond pthread.** LAPACK/BLAS, MPI, GSL, GMP,
-  FFTW, MPACK, ScaLAPACK each need a `find_package()` block plus
-  appropriate `target_link_libraries` calls. Stubs are in the
-  top-level CMakeLists.txt with comments showing the pattern.
-  **Note:** turning on `DIAGHAM_USE_LAPACK=ON` currently exposes
-  5000+ further compilation errors inside `src/Matrix/HermitianMatrix.h`
-  (a `doublecomplex` typedef gap unrelated to our patches). LAPACK
-  enablement is its own scoped task.
-- **The 1 remaining deferred file.** Two of the originally-deferred
-  files have since been resolved (patch 10 adds the getter methods that
-  unblock `FCIWannierConstruction`; patch 11 wires the tight-binding
-  parameters and recovers the orphaned classes for `FCIDiceLatticeModel`).
-  The one file left deferred is `QHEFermionsTorusWithSpin`, recommended
-  for upstream removal since `FQHETorusFermionsWithSpin` supersedes it.
-  See `DEFERRED.md` for the full disposition.
-- **Spack/Linux distribution packaging.**
-- **GitHub Actions CI workflow.**
-- **Doxygen documentation extraction.** Every class in DiagHam has a
-  license header and method-level docstring; running Doxygen on the
-  existing tree produces a real API manual with no source changes.
+- Maintainer review of the physics fix (class I) and the Dice-lattice defaults.
+- The Kent cluster recipe (`cmake/KentDefaults.cmake` is a scaffold; the
+  site paths are not yet known) and a tested Intel MKL configuration.
+- Broader goldens: overlaps, entanglement spectra, FCI spectra; an `mpirun` test.
+- The "best copy of each" review of duplicated and orphaned upstream classes
+  (`DEFERRED.md` lists the candidates).
+- Spack/EasyBuild packaging; a curated library API.
 
 ## Build dependencies
 
-- CMake >= 3.16
-- C++11 compiler (gcc, clang, etc.)
-- pthread
+- CMake >= 3.21 (presets), a C++11 compiler (GCC or Clang), pthreads,
+  Python 3 (generator and cross-check; numpy for the Python test).
+- Optional: LAPACK/BLAS or Intel MKL, MPI, ScaLAPACK, GSL, GMP, MPACK,
+  FFTW3, bzip2 — see `CONFIGURE_FLAGS.md`.
 
-Optional: LAPACK, MPI (toggle via `-DDIAGHAM_USE_LAPACK=ON`, `-DDIAGHAM_USE_MPI=ON`).
-
-See [`CHANGELOG.md`](CHANGELOG.md) for what's changed and when.
+See `CHANGELOG.md` for what changed and when.
 
 ## License
 
 DiagHam is licensed under the GNU General Public License, version 2 or
-later (see `COPYING` in the upstream repository). The contributions in
-this proof of concept are released under the same terms. See the
-`LICENSE` file for the contribution copyright notice, a statement of what
-was changed, and the full license text.
+later; the full text is in `COPYING`. The migration work is released under
+the same terms; `LICENSE` carries the contribution notice.
+
+## Citing
+
+If DiagHam contributes to a publication, please cite it as software (see
+`CITATION.cff`) and the relevant papers in the DiagHam publication list on
+the upstream wiki.
 
 ## Acknowledgements
 
-The upstream codebase is the work of Nicolas Regnault, Gunnar Möller,
-Duc Phuong Nguyen, and contributors over 24 years.
+The upstream code base is the work of Nicolas Regnault, Gunnar Möller,
+Zlatko Papić, Cécile Repellin, Antoine Sterdyniak, Duc Phuong Nguyen,
+Niall Moran, Yang-Le Wu and other contributors since 2003 (`AUTHORS`).

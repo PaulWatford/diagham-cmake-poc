@@ -1,0 +1,40 @@
+cff-version: 1.2.0
+message: >-
+  If DiagHam contributes to your work, please cite it as software using the
+  metadata below, and cite the papers relevant to the methods you used from
+  the DiagHam publication list (https://www.nick-ux.org/diagham/index.php/Articles).
+  DiagHam has no single reference paper.
+title: DiagHam
+type: software
+abstract: >-
+  Exact-diagonalization toolkit for strongly correlated quantum systems:
+  fractional quantum Hall effect, fractional Chern and topological
+  insulators, Hubbard models, spin chains and quantum dots.
+authors:
+  - family-names: Regnault
+    given-names: Nicolas
+  - family-names: Möller
+    given-names: Gunnar
+  - family-names: Repellin
+    given-names: Cécile
+  - family-names: Sterdyniak
+    given-names: Antoine
+  - family-names: Papić
+    given-names: Zlatko
+  - family-names: Nguyen
+    given-names: Duc Phuong
+  - family-names: Moran
+    given-names: Niall
+  - family-names: Wu
+    given-names: Yang-Le
+license: GPL-2.0-or-later
+repository-code: https://github.com/PaulWatford/diagham-cmake-poc
+url: https://www.nick-ux.org/diagham/
+version: r4493
+date-released: "2026-09-18"
+keywords:
+  - exact diagonalization
+  - fractional quantum Hall effect
+  - fractional Chern insulators
+  - Hubbard model
+  - spin chains

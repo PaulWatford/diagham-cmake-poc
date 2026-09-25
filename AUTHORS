@@ -1,3 +1,23 @@
-Nicolas Regnault
-Gunnar Moller
-Duc Phuong Nguyen
+DiagHam authors and contributors
+
+Committers to the DiagHam Subversion repository (2003-2026), by number of
+commits; the same names appear on the `upstream` branch:
+
+  Nicolas Regnault
+  Gunnar Möller
+  Cécile Repellin
+  Antoine Sterdyniak
+  Zlatko Papić
+  Duc Phuong Nguyen
+  Niall Moran
+  Yang-Le Wu
+  (87 early commits carry no author: the 2003 CVS import)
+
+Further contributors listed on the DiagHam wiki (People page):
+  Anushya Chandran, Yinghai Wu, B. Andrei Bernevig
+
+CMake migration (this repository): Paul Watford
+
+Source: upstream AUTHORS (Regnault, Moller, Nguyen), the SVN commit log
+r1-r4493, and the wiki People page as of 2026-09-24. Names only; no e-mail
+addresses are recorded in the history.

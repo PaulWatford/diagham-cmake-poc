@@ -29,7 +29,7 @@ is the development home in the meantime. Nothing here is GitHub-specific:
 the CI pipeline is one script (`scripts_cmake/ci.sh`) that both the GitHub
 workflow and the GitLab file call, so the move is a transfer, not a rework.
 The Kent cluster recipe is a scaffold awaiting the site's values
-(`docs/how-to/build/kent.md`).
+(`docs/drafts/kent-cluster-build.md`).
 
 ### 3. Single repository — done
 

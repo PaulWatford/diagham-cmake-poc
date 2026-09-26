@@ -17,7 +17,7 @@ Source: `MODULE_MAP.md` (2026-09-18, task-oriented map), the top-level `CMakeLis
 | `cmake/DiagHamInstall.cmake`, `cmake/DiagHamConfig.cmake.in` | install rules and the `find_package(DiagHam)` package |
 | `cmake/config_ac.h.in` | replaces autoconf's `config_ac.h`: one `#cmakedefine HAVE_<X>` per `AC_DEFINE` in `configure.ac`; upstream's `src/config.h` includes it and derives the `__X__` macros itself |
 | `cmake/CompilerDefaults.cmake` | build-type validation and per-compiler warning flags (adapted from Gunnar Möller's BDMC_UFL) |
-| `cmake/KentDefaults.cmake` | site-defaults scaffold for Kent, `DIAGHAM_KENT_DEFAULTS=ON` (placeholders; see [../how-to/build/kent.md](../how-to/build/kent.md)) |
+| `cmake/KentDefaults.cmake` | site-defaults scaffold for Kent, `DIAGHAM_KENT_DEFAULTS=ON` (placeholders; see [../drafts/kent-cluster-build.md](../drafts/kent-cluster-build.md)) |
 | `cmake/Find{MKL,NAG,GSL,GMP,MPFR,MPC,FFTW3,DLR}.cmake`, `gsl_external_cblas.patch` | Find modules from BDMC_UFL; MKL, GSL, GMP and FFTW3 are used, the rest staged |
 | `cmake/verify_build.sh` | CMake-vs-autotools build parity (library existence, `nm` symbol counts, one program's output); needs an autotools build of the same tree; 79 checks pass in the default configuration; not part of ctest |
 | `scripts_cmake/extract_autotools.py` | generates the per-directory `CMakeLists.txt` from upstream `Makefile.am` |

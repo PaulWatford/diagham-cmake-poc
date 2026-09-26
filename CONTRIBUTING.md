@@ -32,7 +32,8 @@ AI-assisted changes are in `AGENTS.md`; they apply on top of this.
 - One fix per commit, with a message that states the root cause, what was
   compared, and how it was verified. Add the trailers
   `Upstream-Patch: <name>` and `Upstream-Base: SVN r<revision>`.
-- Record the fix in `patches/PATCHES.md` (the audit trail).
+- Add a row to `docs/explanation/upstream-fixes.md` (the index). `patches/PATCHES.md`
+  is the frozen audit trail of the proof-of-concept fixes and is not extended.
 - Physics-affecting changes (anything that changes a computed number rather
   than whether the code compiles) are marked **for maintainer review** in the
   commit and in the pull request, and are not merged without a DiagHam

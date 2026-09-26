@@ -97,7 +97,7 @@ for a system of five orbitals (4 flux quanta). If the number of weights is lower
 
 For the cylinder geometry, these coefficients can be computed using [FQHECylinderRealSpacePartitionCoefficients](FQHECylinderRealSpacePartitionCoefficients.md). For the disk geometry, we can use [FQHEDiskRealSpacePartitionCoefficients](FQHEDiskRealSpacePartitionCoefficients.md) and [FQHESphereRealSpacePartitionCoefficients](FQHESphereRealSpacePartitionCoefficients.md) for the sphere.
 
-Let's look at a simple example. Assuming that we have generated the Laughlin $\nu=1/3$ state on the disk geometry for 8 fermions using both [FQHESphereJackGenerator](FQHESphereJackGenerator.md) and [FQHEDiskUnnormalizeState](FQHEDiskUnnormalizeState.md), we can compute the geometrical weights with 
+Let's look at a simple example. Assuming that we have generated the Laughlin $\nu=1/3$ state on the disk geometry for 8 fermions using both [FQHESphereJackGenerator](FQHESphereJackGenerator.md) and [FQHEDiskUnnormalizeState](../FQHEOnDisk/FQHEDiskUnnormalizeState.md), we can compute the geometrical weights with 
 
 *\$PATHTODIAGHAM/build/FQHE/src/Programs/FQHEOnDisk/FQHEDiskRealSpacePartitionCoefficients -s 21 --radius 4*
 

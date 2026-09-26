@@ -5,7 +5,7 @@ Source: DiagHam wiki page `FQHESphereWithSU2SpinRotation`, as of 2026-09-24 (arc
 Generated option reference: [FQHESphereWithSU2SpinRotation](../FQHEOnSphere/FQHESphereWithSU2SpinRotation.md)
 
 > **Options in this manual that the current program does not list**: `--all-sz`, `--eigenstate`, `--interaction-file`, `--interaction-name`, `--nbr-lz`, `--no-cross`, `--sum`, `--use-alt`, `--use-lapack`. They may have been renamed, removed, or depend on a build option not enabled here (GMP, MPI). Trust `--help`.
-[FQHESphereWithSU2SpinRotation](FQHESphereWithSU2SpinRotation.md) can perform a spin rotation of any spinful bosonic state with a well defined total Sz. For fermions, you should use [FQHESphereFermionsWithSpinRotation](FQHESphereFermionsWithSpinRotation.md).
+[FQHESphereWithSU2SpinRotation](FQHESphereWithSU2SpinRotation.md) can perform a spin rotation of any spinful bosonic state with a well defined total Sz. For fermions, you should use [FQHESphereFermionsWithSpinRotation](../FQHEOnSphere/FQHESphereFermionsWithSpinRotation.md).
 
 As an example, we can perform a pi/2 rotation of the ferromagnetic Laughlin 1/2 state computed in the largest Sz.
 

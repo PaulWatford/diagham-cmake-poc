@@ -3,7 +3,7 @@
 Source: DiagHam wiki page `FQHESphereEntanglementSpectrum`, as of 2026-09-24 (archived copy). Changed: wikitext converted to Markdown; options checked against the program's current `--help` (r4493, LAPACK build).
 
 Generated option reference: [FQHESphereEntanglementSpectrum](../FQHEOnSphere/FQHESphereEntanglementSpectrum.md)
-FQHESphereEntanglementSpectrum provides an easy way to parse the eigenvalues of the reduced density matrices produced by [FQHESphereBosonEntanglementEntropy](FQHESphereBosonEntanglementEntropy.md), FQHESphereFermionEntanglementEntropy *(wiki page FQHESphereFermionEntanglementEntropy)*,  or
+FQHESphereEntanglementSpectrum provides an easy way to parse the eigenvalues of the reduced density matrices produced by [FQHESphereBosonEntanglementEntropy](FQHESphereBosonEntanglementEntropy.md), [FQHESphereFermionEntanglementEntropy](../FQHEOnSphere/FQHESphereFermionEntanglementEntropy.md),  or
 
 
 ## Basic usage

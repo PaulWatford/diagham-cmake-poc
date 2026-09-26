@@ -1,7 +1,7 @@
 # Tutorial: your first build, and how to know it is right
 
 Purpose: take a newcomer from a clone to a verified DiagHam build in a few minutes, and show what "verified" means here.
-Source: upstream wiki "Install" (sections "Checking your DiagHam installation" and "Testing the configuration", as of 2026-09-24) and `TESTING.md`. Changed: autotools steps replaced by the CMake preset; the `TestDiagHamConf` output shown is from the r4493 default build (the wiki's showed a build with LAPACK, bzip2, GMP and GSL on, and an older `config.h` that printed "Pathscale compiler found").
+Source: upstream wiki "Install" (sections "Checking your DiagHam installation" and "Testing the configuration", as of 2026-09-24) and `docs/reference/tests.md`. Changed: autotools steps replaced by the CMake preset; the `TestDiagHamConf` output shown is from the r4493 default build (the wiki's showed a build with LAPACK, bzip2, GMP and GSL on, and an older `config.h` that printed "Pathscale compiler found").
 
 You need a C++ compiler, CMake ≥ 3.21 and Python 3 (see
 [../how-to/build/](../how-to/build/README.md) for platform detail).
@@ -81,7 +81,7 @@ spectrum it writes with an answer that is known independently —
 - the spinful torus Coulomb spectrum must agree with two independently
   written programs.
 
-`TESTING.md` lists every test and why its answer is known. The full suite
+`docs/reference/tests.md` lists every test and why its answer is known. The full suite
 (`ctest --preset default`) adds a `--help` run of every program and an
 install-and-link test; expect 613 tests, all passing.
 

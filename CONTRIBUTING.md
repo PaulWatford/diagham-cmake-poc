@@ -18,7 +18,7 @@ AI-assisted changes are in `AGENTS.md`; they apply on top of this.
 
 1. Build and test with the default preset:
    `cmake --preset default && cmake --build --preset default -j && ctest --preset default`.
-   All tests must pass; `TESTING.md` explains what they check.
+   All tests must pass; `docs/reference/tests.md` explains what they check.
 2. If you touched the build layer, also run the `lapack` preset (or `full`
    if you have the libraries).
 3. If you added or removed a program or library, regenerate the

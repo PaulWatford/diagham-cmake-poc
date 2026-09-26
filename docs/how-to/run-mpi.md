@@ -99,4 +99,4 @@ the description it was given.
 ## Not yet covered by the test suite
 
 The `hpc` preset compiles and links the MPI code paths and passes the serial
-tests, but no ctest launches a program under `mpirun`; see `TESTING.md`.
+tests, but no ctest launches a program under `mpirun`; see `../reference/tests.md`.

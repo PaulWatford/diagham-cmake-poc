@@ -17,3 +17,12 @@ Source of the SVN history: https://www.nick-ux.org/diagham/svn/DiagHam
 (trunk, branches, tags). The canonical DiagHam documentation is the wiki at
 https://www.nick-ux.org/diagham/; its pages are being brought into `docs/`
 with a provenance line each.
+
+## Legacy documentation tooling in `scripts/docs/`
+
+`ProgXMLDoc.pl`, `OldProgXMLDoc.pl` and `XMLDoc2{Html,Pdf,Php,Tex}.pl`
+extracted program documentation from an XML description into several
+formats, and `CreateChangelog.pl` generated the ChangeLog from CVS; none
+has been used since the mid-2000s. They stay in `scripts/` untouched. The
+living equivalent is the generated program reference
+(`scripts_cmake/gen_program_reference.py` → `docs/reference/programs/`).

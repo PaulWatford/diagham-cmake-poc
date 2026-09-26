@@ -1,4 +1,6 @@
-# Testing
+# Test suite reference
+
+Source: `docs/reference/tests.md` (2026-09-24), moved 2026-09-26; the "Adding a golden" section is now `docs/how-to/develop/add-a-golden-test.md`; counts updated to the r4493 build.
 
 `ctest` is the test runner. The suite lives in `tests/` and is registered
 whenever programs are built (`DIAGHAM_BUILD_TESTS`, default ON).
@@ -16,7 +18,7 @@ ctest --preset default -R hubbard      # by name
 |---|---|---|
 | `physics` | analytic / reference goldens and cross-program comparisons (table below) | a DiagHam program, run from a clean directory, writes a spectrum that matches a known answer or an independent implementation |
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
-| `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Three programs with no option parser (`QHEBosons`, `MultipleSpinChain`, `TestDiagHamVectors`) are left out, with the reason in `tests/CMakeLists.txt` |
+| `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
 | `known-bug` | reproducers for documented upstream defects | the defect is still present (`WILL_FAIL`); see below |
 
@@ -54,23 +56,7 @@ into a `physics` test (drop `WILL_FAIL`) in the same change as the fix.
 
 ## Adding a golden
 
-```cmake
-diagham_physics_test(physics.<module>.<what>
-    PROGRAM <leafdir>_<Program>          # target name, e.g. FQHEOnSphere_FQHESphereFermionsTwoBodyGeneric
-    ARGS <program arguments>
-    OUTPUT "<glob matching the one spectrum file>"
-    CHECK <min|min-abs|spectrum|count> @OUTPUT@ <column> ...
-    LABELS <module>)
-```
-
-To compare two programs, add `REF_PROGRAM <target> REF_ARGS <args>
-REF_OUTPUT <glob>` and use `@REFERENCE@` in `CHECK` (see the
-`su2_coulomb` tests).
-
-`check_spectrum` modes are documented at the top of
-`tests/check_spectrum.cc`. Every golden must say, in a comment, why the
-expected answer is known. Per `AGENTS.md`, goldens are never edited to
-make a failing test pass.
+See [../how-to/develop/add-a-golden-test.md](../how-to/develop/add-a-golden-test.md).
 
 ## Relationship to `cmake/verify_build.sh`
 
@@ -78,3 +64,5 @@ make a failing test pass.
 same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
+It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
+on); with the default preset the ctest suite has 613 tests at r4493.

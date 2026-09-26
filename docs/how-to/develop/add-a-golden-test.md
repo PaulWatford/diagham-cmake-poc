@@ -1,0 +1,53 @@
+# Add a physics golden test
+
+Purpose: add a ctest that runs a DiagHam program and checks its spectrum against a known answer.
+Source: `docs/reference/tests.md`, section "Adding a golden" (2026-09-24), moved here 2026-09-26; the reference table of existing tests is `docs/reference/tests.md`.
+
+A golden is registered in `tests/CMakeLists.txt` with one call:
+
+```cmake
+diagham_physics_test(physics.<module>.<what>
+    PROGRAM <leafdir>_<Program>          # target name, e.g. FQHEOnSphere_FQHESphereFermionsTwoBodyGeneric
+    ARGS <program arguments>
+    OUTPUT "<glob matching the one spectrum file the run writes>"
+    CHECK <min|min-abs|spectrum|count> @OUTPUT@ <column> ...
+    LABELS <module>)
+```
+
+The test runs the program in a fresh, empty directory (so stale output can
+never satisfy a check), finds the one file matching `OUTPUT`, and runs
+`check_spectrum` on it. The four check modes (see
+[../../reference/data-formats.md](../../reference/data-formats.md)):
+
+- `min FILE COLUMN EXPECTED MAX_ULP` — lowest value within so many units in
+  the last place (use for exact analytic answers; 4 ulp absorbs compiler
+  and FMA differences, a wrong result moves the 12th digit);
+- `min-abs FILE COLUMN EXPECTED TOL` — lowest value within an absolute
+  tolerance (exact integers, Lanczos results);
+- `spectrum FILE COLUMN REFERENCE REF_COLUMN TOL` — a whole sorted spectrum
+  against a saved reference or another program's output;
+- `count FILE COLUMN VALUE TOL N` — exactly N eigenvalues at a value
+  (degeneracies, zero modes).
+
+To compare two programs against each other, add `REF_PROGRAM <target>
+REF_ARGS <args> REF_OUTPUT <glob>` and use `@REFERENCE@` in `CHECK` (the
+`physics.fqhe.torus.su2_coulomb.*` tests do this).
+
+Rules:
+
+- **Every golden must say, in a comment, why the expected answer is known**
+  — analytic, from an independent code, or from a saved reference that was
+  itself cross-checked. "It is what the program printed" is not a golden.
+- Goldens are never edited to make a failing test pass (`AGENTS.md`). A
+  changed expected value is a physics change and needs a maintainer.
+- Prefer small systems: the whole physics suite runs in seconds, which is
+  why it is run on every change.
+- Add the test's name to `tests/manifest.txt` when that manifest exists
+  (the review pipeline compares `ctest -N` with it).
+- If a program's option set changed, regenerate the program reference so
+  its page stays truthful.
+
+For a defect that is documented but not yet fixed, register a reproducer
+with `WILL_FAIL` under the `known-bug` label: it passes while the defect is
+present and turns red the day someone fixes it, so the fix is not forgotten
+— then drop `WILL_FAIL` in the same change.

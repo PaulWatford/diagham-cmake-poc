@@ -39,12 +39,12 @@ Two branches matter:
 |---- scripts_cmake/
 |   |---- extract_autotools.py    reads upstream Makefile.am, emits the per-directory CMakeLists.txt
 |   +---- ci.sh                   the CI pipeline (GitHub Actions and GitLab CI call it)
-|---- tests/                      ctest suite: physics goldens, smoke, install (TESTING.md)
+|---- tests/                      ctest suite: physics goldens, smoke, install (docs/reference/tests.md)
 |---- patches/                    audit trail of the upstream fixes (PATCHES.md); the fixes themselves are commits
 |---- benchmarks/                 Hubbard verification log + independent Python exact diagonalisation
 |---- Base/ src/ FQHE/ FTI/ Spin/ QuantumDots/   DiagHam itself, as in upstream, with generated CMakeLists.txt in each directory
 |---- docs/                     knowledge base: how-to, reference, explanation, tutorials, history (docs/README.md)
-+---- TESTING.md, AGENTS.md, CONTRIBUTING.md
++---- docs/reference/tests.md, AGENTS.md, CONTRIBUTING.md
 ```
 
 The per-directory `CMakeLists.txt` files are generated from upstream's own
@@ -72,7 +72,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   independently computed or cross-implementation answers (Hubbard, Laughlin
   zero modes on sphere and torus, Heisenberg rings, spinful torus Coulomb),
   an independent Python exact-diagonalisation cross-check, `--help` on every
-  program, and a `find_package(DiagHam)` consumer build. See `TESTING.md`.
+  program, and a `find_package(DiagHam)` consumer build. See `docs/reference/tests.md`.
 - The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical
   (0 ULP) match to the analytic `-4√2` (see `benchmarks/BENCHMARK.md`).
 - The `lapack` preset (system LAPACK/BLAS) builds with no errors and passes
@@ -151,7 +151,7 @@ checks run as ctest goldens on every build.
 want to do. `docs/reference/build-system.md` describes every option, file
 and mechanism of the build; `docs/reference/configure-flag-map.md` maps every
 configure flag; `docs/how-to/build/` has the per-platform build guides and
-the cluster recipe; `TESTING.md` explains the test suite. The DiagHam user manual —
+the cluster recipe; `docs/reference/tests.md` describes the test suite. The DiagHam user manual —
 program-by-program pages — is on the upstream wiki at nick-ux.org and is
 being brought into `docs/`.
 

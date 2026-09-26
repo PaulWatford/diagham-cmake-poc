@@ -23,7 +23,7 @@ Source: `MODULE_MAP.md` (2026-09-18, task-oriented map), the top-level `CMakeLis
 | `scripts_cmake/extract_autotools.py` | generates the per-directory `CMakeLists.txt` from upstream `Makefile.am` |
 | `scripts_cmake/ci.sh` | the CI pipeline: pinned upstream, build, ctest |
 | `scripts_cmake/gen_program_reference.py`, `attach_wiki_manuals.py` | generate `docs/reference/programs/` |
-| `tests/` | the ctest suite — see `TESTING.md` |
+| `tests/` | the ctest suite — see `docs/reference/tests.md` |
 | `<module>/src/**/CMakeLists.txt` | generated; do not edit |
 
 ## Options

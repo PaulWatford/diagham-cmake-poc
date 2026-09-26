@@ -138,7 +138,7 @@ exact and independently computed results to machine precision on 2×2, 2×4
 and 3×3 cases, with the strong-coupling limit recovered. It does not
 establish the correctness of the other 602 programs, of larger lattices
 where Lanczos convergence parameters matter, or of FQHE programs — those
-have their own goldens (`TESTING.md`) and, for FQHE,
+have their own goldens (`docs/reference/tests.md`) and, for FQHE,
 [your first FQHE run](first-fqhe-run.md).
 
 Full log with every table: `benchmarks/BENCHMARK.md`.

@@ -26,7 +26,7 @@ them:
 If a change affects either number, that is Damage (see below) even if
 every check still reports green.
 
-> **Resolved 2026-09-26:** the notes below described the proof-of-concept state; a ctest suite now exists (`TESTING.md`) and the 79 figure was reproduced against a real autotools build — in the default configuration, not core-only. Kept for the record.
+> **Resolved 2026-09-26:** the notes below described the proof-of-concept state; a ctest suite now exists (`docs/reference/tests.md`) and the 79 figure was reproduced against a real autotools build — in the default configuration, not core-only. Kept for the record.
 >
 > **Flagged, not corrected, 22/09 (audited by a second Claude session):**
 > two things about the "79/79" fact above do not currently hold and

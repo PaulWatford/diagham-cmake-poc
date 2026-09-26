@@ -147,10 +147,11 @@ checks run as ctest goldens on every build.
 
 ## Finding your way around
 
-`MODULE_MAP.md` is organised by task ("I want to add a dependency", "I want
-to verify the physics", ...) and points at the file for each.
-`docs/reference/configure-flag-map.md` maps every configure flag; `docs/how-to/build/` has the per-platform build guides and the cluster
-recipe; `TESTING.md` explains the test suite. The DiagHam user manual —
+`docs/README.md` is the index of the knowledge base, organised by what you
+want to do. `docs/reference/build-system.md` describes every option, file
+and mechanism of the build; `docs/reference/configure-flag-map.md` maps every
+configure flag; `docs/how-to/build/` has the per-platform build guides and
+the cluster recipe; `TESTING.md` explains the test suite. The DiagHam user manual —
 program-by-program pages — is on the upstream wiki at nick-ux.org and is
 being brought into `docs/` (see `MIGRATION_ROADMAP.md`).
 

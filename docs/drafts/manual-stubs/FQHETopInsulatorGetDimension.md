@@ -2,7 +2,7 @@
 
 Source: DiagHam wiki page `FQHETopInsulatorGetDimension`, as of 2026-09-24. Reason: the program is now `FTIGetDimension` and the wiki has a page under that name, which is the attached manual; this older page is kept for comparison.
 
-[FTIGetDimension](FTIGetDimension.md) computes the dimensions of the Hilbert spaces that are involved in all codes related to fractional Chern insulators or fractional topological insulators. The typical usage is 
+[FTIGetDimension](../../reference/programs/manuals/FTIGetDimension.md) computes the dimensions of the Hilbert spaces that are involved in all codes related to fractional Chern insulators or fractional topological insulators. The typical usage is 
 
 *\$PATHTODIAGHAM/build/FTI/src/Programs/FTI/FTIGetDimension -p 8 -x 6 -y 4 --no-inversion*
 
@@ -18,7 +18,7 @@ The output shall look like
 ```
 
 
-[FTIGetDimension](FTIGetDimension.md) computes the Hilbert space dimension in each momentum sector.
+[FTIGetDimension](../../reference/programs/manuals/FTIGetDimension.md) computes the Hilbert space dimension in each momentum sector.
 
 Several options allows to select the system properties
 

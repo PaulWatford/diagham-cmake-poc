@@ -2,7 +2,7 @@
 
 Source: DiagHam wiki page `FQHECheckerboardLatticeModel`, as of 2026-09-24. Reason: the program is now `FCICheckerboardLatticeModel` and the wiki has a page under that name, which is the attached manual; this older page is kept for comparison.
 
-[FCICheckerboardLatticeModel](FCICheckerboardLatticeModel.md) handles interacting fermions or bosons on the checkerboard lattice. This exact diagonalization code offers similar calculation features to those of  [QHEFermionsTwoBodyGeneric](FQHESphereFermionsTwoBodyGeneric.md). The typical usage is 
+[FCICheckerboardLatticeModel](../../reference/programs/manuals/FCICheckerboardLatticeModel.md) handles interacting fermions or bosons on the checkerboard lattice. This exact diagonalization code offers similar calculation features to those of  [QHEFermionsTwoBodyGeneric](../../reference/programs/manuals/FQHESphereFermionsTwoBodyGeneric.md). The typical usage is 
 
 *\$PATHTODIAGHAM/build/FTI/src/Programs/FCI/FCICheckerboardLatticeModel -p 4 -x 4 -y 3 --flat-band --single-band --use-lapack*
 

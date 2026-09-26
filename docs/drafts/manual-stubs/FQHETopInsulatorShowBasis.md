@@ -2,7 +2,7 @@
 
 Source: DiagHam wiki page `FQHETopInsulatorShowBasis`, as of 2026-09-24. Reason: the program is now `FTIShowBasis` and the wiki has a page under that name, which is the attached manual; this older page is kept for comparison.
 
-[FTIShowBasis](FTIShowBasis.md) displays the n-body basis that are involved in all codes related to fractional Chern insulators or fractional topological insulators. The typical usage is 
+[FTIShowBasis](../../reference/programs/manuals/FTIShowBasis.md) displays the n-body basis that are involved in all codes related to fractional Chern insulators or fractional topological insulators. The typical usage is 
 
 *\$PATHTODIAGHAM/build/FTI/src/Programs/FTI/FTIShowBasis -p 8 -x 4 -y 3 --kx 0 --ky 0 -s 2 --sz 6 --spin-conserved*
 

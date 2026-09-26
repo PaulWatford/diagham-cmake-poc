@@ -123,6 +123,9 @@ def main(wiki, progs, drafts):
         n = p.stem
         if n in NOT_PROGRAMS: continue
         if n in gen or RENAMED.get(n) in gen: program_pages.add(RENAMED.get(n, n))
+    def relink(text):
+        # links written for manuals/ must resolve from drafts/manual-stubs/
+        return re.sub(r"\]\(([A-Za-z0-9_]+)\.md\)", r"](../../reference/programs/manuals/\1.md)", text)
     for old in manuals.glob("*.md"):
         old.unlink()
     for old in stubs.glob("*.md"):
@@ -139,17 +142,17 @@ def main(wiki, progs, drafts):
             # the wiki also has a page under the new name: that one is the manual; park the old one
             (stubs / f"{name}.md").write_text(f"# {name} (superseded wiki page)\n\nSource: DiagHam wiki page `{name}`, as of {WIKI_DATE}. "
                                              f"Reason: the program is now `{target}` and the wiki has a page under that name, which is the attached manual; this older page is kept for comparison.\n\n"
-                                             + wikitext_to_md(raw, program_pages))
+                                             + relink(wikitext_to_md(raw, program_pages)))
             rows.append((name, f"superseded by the {target} page", len(raw))); parked += 1; continue
         if name in UNCERTAIN or target not in gen:
             (stubs / f"{name}.md").write_text(f"# {name} (wiki page, not attached)\n\nSource: DiagHam wiki page `{name}`, as of {WIKI_DATE}. "
                                              f"Reason: {UNCERTAIN.get(name, 'no program of this name in the r4493 build')}.\n\n"
-                                             + wikitext_to_md(raw, program_pages))
+                                             + relink(wikitext_to_md(raw, program_pages)))
             rows.append((name, "no matching program / uncertain rename", len(raw))); parked += 1; continue
         if len(raw.strip()) < STUB_BYTES:
             (stubs / f"{name}.md").write_text(f"# {name} (stub wiki page)\n\nSource: DiagHam wiki page `{name}`, as of {WIKI_DATE} ({len(raw)} bytes). "
                                              f"Reason: stub — the generated `--help` page is the only reference. To complete: describe purpose, inputs, outputs and a worked example.\n\n"
-                                             + wikitext_to_md(raw, program_pages))
+                                             + relink(wikitext_to_md(raw, program_pages)))
             rows.append((name, "stub", len(raw))); parked += 1; continue
         md = wikitext_to_md(raw, program_pages)
         help_text = gen[target].read_text()

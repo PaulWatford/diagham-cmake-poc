@@ -2,7 +2,7 @@
 
 Source: DiagHam wiki page `FQHEKagomeLatticeModel`, as of 2026-09-24. Reason: the program is now `FCIKagomeLatticeModel` and the wiki has a page under that name, which is the attached manual; this older page is kept for comparison.
 
-FCIKagomeLatticeModel handles interacting fermions or bosons on the Kagome lattice. This exact diagonalization code offers similar calculation features to those of [FQHECheckerboardLatticeModel](FCICheckerboardLatticeModel.md). 
+FCIKagomeLatticeModel handles interacting fermions or bosons on the Kagome lattice. This exact diagonalization code offers similar calculation features to those of [FQHECheckerboardLatticeModel](../../reference/programs/manuals/FCICheckerboardLatticeModel.md). 
 
 ## How to produce a Laughlin like state
 
@@ -34,4 +34,4 @@ For this particular choice of the lattice aspect ratio (a 2x2 lattice), the almo
 
 The --eigenstate option requires to compute the eigenstates and -n 2 indicates that we want only the two first eigenstates. Since we want to focus on the (0,0) sector, we have added the two options --only-kx 0 --eigenstates only-ky 0 . Running this command line will generate a new spectrum file and two binary vectors *bosons_singleband_kagomelattice_n_2_x_2_y_2_t1_1_t2_0_l1_1_l2_0_gx_0_gy_0_kx_0_ky_0.0.vec* and *bosons_singleband_kagomelattice_n_2_x_2_y_2_t1_1_t2_0_l1_1_l2_0_gx_0_gy_0_kx_0_ky_0.1.vec*. The extension *.x.vec* indicates this the the x-th eigenstate (zero being the groundstate in the given momentum sector).
 
-The eigenstates are binary vectors that can be managed with the corresponding tools *(wiki page Binary vectors)*. Their decomposition onto the n-body basis can be read using [FQHETopInsulatorShowBasis](FTIShowBasis.md).
+The eigenstates are binary vectors that can be managed with the corresponding tools *(wiki page Binary vectors)*. Their decomposition onto the n-body basis can be read using [FQHETopInsulatorShowBasis](../../reference/programs/manuals/FTIShowBasis.md).

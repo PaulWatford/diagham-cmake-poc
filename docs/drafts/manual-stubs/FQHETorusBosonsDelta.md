@@ -2,7 +2,7 @@
 
 Source: DiagHam wiki page `FQHETorusBosonsDelta`, as of 2026-09-24. Reason: program renamed upstream; the current equivalent was not identified with certainty.
 
-FQHETorusBosonsDelta provides exact diagonalization of two-body hardcore hamiltonian for bosons on the torus geometry. Only the translation along the y direction is taken into account. Many options are similar to  the ones of [QHEFermionsTwoBodyGeneric](FQHESphereFermionsTwoBodyGeneric.md). A typical usage will look like 
+FQHETorusBosonsDelta provides exact diagonalization of two-body hardcore hamiltonian for bosons on the torus geometry. Only the translation along the y direction is taken into account. Many options are similar to  the ones of [QHEFermionsTwoBodyGeneric](../../reference/programs/manuals/FQHESphereFermionsTwoBodyGeneric.md). A typical usage will look like 
 
 *\$PATHTODIAGHAM/build/FQHE/src/Programs/FQHEOnTorus/FQHETorusBosonsDelta -p 3 -l 6 -n 1 --eigenstate --use-lapack*
 

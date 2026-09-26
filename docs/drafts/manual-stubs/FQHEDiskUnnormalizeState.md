@@ -2,4 +2,4 @@
 
 Source: DiagHam wiki page `FQHEDiskUnnormalizeState`, as of 2026-09-24 (135 bytes). Reason: stub — the generated `--help` page is the only reference. To complete: describe purpose, inputs, outputs and a worked example.
 
-[FQHEDiskUnnormalizeState](FQHEDiskUnnormalizeState.md) is the analogue of [FQHESphereUnnormalizeState](FQHESphereUnnormalizeState.md) or [FQHECylinderNormalizeState](FQHECylinderNormalizeState.md) for the disk geometry.
+[FQHEDiskUnnormalizeState](../../reference/programs/manuals/FQHEDiskUnnormalizeState.md) is the analogue of [FQHESphereUnnormalizeState](../../reference/programs/manuals/FQHESphereUnnormalizeState.md) or [FQHECylinderNormalizeState](../../reference/programs/manuals/FQHECylinderNormalizeState.md) for the disk geometry.

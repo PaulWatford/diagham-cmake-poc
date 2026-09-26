@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFuseStates`
 
+Manual: [FQHESphereFuseStates (from the DiagHam wiki)](../manuals/FQHESphereFuseStates.md)
+
 ```text
 FQHESphereFuseStates, version 0.01
 

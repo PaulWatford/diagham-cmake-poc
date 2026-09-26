@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereWithSU2SpinEntanglementEntropy`
 
+Manual: [FQHESphereWithSU2SpinEntanglementEntropy (from the DiagHam wiki)](../manuals/FQHESphereWithSU2SpinEntanglementEntropy.md)
+
 ```text
 FQHESphereWithSU2SpinEntanglementEntropy, version 0.01
 

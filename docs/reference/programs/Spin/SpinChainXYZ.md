@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinChainXYZ`
 
+Manual: [SpinChainXYZ (from the DiagHam wiki)](../manuals/SpinChainXYZ.md)
+
 ```text
 SpinChainXYZ, version 0.01
 

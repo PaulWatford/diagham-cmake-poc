@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereASCIIToState`
 
+Manual: [FQHESphereASCIIToState (from the DiagHam wiki)](../manuals/FQHESphereASCIIToState.md)
+
 ```text
 FQHESphereASCIIToState, version 0.01
 

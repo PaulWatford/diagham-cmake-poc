@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereConvertHaldaneBasis`
 
+Manual: [FQHESphereConvertHaldaneBasis (from the DiagHam wiki)](../manuals/FQHESphereConvertHaldaneBasis.md)
+
 ```text
 FQHESphereConvertHaldaneBasis, version 0.01
 

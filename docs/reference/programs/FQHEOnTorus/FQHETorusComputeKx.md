@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusComputeKx`
 
+Manual: [FQHETorusComputeKx (from the DiagHam wiki)](../manuals/FQHETorusComputeKx.md)
+
 ```text
 FQHETorusComputeKx, version 0.01
 

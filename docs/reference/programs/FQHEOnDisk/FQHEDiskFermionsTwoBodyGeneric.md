@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnDisk` · binary: `FQHE/src/Programs/FQHEOnDisk/FQHEDiskFermionsTwoBodyGeneric`
 
+Manual: [FQHEDiskFermionsTwoBodyGeneric (from the DiagHam wiki)](../manuals/FQHEDiskFermionsTwoBodyGeneric.md)
+
 ```text
 FQHEDiskFermionsTwoBodyGeneric, version 0.01
 

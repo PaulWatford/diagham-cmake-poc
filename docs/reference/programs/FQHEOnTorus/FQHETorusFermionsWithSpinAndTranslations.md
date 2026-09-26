@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusFermionsWithSpinAndTranslations`
 
+Manual: [FQHETorusFermionsWithSpinAndTranslations (from the DiagHam wiki)](../manuals/FQHETorusFermionsWithSpinAndTranslations.md)
+
 ```text
 FQHETorusFermionsWithSpinAndTranslations, version 0.01
 

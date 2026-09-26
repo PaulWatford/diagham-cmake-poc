@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinSystemConvertFromTranslationInvariantBasis`
 
+Manual: [SpinSystemConvertFromTranslationInvariantBasis (from the DiagHam wiki)](../manuals/SpinSystemConvertFromTranslationInvariantBasis.md)
+
 ```text
 SpinSystemConvertFromTranslationInvariantBasis, version 0.01
 

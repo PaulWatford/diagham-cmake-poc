@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/GenericSpinChainShowBasis`
 
+Manual: [GenericSpinChainShowBasis (from the DiagHam wiki)](../manuals/GenericSpinChainShowBasis.md)
+
 ```text
 GenericSpinChainShowBasis, version 0.01
 

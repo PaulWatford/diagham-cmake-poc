@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing`
 
+Manual: [FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing (from the DiagHam wiki)](../manuals/FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing.md)
+
 ```text
 FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing, version 0.01
 

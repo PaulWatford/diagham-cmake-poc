@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereWithSU2SpinRotation`
 
+Manual: [FQHESphereWithSU2SpinRotation (from the DiagHam wiki)](../manuals/FQHESphereWithSU2SpinRotation.md)
+
 ```text
 FQHESphereWithSU2SpinRotation, version 0.01
 

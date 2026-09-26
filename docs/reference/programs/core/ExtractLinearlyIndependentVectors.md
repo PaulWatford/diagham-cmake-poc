@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/ExtractLinearlyIndependentVectors`
 
+Manual: [ExtractLinearlyIndependentVectors (from the DiagHam wiki)](../manuals/ExtractLinearlyIndependentVectors.md)
+
 ```text
 ExtractLinearlyIndependentVectors, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereUnnormalizeState`
 
+Manual: [FQHESphereUnnormalizeState (from the DiagHam wiki)](../manuals/FQHESphereUnnormalizeState.md)
+
 ```text
 FQHESphereUnnormalizeState, version 0.01
 

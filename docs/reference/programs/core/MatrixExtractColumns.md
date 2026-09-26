@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/MatrixExtractColumns`
 
+Manual: [MatrixExtractColumns (from the DiagHam wiki)](../manuals/MatrixExtractColumns.md)
+
 ```text
 MatrixExtractColumns, version 0.01
 

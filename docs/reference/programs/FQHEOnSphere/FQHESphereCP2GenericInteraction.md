@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereCP2GenericInteraction`
 
+Manual: [FQHESphereCP2GenericInteraction (from the DiagHam wiki)](../manuals/FQHESphereCP2GenericInteraction.md)
+
 ```text
 FQHESphereCP2BosonsGenericInteraction, version 0.01
 

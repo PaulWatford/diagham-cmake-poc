@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinChainMultipleEntanglementSpectrumLevelStatistics`
 
+Manual: [SpinChainMultipleEntanglementSpectrumLevelStatistics (from the DiagHam wiki)](../manuals/SpinChainMultipleEntanglementSpectrumLevelStatistics.md)
+
 ```text
 SpinChainMultipleEntanglementSpectrumLevelStatistics, version 0.01
 

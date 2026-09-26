@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/HubbardModels` · binary: `FTI/src/Programs/HubbardModels/HubbardEntanglementEntropyParticlePartition`
 
+Manual: [HubbardEntanglementEntropyParticlePartition (from the DiagHam wiki)](../manuals/HubbardEntanglementEntropyParticlePartition.md)
+
 ```text
 HubbardEntanglementEntropyParticlePartition, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereBosonsTwoBodyGeneric`
 
+Manual: [FQHESphereBosonsTwoBodyGeneric (from the DiagHam wiki)](../manuals/FQHESphereBosonsTwoBodyGeneric.md)
+
 ```text
 FQHESphereBosonsTwoBodyGeneric, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/XCubeEntanglementEntropy`
 
+Manual: [XCubeEntanglementEntropy (from the DiagHam wiki)](../manuals/XCubeEntanglementEntropy.md)
+
 ```text
 XCubeEntanglementEntropy, version 0.01
 

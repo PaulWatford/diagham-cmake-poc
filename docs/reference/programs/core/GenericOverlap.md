@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/GenericOverlap`
 
+Manual: [GenericOverlap (from the DiagHam wiki)](../manuals/GenericOverlap.md)
+
 ```text
 GenericOverlap, version 0.01
 

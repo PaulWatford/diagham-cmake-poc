@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinChainMultipleEntanglementSpectra`
 
+Manual: [SpinChainMultipleEntanglementSpectra (from the DiagHam wiki)](../manuals/SpinChainMultipleEntanglementSpectra.md)
+
 ```text
 SpinChainMultipleEntanglementSpectra, version 0.01
 

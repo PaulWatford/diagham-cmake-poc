@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusFermionsWithSpinTwoBodyGeneric`
 
+Manual: [FQHETorusFermionsWithSpinTwoBodyGeneric (from the DiagHam wiki)](../manuals/FQHETorusFermionsWithSpinTwoBodyGeneric.md)
+
 ```text
 FQHETorusFermionsWithSpinTwoBodyGeneric, version 0.01
 

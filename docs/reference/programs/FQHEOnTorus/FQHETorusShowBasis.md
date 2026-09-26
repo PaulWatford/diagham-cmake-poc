@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusShowBasis`
 
+Manual: [FQHETorusShowBasis (from the DiagHam wiki)](../manuals/FQHETorusShowBasis.md)
+
 ```text
 FQHETorusShowBasis, version 0.01
 

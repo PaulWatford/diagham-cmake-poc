@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIMinNbrSingletProjection`
 
+Manual: [FTIMinNbrSingletProjection (from the DiagHam wiki)](../manuals/FTIMinNbrSingletProjection.md)
+
 ```text
 FTIMinNbrSingletProjection, version 0.01
 

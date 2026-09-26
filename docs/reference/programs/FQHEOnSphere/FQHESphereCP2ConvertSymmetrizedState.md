@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereCP2ConvertSymmetrizedState`
 
+Manual: [FQHESphereCP2ConvertSymmetrizedState (from the DiagHam wiki)](../manuals/FQHESphereCP2ConvertSymmetrizedState.md)
+
 ```text
 FQHESphereCP2ConvertSymmetrizedState, version 0.01
 

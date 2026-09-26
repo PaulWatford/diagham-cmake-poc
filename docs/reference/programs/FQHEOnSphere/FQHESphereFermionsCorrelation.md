@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFermionsCorrelation`
 
+Manual: [FQHESphereFermionsCorrelation (from the DiagHam wiki)](../manuals/FQHESphereFermionsCorrelation.md)
+
 ```text
 FQHESphereFermionsCorrelation, version 0.01
 

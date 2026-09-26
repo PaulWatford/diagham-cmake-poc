@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/ShastrySutherlandModel`
 
+Manual: [ShastrySutherlandModel (from the DiagHam wiki)](../manuals/ShastrySutherlandModel.md)
+
 ```text
 ShastrySutherlandModel, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinChainEntanglementEntropy`
 
+Manual: [SpinChainEntanglementEntropy (from the DiagHam wiki)](../manuals/SpinChainEntanglementEntropy.md)
+
 ```text
 SpinChainEntanglementEntropy, version 0.01
 

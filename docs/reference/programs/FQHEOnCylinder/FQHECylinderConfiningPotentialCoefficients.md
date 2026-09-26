@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderConfiningPotentialCoefficients`
 
+Manual: [FQHECylinderConfiningPotentialCoefficients (from the DiagHam wiki)](../manuals/FQHECylinderConfiningPotentialCoefficients.md)
+
 ```text
 FQHECylinderConfiningPotentialCoefficients, version 0.01
 

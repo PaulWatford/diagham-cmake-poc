@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusEntanglementEntropyParticlePartition`
 
+Manual: [FQHETorusEntanglementEntropyParticlePartition (from the DiagHam wiki)](../manuals/FQHETorusEntanglementEntropyParticlePartition.md)
+
 ```text
 FQHETorusEntanglementEntropyParticlePartition, version 0.01
 

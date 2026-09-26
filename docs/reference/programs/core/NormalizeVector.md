@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/NormalizeVector`
 
+Manual: [NormalizeVector (from the DiagHam wiki)](../manuals/NormalizeVector.md)
+
 ```text
 NormalizeVector, version 0.01
 

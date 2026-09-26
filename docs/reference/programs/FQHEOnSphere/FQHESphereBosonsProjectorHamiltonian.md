@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereBosonsProjectorHamiltonian`
 
+Manual: [FQHESphereBosonsProjectorHamiltonian (from the DiagHam wiki)](../manuals/FQHESphereBosonsProjectorHamiltonian.md)
+
 ```text
 FQHESphereBosonsProjectorHamiltonian, version 0.01
 

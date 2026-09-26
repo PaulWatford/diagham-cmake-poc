@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderDensity`
 
+Manual: [FQHECylinderDensity (from the DiagHam wiki)](../manuals/FQHECylinderDensity.md)
+
 ```text
 FQHECylinderDensity, version 0.01
 

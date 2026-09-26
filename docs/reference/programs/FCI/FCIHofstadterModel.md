@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FCI` · binary: `FTI/src/Programs/FCI/FCIHofstadterModel`
 
+Manual: [FCIHofstadterModel (from the DiagHam wiki)](../manuals/FCIHofstadterModel.md)
+
 ```text
 FCIHofstadterModel, version 0.01
 

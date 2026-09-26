@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderQuasiholeMatrixElements`
 
+Manual: [FQHECylinderQuasiholeMatrixElements (from the DiagHam wiki)](../manuals/FQHECylinderQuasiholeMatrixElements.md)
+
 ```text
 FQHECylinderQuasiholeMatrixElements, version 0.01
 

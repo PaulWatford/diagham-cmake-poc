@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereExtractRootPartitions`
 
+Manual: [FQHESphereExtractRootPartitions (from the DiagHam wiki)](../manuals/FQHESphereExtractRootPartitions.md)
+
 ```text
 FQHESphereExtractRootPartitions, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/DiffBinaryVectors`
 
+Manual: [DiffBinaryVectors (from the DiagHam wiki)](../manuals/DiffBinaryVectors.md)
+
 ```text
 DiffBinaryVectors, version 0.01
 

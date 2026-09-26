@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/2DToricCodeEntanglementEntropy`
 
+Manual: [2DToricCodeEntanglementEntropy (from the DiagHam wiki)](../manuals/2DToricCodeEntanglementEntropy.md)
+
 ```text
 2DToricCodeEntanglementEntropy, version 0.01
 

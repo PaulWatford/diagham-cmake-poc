@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIConvertConstrainedBasis`
 
+Manual: [FTIConvertConstrainedBasis (from the DiagHam wiki)](../manuals/FTIConvertConstrainedBasis.md)
+
 ```text
 FTIConvertConstrainedBasis, version 0.01
 

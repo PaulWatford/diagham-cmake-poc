@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereMPSEntanglementSpectrumParticlePartition`
 
+Manual: [FQHESphereMPSEntanglementSpectrumParticlePartition (from the DiagHam wiki)](../manuals/FQHESphereMPSEntanglementSpectrumParticlePartition.md)
+
 ```text
 FQHESphereMPSEntanglementSpectrumParticlePartition, version 0.01
 

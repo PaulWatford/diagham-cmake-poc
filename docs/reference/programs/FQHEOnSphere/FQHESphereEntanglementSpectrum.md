@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereEntanglementSpectrum`
 
+Manual: [FQHESphereEntanglementSpectrum (from the DiagHam wiki)](../manuals/FQHESphereEntanglementSpectrum.md)
+
 ```text
 FQHESphereEntanglementSpectrum, version 0.01
 

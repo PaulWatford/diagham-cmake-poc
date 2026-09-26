@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereWithSU2SpinLLLProjectedLLLTimesManyLL`
 
+Manual: [FQHESphereWithSU2SpinLLLProjectedLLLTimesManyLL (from the DiagHam wiki)](../manuals/FQHESphereWithSU2SpinLLLProjectedLLLTimesManyLL.md)
+
 ```text
 FQHESphereWithSU2SpinLLLProjectedLLLTimesManyLL, version 0.01
 

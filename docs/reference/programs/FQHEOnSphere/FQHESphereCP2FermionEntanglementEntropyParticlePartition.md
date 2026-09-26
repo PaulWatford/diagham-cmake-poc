@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereCP2FermionEntanglementEntropyParticlePartition`
 
+Manual: [FQHESphereCP2FermionEntanglementEntropyParticlePartition (from the DiagHam wiki)](../manuals/FQHESphereCP2FermionEntanglementEntropyParticlePartition.md)
+
 ```text
 FQHESphereCP2FermionEntanglementEntropyParticlePartition, version 0.01
 

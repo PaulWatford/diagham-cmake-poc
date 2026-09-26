@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/MatrixBinary2Ascii`
 
+Manual: [MatrixBinary2Ascii (from the DiagHam wiki)](../manuals/MatrixBinary2Ascii.md)
+
 ```text
 MatrixBinary2Ascii, version 0.01
 

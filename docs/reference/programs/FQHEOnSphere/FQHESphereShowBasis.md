@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereShowBasis`
 
+Manual: [FQHESphereShowBasis (from the DiagHam wiki)](../manuals/FQHESphereShowBasis.md)
+
 ```text
 FQHESphereShowBasis, version 0.01
 

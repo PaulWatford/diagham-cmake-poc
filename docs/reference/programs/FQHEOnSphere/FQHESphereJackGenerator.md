@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereJackGenerator`
 
+Manual: [FQHESphereJackGenerator (from the DiagHam wiki)](../manuals/FQHESphereJackGenerator.md)
+
 ```text
 FQHESphereJackGenerator, version 0.01
 

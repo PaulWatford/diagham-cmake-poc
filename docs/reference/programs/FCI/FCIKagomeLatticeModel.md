@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FCI` · binary: `FTI/src/Programs/FCI/FCIKagomeLatticeModel`
 
+Manual: [FCIKagomeLatticeModel (from the DiagHam wiki)](../manuals/FCIKagomeLatticeModel.md)
+
 ```text
 FCIKagomeLatticeModel, version 0.01
 

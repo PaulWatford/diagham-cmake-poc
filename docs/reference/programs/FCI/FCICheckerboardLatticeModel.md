@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FCI` · binary: `FTI/src/Programs/FCI/FCICheckerboardLatticeModel`
 
+Manual: [FCICheckerboardLatticeModel (from the DiagHam wiki)](../manuals/FCICheckerboardLatticeModel.md)
+
 ```text
 FCICheckerboardLatticeModel, version 0.01
 

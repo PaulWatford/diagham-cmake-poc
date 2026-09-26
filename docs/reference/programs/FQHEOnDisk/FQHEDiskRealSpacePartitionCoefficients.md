@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnDisk` · binary: `FQHE/src/Programs/FQHEOnDisk/FQHEDiskRealSpacePartitionCoefficients`
 
+Manual: [FQHEDiskRealSpacePartitionCoefficients (from the DiagHam wiki)](../manuals/FQHEDiskRealSpacePartitionCoefficients.md)
+
 ```text
 FQHEDiskRealSpacePartitionCoefficients, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIGenericInteractionFromFileSingleBand`
 
+Manual: [FTIGenericInteractionFromFileSingleBand (from the DiagHam wiki)](../manuals/FTIGenericInteractionFromFileSingleBand.md)
+
 ```text
 FTIGenericInteractionFromFileSingleBand, version 0.02
 

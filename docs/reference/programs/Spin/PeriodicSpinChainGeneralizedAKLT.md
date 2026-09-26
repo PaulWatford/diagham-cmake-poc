@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/PeriodicSpinChainGeneralizedAKLT`
 
+Manual: [PeriodicSpinChainGeneralizedAKLT (from the DiagHam wiki)](../manuals/PeriodicSpinChainGeneralizedAKLT.md)
+
 ```text
 PeriodicSpinChainGeneralizedAKLT, version 0.01
 

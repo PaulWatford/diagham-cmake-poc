@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderNormalizeState`
 
+Manual: [FQHECylinderNormalizeState (from the DiagHam wiki)](../manuals/FQHECylinderNormalizeState.md)
+
 ```text
 FQHECylinderNormalizeState, version 0.01
 

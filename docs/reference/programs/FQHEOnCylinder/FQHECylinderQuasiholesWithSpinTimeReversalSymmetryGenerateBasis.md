@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis`
 
+Manual: [FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis (from the DiagHam wiki)](../manuals/FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis.md)
+
 ```text
 FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis, version 0.01
 

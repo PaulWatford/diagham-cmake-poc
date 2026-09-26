@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIGetDimension`
 
+Manual: [FTIGetDimension (from the DiagHam wiki)](../manuals/FTIGetDimension.md)
+
 ```text
 FQHETopInsulatorGetDimension, version 0.01
 

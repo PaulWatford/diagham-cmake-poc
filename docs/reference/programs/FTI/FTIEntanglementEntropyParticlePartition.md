@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIEntanglementEntropyParticlePartition`
 
+Manual: [FTIEntanglementEntropyParticlePartition (from the DiagHam wiki)](../manuals/FTIEntanglementEntropyParticlePartition.md)
+
 ```text
 FTIEntanglementEntropyParticlePartition, version 0.01
 

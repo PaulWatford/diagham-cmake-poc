@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFermionsThreeBodyGeneric`
 
+Manual: [FQHESphereFermionsThreeBodyGeneric (from the DiagHam wiki)](../manuals/FQHESphereFermionsThreeBodyGeneric.md)
+
 ```text
 FQHESphereFermionsThreeBodyGeneric, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/HubbardModels` · binary: `FTI/src/Programs/HubbardModels/HubbardConvertFromTranslationInvariantBasis`
 
+Manual: [HubbardConvertFromTranslationInvariantBasis (from the DiagHam wiki)](../manuals/HubbardConvertFromTranslationInvariantBasis.md)
+
 ```text
 HubbardConvertFromTranslationInvariantBasis, version 0.01
 

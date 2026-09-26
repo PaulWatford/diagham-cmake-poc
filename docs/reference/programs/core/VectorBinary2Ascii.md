@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/VectorBinary2Ascii`
 
+Manual: [VectorBinary2Ascii (from the DiagHam wiki)](../manuals/VectorBinary2Ascii.md)
+
 ```text
 VectorBinary2Ascii, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusBosonsWithSU4SpinTwoBodyGeneric`
 
+Manual: [FQHETorusBosonsWithSU4SpinTwoBodyGeneric (from the DiagHam wiki)](../manuals/FQHETorusBosonsWithSU4SpinTwoBodyGeneric.md)
+
 ```text
 FQHETorusBosonsWithSU4SpinTwoBodyGeneric, version 0.01
 

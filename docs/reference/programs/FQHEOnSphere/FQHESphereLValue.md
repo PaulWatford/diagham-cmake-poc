@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereLValue`
 
+Manual: [FQHESphereLValue (from the DiagHam wiki)](../manuals/FQHESphereLValue.md)
+
 ```text
 FQHESphereLValue, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereRealSpacePartitionCoefficients`
 
+Manual: [FQHESphereRealSpacePartitionCoefficients (from the DiagHam wiki)](../manuals/FQHESphereRealSpacePartitionCoefficients.md)
+
 ```text
 FQHESphereRealSpacePartitionCoefficients, version 0.01
 

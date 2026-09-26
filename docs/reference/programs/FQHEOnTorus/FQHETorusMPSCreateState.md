@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusMPSCreateState`
 
+Manual: [FQHETorusMPSCreateState (from the DiagHam wiki)](../manuals/FQHETorusMPSCreateState.md)
+
 ```text
 FQHETorusMPSCreateState, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/HubbardModels` · binary: `FTI/src/Programs/HubbardModels/HubbardEntanglementEntropyRealSpacePartition`
 
+Manual: [HubbardEntanglementEntropyRealSpacePartition (from the DiagHam wiki)](../manuals/HubbardEntanglementEntropyRealSpacePartition.md)
+
 ```text
 HubbardEntanglementEntropyRealSpacePartition, version 0.01
 

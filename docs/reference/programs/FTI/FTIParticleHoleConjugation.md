@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIParticleHoleConjugation`
 
+Manual: [FTIParticleHoleConjugation (from the DiagHam wiki)](../manuals/FTIParticleHoleConjugation.md)
+
 ```text
 FTIParticleHoleConjugation, version 0.01
 

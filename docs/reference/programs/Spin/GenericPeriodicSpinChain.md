@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/GenericPeriodicSpinChain`
 
+Manual: [GenericPeriodicSpinChain (from the DiagHam wiki)](../manuals/GenericPeriodicSpinChain.md)
+
 ```text
 GenericPeriodicSpinChain, version 0.01
 

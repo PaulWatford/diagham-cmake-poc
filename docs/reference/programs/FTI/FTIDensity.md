@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIDensity`
 
+Manual: [FTIDensity (from the DiagHam wiki)](../manuals/FTIDensity.md)
+
 ```text
 FTIDensity, version 0.01
 

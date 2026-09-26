@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/HaahCodeEntropy`
 
+Manual: [HaahCodeEntropy (from the DiagHam wiki)](../manuals/HaahCodeEntropy.md)
+
 ```text
 HaahCodeEntropy, version 0.01
 

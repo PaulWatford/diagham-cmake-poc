@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFermionsTruncatedSchmidtDecomposition`
 
+Manual: [FQHESphereFermionsTruncatedSchmidtDecomposition (from the DiagHam wiki)](../manuals/FQHESphereFermionsTruncatedSchmidtDecomposition.md)
+
 ```text
 FQHESphereFermionsTruncatedSchmidtDecomposition, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/GenericHamiltonianDiagonalization`
 
+Manual: [GenericHamiltonianDiagonalization (from the DiagHam wiki)](../manuals/GenericHamiltonianDiagonalization.md)
+
 ```text
 GenericHamiltonianDiagonalization, version 0.01
 

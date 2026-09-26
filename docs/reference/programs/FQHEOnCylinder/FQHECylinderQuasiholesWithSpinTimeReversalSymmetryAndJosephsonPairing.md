@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing`
 
+Manual: [FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing (from the DiagHam wiki)](../manuals/FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing.md)
+
 ```text
 FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/FullGenericOpenSpinChain`
 
+Manual: [FullGenericOpenSpinChain (from the DiagHam wiki)](../manuals/FullGenericOpenSpinChain.md)
+
 ```text
 FullGenericOpenSpinChain, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinSystemSzToS`
 
+Manual: [SpinSystemSzToS (from the DiagHam wiki)](../manuals/SpinSystemSzToS.md)
+
 ```text
 SpinSystemSzToS, version 0.01
 

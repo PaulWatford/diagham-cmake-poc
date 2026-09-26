@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFermionsTruncatedSchmidtDecompositionParticlePartition`
 
+Manual: [FQHESphereFermionsTruncatedSchmidtDecompositionParticlePartition (from the DiagHam wiki)](../manuals/FQHESphereFermionsTruncatedSchmidtDecompositionParticlePartition.md)
+
 ```text
 FQHESphereFermionsTruncatedSchmidtDecompositionParticlePartition, version 0.01
 

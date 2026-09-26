@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereBosonEntanglementEntropy`
 
+Manual: [FQHESphereBosonEntanglementEntropy (from the DiagHam wiki)](../manuals/FQHESphereBosonEntanglementEntropy.md)
+
 ```text
 FQHESphereEntanglementEntropy, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereGetDimension`
 
+Manual: [FQHESphereGetDimension (from the DiagHam wiki)](../manuals/FQHESphereGetDimension.md)
+
 ```text
 FQHESphereGetDimension, version 0.01
 

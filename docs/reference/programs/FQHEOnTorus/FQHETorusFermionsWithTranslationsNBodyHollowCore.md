@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusFermionsWithTranslationsNBodyHollowCore`
 
+Manual: [FQHETorusFermionsWithTranslationsNBodyHollowCore (from the DiagHam wiki)](../manuals/FQHETorusFermionsWithTranslationsNBodyHollowCore.md)
+
 ```text
 FQHETorusFermionsWithTranslationsNBodyHollowCore, version 0.01
 

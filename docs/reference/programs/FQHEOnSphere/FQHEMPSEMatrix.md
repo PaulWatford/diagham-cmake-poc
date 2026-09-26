@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHEMPSEMatrix`
 
+Manual: [FQHEMPSEMatrix (from the DiagHam wiki)](../manuals/FQHEMPSEMatrix.md)
+
 ```text
 FQHEMPSEMatrix, version 0.01
 

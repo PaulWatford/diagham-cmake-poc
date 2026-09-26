@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereBosonsFermionsConverter`
 
+Manual: [FQHESphereBosonsFermionsConverter (from the DiagHam wiki)](../manuals/FQHESphereBosonsFermionsConverter.md)
+
 ```text
 FQHESphereBosonsFermionsConverter, version 0.01
 

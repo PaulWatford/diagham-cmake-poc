@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIShowBasis`
 
+Manual: [FTIShowBasis (from the DiagHam wiki)](../manuals/FTIShowBasis.md)
+
 ```text
 FTIShowBasis, version 0.01
 

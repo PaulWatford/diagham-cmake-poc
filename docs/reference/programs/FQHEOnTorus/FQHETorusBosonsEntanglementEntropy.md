@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusBosonsEntanglementEntropy`
 
+Manual: [FQHETorusBosonsEntanglementEntropy (from the DiagHam wiki)](../manuals/FQHETorusBosonsEntanglementEntropy.md)
+
 ```text
 FQHETorusBosonsEntanglementEntropy, version 0.01
 

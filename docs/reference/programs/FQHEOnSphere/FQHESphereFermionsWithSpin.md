@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFermionsWithSpin`
 
+Manual: [FQHESphereFermionsWithSpin (from the DiagHam wiki)](../manuals/FQHESphereFermionsWithSpin.md)
+
 ```text
 FQHESphereFermionsWithSpin, version 0.01
 

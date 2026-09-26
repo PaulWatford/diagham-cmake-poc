@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereWithSU2SpinEntanglementEntropyParticlePartition`
 
+Manual: [FQHESphereWithSU2SpinEntanglementEntropyParticlePartition (from the DiagHam wiki)](../manuals/FQHESphereWithSU2SpinEntanglementEntropyParticlePartition.md)
+
 ```text
 FQHESphereWithSU2SpinEntanglementEntropyParticlePartition, version 0.01
 

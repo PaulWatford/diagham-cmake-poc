@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusBosonsEntanglementEntropyParticlePartition`
 
+Manual: [FQHETorusBosonsEntanglementEntropyParticlePartition (from the DiagHam wiki)](../manuals/FQHETorusBosonsEntanglementEntropyParticlePartition.md)
+
 ```text
 FQHETorusBosonsEntanglementEntropyParticlePartition, version 0.01
 

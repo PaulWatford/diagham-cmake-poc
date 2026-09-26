@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereCP2BosonsDelta`
 
+Manual: [FQHESphereCP2BosonsDelta (from the DiagHam wiki)](../manuals/FQHESphereCP2BosonsDelta.md)
+
 ```text
 FQHESphereCP2BosonsDelta, version 0.01
 

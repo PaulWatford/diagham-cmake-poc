@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/HubbardModels` · binary: `FTI/src/Programs/HubbardModels/HubbardKitaevHeisenbergModel`
 
+Manual: [HubbardKitaevHeisenbergModel (from the DiagHam wiki)](../manuals/HubbardKitaevHeisenbergModel.md)
+
 ```text
 HubbardKitaevHeisenbergModel, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderRealSpacePartitionCoefficients`
 
+Manual: [FQHECylinderRealSpacePartitionCoefficients (from the DiagHam wiki)](../manuals/FQHECylinderRealSpacePartitionCoefficients.md)
+
 ```text
 FQHECylinderRealSpacePartitionCoefficients, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FQSHCheckerboardModelTwoBands`
 
+Manual: [FQSHCheckerboardModelTwoBands (from the DiagHam wiki)](../manuals/FQSHCheckerboardModelTwoBands.md)
+
 ```text
 FQHEQuantumSpinHallCheckerboardModelTwoBands, version 0.01
 

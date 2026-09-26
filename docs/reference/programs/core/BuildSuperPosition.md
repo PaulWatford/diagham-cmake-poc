@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/BuildSuperPosition`
 
+Manual: [BuildSuperPosition (from the DiagHam wiki)](../manuals/BuildSuperPosition.md)
+
 ```text
 BuildSuperPosition, version 0.01
 

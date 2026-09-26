@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereL2Diagonalize`
 
+Manual: [FQHESphereL2Diagonalize (from the DiagHam wiki)](../manuals/FQHESphereL2Diagonalize.md)
+
 ```text
 FQHESphereL2Diagonalize, version 0.01
 

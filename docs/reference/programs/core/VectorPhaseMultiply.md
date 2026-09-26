@@ -3,6 +3,8 @@
 
 Module: **core** · directory: `src/Programs` · binary: `src/Programs/VectorPhaseMultiply`
 
+Manual: [VectorPhaseMultiply (from the DiagHam wiki)](../manuals/VectorPhaseMultiply.md)
+
 ```text
 VectorPhaseMultiply, version 0.01
 

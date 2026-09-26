@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIProjectOntoBands`
 
+Manual: [FTIProjectOntoBands (from the DiagHam wiki)](../manuals/FTIProjectOntoBands.md)
+
 ```text
 FTIProjectOntoBands, version 0.01
 

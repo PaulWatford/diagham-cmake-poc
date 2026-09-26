@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereBosonsWithSU4Spin`
 
+Manual: [FQHESphereBosonsWithSU4Spin (from the DiagHam wiki)](../manuals/FQHESphereBosonsWithSU4Spin.md)
+
 ```text
 FQHESphereBosonsWithSU4Spin, version 0.01
 

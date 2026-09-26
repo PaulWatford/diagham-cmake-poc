@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity`
 
+Manual: [FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity (from the DiagHam wiki)](../manuals/FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity.md)
+
 ```text
 FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity, version 0.01
 

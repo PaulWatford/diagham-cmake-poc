@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/SpinChainMultipleComputeS2`
 
+Manual: [SpinChainMultipleComputeS2 (from the DiagHam wiki)](../manuals/SpinChainMultipleComputeS2.md)
+
 ```text
 SpinChainMultipleComputeS2, version 0.01
 

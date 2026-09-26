@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnTorus` · binary: `FQHE/src/Programs/FQHEOnTorus/FQHETorusBosonsWithTranslations`
 
+Manual: [FQHETorusBosonsWithTranslations (from the DiagHam wiki)](../manuals/FQHETorusBosonsWithTranslations.md)
+
 ```text
 FQHEBosonsTorusWithTranslation, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIGenerateMagnon`
 
+Manual: [FTIGenerateMagnon (from the DiagHam wiki)](../manuals/FTIGenerateMagnon.md)
+
 ```text
 FTIGenerateMagnon, version 0.01
 

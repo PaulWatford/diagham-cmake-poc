@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIConvertFromFixedSzParityBasis`
 
+Manual: [FTIConvertFromFixedSzParityBasis (from the DiagHam wiki)](../manuals/FTIConvertFromFixedSzParityBasis.md)
+
 ```text
 FTIConvertFromFixedSzParityBasis, version 0.01
 

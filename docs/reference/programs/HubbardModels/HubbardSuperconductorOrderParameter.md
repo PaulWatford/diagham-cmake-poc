@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/HubbardModels` · binary: `FTI/src/Programs/HubbardModels/HubbardSuperconductorOrderParameter`
 
+Manual: [HubbardSuperconductorOrderParameter (from the DiagHam wiki)](../manuals/HubbardSuperconductorOrderParameter.md)
+
 ```text
 HubbardSuperconductorOrderParameter, version 0.01
 

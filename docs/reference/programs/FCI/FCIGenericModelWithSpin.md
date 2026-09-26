@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FCI` · binary: `FTI/src/Programs/FCI/FCIGenericModelWithSpin`
 
+Manual: [FCIGenericModelWithSpin (from the DiagHam wiki)](../manuals/FCIGenericModelWithSpin.md)
+
 ```text
 FCIGenericModelWithSpin, version 0.01
 

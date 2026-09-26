@@ -1,0 +1,6 @@
+# FQHESphereFermionsWithSpinTimeReversalSymmetryAndPairing — manual
+
+Source: DiagHam wiki page `FQHESphereFermionsWithSpinTimeReversalSymmetryAndPairing`, as of 2026-09-24 (archived copy). Changed: wikitext converted to Markdown; options checked against the program's current `--help` (r4493, LAPACK build).
+
+Generated option reference: [FQHESphereFermionsWithSpinTimeReversalSymmetryAndPairing](../FQHEOnSphere/FQHESphereFermionsWithSpinTimeReversalSymmetryAndPairing.md)
+FQHESphereFermionsWithSpinTimeReversalSymmetryAndPairing deals with two copies of single Landau level with opposite chiralities and superconducting regions at the poles. Most of the options are similar to [FQHESphereFermionsWithSpin](FQHESphereFermionsWithSpin.md) up to a few details. Indeed, there is no option to fix the number of particles (for compatibility reasons, any output file still contains a _n_0_ string). The interaction file is similar to the one used in [FQHESphereFermionsWithSpin](FQHESphereFermionsWithSpin.md) expect that the number of entries for the interaction does not have to match the number of orbitals. Moreover, the interaction between the two copies should be set to zero or undefined (this type of interaction is not yet supported).

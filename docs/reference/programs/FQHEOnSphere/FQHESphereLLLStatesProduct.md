@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereLLLStatesProduct`
 
+Manual: [FQHESphereLLLStatesProduct (from the DiagHam wiki)](../manuals/FQHESphereLLLStatesProduct.md)
+
 ```text
 FQHESphereLLLStatesProduct, version 0.01
 

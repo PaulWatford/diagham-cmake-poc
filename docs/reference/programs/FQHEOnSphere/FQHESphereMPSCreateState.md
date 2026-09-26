@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereMPSCreateState`
 
+Manual: [FQHESphereMPSCreateState (from the DiagHam wiki)](../manuals/FQHESphereMPSCreateState.md)
+
 ```text
 FQHESphereMPSCreateState, version 0.01
 

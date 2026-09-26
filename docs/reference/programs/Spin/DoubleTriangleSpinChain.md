@@ -3,6 +3,8 @@
 
 Module: **Spin** · directory: `Spin/src/Programs` · binary: `Spin/src/Programs/DoubleTriangleSpinChain`
 
+Manual: [DoubleTriangleSpinChain (from the DiagHam wiki)](../manuals/DoubleTriangleSpinChain.md)
+
 ```text
 DoubleTriangleSpinChain, version 0.01
 

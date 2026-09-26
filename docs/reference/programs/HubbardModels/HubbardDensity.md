@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/HubbardModels` · binary: `FTI/src/Programs/HubbardModels/HubbardDensity`
 
+Manual: [HubbardDensity (from the DiagHam wiki)](../manuals/HubbardDensity.md)
+
 ```text
 HubbardDensity, version 0.01
 

@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIRealSpaceComputeS2`
 
+Manual: [FTIRealSpaceComputeS2 (from the DiagHam wiki)](../manuals/FTIRealSpaceComputeS2.md)
+
 ```text
 FTIRealSpaceComputeS2, version 0.01
 

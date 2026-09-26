@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereLLLProjectedLLLTimesLLL`
 
+Manual: [FQHESphereLLLProjectedLLLTimesLLL (from the DiagHam wiki)](../manuals/FQHESphereLLLProjectedLLLTimesLLL.md)
+
 ```text
 FQHESphereLLLProjectedLLLTimesLLL, version 0.01
 

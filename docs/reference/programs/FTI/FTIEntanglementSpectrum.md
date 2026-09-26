@@ -3,6 +3,8 @@
 
 Module: **FTI** · directory: `FTI/src/FTI` · binary: `FTI/src/Programs/FTI/FTIEntanglementSpectrum`
 
+Manual: [FTIEntanglementSpectrum (from the DiagHam wiki)](../manuals/FTIEntanglementSpectrum.md)
+
 ```text
 FQHETopInsulatorEntanglementSpectrum, version 0.01
 

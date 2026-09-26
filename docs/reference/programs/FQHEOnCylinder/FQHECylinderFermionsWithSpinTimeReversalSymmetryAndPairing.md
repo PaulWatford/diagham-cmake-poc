@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnCylinder` · binary: `FQHE/src/Programs/FQHEOnCylinder/FQHECylinderFermionsWithSpinTimeReversalSymmetryAndPairing`
 
+Manual: [FQHECylinderFermionsWithSpinTimeReversalSymmetryAndPairing (from the DiagHam wiki)](../manuals/FQHECylinderFermionsWithSpinTimeReversalSymmetryAndPairing.md)
+
 ```text
 FQHECylinderFermionsWithSpinTimeReversalSymmetryAndPairing, version 0.01
 

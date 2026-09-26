@@ -3,6 +3,8 @@
 
 Module: **FQHE** · directory: `FQHE/src/FQHEOnSphere` · binary: `FQHE/src/Programs/FQHEOnSphere/FQHESphereFermionsParticleHoleSymmetrize`
 
+Manual: [FQHESphereFermionsParticleHoleSymmetrize (from the DiagHam wiki)](../manuals/FQHESphereFermionsParticleHoleSymmetrize.md)
+
 ```text
 FQHESphereFermionsParticleHoleSymmetrize.cc, version 0.01
 

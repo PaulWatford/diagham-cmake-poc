@@ -1,4 +1,6 @@
-# Physics verification of the CMake build
+# Physics verification of the CMake build (log)
+
+Source: the proof-of-concept verification log (2026). Kept as the record of every check run; the walkthrough version for readers is `docs/tutorials/hubbard-walkthrough.md`. Corrected 2026-09-26: the LAPACK paragraph and the program count below (the LAPACK path builds and passes the same suite; 603 programs at r4493).
 
 This document records the numerical-correctness checks run against the
 CMake-built DiagHam after the patches were applied. **Compilation success
@@ -322,13 +324,13 @@ eigenvalue per (kx, ky, Sz) sector.
 
 **Does not establish:**
 
-- Correctness of every other one of the 471 buildable programs.
+- Correctness of every other one of the 603 buildable programs.
 - Correctness for larger lattices (>4x4 starts requiring Lanczos
   iteration, where convergence parameters matter).
-- Correctness when LAPACK is enabled (the `DIAGHAM_USE_LAPACK=ON` path
-  exposed 5000+ further compilation errors in HermitianMatrix.h
-  unrelated to the patches; that path is not currently buildable and
-  was not tested).
+- (Formerly listed here: "correctness when LAPACK is enabled" -- the
+  `lapack` preset now builds with no errors and passes the same goldens,
+  which also exercise the `LapackDiagonalize` paths; the earlier "5000+
+  errors" were the proof of concept's own macro bug, fixed.)
 - Correctness of FQHE programs (no FQHE benchmark has been run).
 
 A production rollout would extend this protocol to:

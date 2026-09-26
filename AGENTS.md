@@ -21,7 +21,7 @@ them:
   reports 79 passes in the default configuration (FQHE and FTI on) and is a
   separate, nightly check.
 - **The Hubbard ED demo matches the analytic ground state to machine
-  precision** (see `benchmarks/BENCHMARK.md` and `HUBBARD_BENCHMARK.md`).
+  precision** (see `docs/tutorials/hubbard-walkthrough.md` and the log `benchmarks/BENCHMARK.md`).
 
 If a change affects either number, that is Damage (see below) even if
 every check still reports green.

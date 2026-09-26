@@ -138,7 +138,7 @@ because upstream fixed it after 2020.
 
 ## Demonstration: Hubbard ED at machine precision
 
-`benchmarks/BENCHMARK.md` is the physics verification log: the 2x2 Hubbard
+`docs/tutorials/hubbard-walkthrough.md` walks through it; `benchmarks/BENCHMARK.md` is the verification log: the 2x2 Hubbard
 model at U=4 reproduces the analytic `-4√2` bit for bit; the 2x4 model
 (basis dimension 4,900) and the 3x3 model agree with a from-scratch
 100-line Python exact diagonalisation (`benchmarks/hubbard_ed.py`) on full

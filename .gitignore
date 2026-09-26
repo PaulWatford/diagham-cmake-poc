@@ -28,3 +28,6 @@ Thumbs.db
 
 # CI scratch (scripts_cmake/ci.sh)
 _ci/
+
+# build/test logs written next to the tree
+*.log

@@ -1,4 +1,6 @@
-# Upstream patches applied by this PoC
+# Upstream patches — audit trail
+
+> **Since 2026-09-25 the patches are ordinary commits on `main`** (one per fix, `Upstream-Patch:` trailer); nothing is applied at configure time and `cmake/ApplyUpstreamPatches.cmake` no longer exists. This file is kept as the audit trail of how each fix was found and verified; the current index with upstream status is `docs/explanation/upstream-fixes.md`. Text below is as written at the time.
 
 This directory contains patches applied to the upstream DiagHam source at
 configure time by `cmake/ApplyUpstreamPatches.cmake`. They surfaced during the

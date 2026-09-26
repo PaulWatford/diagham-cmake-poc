@@ -1,9 +1,11 @@
 # Bug report: spinful torus Coulomb ground state is wrong for N >= 3
 
+Source: `BUG_torus_su2_coulomb.md` (May 2026). Status 2026-09-26: **root-caused and fixed on `main`** (commit "Spinful torus Coulomb: generate the basis in the order FindStateIndex searches, and add the missing up-down interaction"), pending a DiagHam maintainer's review before it goes upstream. The localisation below was close but not exact: the operator's arithmetic is fine; the basis it searches was generated (recursion both→up→down→none, copied from the sphere class) in an order the ascending `FindStateIndex` cannot search, and `FindStateIndex` returns a valid index when it fails, so lookups landed on wrong states silently. A second, independent defect in `ParticleOnTorusCoulombWithSpinHamiltonian` reused the same-spin antisymmetrised combination for the up-down term and dropped every same-orbital term, so unpolarised results were wrong even for N = 2 (exactly twice the correct energy there). With the fix: polarised N = 3 agrees with the spinless program to 4e-14 over 84 states; Sz = 0, N = 4 agrees with the independent `FQHETorusFermionsWithSpinAndTranslations` to 2.4e-12 over 4,356 states; SU(2) multiplet nesting holds to 4e-14; fast multiplication on and off give identical spectra. Two ctest goldens (`physics.fqhe.torus.su2_coulomb.*`) guard it. Note for the "best copy" review: upstream has not touched these classes since 2020 and develops the `…AndMagneticTranslations` path instead. The original report follows unchanged.
+
 This is a physics correctness bug in current DiagHam, independent of the
 CMake migration. It was found while verifying that the canonical program
 `FQHETorusFermionsWithSpin` is a sound replacement for the broken,
-excluded `QHEFermionsTorusWithSpin` (see `DEFERRED.md`).
+excluded `QHEFermionsTorusWithSpin` (see `deferred-code.md`).
 
 ## Summary
 

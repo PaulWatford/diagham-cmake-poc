@@ -115,7 +115,7 @@ Not built, on purpose (the only sources in scope that are not):
 
 | Source | Why |
 |---|---|
-| `FQHE/src/Programs/FQHEOnTorus/QHEFermionsTorusWithSpin.cc` | dead duplicate of `FQHETorusFermionsWithSpin` that never compiled (`DEFERRED.md`); `DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS` |
+| `FQHE/src/Programs/FQHEOnTorus/QHEFermionsTorusWithSpin.cc` | dead duplicate of `FQHETorusFermionsWithSpin` that never compiled (`../explanation/deferred-code.md`); `DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS` |
 | `Spin/src/Programs/SUNSpinsOnLatticeCorrelations.cc` | not in upstream `bin_PROGRAMS`; includes a non-existent header |
 | `QuantumDots/src/Tools/Analysis/PeriodicOscillatorForce.cc`, `QuantumDots/src/Programs/ExplicitPeriodic3DQuantumDots.cc`, `…/VisualPeriodic2D.cc` | not in upstream `bin_PROGRAMS` |
 

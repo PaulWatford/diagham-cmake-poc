@@ -1,6 +1,8 @@
-# Deferred upstream files
+# Deferred and excluded upstream code
 
-Files excluded from the build by `cmake/ApplyUpstreamPatches.cmake` because
+Source: `DEFERRED.md` (2026-09-22). Changed 2026-09-26: the summary table's dates come from the full history (the original's "2020-10-23 (import sweep)" entries were a shallow-clone artefact, as its own correction note explains); the build-time exclusion list is now in `docs/reference/build-system.md`; the physics bug it references is fixed on `main`, see `torus-su2-coulomb-defect.md`.
+
+Files excluded from the build (`DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS` in `CMakeLists.txt`) because
 they cannot be patched without input that doesn't currently exist in the
 canonical DiagHam tree or in this snapshot's history.
 
@@ -136,7 +138,7 @@ in 2007, after the broken file's 2002 vintage.
 replacement that already exists. **Excluded permanently.** This file
 is effectively dead code.
 
-**Caveat discovered during verification (see `BUG_torus_su2_coulomb.md`):**
+**Caveat discovered during verification (see `torus-su2-coulomb-defect.md`):**
 the canonical replacement `FQHETorusFermionsWithSpin` compiles, runs, and
 produces the correct momentum structure, but its underlying spinful
 Coulomb path has a separate upstream physics bug: for N >= 3 the
@@ -236,9 +238,9 @@ enumeration. See `patches/PATCHES.md` (Class G) for the full audit trail.
 
 | File | Last touched (snapshot) | Author tags found | Status |
 |---|---|---|---|
-| QHEFermionsTorusWithSpin | 2020-10-23 (import sweep) | None | **Excluded.** Canonical replacement (`FQHETorusFermionsWithSpin`) exists. |
-| ~~FCIWannierConstruction~~ | 2020-10-23 (import sweep) | 2× FIXME | **RESOLVED in patch 10.** Builds and runs. |
-| ~~FCIDiceLatticeModel~~ | 2020-10-23 (import sweep) | 4× TODO + working notes | **RESOLVED in patch 11.** Builds, links, runs. |
+| QHEFermionsTorusWithSpin | 2009-11-27 (moller) | None | **Excluded.** Canonical replacement (`FQHETorusFermionsWithSpin`) exists. |
+| ~~FCIWannierConstruction~~ | 2012-09-22 (regnault) | 2× FIXME | **RESOLVED in patch 10.** Builds and runs. |
+| ~~FCIDiceLatticeModel~~ | 2019-06-25 (moller) | 4× TODO + working notes | **RESOLVED in patch 11.** Builds, links, runs. |
 
 ## Recommended next steps
 
@@ -260,7 +262,7 @@ enumeration. See `patches/PATCHES.md` (Class G) for the full audit trail.
    result and does not). The fault is in the shared core operator
    `FermionOnTorusWithSpinNew::AduAduAuAu`. A standalone reproducer,
    the ruled-out non-causes, and the localisation are in
-   `BUG_torus_su2_coulomb.md`. This is independent of the migration but
+   `torus-su2-coulomb-defect.md`. This is independent of the migration but
    was surfaced by it.
 4. **For users:** `FQHETopInsulatorWannierConstruction` is now
    available out of the box (patch 10). Its inline `// FIXME` markers

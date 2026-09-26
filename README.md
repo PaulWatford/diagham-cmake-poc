@@ -44,7 +44,7 @@ Two branches matter:
 |---- benchmarks/                 Hubbard verification log + independent Python exact diagonalisation
 |---- Base/ src/ FQHE/ FTI/ Spin/ QuantumDots/   DiagHam itself, as in upstream, with generated CMakeLists.txt in each directory
 |---- docs/                     knowledge base: how-to, reference, explanation, tutorials, history (docs/README.md)
-+---- TESTING.md, DEFERRED.md, MIGRATION_ROADMAP.md, AGENTS.md, CONTRIBUTING.md
++---- TESTING.md, AGENTS.md, CONTRIBUTING.md
 ```
 
 The per-directory `CMakeLists.txt` files are generated from upstream's own
@@ -66,7 +66,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
 - **61 of 61 static libraries** build (Base/src, src, FQHE, FTI, Spin, QuantumDots).
 - **603 of 603 programs** build (including the 19 QuantumDots analysis
   tools). Five sources are deliberately not built: one
-  legacy duplicate (`QHEFermionsTorusWithSpin`, see `DEFERRED.md`) and four
+  legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
 - **613 of 613 ctest tests pass**: 13 physics tests with analytic,
   independently computed or cross-implementation answers (Hubbard, Laughlin
@@ -116,9 +116,9 @@ and physics (the ctest goldens and the independent Python diagonaliser).
 
 Moving to a stricter build surfaced a number of long-standing issues in the
 upstream code base. Each fix is an ordinary commit on `main` with an
-`Upstream-Patch:` trailer; `patches/PATCHES.md` is the audit trail (root
-cause, what was compared, how it was verified) and `DEFERRED.md` records the
-one file excluded instead of fixed.
+`Upstream-Patch:` trailer; `docs/explanation/upstream-fixes.md` is the index, `patches/PATCHES.md`
+the audit trail (root cause, what was compared, how it was verified) and
+`docs/explanation/deferred-code.md` records the one file excluded instead of fixed.
 
 | Class | Count | Issue | Status |
 |---|---:|---|---|
@@ -153,7 +153,7 @@ and mechanism of the build; `docs/reference/configure-flag-map.md` maps every
 configure flag; `docs/how-to/build/` has the per-platform build guides and
 the cluster recipe; `TESTING.md` explains the test suite. The DiagHam user manual —
 program-by-program pages — is on the upstream wiki at nick-ux.org and is
-being brought into `docs/` (see `MIGRATION_ROADMAP.md`).
+being brought into `docs/`.
 
 ## AI-assisted contribution rules
 
@@ -167,7 +167,7 @@ changes; every proposed change is held for a named human maintainer.
 
 ## Production migration context
 
-The agreed plan (see `MIGRATION_ROADMAP.md`): Git first, then CMake on top;
+The agreed plan (see `docs/explanation/migration-history.md`): Git first, then CMake on top;
 a single repository; the full SVN history preserved (done — the `upstream`
 branch); static linking retained; the production home to be the University
 of Kent's GitLab, with this GitHub repository as the development home in the
@@ -181,7 +181,7 @@ remains the Subversion repository at nick-ux.org and `upstream` mirrors it.
   site paths are not yet known) and a tested Intel MKL configuration.
 - Broader goldens: overlaps, entanglement spectra, FCI spectra; an `mpirun` test.
 - The "best copy of each" review of duplicated and orphaned upstream classes
-  (`DEFERRED.md` lists the candidates).
+  (`docs/explanation/deferred-code.md` lists the candidates).
 - Spack/EasyBuild packaging; a curated library API.
 
 ## Build dependencies

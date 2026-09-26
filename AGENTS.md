@@ -15,14 +15,19 @@ These are the two claims this repository stands on. **No agent may
 weaken either of them**, in code, in tests, or in what it reports about
 them:
 
-- **79/79 verification checks pass** (`build/cmake/verify_build.sh`,
-  core-only scope: `DIAGHAM_BUILD_FQHE=OFF`, `DIAGHAM_BUILD_FTI=OFF`).
+- **The ctest suite passes in full** (`ctest --preset default`: 613 tests at
+  DiagHam r4493, 13 of them physics goldens; the list of test names is the
+  locked manifest). `cmake/verify_build.sh`, the autotools-parity script,
+  reports 79 passes in the default configuration (FQHE and FTI on) and is a
+  separate, nightly check.
 - **The Hubbard ED demo matches the analytic ground state to machine
   precision** (see `benchmarks/BENCHMARK.md` and `HUBBARD_BENCHMARK.md`).
 
 If a change affects either number, that is Damage (see below) even if
 every check still reports green.
 
+> **Resolved 2026-09-26:** the notes below described the proof-of-concept state; a ctest suite now exists (`TESTING.md`) and the 79 figure was reproduced against a real autotools build — in the default configuration, not core-only. Kept for the record.
+>
 > **Flagged, not corrected, 22/09 (audited by a second Claude session):**
 > two things about the "79/79" fact above do not currently hold and
 > should be re-verified by whoever next has a real autotools toolchain
@@ -92,10 +97,10 @@ until a named maintainer replies.
    - `cmake --build build`
    - `ctest --test-dir build --output-on-failure`
    - Hubbard ED demo vs. the locked analytic golden, machine precision
-   - Manifest check: the set of 79 test names must match the locked
+   - Manifest check: the set of test names must match the locked
      list exactly, even if ctest still reports green
 3. **Damage scan (blocking for the mail class, never an auto-fix).**
-   Flag even when ctest is still 79/79:
+   Flag even when ctest is still green:
    - `add_test` / `enable_testing` lines removed
    - a test name disappears from the suite
    - the demo target is no longer registered with CTest
@@ -117,8 +122,8 @@ until a named maintainer replies.
 
 - Auto-merge anything because a description sounded positive.
 - Rewrite a golden file to make ctest green.
-- Count the suite as 79/79 if names were dropped and new names filled
-  the count back up to 79.
+- Count the suite as passing if test names were dropped and new names
+  filled the count back up.
 - Run DiagHam itself as a replacement for ctest.
 - Upload large object files or unpublished notes.
 - Treat silence as approval.
@@ -138,7 +143,7 @@ fixed fields:
 
 | Field | Content |
 |---|---|
-| Break | `PASS 79/79` / `FAIL <first test>` / `BUILD BROKEN` |
+| Break | `PASS n/n` / `FAIL <first test>` / `BUILD BROKEN` |
 | Damage | none / tests removed / checks skipped / golden edited / option default flipped |
 | Demo | Hubbard ED vs golden OK / DRIFT / NOT RUN |
 | Change description | What the upload will cause if merged, written from the diff. No physics claims. |
@@ -146,7 +151,7 @@ fixed fields:
 | Hold | `HELD_FOR_APPROVAL` until named maintainer replies `approve` \| `reject` \| `restore-tests` |
 | Attachments | `LastTest.log` tail, `CMakeError.log` if configure died, test-name add/remove list, short diffstat |
 
-Subject line format: `[diagham-cmake-poc] HOLD | <short title> | PASS 79/79 or FAIL n/79 or BUILD BROKEN or TESTS DROPPED`
+Subject line format: `[diagham-cmake-poc] HOLD | <short title> | PASS n/n or FAIL k/n or BUILD BROKEN or TESTS DROPPED`
 
 ## System prompt for the reviewing model (use as written, once wired up)
 
@@ -164,14 +169,14 @@ non-public) maintainer list replies with one of:
 
 - `approve` — merge allowed; quarantine discarded after merge
 - `reject` — close; worktree deleted
-- `restore-tests` — author must put the 79 names and golden back; the
+- `restore-tests` — author must put the test names and golden back; the
   Guard re-runs
 
 No AI agent is on that list, now or ever.
 
 ## Locked artefacts
 
-- Manifest of exactly 79 test names (hashed).
+- The manifest of test names (`ctest -N`, committed as `tests/manifest.txt`).
 - Hubbard ED demo golden (analytic ground state, machine-precision
   tolerance).
 - Default CMake options that decide which DiagHam trees are built.
@@ -187,7 +192,7 @@ automated mailer/hold pipeline (steps 2-5) is not yet implemented; this
 file is the specification an implementation must follow when it is
 built.
 
-1. Worktree + `cmake` + `ctest` + 79-name manifest on a self-hosted
+1. Worktree + `cmake` + `ctest` + test-name manifest on a self-hosted
    runner. *(exists — this is what `verify_build.sh` already checks
    locally; running it on a self-hosted runner with an isolated
    worktree is the remaining piece.)*
@@ -205,3 +210,6 @@ A PR that breaks one of the 79, drifts the Hubbard demo, or deletes a
 test name is held, and the maintainers get one message that states the
 break, the damage, a plain description of the code change, and a
 usefulness line that never pretends to be a merge decision.
+
+
+The design rationale and implementation status of this pipeline: `docs/explanation/guard-design.md`.

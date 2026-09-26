@@ -1,7 +1,7 @@
 # Build outputs
-build/
-cmake_build/
-autotools_build/
+/build/
+/cmake_build/
+/autotools_build/
 
 # Compiled objects and libraries
 *.o

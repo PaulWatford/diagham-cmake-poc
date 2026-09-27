@@ -287,6 +287,7 @@ endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/dimensions.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/fqhe_sphere.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/fqhe_geometries.cmake)
 
 # ----------------------------------------------------------------------------
 # Smoke: every program answers --help

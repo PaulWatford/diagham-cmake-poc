@@ -15,6 +15,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- 22 torus / cylinder / disk goldens (`physics.fqhe.{torus,cylinder,disk}.*`):
+  Laughlin and Moore–Read topological degeneracies and quasihole counts on
+  the torus, cylinder zero modes, disk edge-mode counting p(ΔL) — answers
+  from `tests/oracles/fqhe_geometries.py`, re-derived by
+  `selftest.fqhe_geometries_oracle`.
 - 20 FQHE-sphere goldens (`physics.fqhe.sphere.*`): zero-mode counts of
   the Laughlin, Moore–Read and Read–Rezayi states from (k,r)-admissible
   counting, Coulomb pseudopotentials against the Wigner-3j/6j closed form,
@@ -31,6 +36,9 @@ all present on the `upstream` branch: `git log upstream`).
   expected files.
 
 ### Fixed
+- `ParticleOnCylinderPseudopotentialHamiltonian` without GSL: undefined
+  behaviour (every `FQHECylinderFermionsTwoBodyGeneric` run crashed with
+  "stack smashing detected") replaced by a clear message and exit 1 (U28).
 - **CI built the wrong thing.** `scripts_cmake/ci.sh` still fetched the
   guysoft mirror (r4114) and overlaid the CMake files on it — the
   proof-of-concept flow — so both CI runs after the r4493 push failed. It

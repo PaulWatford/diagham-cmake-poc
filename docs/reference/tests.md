@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **23 of 603 programs with a physics or cross-check test** (20 of them against an independently known answer).
+headline today is **29 of 603 programs with a physics or cross-check test** (26 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -98,6 +98,34 @@ registered with option code `'\0'`, which the option manager treats as
 `program --ground-file state.vec`. The help text is misleading; the
 manuals adapted from the wiki show the positional form.
 
+### Torus, cylinder and disk goldens (`-L torus`, `-L cylinder`, `-L disk`)
+
+22 tests, answers from `tests/oracles/fqhe_geometries.py` (re-derived by
+`selftest.fqhe_geometries_oracle`): the same (k,r)-admissible counting as
+on the sphere, with the geometry changing which configurations exist —
+periodic windows on the torus (total over every momentum sector), a line
+of Nφ+1 orbitals on the cylinder (sectors 2Ky ≥ 0), orbitals m ≥ 0 at
+fixed total Lz on the disk.
+
+- **Torus** (8): bosonic Laughlin ν=½ two-fold degeneracy (N=4, 5) and one
+  quasihole; fermionic Laughlin ⅓ with one and two quasiholes (13 and 35
+  zero modes: (Nφ/(N+n))·C(N+n,N)); bosonic Moore–Read three-fold (N=4, 6)
+  and fermionic Moore–Read six-fold degeneracy with the three-body
+  hard-core / hollow-core programs (`--all-points`: by default they compute
+  only a reduced set of momentum sectors).
+- **Cylinder** (7): `FQHECylinderBosonsDeltaInteraction` and
+  `…ThreeBodyDeltaInteraction`: Laughlin and Moore–Read zero modes,
+  quasiholes.
+- **Disk** (7): `FQHEDiskBosonsTwoBodyGeneric` with V₀: the Laughlin state
+  at Lz₀ = N(N−1) and its edge excitations at Lz₀+ΔL, p(ΔL) = 1, 1, 2, 3, 5
+  of them for ΔL = 0…4 (N=4) and N=5.
+
+Two defects met on the way, both in the register: `FQHECylinderFermionsTwoBodyGeneric`
+crashed with "stack smashing detected" in every run of a build without
+GSL (U28, fixed — it now says it needs GSL); `FQHEDiskFermionsTwoBodyGeneric`
+hangs after printing `start` for every case tried, so there is no fermionic
+disk golden yet (U29, open, reproducer in the register).
+
 ### Physics goldens and cross-checks
 
 | Test | Program | Check | Why the answer is known |
@@ -141,4 +169,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 663 tests at r4493.
+on); with the default preset the ctest suite has 686 tests at r4493.

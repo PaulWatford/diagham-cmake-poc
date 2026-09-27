@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **29 of 603 programs with a physics or cross-check test** (26 of them against an independently known answer).
+headline today is **33 of 603 programs with a physics or cross-check test** (30 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **29 of 603 programs with a physics or cross-check test** (26 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | reproducers for documented upstream defects | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state` (U30) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -126,6 +126,43 @@ GSL (U28, fixed — it now says it needs GSL); `FQHEDiskFermionsTwoBodyGeneric`
 hangs after printing `start` for every case tried, so there is no fermionic
 disk golden yet (U29, open, reproducer in the register).
 
+### Spin chains and Hubbard goldens (`-L spin`, `-L hubbard`)
+
+15 physics tests (plus one known-bug test), values and tolerances from `tests/oracles/spin_hubbard.py`
+(`tests/data/spin_hubbard/values.txt`, re-derived by
+`selftest.spin_hubbard_oracle`, which needs numpy):
+
+- **Closed forms**: XX rings L = 6, 8, 10 (free fermions, −Σ of the lowest
+  cos k with the right periodic/antiperiodic momenta); AKLT rings L = 6, 8
+  (E₀ = −2L/3 exactly); Haldane–Shastry rings L = 6, 8, 10
+  (E₀ = −(π²/24)(L + 5/L)); the open AKLT chain as a sum of projectors has
+  exactly four zero-energy edge states (three listed, the 2Sz ≥ 0 sectors);
+  Hubbard at U = 0 on 2×4, 4×2 and 3×2 by full diagonalisation equals the
+  tight-binding sum (−16, −16, −12).
+- **Independent dense diagonalisation in numpy** (no symmetry, nothing
+  shared with DiagHam): spin-½ Heisenberg ring L = 8, spin-1 Heisenberg
+  ring L = 6, transverse-field Ising ring L = 8 (`SpinChainXYZ`, whose
+  convention — Pauli matrices for the couplings, S = σ/2 for the field —
+  was established by matching and is stated in the oracle).
+
+Programs: `GenericPeriodicSpinChain`, `PeriodicSpinChainAKLT`,
+`SpinChainAKLT`, `HaldaneShastrySpinChain`, `SpinChainXYZ`,
+`HubbardSquareLatticeModel`.
+
+A defect found on the way (**U30**): plain Lanczos (`-n 1`, no
+reorthogonalisation) on the U = 0 2×4 Hubbard case returns −18.41 and
+−17.87 in two momentum sectors, *below* the exact ground energy −16 — a
+Krylov breakdown on a degenerate spectrum that the algorithm does not
+detect (`--force-reorthogonalize` or `-n 4` give −16). Registered as the
+first `known-bug` test, `knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state`
+(`WILL_FAIL`): it passes while the defect is present and turns red when
+Lanczos is fixed. Users of `-n 1` on degenerate problems should read this.
+
+**QuantumDots** has no golden yet: its programs are continuum
+finite-difference solvers parameterised in Ångström and effective masses,
+with no exactly solvable case exposed at the command line; they get
+`regression` tests (prompt 7) and the coverage page says so.
+
 ### Physics goldens and cross-checks
 
 | Test | Program | Check | Why the answer is known |
@@ -150,10 +187,8 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-There are no `known-bug` tests at the moment: the one defect that was
-going to need one (the spinful torus Coulomb bug) is fixed by patch 14 and
-covered by ordinary physics tests. The mechanism stays for the next one.
-A `known-bug` test reproduces a defect documented in this repository and is
+One `known-bug` test exists (U30, plain Lanczos below the ground state on
+a degenerate spectrum; see above). A `known-bug` test reproduces a defect documented in this repository and is
 registered with `WILL_FAIL`: it passes while the defect is present, and the
 day someone fixes the defect it fails, so it can't be forgotten -- turn it
 into a `physics` test (drop `WILL_FAIL`) in the same change as the fix.
@@ -169,4 +204,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 686 tests at r4493.
+on); with the default preset the ctest suite has 703 tests at r4493.

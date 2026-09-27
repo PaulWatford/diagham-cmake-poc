@@ -15,6 +15,13 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- 15 spin-chain and Hubbard goldens (`physics.spin.*`, `physics.hubbard.*.U0.*`):
+  XX, AKLT and Haldane–Shastry rings against closed forms, an open AKLT
+  chain's four edge states, Hubbard at U = 0 against the tight-binding sum,
+  Heisenberg (spin ½ and 1) and transverse-field Ising rings against an
+  independent numpy diagonalisation (`tests/oracles/spin_hubbard.py`).
+- First `known-bug` test: plain Lanczos below the ground state on a
+  degenerate spectrum (U30).
 - 22 torus / cylinder / disk goldens (`physics.fqhe.{torus,cylinder,disk}.*`):
   Laughlin and Moore–Read topological degeneracies and quasihole counts on
   the torus, cylinder zero modes, disk edge-mode counting p(ΔL) — answers

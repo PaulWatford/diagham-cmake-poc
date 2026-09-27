@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **15 of 603 programs with a physics or cross-check test** (12 of them against an independently known answer).
+headline today is **23 of 603 programs with a physics or cross-check test** (20 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -56,6 +56,47 @@ Two things learnt writing them: `FTIGetDimension` assumes inversion
 symmetry by default and prints only the kx ≤ Nx/2 sectors (`--no-inversion`
 prints all); `FQHETorusShowBasis` always uses magnetic translations, so
 `-x`/`-y` select one (k_x, k_y) sector, not a plain Ky sector.
+
+### FQHE sphere goldens (`-L sphere`)
+
+20 tests, `physics.fqhe.sphere.*`, answers from `tests/oracles/fqhe_sphere.py`
+(pure Python; `selftest.fqhe_sphere_oracle` re-derives the committed files in
+`tests/data/fqhe_sphere/`):
+
+- **Zero-mode counts** (11): the zero-energy states of the (k+1)-body
+  hard-core interaction are counted by (k,r)-admissible configurations
+  (Read–Rezayi; Bernevig–Haldane): bosonic Laughlin ν=1/2 (V₀), bosonic
+  and fermionic Moore–Read (three-body), bosonic Read–Rezayi k=3
+  (four-body), fermionic Laughlin with three quasiholes — ground states,
+  quasihole multiplets, a half-integer-Lz sector, N up to 9. Programs:
+  `FQHESphereBosonsTwoBodyGeneric`, `FQHESphereBosonsNBodyHardCore`,
+  `QHEFermionsNBodyHardCore`, `FQHESphereFermionsTwoBodyGeneric`.
+- **Coulomb pseudopotentials** (3): `CoulombPseudopotentials` at 2S = 6,
+  10, 15 against the closed form from Wigner 3j/6j algebra (Fano, Ortolani
+  & Colombo 1986), every V_m to 1e-13 (the oracle agrees with the program
+  to 8e-16).
+- **Jack polynomial = exact diagonalisation** (3): `FQHESphereJackGenerator`
+  (α = −2 Laughlin fermions and bosons, α = −3 bosonic Moore–Read) →
+  `FQHESphereConvertHaldaneBasis` → `GenericOverlap` against the ED zero
+  mode: squared overlap 1 within 1e-12. Two independent constructions of
+  the same state.
+- **Particle entanglement spectrum** (3):
+  `FQHESphereFermionEntanglementEntropyParticlePartition` on the N=6,
+  2S=15 Laughlin state: the number of non-zero levels for N_A = 2 (91),
+  N_A = 3 (220) and in the (N_A = 3, 2Lz_A = −1) sector (15) equals the
+  quasihole counting of N_A particles (Sterdyniak, Regnault & Bernevig
+  2011).
+
+Chains (eigenstate → Jack → overlap; eigenstate → PES) use the `PRE_STEPS`
+option of `diagham_physics_test`; the checker gained the modes `line`
+(pseudopotential lines) and `nonzero` (level counts per sector).
+
+A convention worth knowing: options that `--help` lists with no short
+letter and that name an input file (`--ground-file`, `--input-file`) are
+registered with option code `'\0'`, which the option manager treats as
+*the first positional argument* — `program state.vec …`, not
+`program --ground-file state.vec`. The help text is misleading; the
+manuals adapted from the wiki show the positional form.
 
 ### Physics goldens and cross-checks
 
@@ -100,4 +141,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 642 tests at r4493.
+on); with the default preset the ctest suite has 663 tests at r4493.

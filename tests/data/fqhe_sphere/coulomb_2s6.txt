@@ -1,0 +1,3 @@
+# lowest-Landau-level Coulomb pseudopotentials on the sphere, 2S=6, units e^2/(eps l_B), R=sqrt(S)
+# from Wigner 3j/6j algebra (tests/oracles/fqhe_sphere.py); do not edit
+Pseudopotentials = 1.01960792869076 0.530196122919194 0.41493609619763 0.362245798267772 0.333647445772948 0.31794638950128 0.310880914179029

@@ -33,7 +33,7 @@ def programs_of(test, build_dir, helpers):
     """Executables under the build tree that a test runs (main and reference programs)."""
     progs = set()
     for arg in test.get("command", []):
-        for m in re.finditer(r"(?:^|=)(/[^\s|;]+)", arg):
+        for m in re.finditer(r"(?:^|=|\^\^)(/[^\s|;^]+)", arg):
             p = m.group(1)
             if os.path.isfile(p) and os.access(p, os.X_OK) and os.path.abspath(p).startswith(build_dir) \
                     and os.path.basename(p) not in helpers:

@@ -24,6 +24,16 @@
 //       exactly N values in COLUMN lie within |TOL| of VALUE (degeneracy
 //       checks, e.g. the torus Laughlin ground-state multiplet)
 //
+//   check_spectrum line     FILE KEY REFERENCE TOL
+//       the numbers following "KEY =" on the first line of FILE that
+//       starts with KEY match those on the same line of REFERENCE, one by
+//       one, to within |TOL| (pseudopotential files)
+//
+//   check_spectrum nonzero  FILE COLUMN THRESHOLD N [FILTER_COLUMN FILTER_VALUE]...
+//       exactly N rows have COLUMN > THRESHOLD, among the rows whose
+//       FILTER_COLUMNs equal the FILTER_VALUEs (entanglement-spectrum
+//       level counts per sector)
+//
 // Exit status: 0 on pass, 1 on a failed check, 2 on bad usage or input.
 
 #include <algorithm>
@@ -118,8 +128,64 @@ int Usage()
   std::cerr << "usage: check_spectrum min      FILE COLUMN EXPECTED MAX_ULP\n"
                "       check_spectrum min-abs  FILE COLUMN EXPECTED TOL\n"
                "       check_spectrum spectrum FILE COLUMN REFERENCE REF_COLUMN TOL\n"
-               "       check_spectrum count    FILE COLUMN VALUE TOL N\n";
+               "       check_spectrum count    FILE COLUMN VALUE TOL N\n"
+               "       check_spectrum line     FILE KEY REFERENCE TOL\n"
+               "       check_spectrum nonzero  FILE COLUMN THRESHOLD N [FILTER_COLUMN FILTER_VALUE]...\n";
   return 2;
+}
+
+// numbers after "KEY =" on the first line starting with KEY
+bool ReadKeyedLine(const char* path, const std::string& key, std::vector<double>& values)
+{
+  std::ifstream in(path);
+  if (!in)
+    {
+      std::cerr << "check_spectrum: cannot open " << path << std::endl;
+      return false;
+    }
+  std::string line;
+  while (std::getline(in, line))
+    {
+      std::string::size_type first = line.find_first_not_of(" \t\r");
+      if (first == std::string::npos || line.compare(first, key.size(), key) != 0)
+        continue;
+      std::string::size_type eq = line.find('=', first + key.size());
+      if (eq == std::string::npos)
+        continue;
+      std::istringstream fields(line.substr(eq + 1));
+      double x;
+      while (fields >> x)
+        values.push_back(x);
+      return true;
+    }
+  std::cerr << "check_spectrum: no line starting with '" << key << " =' in " << path << std::endl;
+  return false;
+}
+
+// all rows of a whitespace table as doubles ('#' lines skipped)
+bool ReadRows(const char* path, std::vector<std::vector<double> >& rows)
+{
+  std::ifstream in(path);
+  if (!in)
+    {
+      std::cerr << "check_spectrum: cannot open " << path << std::endl;
+      return false;
+    }
+  std::string line;
+  while (std::getline(in, line))
+    {
+      std::string::size_type first = line.find_first_not_of(" \t\r");
+      if (first == std::string::npos || line[first] == '#')
+        continue;
+      std::istringstream fields(line);
+      std::vector<double> row;
+      double x;
+      while (fields >> x)
+        row.push_back(x);
+      if (!row.empty())
+        rows.push_back(row);
+    }
+  return true;
 }
 
 }  // namespace
@@ -200,6 +266,72 @@ int main(int argc, char** argv)
           ++count;
       std::cout << count << " of " << values.size() << " values within " << tolerance
                 << " of " << target << ", expected " << expectedCount << std::endl;
+      bool pass = count == expectedCount;
+      std::cout << (pass ? "PASS" : "FAIL") << std::endl;
+      return pass ? 0 : 1;
+    }
+
+  if (mode == "line" && argc == 6)
+    {
+      std::vector<double> reference;
+      if (!ReadKeyedLine(file, argv[3], values) || !ReadKeyedLine(argv[4], argv[3], reference))
+        return 2;
+      double tolerance = std::fabs(ParseDouble(argv[5], "TOL"));
+      if (values.size() != reference.size())
+        {
+          std::cout << "FAIL: " << values.size() << " numbers after '" << argv[3] << " =', reference has "
+                    << reference.size() << std::endl;
+          return 1;
+        }
+      double worst = 0.0;
+      size_t worstIndex = 0;
+      for (size_t i = 0; i < values.size(); ++i)
+        {
+          double diff = std::fabs(values[i] - reference[i]);
+          if (diff > worst)
+            {
+              worst = diff;
+              worstIndex = i;
+            }
+        }
+      std::cout << values.size() << " numbers, max |diff| = " << worst << " at index " << worstIndex
+                << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance "
+                << tolerance << std::endl;
+      bool pass = worst <= tolerance;
+      std::cout << (pass ? "PASS" : "FAIL") << std::endl;
+      return pass ? 0 : 1;
+    }
+
+  if (mode == "nonzero" && argc >= 6 && (argc - 6) % 2 == 0)
+    {
+      std::vector<std::vector<double> > rows;
+      if (!ReadRows(file, rows))
+        return 2;
+      double threshold = ParseDouble(argv[4], "THRESHOLD");
+      long expectedCount = std::atol(argv[5]);
+      long count = 0, considered = 0;
+      for (size_t r = 0; r < rows.size(); ++r)
+        {
+          const std::vector<double>& row = rows[r];
+          bool selected = true;
+          for (int a = 6; a + 1 < argc; a += 2)
+            {
+              int fc = std::atoi(argv[a]);
+              int fi = fc < 0 ? (int) row.size() + fc : fc;
+              if (fi < 0 || fi >= (int) row.size() || row[fi] != ParseDouble(argv[a + 1], "FILTER_VALUE"))
+                selected = false;
+            }
+          if (!selected)
+            continue;
+          int index = column < 0 ? (int) row.size() + column : column;
+          if (index < 0 || index >= (int) row.size())
+            continue;
+          ++considered;
+          if (row[index] > threshold)
+            ++count;
+        }
+      std::cout << count << " of " << considered << " selected rows have column " << column << " > "
+                << threshold << ", expected " << expectedCount << std::endl;
       bool pass = count == expectedCount;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;

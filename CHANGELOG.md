@@ -15,11 +15,20 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- 20 FQHE-sphere goldens (`physics.fqhe.sphere.*`): zero-mode counts of
+  the Laughlin, Moore–Read and Read–Rezayi states from (k,r)-admissible
+  counting, Coulomb pseudopotentials against the Wigner-3j/6j closed form,
+  Jack polynomials against exact diagonalisation (overlap 1), and the
+  particle entanglement spectrum of the Laughlin state against quasihole
+  counting — all answers from `tests/oracles/fqhe_sphere.py`, re-derived
+  by `selftest.fqhe_sphere_oracle`. `check_spectrum` gained `line` and
+  `nonzero`; `diagham_physics_test` gained `PRE_STEPS` for chains.
+  23 of 603 programs now have a physics or cross-check test.
 - 27 Hilbert-space dimension goldens (`physics.dimension.*`) across sphere,
   torus (magnetic-translation sectors), disk, single-band lattice, Hubbard
   and spin chains, checked against exact counting in
   `tests/oracles/dimensions.py`; `selftest.dimension_oracle` re-derives the
-  expected files. 15 of 603 programs now have a physics or cross-check test.
+  expected files.
 
 ### Fixed
 - **CI built the wrong thing.** `scripts_cmake/ci.sh` still fetched the

@@ -43,10 +43,28 @@ set(DIAGHAM_TEST_WORK ${CMAKE_CURRENT_BINARY_DIR}/work)
 #     [REF_PROGRAM <target> REF_ARGS <args...> REF_OUTPUT <glob>]
 #         a second program whose output replaces @REFERENCE@ in CHECK, for
 #         checking two independent implementations against each other
+#     [PRE_STEPS <step>...]   programs run first in the work directory, each
+#         step "target|arg|arg..." (the target name is replaced by its file)
 #     [LABELS <extra labels...>] [TIMEOUT <seconds>] [WILL_FAIL])
 function(diagham_physics_test name)
     cmake_parse_arguments(ARG "WILL_FAIL" "PROGRAM;OUTPUT;TIMEOUT;REF_PROGRAM;REF_OUTPUT"
-        "ARGS;CHECK;LABELS;REF_ARGS" ${ARGN})
+        "ARGS;CHECK;LABELS;REF_ARGS;PRE_STEPS" ${ARGN})
+    set(pre_defs "")
+    if(ARG_PRE_STEPS)
+        set(steps "")
+        foreach(step ${ARG_PRE_STEPS})
+            string(REPLACE "|" ";" parts "${step}")
+            list(GET parts 0 target)
+            if(NOT TARGET ${target})
+                return()
+            endif()
+            list(REMOVE_AT parts 0)
+            string(REPLACE ";" "|" rest "${parts}")
+            list(APPEND steps "$<TARGET_FILE:${target}>|${rest}")
+        endforeach()
+        string(REPLACE ";" "^^" steps "${steps}")
+        set(pre_defs -DPRE_STEPS=${steps})
+    endif()
     if(NOT TARGET ${ARG_PROGRAM})
         return()
     endif()
@@ -76,6 +94,7 @@ function(diagham_physics_test name)
             -DCHECKER=$<TARGET_FILE:check_spectrum>
             -DCHECK_ARGS=${check_args}
             ${reference_defs}
+            ${pre_defs}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/RunAndCheck.cmake
     )
     set(labels physics ${ARG_LABELS})
@@ -267,6 +286,7 @@ if(Python3_Interpreter_FOUND AND TARGET ${hubbard})
 endif()
 
 include(${CMAKE_CURRENT_SOURCE_DIR}/dimensions.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/fqhe_sphere.cmake)
 
 # ----------------------------------------------------------------------------
 # Smoke: every program answers --help

@@ -17,6 +17,11 @@
 #   REF_PROGRAM, REF_PROGRAM_ARGS, REF_OUTPUT_GLOB
 #                 a second program, run in WORK_DIR/reference; the token
 #                 @REFERENCE@ in CHECK_ARGS is replaced by its output file
+#
+# Optional, for chains (eigenstate -> Jack polynomial -> overlap):
+#   PRE_STEPS     programs run in WORK_DIR before PROGRAM, in order, each
+#                 as "executable|arg|arg", steps separated by "^^"; every
+#                 step must exit 0. Their stdout goes to WORK_DIR/step<i>.log.
 
 foreach(var PROGRAM WORK_DIR OUTPUT_GLOB CHECKER CHECK_ARGS)
     if(NOT DEFINED ${var})
@@ -40,6 +45,7 @@ function(run_program program args_string dir glob out_var)
         OUTPUT_FILE "${dir}/program.log"
         ERROR_FILE "${dir}/program.err"
     )
+    # OUTPUT_GLOB may name program.log itself: programs that print their result
     if(NOT run_result EQUAL 0)
         file(READ "${dir}/program.err" err)
         message(FATAL_ERROR "${program} exited with ${run_result}\n${err}\n(full log: ${dir}/program.log)")
@@ -53,6 +59,25 @@ function(run_program program args_string dir glob out_var)
     endif()
     set(${out_var} "${outputs}" PARENT_SCOPE)
 endfunction()
+
+if(DEFINED PRE_STEPS)
+    string(REPLACE "^^" ";" steps "${PRE_STEPS}")
+    set(i 0)
+    foreach(step ${steps})
+        math(EXPR i "${i} + 1")
+        string(REPLACE "|" ";" step_cmd "${step}")
+        execute_process(
+            COMMAND ${step_cmd}
+            WORKING_DIRECTORY "${WORK_DIR}"
+            RESULT_VARIABLE step_result
+            OUTPUT_FILE "${WORK_DIR}/step${i}.log"
+            ERROR_FILE "${WORK_DIR}/step${i}.err")
+        if(NOT step_result EQUAL 0)
+            file(READ "${WORK_DIR}/step${i}.err" err)
+            message(FATAL_ERROR "preparatory step ${i} (${step_cmd}) exited with ${step_result}\n${err}")
+        endif()
+    endforeach()
+endif()
 
 run_program("${PROGRAM}" "${PROGRAM_ARGS}" "${WORK_DIR}" "${OUTPUT_GLOB}" output)
 string(REPLACE "@OUTPUT@" "${output}" CHECK_ARGS "${CHECK_ARGS}")

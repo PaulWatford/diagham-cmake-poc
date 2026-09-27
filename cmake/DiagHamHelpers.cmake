@@ -102,7 +102,7 @@ endfunction()
 
 
 # Whether a program is on the upstream-exclusion list (see
-# cmake/ApplyUpstreamPatches.cmake and DEFERRED.md).
+# docs/explanation/deferred-code.md).
 function(_diagham_program_excluded prog_name out_var)
     set(${out_var} FALSE PARENT_SCOPE)
     if(DEFINED DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS)

@@ -4,12 +4,21 @@
 #
 # Labels (select with `ctest -L <label>`, or `ctest --preset physics`):
 #
-#   physics    golden physics checks: a DiagHam program is run in a fresh
-#              directory and its spectrum file is compared with an analytic
-#              result or a saved reference (tests/check_spectrum.cc)
+#   physics    the expected answer is known independently of DiagHam
+#              (analytic, exact counting, an independent solver); a program
+#              is run in a fresh directory and its spectrum file is checked
+#              (tests/check_spectrum.cc). Every golden says in a comment why
+#              the answer is known.
+#   crosscheck two DiagHam programs, or two algorithms, must agree
+#              (diagham_physics_test with REF_PROGRAM); no independent
+#              answer is involved
+#   regression a spectrum saved from an earlier build must be reproduced;
+#              this detects change, it does not establish correctness
 #   smoke      every built program is started with --help and must exit 0
-#              (catches link-time and static-initialisation breakage in
-#              programs no physics test reaches)
+#              (catches link-time and static-initialisation breakage; it is
+#              not a physics check and docs/reference/test-coverage.md does
+#              not count it as one)
+#   selftest   the harness itself (the test manifest, the checker)
 #   install    the Development install component is usable through
 #              find_package(DiagHam) from a separate project
 #   python     independent Python exact diagonalisation cross-check
@@ -70,6 +79,9 @@ function(diagham_physics_test name)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/RunAndCheck.cmake
     )
     set(labels physics ${ARG_LABELS})
+    if(ARG_REF_PROGRAM)
+        set(labels crosscheck ${ARG_LABELS})
+    endif()
     if(ARG_WILL_FAIL)
         set(labels known-bug ${ARG_LABELS})
     endif()
@@ -203,8 +215,9 @@ diagham_physics_test(physics.spin.heisenberg_ring_L10
 # ----------------------------------------------------------------------------
 # FQHE: spinful (SU(2)) torus Coulomb, FQHETorusFermionsWithSpin
 #
-# Regression tests for patch 14 (BUG_torus_su2_coulomb.md). Each compares
-# the program with an independent implementation, full spectrum:
+# Cross-checks guarding the spinful torus Coulomb fix
+# (docs/explanation/torus-su2-coulomb-defect.md). Each compares the program
+# with another DiagHam implementation, full spectrum:
 #
 #  - fully polarised (total spin = N) must reproduce the spinless Coulomb
 #    spectrum (FQHETorusFermionsCoulomb). Before patch 14, N = 3 was off by
@@ -214,7 +227,7 @@ diagham_physics_test(physics.spin.heisenberg_ring_L10
 #    patch 14 the up-down interaction dropped every same-orbital term and
 #    the N = 4 ground state came out at -1.2734 instead of -0.7624.
 # ----------------------------------------------------------------------------
-diagham_physics_test(physics.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless
+diagham_physics_test(crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless
     PROGRAM FQHEOnTorus_FQHETorusFermionsWithSpin
     ARGS --nbr-particles 3 --max-momentum 9 --total-spin 3 --ratio 1.0 --full-diag 9000 --redundantYMomenta
     OUTPUT "fermions_torus_su2_coulomb_n_3_2s_9_Sz_3_ratio_1.000000.dat"
@@ -224,7 +237,7 @@ diagham_physics_test(physics.fqhe.torus.su2_coulomb.polarized_N3_matches_spinles
     CHECK spectrum @OUTPUT@ -1 @REFERENCE@ -1 1e-10
     LABELS fqhe
 )
-diagham_physics_test(physics.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
+diagham_physics_test(crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
     PROGRAM FQHEOnTorus_FQHETorusFermionsWithSpin
     ARGS --nbr-particles 3 --max-momentum 9 --total-spin 1 --ratio 1.0 --full-diag 9000 --redundantYMomenta
     OUTPUT "fermions_torus_su2_coulomb_n_3_2s_9_Sz_1_ratio_1.000000.dat"
@@ -296,3 +309,17 @@ add_test(NAME install.find_package_consumer
 )
 set_tests_properties(install.find_package_consumer PROPERTIES
     LABELS "install" TIMEOUT 600)
+
+# ----------------------------------------------------------------------------
+# Self-test: the registered tests equal tests/manifest.txt (a green run that
+# silently lost tests must not pass). The manifest describes the full build;
+# it is checked only when every module is built.
+# ----------------------------------------------------------------------------
+if(DIAGHAM_BUILD_FQHE AND DIAGHAM_BUILD_FTI AND DIAGHAM_BUILD_SPIN AND DIAGHAM_BUILD_QUANTUMDOTS)
+    add_test(NAME selftest.manifest
+        COMMAND ${CMAKE_COMMAND}
+            -DBUILD_DIR=${CMAKE_BINARY_DIR}
+            -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/CheckManifest.cmake)
+    set_tests_properties(selftest.manifest PROPERTIES LABELS "selftest" TIMEOUT 120)
+endif()

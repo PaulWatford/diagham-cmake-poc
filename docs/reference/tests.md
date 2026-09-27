@@ -1,6 +1,6 @@
 # Test suite reference
 
-Source: `docs/reference/tests.md` (2026-09-24), moved 2026-09-26; the "Adding a golden" section is now `docs/how-to/develop/add-a-golden-test.md`; counts updated to the r4493 build.
+Source: `TESTING.md` (2026-09-24), moved 2026-09-26; labels `crosscheck`, `regression`, `selftest` and the coverage page added 2026-09-27; the "Adding a golden" section is now `docs/how-to/develop/add-a-golden-test.md`.
 
 `ctest` is the test runner. The suite lives in `tests/` and is registered
 whenever programs are built (`DIAGHAM_BUILD_TESTS`, default ON).
@@ -14,15 +14,26 @@ ctest --preset default -R hubbard      # by name
 
 ## What is tested
 
+**What the suite is, and is not.** Only a `physics` test says a program
+computes the right numbers. A `crosscheck` says two DiagHam implementations
+agree (both could be wrong the same way). A `regression` test says the
+output has not changed since it was saved (right or wrong). A `smoke` test
+says the program links and parses `--help`. The per-program picture is in
+[test-coverage.md](test-coverage.md), generated from the build; the
+headline today is **7 of 603 programs with a physics or cross-check test** (4 of them against an independently known answer).
+
 | Label | Tests | What passes means |
 |---|---|---|
-| `physics` | analytic / reference goldens and cross-program comparisons (table below) | a DiagHam program, run from a clean directory, writes a spectrum that matches a known answer or an independent implementation |
+| `physics` | goldens with independently known answers (table below) | a DiagHam program, run from a clean directory, writes a spectrum that matches an answer known without DiagHam (analytic, exact counting, an independent solver) |
+| `crosscheck` | `crosscheck.fqhe.torus.su2_coulomb.*` | two DiagHam programs (or two algorithms) agree on the same problem; no independent answer is involved |
+| `regression` | none yet | a spectrum saved from the r4493 build is reproduced; detects change, not correctness |
+| `selftest` | `selftest.manifest` | the registered tests equal `tests/manifest.txt` (a green run that silently lost tests fails); regenerate the manifest with `python3 tests/coverage.py <build-dir> --manifest tests/manifest.txt` when a test is deliberately added or removed |
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
 | `known-bug` | reproducers for documented upstream defects | the defect is still present (`WILL_FAIL`); see below |
 
-### Physics goldens
+### Physics goldens and cross-checks
 
 | Test | Program | Check | Why the answer is known |
 |---|---|---|---|
@@ -33,8 +44,8 @@ ctest --preset default -R hubbard      # by name
 | `physics.fqhe.sphere.laughlin_1_3.unique_zero_mode` | `FQHESphereFermionsTwoBodyGeneric` | exactly 1 zero eigenvalue at N=6, 2S=15, Lz=0 | Laughlin state is the unique V1 zero mode at 2S=3(N-1) |
 | `physics.fqhe.sphere.laughlin_1_3.two_quasihole_count` | `FQHESphereFermionsTwoBodyGeneric` | exactly 4 zero eigenvalues at N=6, 2S=17, Lz=0 | two bosonic quasiholes of angular momentum N/2=3 give L=6,4,2,0 |
 | `physics.fqhe.torus.laughlin_1_3.threefold_degeneracy` | `FQHETorusFermionsTwoBodyGeneric` | exactly 3 zero eigenvalues over all Ky at N=4, Nphi=12 | topological degeneracy of Laughlin 1/3 on the torus |
-| `physics.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsCoulomb` | full 84-state spectra agree to 1e-10 | full polarisation must reproduce the spinless problem; regression for patch 14 (fails by 0.25 without it) |
-| `physics.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsWithSpinAndTranslations` | full 324-state Sz=1 spectra agree to 1e-8 | two independent implementations; regression for patch 14 (fails by 0.43 without it) |
+| `crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsCoulomb` | full 84-state spectra agree to 1e-10 | full polarisation must reproduce the spinless problem; regression for patch 14 (fails by 0.25 without it) |
+| `crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsWithSpinAndTranslations` | full 324-state Sz=1 spectra agree to 1e-8 | two independent implementations; regression for patch 14 (fails by 0.43 without it) |
 | `physics.spin.heisenberg_ring_L4` | `GenericPeriodicSpinChain` | lowest eigenvalue = -2 ± 1e-12 | S=1/2 Heisenberg ring, exact |
 | `physics.spin.heisenberg_ring_L6` | `GenericPeriodicSpinChain` | lowest eigenvalue = -(2+√13)/2 ± 1e-12 | exact (closed form), cross-checked with numpy |
 | `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.5154463544920365 ± 1e-10 | independent numpy ED (Lanczos path; dimension 252) |
@@ -65,4 +76,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 613 tests at r4493.
+on); with the default preset the ctest suite has 614 tests at r4493.

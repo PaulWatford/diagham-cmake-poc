@@ -39,7 +39,7 @@ Two branches matter:
 |---- scripts_cmake/
 |   |---- extract_autotools.py    reads upstream Makefile.am, emits the per-directory CMakeLists.txt
 |   +---- ci.sh                   the CI pipeline (GitHub Actions and GitLab CI call it)
-|---- tests/                      ctest suite: physics goldens, smoke, install (docs/reference/tests.md)
+|---- tests/                      ctest suite: physics goldens, cross-checks, smoke, install, self-test (docs/reference/tests.md)
 |---- patches/                    audit trail of the upstream fixes (PATCHES.md); the fixes themselves are commits
 |---- benchmarks/                 Hubbard verification log + independent Python exact diagonalisation
 |---- Base/ src/ FQHE/ FTI/ Spin/ QuantumDots/   DiagHam itself, as in upstream, with generated CMakeLists.txt in each directory
@@ -58,7 +58,7 @@ generator. Re-run it after an upstream `Makefile.am` change.
 git clone <this repository> DiagHam && cd DiagHam
 cmake --preset default            # every module, SMP, no optional libraries
 cmake --build --preset default -j
-ctest --preset default            # physics goldens, --help smoke test, install test
+ctest --preset default            # goldens, cross-checks, --help smoke test, install test, manifest
 ```
 
 Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
@@ -68,11 +68,16 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **613 of 613 ctest tests pass**: 13 physics tests with analytic,
-  independently computed or cross-implementation answers (Hubbard, Laughlin
-  zero modes on sphere and torus, Heisenberg rings, spinful torus Coulomb),
-  an independent Python exact-diagonalisation cross-check, `--help` on every
-  program, and a `find_package(DiagHam)` consumer build. See `docs/reference/tests.md`.
+- **614 of 614 ctest tests pass** — but read that number honestly: 11 are
+  physics goldens with independently known answers (Hubbard, Laughlin zero
+  modes on sphere and torus, Heisenberg rings) plus an independent Python
+  exact-diagonalisation cross-check, 2 are cross-checks between DiagHam
+  programs (spinful torus Coulomb), 1 is a `find_package(DiagHam)` consumer
+  build, 1 checks the test manifest, and **599 are `--help` smoke tests**,
+  which prove that a program links and parses options and nothing about its
+  physics. `docs/reference/test-coverage.md` gives the per-program truth:
+  7 of 603 programs have a physics or cross-check test today (4 with an independently known answer). Expanding that is the
+  current work. See `docs/reference/tests.md`.
 - The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical
   (0 ULP) match to the analytic `-4√2` (see `benchmarks/BENCHMARK.md`).
 - The `lapack` preset (system LAPACK/BLAS) builds with no errors and passes
@@ -198,8 +203,8 @@ See `CHANGELOG.md` for what changed and when.
 ## License
 
 DiagHam is licensed under the GNU General Public License, version 2 or
-later; the full text is in `COPYING`. The migration work is released under
-the same terms; `LICENSE` carries the contribution notice.
+later; the full text is in `LICENSE`. The migration work is released under
+the same terms; `NOTICE` carries the contribution notice.
 
 ## Citing
 

@@ -44,7 +44,7 @@ bounds for automated changes (`AGENTS.md`).
 
 ## Locked artefacts
 
-The test manifest (`tests/manifest.txt`, to be added), the golden values in
+The test manifest (`tests/manifest.txt`, enforced by `selftest.manifest`), the golden values in
 `tests/CMakeLists.txt` and the input data in `tests/data/`, the saved reference spectra in
 `benchmarks/`, and the default values of the module options. Changing any
 of them is Damage even if the build stays green: it is flagged and held,
@@ -55,7 +55,7 @@ never merged on a green tick.
 | Part | State |
 |---|---|
 | Gates 1–2 without the manifest | implemented: `scripts_cmake/ci.sh` (build + ctest) via `.github/workflows/ci.yml` and `.gitlab-ci.yml` |
-| Manifest check | designed; `tests/manifest.txt` and the check step to be added |
+| Manifest check | done 2026-09-27: `tests/manifest.txt` + `selftest.manifest` (CheckManifest.cmake) |
 | Damage scan | designed (a git-and-grep script with the seven classes above); to be added as a CI job |
 | Description (model) | not built; the system prompt is in `AGENTS.md` |
 | Hold / approval | to be a manual CI job plus branch protection on `main` (a named maintainer plays it); until then, human review of every merge request is the rule |

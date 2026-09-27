@@ -5,9 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
-  # Weekly drift check: rebuild against the upstream branch head instead of
-  # the pinned revision, so a Makefile.am change upstream shows up here
-  # before anyone bumps the pin.
+  # Weekly: has the canonical DiagHam Subversion trunk moved past the
+  # revision this repository carries? (see job upstream-drift)
   schedule:
     - cron: "17 4 * * 1"
 
@@ -17,6 +16,7 @@ concurrency:
 
 jobs:
   build-and-test:
+    if: github.event_name != 'schedule'
     name: ${{ matrix.preset }} (${{ matrix.compiler }})
     runs-on: ubuntu-24.04
     timeout-minutes: 120
@@ -48,7 +48,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
-            cmake ninja-build ccache clang patch python3-numpy \
+            cmake ninja-build ccache clang python3-numpy \
             liblapack-dev libblas-dev libgsl-dev libgmp-dev libfftw3-dev libbz2-dev \
             libopenmpi-dev openmpi-bin libscalapack-openmpi-dev
 
@@ -68,10 +68,6 @@ jobs:
           key: ccache-${{ matrix.preset }}-${{ matrix.compiler }}-${{ github.sha }}
           restore-keys: ccache-${{ matrix.preset }}-${{ matrix.compiler }}-
 
-      - name: Track upstream head (scheduled runs only)
-        if: github.event_name == 'schedule'
-        run: echo "DIAGHAM_UPSTREAM_REF=master" >> "$GITHUB_ENV"
-
       - name: Build and test
         run: scripts_cmake/ci.sh ${{ matrix.preset }}
 
@@ -80,5 +76,30 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: ctest-log-${{ matrix.preset }}-${{ matrix.compiler }}
-          path: _ci/DiagHam/build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
+          path: build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
           if-no-files-found: ignore
+
+  # The canonical DiagHam lives in Subversion at nick-ux.org. This job only
+  # reports whether trunk has moved past the revision recorded in
+  # scripts_cmake/upstream-revision.txt; bringing new revisions in is a
+  # deliberate step (docs/how-to/develop/sync-upstream.md, when written).
+  upstream-drift:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    name: upstream drift (SVN trunk)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install subversion
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends subversion
+      - name: Compare trunk HEAD with the recorded revision
+        run: |
+          recorded=$(tr -dc 0-9 < scripts_cmake/upstream-revision.txt)
+          head=$(svn info --show-item revision --non-interactive \
+                   --trust-server-cert-failures=unknown-ca,cn-mismatch,expired,not-yet-valid,other \
+                   https://www.nick-ux.org/diagham/svn/DiagHam/trunk)
+          echo "recorded r$recorded, upstream trunk r$head"
+          if [ "$head" -gt "$recorded" ]; then
+            echo "::warning::DiagHam trunk is at r$head; this repository carries r$recorded"
+            exit 1
+          fi

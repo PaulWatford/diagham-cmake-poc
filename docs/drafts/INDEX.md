@@ -47,5 +47,5 @@ Every non-program page of the DiagHam wiki (archived 2026-09-24); program pages 
 | `MIGRATION_ROADMAP.md`, `DEFERRED.md`, `BUG_torus_su2_coulomb.md` | moved | [explanation/](../explanation/migration-history.md): migration-history, deferred-code, torus-su2-coulomb-defect (+ [reference/known-defects.md](../reference/known-defects.md)) |
 | `patches/PATCHES.md` | kept, frozen | audit trail of the proof-of-concept fixes; the live index is [explanation/upstream-fixes.md](../explanation/upstream-fixes.md) |
 | `docs/how-to/build/kent.md` | parked | [kent-cluster-build.md](kent-cluster-build.md) — site values unknown |
-| `COPYING` and `LICENSE` | kept, both | not duplicates: `COPYING` is the GPL-2 text, `LICENSE` states what this repository adds and under what terms |
+| `COPYING` and `LICENSE` | renamed | `COPYING` (GPL-2 text) → `LICENSE`; the contribution notice → `NOTICE` (2026-09-27, so the licence is machine-detected) |
 | `install-sh`, `mkinstalldirs` | kept | autotools helper scripts used by the upstream `Makefile.in` files; not documentation |

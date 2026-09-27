@@ -13,8 +13,9 @@ for the record. They are not maintained; the living equivalents are named.
 | `TODO-2007` | the maintainers' to-do list dated 2007-11-29 (GM and NR) | none; kept for context ("Torus with spin" is still on it) |
 | `NEWS` | one line ("Zlatko's first commit", 2009) | none |
 
-The upstream `README` was empty and has been removed. `AUTHORS` and `COPYING`
-stay at the repository root (AUTHORS updated from the commit log).
+The upstream `README` was empty and has been removed. `AUTHORS` stays at the
+repository root (updated from the commit log); upstream's `COPYING` (the GPL-2
+text) is now `LICENSE`, so hosting sites detect the licence.
 
 Source of the SVN history: https://www.nick-ux.org/diagham/svn/DiagHam
 (trunk, branches, tags). The canonical DiagHam documentation is the wiki at

@@ -1,0 +1,23 @@
+DiagHam CMake migration
+Contribution copyright (C) 2026 Paul Watford <paulwatford@netherpixelstudios.net>
+
+This repository contains the DiagHam source code (copyright its authors, see
+AUTHORS) together with a CMake build system, a test suite and a small number
+of fixes to the DiagHam sources. The DiagHam history is preserved on the
+`upstream` branch; every change made here is an ordinary commit on `main`.
+
+What this contribution adds:
+  - a CMake build system (CMakeLists.txt, CMakePresets.json, cmake/, the
+    generated per-directory CMakeLists.txt files and
+    scripts_cmake/extract_autotools.py that produces them);
+  - a ctest suite (tests/) and benchmark material (benchmarks/);
+  - fixes to upstream DiagHam files, each an individual commit whose message
+    records the change and its rationale; patches/PATCHES.md is the audit
+    trail (as required by GNU GPL section 2a).
+
+DiagHam is licensed under the GNU General Public License, version 2 or
+later. For license compatibility, the contributions in this repository are
+released under the same terms: the GNU General Public License, version 2,
+or (at your option) any later version.
+
+The full text of the license is in the file LICENSE.

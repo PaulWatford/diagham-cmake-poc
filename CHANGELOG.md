@@ -14,6 +14,30 @@ all present on the `upstream` branch: `git log upstream`).
 
 ## [Unreleased]
 
+### Fixed
+- **CI built the wrong thing.** `scripts_cmake/ci.sh` still fetched the
+  guysoft mirror (r4114) and overlaid the CMake files on it — the
+  proof-of-concept flow — so both CI runs after the r4493 push failed. It
+  now configures, builds and tests the repository in place; `overlay.py` is
+  retired. The weekly job now checks whether the DiagHam Subversion trunk
+  has moved past `scripts_cmake/upstream-revision.txt`.
+- `upstream`: 30 commits carried the raw SVN username `yangle`; now Yang-Le
+  Wu, as in the authors file. Trees unchanged; every SHA on `upstream` and
+  the merge on `main` changed (re-clone if you had the earlier push).
+
+### Changed
+- Test labels tell the truth: `physics` (independently known answer),
+  `crosscheck` (two DiagHam implementations agree), `regression` (saved
+  spectrum reproduced), `smoke`, `selftest`. The two spinful-torus tests are
+  `crosscheck.*`. `tests/coverage.py` generates
+  `docs/reference/test-coverage.md` (7 of 603 programs have a physics or
+  cross-check test, 4 against an independently known answer); README, `tests.md` and `AGENTS.md` quote that instead
+  of "613 tests pass".
+- `tests/manifest.txt` and `selftest.manifest`: the registered tests must
+  equal the manifest (the guard design's missing artefact).
+- `COPYING` → `LICENSE` (GPL-2 text) and the contribution notice →
+  `NOTICE`, so the licence is detected by hosting sites.
+
 ### Documentation
 - Root files brought up to date for the migration (README, LICENSE, AUTHORS,
   CITATION.cff, CONTRIBUTING.md); this changelog restructured; upstream's

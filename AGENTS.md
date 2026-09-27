@@ -15,9 +15,11 @@ These are the two claims this repository stands on. **No agent may
 weaken either of them**, in code, in tests, or in what it reports about
 them:
 
-- **The ctest suite passes in full** (`ctest --preset default`: 613 tests at
-  DiagHam r4493, 13 of them physics goldens; the list of test names is the
-  locked manifest). `cmake/verify_build.sh`, the autotools-parity script,
+- **The ctest suite passes in full** (`ctest --preset default`: 614 tests at
+  DiagHam r4493, of which 11 physics goldens + 1 Python cross-check, 2
+  cross-checks, 599 `--help` smokes, 1 install, 1 manifest self-test; the
+  list of test names is the locked manifest `tests/manifest.txt`, checked by
+  `selftest.manifest`). `cmake/verify_build.sh`, the autotools-parity script,
   reports 79 passes in the default configuration (FQHE and FTI on) and is a
   separate, nightly check.
 - **The Hubbard ED demo matches the analytic ground state to machine
@@ -176,8 +178,8 @@ No AI agent is on that list, now or ever.
 
 ## Locked artefacts
 
-- The manifest of test names (`ctest -N`, to be committed as `tests/manifest.txt`;
-  not yet added, see `docs/explanation/guard-design.md`).
+- The manifest of test names (`ctest -N`, committed as `tests/manifest.txt`
+  and enforced by `selftest.manifest`).
 - Hubbard ED demo golden (analytic ground state, machine-precision
   tolerance).
 - Default CMake options that decide which DiagHam trees are built.

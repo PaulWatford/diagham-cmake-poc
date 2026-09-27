@@ -48,6 +48,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | Add a spin Hilbert space with a discrete symmetry | [how-to/develop/new-spin-hilbert-space-with-symmetry.md](how-to/develop/new-spin-hilbert-space-with-symmetry.md) |
 | Add a test that checks a spectrum against a known answer | [how-to/develop/add-a-golden-test.md](how-to/develop/add-a-golden-test.md) |
 | What the test suite checks, and what it does not | [reference/tests.md](reference/tests.md) |
+| Which programs actually have their physics tested (honest count) | [reference/test-coverage.md](reference/test-coverage.md) |
 | Fix something in DiagHam's own sources: the rules and the index of fixes so far | `CONTRIBUTING.md` at the root, then [explanation/upstream-fixes.md](explanation/upstream-fixes.md) |
 | Code that is excluded from the build, and why | [explanation/deferred-code.md](explanation/deferred-code.md) |
 | The torus SU(2) Coulomb defect in detail | [explanation/torus-su2-coulomb-defect.md](explanation/torus-su2-coulomb-defect.md) |
@@ -85,6 +86,6 @@ docs/
 
 ## Keeping it truthful
 
-- Counts quoted in the docs (61 libraries, 603 programs, 613 tests, 13 physics goldens) are those of the r4493 build; [reference/build-system.md](reference/build-system.md) is where they are defined and the other pages follow it.
+- Counts quoted in the docs (61 libraries, 603 programs, 614 tests, 11 physics goldens) are those of the r4493 build; [reference/build-system.md](reference/build-system.md) is where they are defined and the other pages follow it.
 - `docs/reference/programs/` is regenerated with `python3 scripts_cmake/gen_program_reference.py build/lapack docs/reference/programs` after any change to a program's options; the manuals are re-attached with `scripts_cmake/attach_wiki_manuals.py`.
 - A page that cannot be verified against the build goes to `drafts/` with a note on what is missing, not into the sections above.

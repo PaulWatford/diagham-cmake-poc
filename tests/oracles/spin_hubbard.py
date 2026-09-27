@@ -110,9 +110,20 @@ def main():
         (Path(a.write) / "values.txt").write_text(text)
         print(f"wrote {len(CASES)} values to {a.write}/values.txt")
     if a.check:
+        # numeric comparison within each case's tolerance: the last digits of the numpy
+        # results depend on the BLAS build and thread count, the physics does not
         p = Path(a.check) / "values.txt"
-        ok = p.exists() and p.read_text() == text
-        print("values.txt", "matches" if ok else "MISMATCH")
+        old = p.read_text().splitlines() if p.exists() else []
+        new = text.splitlines()
+        ok = len(old) == len(new)
+        if ok:
+            for o, n in zip(old[1:], new[1:]):
+                oname, oval = o.split()[0], float(o.split()[1])
+                nname, nval, ntol = n.split()[0], float(n.split()[1]), float(n.split()[2])
+                if oname != nname or abs(oval - nval) > ntol:
+                    ok = False
+                    print(f"MISMATCH {oname}: committed {oval!r}, recomputed {nval!r}, tolerance {ntol:g}")
+        print("values.txt", "matches within tolerance" if ok else "MISMATCH")
         sys.exit(0 if ok else 1)
     if not a.write and not a.check:
         print(text)

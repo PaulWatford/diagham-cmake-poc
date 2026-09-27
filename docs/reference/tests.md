@@ -20,14 +20,14 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **33 of 603 programs with a physics or cross-check test** (30 of them against an independently known answer).
+headline today is **34 of 603 programs with a physics or cross-check test** (31 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
 | `physics` | goldens with independently known answers (table below) | a DiagHam program, run from a clean directory, writes a spectrum that matches an answer known without DiagHam (analytic, exact counting, an independent solver) |
-| `crosscheck` | `crosscheck.fqhe.torus.su2_coulomb.*` | two DiagHam programs (or two algorithms) agree on the same problem; no independent answer is involved |
+| `crosscheck` | `crosscheck.fqhe.torus.su2_coulomb.*`, `crosscheck.fqhe.sphere.*` | two DiagHam programs, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree on the same problem; no independent answer is involved |
 | `regression` | none yet | a spectrum saved from the r4493 build is reproduced; detects change, not correctness |
-| `selftest` | `selftest.manifest` | the registered tests equal `tests/manifest.txt` (a green run that silently lost tests fails); regenerate the manifest with `python3 tests/coverage.py <build-dir> --manifest tests/manifest.txt` when a test is deliberately added or removed |
+| `selftest` | `selftest.manifest`, `selftest.*_oracle`, `selftest.checker.*`, `selftest.runner.*` | the harness works: the registered tests equal `tests/manifest.txt` (a green run that silently lost tests fails); regenerate the manifest with `python3 tests/coverage.py <build-dir> --manifest tests/manifest.txt` when a test is deliberately added or removed |
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
@@ -163,6 +163,37 @@ finite-difference solvers parameterised in Ångström and effective masses,
 with no exactly solvable case exposed at the command line; they get
 `regression` tests (prompt 7) and the coverage page says so.
 
+### Independent solvers (`-L ed`), algorithm consensus, and self-tests
+
+- **Sphere pseudopotential ED** (7 tests, `physics.fqhe.sphere.ed.*`):
+  `tests/oracles/sphere_ed.py` builds the lowest-Landau-level Hamiltonian
+  for any Haldane pseudopotentials from scratch — Clebsch–Gordan pair
+  projectors from exact Wigner 3j symbols, an explicit Fock basis of one
+  Lz sector, dense numpy diagonalisation, nothing shared with DiagHam —
+  and the program's **whole spectrum** of that sector must match it to
+  10⁻⁹: Coulomb (the closed-form pseudopotentials of this repository, not
+  the program's) and generic pseudopotential sets, fermions and bosons,
+  N = 4–6, Lz = 0 and 2. The one convention taken from the program is its
+  normalisation H = 2 Σ_{i<j} Σ_m V_m P_m, fixed with the two-particle case.
+  While writing it the oracle disagreed with the program twice; both times
+  the oracle was wrong (operator order; summing over particles instead of
+  orbitals for bosons) — the disagreement→check loop the plan asks for.
+- **Spin-chain ED** (6 tests, `physics.spin.ed.*`): `tests/oracles/spin_ed.py`,
+  dense numpy diagonalisation of XXZ / J₁–J₂ chains with a field, open
+  and periodic, spin ½ and 1, L up to 10, against `GenericOpenSpinChain`
+  and `GenericPeriodicSpinChain`.
+- **Algorithm consensus** (`crosscheck.fqhe.sphere.*`): reorthogonalised
+  Lanczos (`-n 4`) against full diagonalisation on the same Coulomb
+  Hamiltonian (338 states, 4 lowest eigenvalues to 10⁻¹⁰); and, in builds
+  with LAPACK, `--use-lapack` against DiagHam's own diagonaliser (full
+  spectrum to 10⁻¹⁰).
+- **Self-tests of the harness** (`selftest.checker.*`, `selftest.runner.*`,
+  all but one `WILL_FAIL`): the checker must reject a wrong value, a wrong
+  count, a missing file, NaN and a spectrum of the wrong length, and accept
+  the right value; the runner must fail when a program writes no output
+  file (stale output can never satisfy a check). If any of these ever
+  "passes" the harness itself is broken.
+
 ### Physics goldens and cross-checks
 
 | Test | Program | Check | Why the answer is known |
@@ -204,4 +235,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 703 tests at r4493.
+on); with the default preset the ctest suite has 726 tests at r4493.

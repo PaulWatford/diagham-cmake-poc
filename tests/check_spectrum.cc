@@ -29,6 +29,10 @@
 //       starts with KEY match those on the same line of REFERENCE, one by
 //       one, to within |TOL| (pseudopotential files)
 //
+//   check_spectrum lowest   FILE COLUMN REFERENCE REF_COLUMN K TOL
+//       the K lowest values of COLUMN match the K lowest of REF_COLUMN to
+//       within |TOL| (a Lanczos run against a full diagonalisation)
+//
 //   check_spectrum nonzero  FILE COLUMN THRESHOLD N [FILTER_COLUMN FILTER_VALUE]...
 //       exactly N rows have COLUMN > THRESHOLD, among the rows whose
 //       FILTER_COLUMNs equal the FILTER_VALUEs (entanglement-spectrum
@@ -130,6 +134,7 @@ int Usage()
                "       check_spectrum spectrum FILE COLUMN REFERENCE REF_COLUMN TOL\n"
                "       check_spectrum count    FILE COLUMN VALUE TOL N\n"
                "       check_spectrum line     FILE KEY REFERENCE TOL\n"
+               "       check_spectrum lowest   FILE COLUMN REFERENCE REF_COLUMN K TOL\n"
                "       check_spectrum nonzero  FILE COLUMN THRESHOLD N [FILTER_COLUMN FILTER_VALUE]...\n";
   return 2;
 }
@@ -267,6 +272,38 @@ int main(int argc, char** argv)
       std::cout << count << " of " << values.size() << " values within " << tolerance
                 << " of " << target << ", expected " << expectedCount << std::endl;
       bool pass = count == expectedCount;
+      std::cout << (pass ? "PASS" : "FAIL") << std::endl;
+      return pass ? 0 : 1;
+    }
+
+  if (mode == "lowest" && argc == 8)
+    {
+      std::vector<double> reference;
+      if (!ReadColumn(file, column, values) || !ReadColumn(argv[4], std::atoi(argv[5]), reference))
+        return 2;
+      size_t k = std::atol(argv[6]);
+      double tolerance = std::fabs(ParseDouble(argv[7], "TOL"));
+      if (values.size() < k || reference.size() < k)
+        {
+          std::cout << "FAIL: need " << k << " values, have " << values.size() << " and " << reference.size() << std::endl;
+          return 1;
+        }
+      std::sort(values.begin(), values.end());
+      std::sort(reference.begin(), reference.end());
+      double worst = 0.0;
+      size_t worstIndex = 0;
+      for (size_t i = 0; i < k; ++i)
+        {
+          double diff = std::fabs(values[i] - reference[i]);
+          if (diff > worst)
+            {
+              worst = diff;
+              worstIndex = i;
+            }
+        }
+      std::cout << k << " lowest eigenvalues, max |diff| = " << worst << " at index " << worstIndex
+                << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance " << tolerance << std::endl;
+      bool pass = worst <= tolerance;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;
     }

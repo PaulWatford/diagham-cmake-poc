@@ -1,0 +1,7 @@
+# name  value  tolerance  # numpy dense ED, tests/oracles/spin_ed.py; do not edit
+open_heisenberg_L8 -3.37493259868789 1e-12  # spin-1/2 open chain, 256 states
+open_spin1_heisenberg_L6 -7.370274969424615 1e-11  # spin-1 open chain, 729 states
+open_xxz_L8_jz1.5_hz0.3 -3.966162934671211 1e-12  # open XXZ chain with a field (Sz=0 sector ground state)
+ring_xxz_L8_jz1.5 -4.303545409287706 1e-12  # periodic XXZ ring
+ring_j1j2_L8_j2_0.4 -3.520895443831092 1e-12  # periodic ring with a next-nearest Sz Sz coupling
+ring_xxz_L10_jz0.5 -3.819032780516439 1e-12  # periodic XXZ ring, 1024 states

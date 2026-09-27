@@ -15,6 +15,14 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Independent solvers: `tests/oracles/sphere_ed.py` (lowest-Landau-level
+  pseudopotential Hamiltonians from Clebsch–Gordan projectors, 7 full-spectrum
+  tests, fermions and bosons, Coulomb and generic pseudopotentials) and
+  `tests/oracles/spin_ed.py` (XXZ / J₁–J₂ chains with a field, 6 tests).
+  Algorithm-consensus cross-checks (Lanczos vs full diagonalisation; LAPACK
+  vs internal). Harness self-tests: the checker rejects wrong values, counts,
+  missing files, NaN and wrong-length spectra; the runner rejects missing
+  output. `check_spectrum lowest` mode.
 - 15 spin-chain and Hubbard goldens (`physics.spin.*`, `physics.hubbard.*.U0.*`):
   XX, AKLT and Haldane–Shastry rings against closed forms, an open AKLT
   chain's four edge states, Hubbard at U = 0 against the tight-binding sum,

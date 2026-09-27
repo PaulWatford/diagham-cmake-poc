@@ -289,6 +289,7 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/dimensions.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/fqhe_sphere.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/fqhe_geometries.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/spin_hubbard.cmake)
+include(${CMAKE_CURRENT_SOURCE_DIR}/independent.cmake)
 
 # ----------------------------------------------------------------------------
 # Smoke: every program answers --help

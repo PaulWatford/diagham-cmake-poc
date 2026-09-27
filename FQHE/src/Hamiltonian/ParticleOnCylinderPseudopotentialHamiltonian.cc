@@ -43,6 +43,7 @@
 #include "Architecture/AbstractArchitecture.h"
 
 #include <iostream>
+#include <cstdlib>
 #include <math.h>
 #include <stdlib.h>
 
@@ -53,6 +54,7 @@
 
 
 using std::cout;
+using std::cerr;
 using std::endl;
 using std::ostream;
 
@@ -498,6 +500,12 @@ double ParticleOnCylinderPseudopotentialHamiltonian::PseudopotentialMatrixElemen
   //cout << "intervals =  " << work_ptr->size << endl;
 
   return finalresult;
+#else
+  // without GSL there is no integrator; falling off the end of a non-void
+  // function is undefined behaviour (it showed up as "stack smashing
+  // detected" in every FQHECylinderFermionsTwoBodyGeneric run)
+  cerr << "ParticleOnCylinderPseudopotentialHamiltonian: pseudopotential matrix elements need GSL; rebuild with DIAGHAM_USE_GSL=ON" << endl;
+  exit(1);
 #endif
 }
 
@@ -537,5 +545,8 @@ double ParticleOnCylinderPseudopotentialHamiltonian::LineChargeMatrixElement(int
   //cout << "intervals =  " << work_ptr->size << endl;
 
   return finalresult;
+#else
+  cerr << "ParticleOnCylinderPseudopotentialHamiltonian: line-charge matrix elements need GSL; rebuild with DIAGHAM_USE_GSL=ON" << endl;
+  exit(1);
 #endif
 }

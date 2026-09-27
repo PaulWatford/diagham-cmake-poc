@@ -266,6 +266,8 @@ if(Python3_Interpreter_FOUND AND TARGET ${hubbard})
     endif()
 endif()
 
+include(${CMAKE_CURRENT_SOURCE_DIR}/dimensions.cmake)
+
 # ----------------------------------------------------------------------------
 # Smoke: every program answers --help
 #

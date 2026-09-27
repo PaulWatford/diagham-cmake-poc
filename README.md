@@ -68,15 +68,16 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **614 of 614 ctest tests pass** — but read that number honestly: 11 are
-  physics goldens with independently known answers (Hubbard, Laughlin zero
-  modes on sphere and torus, Heisenberg rings) plus an independent Python
+- **642 of 642 ctest tests pass** — but read that number honestly: 38 are
+  physics goldens with independently known answers (27 Hilbert-space
+  dimensions against exact counting, Hubbard, Laughlin zero modes on sphere
+  and torus, Heisenberg rings) plus an independent Python
   exact-diagonalisation cross-check, 2 are cross-checks between DiagHam
   programs (spinful torus Coulomb), 1 is a `find_package(DiagHam)` consumer
-  build, 1 checks the test manifest, and **599 are `--help` smoke tests**,
+  build, 2 are self-tests (manifest, dimension oracle), and **599 are `--help` smoke tests**,
   which prove that a program links and parses options and nothing about its
   physics. `docs/reference/test-coverage.md` gives the per-program truth:
-  7 of 603 programs have a physics or cross-check test today (4 with an independently known answer). Expanding that is the
+  15 of 603 programs have a physics or cross-check test today (12 with an independently known answer). Expanding that is the
   current work. See `docs/reference/tests.md`.
 - The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical
   (0 ULP) match to the analytic `-4√2` (see `benchmarks/BENCHMARK.md`).

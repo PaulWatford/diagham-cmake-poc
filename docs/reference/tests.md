@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **7 of 603 programs with a physics or cross-check test** (4 of them against an independently known answer).
+headline today is **15 of 603 programs with a physics or cross-check test** (12 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -32,6 +32,30 @@ headline today is **7 of 603 programs with a physics or cross-check test** (4 of
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
 | `known-bug` | reproducers for documented upstream defects | the defect is still present (`WILL_FAIL`); see below |
+
+### Hilbert-space dimension goldens (`-L dimension`)
+
+27 tests, `physics.dimension.*`, one per (program, case). The number of
+basis states in a sector is exact combinatorics: `tests/oracles/dimensions.py`
+enumerates the Fock states in pure Python (sphere Lz and L, torus (k_x,k_y)
+sectors with magnetic translations by Burnside's lemma including the
+fermion sign, single-band lattice (kx,ky), Hubbard with/without Sz, spin
+chains, disk Lz) and writes `tests/data/dimensions/*.txt`; each file states
+its formula. `tests/RunAndMatch.cmake` runs the program and requires either
+every expected line verbatim in its output (`GetDimension` programs) or
+exactly N printed basis states (`ShowBasis` programs).
+`selftest.dimension_oracle` regenerates all 27 files and fails if a
+committed one differs. Programs covered: `FQHESphereGetDimension`,
+`FQHESphereShowBasis`, `FQHETorusGetDimension`, `FQHETorusShowBasis`,
+`FQHEDiskShowBasis`, `FTIGetDimension`, `HubbardGetDimension`,
+`GenericSpinChainShowBasis`. What it proves: the Hilbert-space classes
+enumerate the right states in the right sectors — nothing about matrix
+elements or eigenvalues.
+
+Two things learnt writing them: `FTIGetDimension` assumes inversion
+symmetry by default and prints only the kx ≤ Nx/2 sectors (`--no-inversion`
+prints all); `FQHETorusShowBasis` always uses magnetic translations, so
+`-x`/`-y` select one (k_x, k_y) sector, not a plain Ky sector.
 
 ### Physics goldens and cross-checks
 
@@ -76,4 +100,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 614 tests at r4493.
+on); with the default preset the ctest suite has 642 tests at r4493.

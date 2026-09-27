@@ -15,6 +15,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Reproducibility: `scripts_cmake/environment.sh` records commit, revision,
+  CMake options, toolchain and library versions and `TestDiagHamConf`; CI
+  keeps it with the ctest log as an artefact of every run;
+  `container/Dockerfile` (full preset, whole test suite, installed runtime
+  image) built and run by CI; `container/diagham.def` for Apptainer;
+  `docs/how-to/build/container.md`.
 - `scripts_cmake/sync_upstream.sh`: fetch new Subversion revisions into
   the git-svn clone, rebase them onto `upstream` with tree verification,
   merge into `main`, regenerate the CMake files, record the revision,

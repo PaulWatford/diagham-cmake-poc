@@ -10,6 +10,7 @@ Source: this index is new (2026-09-25); the guides it points to are adapted from
 | Intel compilers + MKL (+ Intel MPI) | [intel-mkl.md](intel-mkl.md) |
 | Apple silicon Mac (M1/M2/…) | [macos.md](macos.md) |
 | An HPC cluster with a module system (MPI, ScaLAPACK) | [hpc-cluster.md](hpc-cluster.md) |
+| A container (Docker; Apptainer for clusters) — no toolchain to install | [container.md](container.md) |
 | The University of Kent cluster | as any cluster, [hpc-cluster.md](hpc-cluster.md); the site recipe is a [draft](../../drafts/kent-cluster-build.md) until the site values are known |
 
 Every guide uses the same three commands with a different **preset**; the

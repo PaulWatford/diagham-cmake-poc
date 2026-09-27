@@ -71,13 +71,32 @@ jobs:
       - name: Build and test
         run: scripts_cmake/ci.sh ${{ matrix.preset }}
 
-      - name: Upload test log
-        if: failure()
+      - name: Keep the environment record and the test log
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: ctest-log-${{ matrix.preset }}-${{ matrix.compiler }}
-          path: build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
+          name: environment-and-ctest-log-${{ matrix.preset }}-${{ matrix.compiler }}
+          path: |
+            build/${{ matrix.preset }}/environment.txt
+            build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
           if-no-files-found: ignore
+          retention-days: 90
+
+  # The container recipe is verified end to end here: the build stage runs the
+  # whole ctest suite, so a failing test fails the image build.
+  container:
+    if: github.event_name != 'schedule'
+    name: container (Dockerfile, full preset)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image (compiles, tests, installs)
+        run: docker build --build-arg JOBS=4 -t diagham -f container/Dockerfile .
+      - name: Run a program from the runtime image
+        run: |
+          docker run --rm diagham FQHESphereFermionsTwoBodyGeneric --help | head -3
+          docker run --rm diagham cat /opt/diagham/environment.txt | head -20
 
   # The canonical DiagHam lives in Subversion at nick-ux.org. This job reports
   # whether trunk has moved past the revision recorded in

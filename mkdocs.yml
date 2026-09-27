@@ -73,6 +73,7 @@ nav:
       - 'Full diagonalisation with ScaLAPACK': how-to/run-scalapack.md
       - Build:
           - 'Building DiagHam — which guide?': how-to/build/README.md
+          - 'Build and run DiagHam in a container': how-to/build/container.md
           - 'Build on an HPC cluster (MPI + ScaLAPACK)': how-to/build/hpc-cluster.md
           - 'Build with the Intel compilers and MKL': how-to/build/intel-mkl.md
           - 'Build on Linux with Clang / LLVM': how-to/build/linux-clang.md

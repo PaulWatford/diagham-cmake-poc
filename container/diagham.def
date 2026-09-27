@@ -1,0 +1,51 @@
+Bootstrap: docker
+From: ubuntu:24.04
+
+# DiagHam (this repository's CMake build) as an Apptainer/Singularity image, for
+# clusters where Docker is not available:
+#
+#   apptainer build diagham.sif container/diagham.def        # from the repository root
+#   apptainer exec diagham.sif FQHESphereFermionsTwoBodyGeneric --help
+#   apptainer test diagham.sif                                # re-runs a golden inside the image
+#
+# Same recipe as container/Dockerfile: the `full` preset, the whole ctest suite
+# (the image is not produced if a test fails), installed to /opt/diagham.
+
+%files
+    . /src
+
+%post
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update && apt-get install -y --no-install-recommends \
+        ca-certificates git cmake ninja-build g++ python3 python3-numpy \
+        liblapack-dev libblas-dev libgsl-dev libgmp-dev libfftw3-dev libbz2-dev
+    cd /src
+    cmake --preset full -G Ninja
+    cmake --build --preset full --parallel "$(nproc)"
+    ctest --preset full --parallel "$(nproc)"
+    cmake --install build/full --prefix /opt/diagham
+    scripts_cmake/environment.sh build/full > /opt/diagham/environment.txt
+    cp -r tests /opt/diagham/tests-source
+    rm -rf /src/build
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+%environment
+    export PATH=/opt/diagham/bin:$PATH
+    export LC_ALL=C
+
+%test
+    # the Laughlin nu=1/3 unique zero mode on the sphere, N=6, 2S=15 (the first golden of the suite)
+    cd "$(mktemp -d)"
+    printf 'Pseudopotentials = 0 1\n' > v1.dat
+    FQHESphereFermionsTwoBodyGeneric -p 6 -l 15 --interaction-file v1.dat --interaction-name v1 --nbr-lz 1 --full-diag 2000 > /dev/null
+    zeros=$(awk '!/^#/ && $NF < 1e-10 && $NF > -1e-10' fermions_v1_n_6_2s_15_lz.dat | wc -l)
+    test "$zeros" -eq 1 && echo "Laughlin zero mode: OK" || { echo "Laughlin zero mode: FAIL ($zeros)"; exit 1; }
+
+%labels
+    Title DiagHam (CMake migration)
+    Source https://github.com/PaulWatford/diagham-cmake-poc
+
+%help
+    DiagHam exact-diagonalization toolkit built by this repository's CMake build (full preset:
+    LAPACK, GSL, GMP, FFTW3, bzip2). Programs are on PATH; /opt/diagham/environment.txt records
+    the compiler and library versions; /opt/diagham/tests-source has the test suite's data files.

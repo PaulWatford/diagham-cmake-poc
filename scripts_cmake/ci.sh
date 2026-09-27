@@ -33,9 +33,8 @@ cmake --preset "$PRESET" ${DIAGHAM_CI_EXTRA_CMAKE_ARGS:-}
 echo "== build ($PRESET)"
 cmake --build --preset "$PRESET" --parallel "${CMAKE_BUILD_PARALLEL_LEVEL:-$(nproc)}"
 
-echo "== configuration as built"
-conf="$(find "build/$PRESET" -type f -name TestDiagHamConf -perm -u+x | head -1 || true)"
-if [ -n "$conf" ]; then "$conf" || true; fi
+echo "== environment as built (build/$PRESET/environment.txt)"
+scripts_cmake/environment.sh "build/$PRESET" | tee "build/$PRESET/environment.txt"
 
 echo "== test ($PRESET)"
 ctest --preset "$PRESET" --parallel "${CTEST_PARALLEL_LEVEL:-$(nproc)}"

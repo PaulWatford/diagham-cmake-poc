@@ -23,6 +23,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | Every option, file and mechanism of the build | [reference/build-system.md](reference/build-system.md) |
 | Install it and link my own code against it (`find_package(DiagHam)`) | [how-to/install-and-use-as-library.md](how-to/install-and-use-as-library.md) |
 | Build with `long double` precision | [how-to/develop/long-double.md](how-to/develop/long-double.md) |
+| Run DiagHam from a container, or record exactly what a build was made with | [how-to/build/container.md](how-to/build/container.md) |
 | Why CMake, and why generated? | [explanation/why-cmake.md](explanation/why-cmake.md) |
 
 ### …run a calculation

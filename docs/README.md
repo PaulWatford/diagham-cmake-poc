@@ -44,6 +44,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 
 | Situation | Page |
 |---|---|
+| Bring new DiagHam Subversion revisions in (update `upstream` and `main`) | [how-to/develop/sync-upstream.md](how-to/develop/sync-upstream.md) |
 | Add my own program, in the tree or as a separate project | [how-to/develop/create-a-program.md](how-to/develop/create-a-program.md) |
 | Add a spin Hilbert space with a discrete symmetry | [how-to/develop/new-spin-hilbert-space-with-symmetry.md](how-to/develop/new-spin-hilbert-space-with-symmetry.md) |
 | Preview or publish this documentation as a site | [how-to/develop/docs-site.md](how-to/develop/docs-site.md) |

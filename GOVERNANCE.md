@@ -23,7 +23,7 @@ A change is **physics-affecting** when it changes a computed number rather than 
 1. A defect in DiagHam's sources is registered in `docs/reference/known-defects.md` with a reproducer, and where possible a `known-bug` test (`WILL_FAIL`) that turns red the day it is fixed.
 2. A fix is one commit on `main` with the root cause and the verification in its message and the trailers `Upstream-Patch: <name>` / `Upstream-Base: SVN r<revision>`; `docs/explanation/upstream-fixes.md` indexes it.
 3. The fix is offered upstream as a bug report with the reproducer (`docs/how-to/develop/send-a-fix-upstream.md`, when written). When upstream adopts it, the next synchronisation drops the local copy.
-4. New Subversion revisions arrive through `upstream` only (`scripts_cmake/upstream-revision.txt` records the revision carried); `main` merges `upstream`, never the other way round.
+4. New Subversion revisions arrive through `upstream` only, by `scripts_cmake/sync_upstream.sh` run by a person and reviewed as a pull request (`docs/how-to/develop/sync-upstream.md`; `scripts_cmake/upstream-revision.txt` records the revision carried; the weekly CI job opens an `upstream-drift` issue when trunk moves on); `main` merges `upstream`, never the other way round.
 
 ## Decision rules
 

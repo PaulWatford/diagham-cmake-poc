@@ -79,27 +79,55 @@ jobs:
           path: build/${{ matrix.preset }}/Testing/Temporary/LastTest.log
           if-no-files-found: ignore
 
-  # The canonical DiagHam lives in Subversion at nick-ux.org. This job only
-  # reports whether trunk has moved past the revision recorded in
-  # scripts_cmake/upstream-revision.txt; bringing new revisions in is a
-  # deliberate step (docs/how-to/develop/sync-upstream.md, when written).
+  # The canonical DiagHam lives in Subversion at nick-ux.org. This job reports
+  # whether trunk has moved past the revision recorded in
+  # scripts_cmake/upstream-revision.txt and, if so, opens (or refreshes) an
+  # issue labelled upstream-drift. Bringing revisions in is a deliberate step:
+  # scripts_cmake/sync_upstream.sh, run by a person, reviewed as a pull request
+  # (docs/how-to/develop/sync-upstream.md).
   upstream-drift:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     name: upstream drift (SVN trunk)
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@v4
       - name: Install subversion
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends subversion
       - name: Compare trunk HEAD with the recorded revision
+        id: drift
         run: |
           recorded=$(tr -dc 0-9 < scripts_cmake/upstream-revision.txt)
           head=$(svn info --show-item revision --non-interactive \
                    --trust-server-cert-failures=unknown-ca,cn-mismatch,expired,not-yet-valid,other \
                    https://www.nick-ux.org/diagham/svn/DiagHam/trunk)
           echo "recorded r$recorded, upstream trunk r$head"
+          echo "recorded=$recorded" >> "$GITHUB_OUTPUT"
+          echo "head=$head" >> "$GITHUB_OUTPUT"
           if [ "$head" -gt "$recorded" ]; then
-            echo "::warning::DiagHam trunk is at r$head; this repository carries r$recorded"
-            exit 1
+            svn log --non-interactive --trust-server-cert-failures=unknown-ca,cn-mismatch,expired,not-yet-valid,other \
+              -r "$((recorded + 1)):$head" https://www.nick-ux.org/diagham/svn/DiagHam/trunk > drift.log || true
+            echo "drift=yes" >> "$GITHUB_OUTPUT"
+          else
+            echo "drift=no" >> "$GITHUB_OUTPUT"
           fi
+      - name: Open or refresh the drift issue
+        if: steps.drift.outputs.drift == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="DiagHam trunk is at r${{ steps.drift.outputs.head }}; this repository carries r${{ steps.drift.outputs.recorded }}"
+          body=$(printf 'The weekly check found new Subversion revisions.\n\nBring them in with `scripts_cmake/sync_upstream.sh` (see docs/how-to/develop/sync-upstream.md) and open a pull request.\n\n```\n%s\n```\n' "$(head -c 60000 drift.log)")
+          existing=$(gh issue list --label upstream-drift --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue edit "$existing" --title "$title" --body "$body"
+          else
+            gh label create upstream-drift --description "new DiagHam Subversion revisions to bring in" --color 0E8A16 2>/dev/null || true
+            gh issue create --title "$title" --body "$body" --label upstream-drift
+          fi
+      - name: Report
+        if: steps.drift.outputs.drift == 'yes'
+        run: echo "::warning::DiagHam trunk is at r${{ steps.drift.outputs.head }}; this repository carries r${{ steps.drift.outputs.recorded }}"

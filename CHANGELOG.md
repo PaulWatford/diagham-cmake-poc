@@ -15,6 +15,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `scripts_cmake/sync_upstream.sh`: fetch new Subversion revisions into
+  the git-svn clone, rebase them onto `upstream` with tree verification,
+  merge into `main`, regenerate the CMake files, record the revision,
+  build and test; `scripts_cmake/svn-authors.txt` (names only, `yangle`
+  corrected) in the repository; the weekly drift job opens an
+  `upstream-drift` issue; `docs/how-to/develop/sync-upstream.md`.
 - The documentation site: `mkdocs.yml` (Material for MkDocs, MathJax,
   search), navigation generated from the tree by
   `scripts_cmake/gen_mkdocs_nav.py`, published to GitHub Pages by

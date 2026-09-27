@@ -1,0 +1,9 @@
+regnault = Nicolas Regnault <>
+moller = Gunnar Moller <>
+repellin = Cecile Repellin <>
+sterdyni = Antoine Sterdyniak <>
+papic = Zlatko Papic <>
+dpnguyen = Duc Phuong Nguyen <>
+nmoran = Niall Moran <>
+yangle = Yang-Le Wu <>
+(no author) = unknown <>

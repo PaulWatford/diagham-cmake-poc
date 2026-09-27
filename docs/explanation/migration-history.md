@@ -28,6 +28,9 @@ The production home is to be Kent's GitLab instance. This GitHub repository
 is the development home in the meantime. Nothing here is GitHub-specific:
 the CI pipeline is one script (`scripts_cmake/ci.sh`) that both the GitHub
 workflow and the GitLab file call, so the move is a transfer, not a rework.
+New Subversion revisions are brought in by `scripts_cmake/sync_upstream.sh`
+(`docs/how-to/develop/sync-upstream.md`), exercised by re-importing
+r4491–r4493 onto an `upstream` reset to r4490 with identical trees.
 The Kent cluster recipe is a scaffold awaiting the site's values
 (`docs/drafts/kent-cluster-build.md`).
 

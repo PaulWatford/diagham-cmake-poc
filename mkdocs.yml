@@ -101,11 +101,13 @@ nav:
           - 'Program reference (all 603, generated)': reference/programs/README.md
           - 'Manuals from the DiagHam wiki (133)': reference/programs/manuals/README.md
   - Explanation:
+      - 'Scored against the field''s checklists': explanation/checklists.md
       - 'Deferred and excluded upstream code': explanation/deferred-code.md
       - 'The review pipeline ("CMake AI Guard") — design': explanation/guard-design.md
       - 'Migration history and the production plan': explanation/migration-history.md
       - 'Bug report: spinful torus Coulomb ground state is wrong for N >= 3': explanation/torus-su2-coulomb-defect.md
       - 'Upstream fixes carried on `main`': explanation/upstream-fixes.md
+      - 'What is verified, what is only watched, what is untested': explanation/verification.md
       - 'Why CMake, and why a generated build': explanation/why-cmake.md
   - History:
       - 'docs/history — upstream files kept as found': history/README.md

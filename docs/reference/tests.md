@@ -14,7 +14,7 @@ ctest --preset default -R hubbard      # by name
 
 ## What is tested
 
-**What the suite is, and is not.** Only a `physics` test says a program
+**What the suite is, and is not** (the one-page version is [../explanation/verification.md](../explanation/verification.md)). Only a `physics` test says a program
 computes the right numbers. A `crosscheck` says two DiagHam implementations
 agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test

@@ -27,6 +27,10 @@ and the community/governance files. Release notes:
 down to the 2026-09-25 entry is part of it.
 
 ### Added
+- `docs/explanation/verification.md` (what is proven, what is only watched,
+  what is untested, by module) and `docs/explanation/checklists.md` (scored
+  line by line against JOSS, FAIR4RS, The Turing Way and CERTIFY-ED, with
+  evidence and the gaps).
 - The upstream collaboration pack: `scripts_cmake/upstream_pack.py` generates,
   from the commits with an `Upstream-Patch:` trailer, one report
   (`docs/upstream-reports/`) and one `svn patch`-applicable diff

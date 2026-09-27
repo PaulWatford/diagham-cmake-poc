@@ -160,6 +160,8 @@ def check():
 
 
 def main():
+    if subprocess.run(["git", "rev-parse", "--verify", "-q", "upstream"], cwd=ROOT, capture_output=True).returncode != 0:
+        sys.exit("no `upstream` branch in this clone: git fetch origin upstream:upstream   (the pack is the difference between main and upstream)")
     if "--check" in sys.argv:
         check()
         return

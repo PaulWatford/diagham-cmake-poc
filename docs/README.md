@@ -51,6 +51,8 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | Preview or publish this documentation as a site | [how-to/develop/docs-site.md](how-to/develop/docs-site.md) |
 | Add a test that checks a spectrum against a known answer | [how-to/develop/add-a-golden-test.md](how-to/develop/add-a-golden-test.md) |
 | What the test suite checks, and what it does not | [reference/tests.md](reference/tests.md) |
+| What is proven, what is only watched, what is untested — in one page | [explanation/verification.md](explanation/verification.md) |
+| How this repository scores against JOSS / FAIR4RS / Turing Way / CERTIFY-ED | [explanation/checklists.md](explanation/checklists.md) |
 | Which programs actually have their physics tested (honest count) | [reference/test-coverage.md](reference/test-coverage.md) |
 | Fix something in DiagHam's own sources: the rules and the index of fixes so far | `CONTRIBUTING.md` at the root, then [explanation/upstream-fixes.md](explanation/upstream-fixes.md) |
 | Offer a fix or a finding to the DiagHam authors (reports + `svn patch` diffs) | [how-to/develop/send-a-fix-upstream.md](how-to/develop/send-a-fix-upstream.md), [upstream-reports/](upstream-reports/README.md) |

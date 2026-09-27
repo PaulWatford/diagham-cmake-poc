@@ -124,7 +124,9 @@ diagham_physics_test(selftest.runner.rejects_missing_output
     PROGRAM ${fer2} ARGS --help OUTPUT "no_such_output_*.dat"
     CHECK min-abs @OUTPUT@ -1 0 1
     WILL_FAIL LABELS selftest)
-set_tests_properties(selftest.runner.rejects_missing_output PROPERTIES LABELS "selftest")
+if(TEST selftest.runner.rejects_missing_output)
+    set_tests_properties(selftest.runner.rejects_missing_output PROPERTIES LABELS "selftest")
+endif()
 
 # --- oracle self-tests ------------------------------------------------------------------------------
 if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)

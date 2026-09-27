@@ -1,0 +1,22 @@
+name: Documentation
+description: A page that is wrong, stale, unclear or missing
+labels: [documentation]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page
+      placeholder: docs/how-to/build/linux-gcc.md, or "none — missing"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is wrong or missing
+    validations:
+      required: true
+  - type: textarea
+    id: fix
+    attributes:
+      label: What it should say (if you know)
+      description: Every page carries a `Source:` line; if you know where the correct information comes from, say so.

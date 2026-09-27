@@ -62,6 +62,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | What changed, release by release | `CHANGELOG.md` at the root |
 | The upstream INSTALL, ChangeLog, TODO and NEWS, kept as found | [history/README.md](history/README.md) |
 | Who wrote DiagHam | `AUTHORS` at the root |
+| Who decides what, and how a fix reaches the DiagHam authors | `GOVERNANCE.md` at the root; `SUPPORT.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md` |
 
 ### …finish something
 

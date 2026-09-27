@@ -114,7 +114,7 @@ physics.spin.xx_ring_L8
 python.hubbard_ed_cross_check
 regression.fci_checkerboard_singleband_n3_3x3
 regression.fci_kagome_flatband_n3_3x3
-regression.fqsh_checkerboard_twobands_n2_2x3
+regression.fti_3d_simple_ti_n2_2x2x2
 regression.heisenberg_2d_2x3
 regression.hubbard_kitaev_heisenberg_torus_2x1_n4
 regression.hubbard_ssh_x4_n4

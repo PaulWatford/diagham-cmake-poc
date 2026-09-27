@@ -1,0 +1,62 @@
+name: Bug report
+description: A build failure, a test failure, a crash, or a result you believe is wrong
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: check `docs/reference/known-defects.md` (registered upstream defects) and
+        `docs/reference/test-coverage.md` (whether this program's physics has been checked at all).
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of problem
+      options:
+        - Build or configure failure
+        - A ctest test fails
+        - A program crashes or hangs
+        - A program runs but the result looks wrong
+        - Documentation is wrong or missing
+    validations:
+      required: true
+  - type: input
+    id: program
+    attributes:
+      label: Program (if any)
+      placeholder: e.g. FQHESphereFermionsTwoBodyGeneric
+  - type: textarea
+    id: command
+    attributes:
+      label: Exact command line and input files
+      description: The full command, and the contents of any interaction / reference files it reads.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: What happened
+      description: The output (or the relevant part), the crash message, or the numbers you got.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected, and why you know it
+      description: For a physics result, say how the expected answer is known (analytic, another code, a paper) — that is what makes it a golden test later.
+  - type: input
+    id: build
+    attributes:
+      label: Build
+      description: preset (default / lapack / full / hpc / core), compiler and version, OS, DiagHam revision (`scripts_cmake/upstream-revision.txt`), commit
+      placeholder: full, GCC 13.2, Ubuntu 24.04, r4493, commit abc1234
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I ran `ctest --preset <preset>` and report whether it is green
+        - label: I looked at `docs/reference/known-defects.md`

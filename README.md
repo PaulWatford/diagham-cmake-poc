@@ -44,7 +44,7 @@ Two branches matter:
 |---- benchmarks/                 Hubbard verification log + independent Python exact diagonalisation
 |---- Base/ src/ FQHE/ FTI/ Spin/ QuantumDots/   DiagHam itself, as in upstream, with generated CMakeLists.txt in each directory
 |---- docs/                     knowledge base: how-to, reference, explanation, tutorials, history (docs/README.md)
-+---- docs/reference/tests.md, AGENTS.md, CONTRIBUTING.md
++---- docs/reference/tests.md, AGENTS.md, CONTRIBUTING.md, GOVERNANCE.md, SUPPORT.md, CODE_OF_CONDUCT.md, SECURITY.md
 ```
 
 The per-directory `CMakeLists.txt` files are generated from upstream's own
@@ -164,6 +164,14 @@ program-by-program reference (`docs/reference/programs/`, generated from
 `--help` for all 603 programs) carries the 132 manuals adapted from the
 upstream wiki at nick-ux.org; what is still unfinished is listed in
 `docs/drafts/INDEX.md`.
+
+## Contributing, support, governance
+
+`CONTRIBUTING.md` says how to propose a change, `SUPPORT.md` where to ask,
+`GOVERNANCE.md` who decides what (the DiagHam authors own the physics; this
+repository owns build, tests, docs and releases), `CODE_OF_CONDUCT.md` the
+Contributor Covenant, `SECURITY.md` how to report privately. Issue and pull
+request templates are in `.github/`.
 
 ## AI-assisted contribution rules
 

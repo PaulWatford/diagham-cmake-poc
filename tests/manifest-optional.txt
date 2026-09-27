@@ -1,0 +1,3 @@
+# tests registered only when an optional library is on; selftest.manifest allows them to be present or absent
+crosscheck.fqhe.sphere.lapack_vs_internal_diagonaliser
+regression.cylinder_fermions_v1_n4_l9

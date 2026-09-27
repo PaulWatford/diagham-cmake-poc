@@ -27,7 +27,7 @@ headline today is **34 of 603 programs with a physics or cross-check test** (31 
 | `physics` | goldens with independently known answers (table below) | a DiagHam program, run from a clean directory, writes a spectrum that matches an answer known without DiagHam (analytic, exact counting, an independent solver) |
 | `crosscheck` | `crosscheck.fqhe.torus.su2_coulomb.*`, `crosscheck.fqhe.sphere.*` | two DiagHam programs, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree on the same problem; no independent answer is involved |
 | `regression` | `regression.*` (11 programs) | a spectrum saved from the r4493 build is reproduced; detects change, not correctness |
-| `selftest` | `selftest.manifest`, `selftest.*_oracle`, `selftest.checker.*`, `selftest.runner.*` | the harness works: the registered tests equal `tests/manifest.txt` (a green run that silently lost tests fails); regenerate the manifest with `python3 tests/coverage.py <build-dir> --manifest tests/manifest.txt` when a test is deliberately added or removed |
+| `selftest` | `selftest.manifest`, `selftest.*_oracle`, `selftest.checker.*`, `selftest.runner.*` | the harness works: the registered tests equal `tests/manifest.txt` (a green run that silently lost tests fails); regenerate the manifest with `python3 tests/coverage.py <build-dir> --manifest tests/manifest.txt` when a test is deliberately added or removed; tests that exist only with an optional library are listed in `tests/manifest-optional.txt` and may be present or absent |
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
@@ -209,6 +209,15 @@ the references are regenerated with `python3 tests/regression_reference.py
 build/default --write` — only for an understood, intended change, said so
 in the commit. `check_spectrum numbers` compares a program's standard
 output when it writes no file (`PeriodicQuantumDot2D`).
+
+A regression case must give the same spectrum in builds with and without
+LAPACK (it is checked before being added). `FQSHCheckerboardModelTwoBands`
+does not: its bands are degenerate, so the projected model depends on the
+eigensolver's choice of basis (differences of 0.14–0.17 between the
+internal diagonaliser and LAPACK). That is a property of the model set-up,
+not a defect, but it makes the program unsuitable for a portable reference;
+`FTI3DSimpleTI` (identical to 10⁻¹⁵ in both builds) stands in for the FTI
+module.
 
 A second `known-bug` test came out of this batch (**U31**):
 `FCICheckerboardLatticeModel` without `--single-band` (the two-band model)

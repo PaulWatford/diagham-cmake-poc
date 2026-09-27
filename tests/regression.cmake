@@ -47,7 +47,9 @@ foreach(line ${regression_cases})
         CHECK ${check}
         LABELS ${module})
     # diagham_physics_test labels physics; a regression is not one
-    set_tests_properties(regression.${name} PROPERTIES LABELS "regression;${module}")
+    if(TEST regression.${name})
+        set_tests_properties(regression.${name} PROPERTIES LABELS "regression;${module}")
+    endif()
 endforeach()
 
 # known defect U31: FCICheckerboardLatticeModel without --single-band (the two-band model)

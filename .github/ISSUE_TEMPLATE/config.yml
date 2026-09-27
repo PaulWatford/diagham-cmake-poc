@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or discussion
+    url: https://github.com/PaulWatford/diagham-cmake-poc/discussions
+    about: How-do-I questions and anything that is not a defect
+  - name: Security report
+    url: https://github.com/PaulWatford/diagham-cmake-poc/security/advisories/new
+    about: Report privately; see SECURITY.md
+  - name: DiagHam itself (the physics code)
+    url: https://www.nick-ux.org/diagham/
+    about: The DiagHam authors' site and wiki; physics questions belong there

@@ -54,3 +54,11 @@ AI-assisted changes are in `AGENTS.md`; they apply on top of this.
   separate commits so each can be reviewed and reverted on its own.
 - CI must be green; a green CI is necessary, not sufficient — a named
   maintainer approves every merge.
+
+## Who decides, and where to ask
+
+`GOVERNANCE.md` sets out the two owners (the DiagHam authors for the physics,
+this repository's maintainer for build, tests, docs and releases) and how a fix
+travels upstream. `SUPPORT.md` says where to ask questions. Issues use the
+templates in `.github/ISSUE_TEMPLATE/`; pull requests get the checklist in
+`.github/PULL_REQUEST_TEMPLATE.md` — it is the list the maintainer reviews against.

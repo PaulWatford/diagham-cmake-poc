@@ -2,9 +2,12 @@
 # Optional 5th field: a CMake condition, e.g. DIAGHAM_USE_GSL (the reference is then generated from a build that has it).
 # @DATA@ is replaced by the absolute path of tests/data/regression. One case per module directory that has
 # no physics golden yet, plus a few programs of covered modules whose families are otherwise untested.
+# A case must give the same spectrum in builds with and without LAPACK (checked before it is added):
+# FQSHCheckerboardModelTwoBands does not (its degenerate bands make the projected model depend on the
+# eigensolver's basis choice, 0.14-0.17 differences) and is therefore not a regression case.
 fci_kagome_flatband_n3_3x3 | FCI_FCIKagomeLatticeModel | fermions_singleband_kagomelattice_*_gx_0_gy_0.dat | -p 3 -x 3 -y 3 --flat-band --full-diag 5000
 fci_checkerboard_singleband_n3_3x3 | FCI_FCICheckerboardLatticeModel | fermions_singleband_checkerboardlattice_*_gy_0.000000.dat | -p 3 -x 3 -y 3 --single-band --flat-band --full-diag 5000
-fqsh_checkerboard_twobands_n2_2x3 | FTI_FQSHCheckerboardModelTwoBands | fermions_twoband_quantumspinhall_*.dat | -p 2 -x 2 -y 3 --flat-band --full-diag 5000
+fti_3d_simple_ti_n2_2x2x2 | FTI_FTI3DSimpleTI | fermions_*.dat | -p 2 -x 2 -y 2 -z 2 --flat-band --full-diag 5000
 lattice_bosons_n3_3x3_q3 | FQHEOnLattice_FQHELatticeBosons | bosons_lattice_*.dat | -p 3 -x 3 -y 3 -q 3 --full-diag 5000
 periodic_quantum_dot_2d_8x8 | QuantumDots_PeriodicQuantumDot2D | program.log | -M 8 -N 8 -n 3
 hubbard_kitaev_heisenberg_torus_2x1_n4 | HubbardModels_HubbardKitaevHeisenbergModel | fermions_kitaev_heisenberg_*.dat | -p 4 --torus --nbrsites-x 2 --nbrsites-y 1 --full-diag 5000

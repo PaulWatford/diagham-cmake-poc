@@ -1,0 +1,26 @@
+name: Feature or test request
+description: A build option, a golden test, a document, or tooling you would like to see
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What you would like
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why — which calculation or workflow it unblocks
+    validations:
+      required: true
+  - type: textarea
+    id: golden
+    attributes:
+      label: If this is a test request, the independently known answer
+      description: A golden needs an answer known without DiagHam — analytic, exact counting, another code, a paper with the number. Say where it comes from.
+  - type: markdown
+    attributes:
+      value: |
+        Changes to DiagHam's physics itself (new Hamiltonians, new Hilbert spaces) belong upstream with the DiagHam authors;
+        this repository carries the build, tests and documentation. See `GOVERNANCE.md`.

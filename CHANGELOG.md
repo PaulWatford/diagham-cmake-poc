@@ -15,6 +15,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Community and governance files: `GOVERNANCE.md` (two owners: the DiagHam
+  authors for the physics, the maintainer for build/tests/docs/releases; how
+  a fix travels upstream; the GitHub settings kept), `SUPPORT.md`,
+  `SECURITY.md`, `CODE_OF_CONDUCT.md` (Contributor Covenant 2.1), issue
+  templates (bug / feature or test / documentation), a pull-request
+  checklist, `CODEOWNERS`.
 - 12 regression tests (`regression.*`), one spectrum saved from the r4493
   build per module directory without a physics golden and for a few more
   families; `tests/regression_reference.py` and `cases.txt`; the references
@@ -58,6 +64,12 @@ all present on the `upstream` branch: `git log upstream`).
   expected files.
 
 ### Fixed
+- Mid-cycle audit (fresh clone, presets core/full/default): the `core`
+  preset failed to configure (`set_tests_properties` on tests not
+  registered when a module is off); the manifest self-test failed in the
+  `full` preset (option-gated tests, now `tests/manifest-optional.txt`);
+  the FQSH two-band checkerboard regression case depended on the
+  eigensolver (degenerate bands) and was replaced by `FTI3DSimpleTI`.
 - `ParticleOnCylinderPseudopotentialHamiltonian` without GSL: undefined
   behaviour (every `FQHECylinderFermionsTwoBodyGeneric` run crashed with
   "stack smashing detected") replaced by a clear message and exit 1 (U28).

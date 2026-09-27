@@ -222,8 +222,11 @@ the same terms; `NOTICE` carries the contribution notice.
 ## Citing
 
 If DiagHam contributes to a publication, please cite it as software (see
-`CITATION.cff`) and the relevant papers in the DiagHam publication list on
-the upstream wiki.
+`CITATION.cff`; GitHub's "Cite this repository" button reads it) and the
+relevant papers in `docs/reference/publications.md`. This is release
+**2026.9.0** (DiagHam r4493); releases are listed on GitHub and described
+in `CHANGELOG.md`; a Zenodo DOI will be added after the first archived
+release (`docs/how-to/develop/release.md`).
 
 ## Acknowledgements
 

@@ -22,10 +22,10 @@ SECTIONS = [  # (title, directory, subdirectories listed as sub-sections)
     ("How-to guides", "how-to", ["build", "develop"]),
     ("Reference", "reference", []),
     ("Explanation", "explanation", []),
-    ("History", "history", []),
+    ("History", "history", ["release-notes"]),
     ("Drafts", "drafts", []),
 ]
-SUBSECTION_TITLES = {"build": "Build", "develop": "Develop"}
+SUBSECTION_TITLES = {"build": "Build", "develop": "Develop", "release-notes": "Release notes"}
 
 
 def title_of(path):

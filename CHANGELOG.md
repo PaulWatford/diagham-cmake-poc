@@ -1,11 +1,10 @@
 # Changelog
 
 All notable changes to the DiagHam CMake migration, newest first, in the
-[Keep a Changelog](https://keepachangelog.com/) style. There are no version
-numbers yet: entries are dated, and each synchronisation with upstream is
-tagged `migration-r<SVN revision>` (the first is `migration-r4493`). Semantic
-versions start when the maintainers adopt this repository as the production
-home.
+[Keep a Changelog](https://keepachangelog.com/) style. Releases carry
+calendar versions `YEAR.MONTH.PATCH` (tag `vYEAR.MONTH.PATCH`; see
+`docs/how-to/develop/release.md`); each synchronisation with upstream is
+also tagged `migration-r<SVN revision>`. Earlier entries are dated only.
 
 For the history of DiagHam itself: upstream's own `ChangeLog` covers 2003 to
 April 2005 only and is preserved as `docs/history/ChangeLog-upstream`; after
@@ -13,6 +12,19 @@ that the Subversion commit log is the record (4,477 trunk commits to r4493,
 all present on the `upstream` branch: `git log upstream`).
 
 ## [Unreleased]
+
+## [2026.9.0] — 2026-09-28
+
+The first numbered release: DiagHam r4493 with the CMake build (61
+libraries, 603 programs, presets default/lapack/full/hpc/core/mkl), the
+ctest suite (738 tests; 107 physics goldens with independently known
+answers, 4 cross-checks, 12 regression spectra, 14 self-tests, 2 known-bug
+reproducers, 599 smokes; 34 of 603 programs physics-checked, 11 more with
+a regression test), the documentation set and site, the upstream
+synchronisation procedure, the environment record and container recipes,
+and the community/governance files. Release notes:
+`docs/history/release-notes/2026.9.0.md`. Everything below this heading
+down to the 2026-09-25 entry is part of it.
 
 ### Added
 - Reproducibility: `scripts_cmake/environment.sh` records commit, revision,

@@ -86,6 +86,7 @@ nav:
           - 'Preview and publish the documentation site': how-to/develop/docs-site.md
           - 'Build DiagHam with long-double precision': how-to/develop/long-double.md
           - 'Write a spin Hilbert space with a discrete symmetry': how-to/develop/new-spin-hilbert-space-with-symmetry.md
+          - 'Make a release': how-to/develop/release.md
           - 'Bring new DiagHam revisions in from Subversion': how-to/develop/sync-upstream.md
   - Reference:
       - 'Build system reference': reference/build-system.md
@@ -107,6 +108,8 @@ nav:
       - 'Why CMake, and why a generated build': explanation/why-cmake.md
   - History:
       - 'docs/history — upstream files kept as found': history/README.md
+      - Release notes:
+          - 'Release 2026.9.0 — DiagHam r4493 with a CMake build, a physics test suite and a documentation set': history/release-notes/2026.9.0.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

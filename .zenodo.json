@@ -1,0 +1,28 @@
+{
+  "title": "DiagHam (CMake migration): exact-diagonalization toolkit with a CMake build, test suite and documentation",
+  "version": "2026.9.0",
+  "upload_type": "software",
+  "license": "GPL-2.0-or-later",
+  "description": "<p>DiagHam is an exact-diagonalization toolkit for strongly correlated quantum systems: fractional quantum Hall effect on the sphere, torus, disk and cylinder, fractional Chern and topological insulators, Hubbard models, spin chains, quantum dots. This repository carries the DiagHam sources (Subversion trunk revision 4493, full history on the <code>upstream</code> branch, authors by name) with a CMake build, a ctest suite whose physics goldens have independently known answers, and a documentation set published as a site.</p><p>The physics is the work of the DiagHam authors (Nicolas Regnault, Gunnar Möller and collaborators, 2003 onwards). The build, tests and documentation are this repository's contribution.</p>",
+  "creators": [
+    {"name": "Regnault, Nicolas"},
+    {"name": "Möller, Gunnar"},
+    {"name": "Repellin, Cécile"},
+    {"name": "Sterdyniak, Antoine"},
+    {"name": "Papić, Zlatko"},
+    {"name": "Nguyen, Duc Phuong"},
+    {"name": "Moran, Niall"},
+    {"name": "Wu, Yang-Le"},
+    {"name": "Watford, Paul"}
+  ],
+  "contributors": [
+    {"name": "Watford, Paul", "type": "ProjectMember"}
+  ],
+  "keywords": ["exact diagonalization", "fractional quantum Hall effect", "fractional Chern insulators", "Hubbard model", "spin chains", "condensed matter physics", "CMake"],
+  "related_identifiers": [
+    {"identifier": "https://github.com/PaulWatford/diagham-cmake-poc", "relation": "isSupplementTo", "scheme": "url"},
+    {"identifier": "https://www.nick-ux.org/diagham/", "relation": "isDerivedFrom", "scheme": "url"}
+  ],
+  "language": "eng",
+  "access_right": "open"
+}

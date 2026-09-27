@@ -32,7 +32,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(DiagHam
-    VERSION 0.01
+    VERSION 2026.9.0
     DESCRIPTION "Exact Diagonalization toolkit for strongly correlated systems"
     LANGUAGES CXX C
 )

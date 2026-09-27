@@ -30,8 +30,10 @@ authors:
 license: GPL-2.0-or-later
 repository-code: https://github.com/PaulWatford/diagham-cmake-poc
 url: https://www.nick-ux.org/diagham/
-version: r4493
-date-released: "2026-09-18"
+version: 2026.9.0
+date-released: "2026-09-28"
+# DiagHam Subversion revision carried: r4493 (scripts_cmake/upstream-revision.txt).
+# identifiers: add the Zenodo concept DOI here after the first archived release (docs/how-to/develop/release.md).
 keywords:
   - exact diagonalization
   - fractional quantum Hall effect

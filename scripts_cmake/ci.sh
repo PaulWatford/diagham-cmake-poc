@@ -40,6 +40,8 @@ echo "== test ($PRESET)"
 ctest --preset "$PRESET" --parallel "${CTEST_PARALLEL_LEVEL:-$(nproc)}"
 
 if [ "$PRESET" = default ] && command -v python3 >/dev/null; then
+    echo "== version consistent?"
+    python3 scripts_cmake/check_version.py
     echo "== coverage page up to date?"
     python3 tests/coverage.py "build/$PRESET" --write "build/$PRESET/test-coverage.md" > /dev/null
     if ! diff -q <(tail -n +5 "build/$PRESET/test-coverage.md") <(tail -n +5 docs/reference/test-coverage.md) > /dev/null; then

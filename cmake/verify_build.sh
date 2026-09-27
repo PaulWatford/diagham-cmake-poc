@@ -11,7 +11,7 @@ set -e
 AUTOTOOLS="${1:-$(pwd)/build}"
 CMAKE_DIR="${2:-$(pwd)/cmake_build}"
 
-# Guard added 22/09 (audited by a second Claude session): without this,
+# Guard added 22/09 (a second independent audit): without this,
 # pointing the script at nonexistent directories silently ran all four
 # tests over empty `find`/`ls` results, printed "RESULTS: 0 passed, 0
 # failed", and exited 0 -- a false PASS with zero real checks run.

@@ -28,7 +28,7 @@ every check still reports green.
 
 > **Resolved 2026-09-26:** the notes below described the proof-of-concept state; a ctest suite now exists (`docs/reference/tests.md`) and the 79 figure was reproduced against a real autotools build — in the default configuration, not core-only. Kept for the record.
 >
-> **Flagged, not corrected, 22/09 (audited by a second Claude session):**
+> **Flagged, not corrected, 22/09 (a second independent audit):**
 > two things about the "79/79" fact above do not currently hold and
 > should be re-verified by whoever next has a real autotools toolchain
 > available, before anyone relies on it as enforced:
@@ -38,7 +38,7 @@ every check still reports green.
 >    "manifest of 79 test names" this file and the pipeline spec below
 >    describe does not exist as `add_test` entries — `verify_build.sh`
 >    is a hand-rolled shell script, run directly, not through `ctest`.
-> 2. **The 79 figure itself is unconfirmed.** A second Claude session
+> 2. **The 79 figure itself is unconfirmed.** A second independent audit
 >    reported getting 73 real passes (0 fails) running `verify_build.sh`
 >    core-only against a real autotools build, and that 79 only appears
 >    when 6 FTI libraries are also present — which would contradict the

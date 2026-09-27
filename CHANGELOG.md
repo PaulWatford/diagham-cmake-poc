@@ -86,9 +86,9 @@ all present on the `upstream` branch: `git log upstream`).
   and its branch deleted; the verified parts were re-landed above, on the
   current upstream, as separate commits.
 
-## [2026-09-22] — Audit-and-correction pass (second Claude session's findings, independently re-verified)
+## [2026-09-22] — Audit-and-correction pass (findings of a second independent audit, re-verified)
 
-A second, independent Claude session audited this repo's claims read-only
+A second independent audit examined this repo's claims read-only
 and reported findings; per instruction, none of those findings were taken
 on trust — every claim checked here was independently re-derived with
 real tools (mpmath at 50-digit precision, fresh non-shallow git clones,

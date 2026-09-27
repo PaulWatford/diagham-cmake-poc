@@ -152,7 +152,7 @@ set(DIAGHAM_COMPILE_DEFS "")
 
 # Endianness
 #
-# REMOVED 22/09 (audited by a second Claude session, same bug class as
+# REMOVED 22/09 (a second independent audit, same bug class as
 # the HAVE_LAPACK/HAVE_MPI fix below): this used to inject __LITTLEENDIAN__
 # / __BIGENDIAN__ directly via compile definitions. Confirmed by reading
 # cmake/config_ac.h.in: HAVE_LITTLEENDIAN is unconditionally `#define`d
@@ -179,7 +179,7 @@ endif()
 
 # __int128 support, gcc/clang have it, MSVC does not
 #
-# REMOVED 22/09 (audited by a second Claude session): the __128_BIT_LONGLONG__
+# REMOVED 22/09 (a second independent audit): the __128_BIT_LONGLONG__
 # injection here was removed for the same reason as endianness above.
 # Confirmed by reading upstream src/config.h: on x86_64 with a
 # non-Intel compiler (i.e. GCC/Clang, what this PoC actually builds
@@ -202,7 +202,7 @@ endif()
 
 # sstream style (modern C++ <sstream> rather than ancient strstream)
 #
-# REMOVED 22/09 (audited by a second Claude session): src/config.h
+# REMOVED 22/09 (a second independent audit): src/config.h
 # unconditionally does `#define __SSTREAM_STYLE__` itself, with no
 # HAVE_* gate -- this injection was a pure duplicate causing the same
 # macro-redefinition warning as the two removals above.
@@ -223,7 +223,7 @@ list(APPEND DIAGHAM_COMPILE_DEFS "MACHINE_PRECISION=1e-14")
 #   (b) remove the dead-code paths entirely.
 # This PoC chooses neither, it just matches what autotools produces.
 
-# FLAGGED, NOT FIXED, 22/09 (audited by a second Claude session): __DEBUG__
+# FLAGGED, NOT FIXED, 22/09 (a second independent audit): __DEBUG__
 # and __SMP__ below are the same bug class as the three removed above,
 # but a full fix is more involved, so this is documented rather than
 # changed this pass. Confirmed by reading upstream src/config.h: it

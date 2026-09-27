@@ -23,7 +23,7 @@ What is **not** here:
 - No physics intent inferred, only what's explicitly named in the
   option strings or `cout` output strings.
 
-> **Correction (22/09, audited by a second Claude session):** everything
+> **Correction (22/09, a second independent audit):** everything
 > below this point about `guysoft/DiagHam` having "a single commit" is
 > **wrong**, and the "Last-touched in the available snapshot" dates for
 > each file below are consequently unreliable. The claim came from a

@@ -744,12 +744,12 @@ errors in `HermitianMatrix.h`" question (see README's "Beyond this
 iteration") remains genuinely open; this session did not resolve it,
 only confirmed it's still untested rather than fixed.
 
-## Correction to the patch-09 root cause above, and a real fix (22/09, audited by a second Claude session)
+## Correction to the patch-09 root cause above, and a real fix (22/09, a second independent audit)
 
 The "GNU patch 2.7.6 CRLF-detection bug" diagnosis above is wrong, and the
 `git apply` fallback it describes was never actually verified against this
-repository's real content -- both were caught by a second, independent
-Claude session auditing this work, then confirmed here with direct
+repository's real content -- both were caught by a second independent
+audit of this work, then confirmed here with direct
 evidence (git blobs, `file`, and repeated fresh-clone tests), not just
 re-asserted.
 
@@ -822,7 +822,7 @@ sentinel, which does not help once the *source* tree itself is already
 patched) -- not something this session's fix caused or fixed. Flagged
 here rather than silently left for the next person to rediscover.
 
-## Patch 08: the Spin/QuantumDots portion has never been compile-tested (22/09, audited by a second Claude session)
+## Patch 08: the Spin/QuantumDots portion has never been compile-tested (22/09, a second independent audit)
 
 > **Resolved 24/09:** Spin and QuantumDots are now built by default, so
 > patch 08's edits to those 92 files are compiled on every build. Doing so

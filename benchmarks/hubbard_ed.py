@@ -43,7 +43,7 @@ For 3x3, call ground_state(3, 3, 4, t=-1.0) directly -- it is not run by
 with this script's pure-Python Hamiltonian assembly takes several
 minutes, not the ~10s of the smaller cases.
 
-*(Corrected 22/09, audited by a second Claude session, then confirmed
+*(Corrected 22/09, a second independent audit, then confirmed
 directly: build_hubbard() previously asserted `L % 2 == 0` ("half-filling
 needs an even number of sites"), which made this file's own claim of
 having verified the 3x3 case unreproducible as committed -- calling

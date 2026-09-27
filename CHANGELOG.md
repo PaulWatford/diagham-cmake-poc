@@ -15,6 +15,13 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- 12 regression tests (`regression.*`), one spectrum saved from the r4493
+  build per module directory without a physics golden and for a few more
+  families; `tests/regression_reference.py` and `cases.txt`; the references
+  say what they are (change detection, not correctness). `check_spectrum
+  numbers` for programs that print rather than write. Second `known-bug`
+  test: the two-band checkerboard segfault (U31). CI fails when the coverage
+  page is stale.
 - Independent solvers: `tests/oracles/sphere_ed.py` (lowest-Landau-level
   pseudopotential Hamiltonians from Clebsch–Gordan projectors, 7 full-spectrum
   tests, fermions and bosons, Coulomb and generic pseudopotentials) and

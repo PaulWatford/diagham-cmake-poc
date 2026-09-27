@@ -2,6 +2,7 @@ crosscheck.fqhe.sphere.lanczos_vs_full_diagonalisation
 crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless
 crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
 install.find_package_consumer
+knownbug.fci.checkerboard.two_band_model_segfault
 knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state
 physics.dimension.disk.bosons_n3_lz6
 physics.dimension.disk.fermions_n3_lz6
@@ -111,6 +112,17 @@ physics.spin.xx_ring_L10
 physics.spin.xx_ring_L6
 physics.spin.xx_ring_L8
 python.hubbard_ed_cross_check
+regression.fci_checkerboard_singleband_n3_3x3
+regression.fci_kagome_flatband_n3_3x3
+regression.fqsh_checkerboard_twobands_n2_2x3
+regression.heisenberg_2d_2x3
+regression.hubbard_kitaev_heisenberg_torus_2x1_n4
+regression.hubbard_ssh_x4_n4
+regression.lattice_bosons_n3_3x3_q3
+regression.periodic_quantum_dot_2d_8x8
+regression.potts3_open_n6
+regression.sphere_su2_fermions_n4_2s6
+regression.torus_coulomb_fermions_n4_nphi8
 selftest.checker.accepts_correct_value
 selftest.checker.rejects_missing_file
 selftest.checker.rejects_nan

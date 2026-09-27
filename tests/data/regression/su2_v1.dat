@@ -1,0 +1,5 @@
+# SU(2) test interaction for the spinful sphere regression case: V1 in the like-spin channels, V0 between spins
+Pseudopotentials = 0 1
+PseudopotentialsUpUp = 0 1
+PseudopotentialsDownDown = 0 1
+PseudopotentialsUpDown = 1 0

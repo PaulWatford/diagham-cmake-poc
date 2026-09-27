@@ -1,0 +1,5 @@
+# regression reference: QuantumDots_PeriodicQuantumDot2D
+# args: -M 8 -N 8 -n 3
+# DiagHam r4493, commit a8d7390a7, preset default, /usr/bin/c++, 2026-09-27
+# what this build produced -- detects change, not correctness (see tests/regression_reference.py)
+2.1316282072803006e-14	1.6048959296697731	3.2097918593395605	

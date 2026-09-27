@@ -1,0 +1,16 @@
+# Regression cases: name | ctest target | output glob ("program.log" = standard output, numeric lines only) | args
+# Optional 5th field: a CMake condition, e.g. DIAGHAM_USE_GSL (the reference is then generated from a build that has it).
+# @DATA@ is replaced by the absolute path of tests/data/regression. One case per module directory that has
+# no physics golden yet, plus a few programs of covered modules whose families are otherwise untested.
+fci_kagome_flatband_n3_3x3 | FCI_FCIKagomeLatticeModel | fermions_singleband_kagomelattice_*_gx_0_gy_0.dat | -p 3 -x 3 -y 3 --flat-band --full-diag 5000
+fci_checkerboard_singleband_n3_3x3 | FCI_FCICheckerboardLatticeModel | fermions_singleband_checkerboardlattice_*_gy_0.000000.dat | -p 3 -x 3 -y 3 --single-band --flat-band --full-diag 5000
+fqsh_checkerboard_twobands_n2_2x3 | FTI_FQSHCheckerboardModelTwoBands | fermions_twoband_quantumspinhall_*.dat | -p 2 -x 2 -y 3 --flat-band --full-diag 5000
+lattice_bosons_n3_3x3_q3 | FQHEOnLattice_FQHELatticeBosons | bosons_lattice_*.dat | -p 3 -x 3 -y 3 -q 3 --full-diag 5000
+periodic_quantum_dot_2d_8x8 | QuantumDots_PeriodicQuantumDot2D | program.log | -M 8 -N 8 -n 3
+hubbard_kitaev_heisenberg_torus_2x1_n4 | HubbardModels_HubbardKitaevHeisenbergModel | fermions_kitaev_heisenberg_*.dat | -p 4 --torus --nbrsites-x 2 --nbrsites-y 1 --full-diag 5000
+hubbard_ssh_x4_n4 | HubbardModels_HubbardSSHModel | fermions_ssh_*.dat | -p 4 -x 4 --full-diag 5000
+heisenberg_2d_2x3 | Spin_TwoDimensionalHeisenbergModel | spin_1_2_2dheisenberg_*.dat | -x 2 -y 3 --full-diag 5000
+potts3_open_n6 | Spin_Potts3ChainModel | potts3_openchain_*.dat | -p 6 --full-diag 5000
+sphere_su2_fermions_n4_2s6 | FQHEOnSphere_FQHESphereFermionsWithSpin | fermions_sphere_su2_*.dat | -p 4 -l 6 --total-sz 0 --interaction-file @DATA@/su2_v1.dat --interaction-name su2 --nbr-lz 1 --full-diag 5000
+torus_coulomb_fermions_n4_nphi8 | FQHEOnTorus_FQHETorusFermionsCoulomb | fermions_torus_kysym_coulomb_*.dat | -p 4 --max-momentum 8 --full-diag 5000
+cylinder_fermions_v1_n4_l9 | FQHEOnCylinder_FQHECylinderFermionsTwoBodyGeneric | fermions_cylinder_*.dat | -p 4 -l 9 --interaction-file @DATA@/../v1_pseudopotential.dat --interaction-name v1 --full-diag 5000 | DIAGHAM_USE_GSL

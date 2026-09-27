@@ -39,3 +39,12 @@ if [ -n "$conf" ]; then "$conf" || true; fi
 
 echo "== test ($PRESET)"
 ctest --preset "$PRESET" --parallel "${CTEST_PARALLEL_LEVEL:-$(nproc)}"
+
+if [ "$PRESET" = default ] && command -v python3 >/dev/null; then
+    echo "== coverage page up to date?"
+    python3 tests/coverage.py "build/$PRESET" --write "build/$PRESET/test-coverage.md" > /dev/null
+    if ! diff -q <(tail -n +5 "build/$PRESET/test-coverage.md") <(tail -n +5 docs/reference/test-coverage.md) > /dev/null; then
+        echo "docs/reference/test-coverage.md is stale: regenerate with python3 tests/coverage.py build/default --write docs/reference/test-coverage.md" >&2
+        exit 1
+    fi
+fi

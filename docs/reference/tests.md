@@ -26,12 +26,12 @@ headline today is **34 of 603 programs with a physics or cross-check test** (31 
 |---|---|---|
 | `physics` | goldens with independently known answers (table below) | a DiagHam program, run from a clean directory, writes a spectrum that matches an answer known without DiagHam (analytic, exact counting, an independent solver) |
 | `crosscheck` | `crosscheck.fqhe.torus.su2_coulomb.*`, `crosscheck.fqhe.sphere.*` | two DiagHam programs, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree on the same problem; no independent answer is involved |
-| `regression` | none yet | a spectrum saved from the r4493 build is reproduced; detects change, not correctness |
+| `regression` | `regression.*` (11 programs) | a spectrum saved from the r4493 build is reproduced; detects change, not correctness |
 | `selftest` | `selftest.manifest`, `selftest.*_oracle`, `selftest.checker.*`, `selftest.runner.*` | the harness works: the registered tests equal `tests/manifest.txt` (a green run that silently lost tests fails); regenerate the manifest with `python3 tests/coverage.py <build-dir> --manifest tests/manifest.txt` when a test is deliberately added or removed |
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state` (U30) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state` (U30), `knownbug.fci.checkerboard.two_band_model_segfault` (U31) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -194,6 +194,28 @@ with no exactly solvable case exposed at the command line; they get
   file (stale output can never satisfy a check). If any of these ever
   "passes" the harness itself is broken.
 
+### Regression spectra (`-L regression`)
+
+12 tests, `regression.*`, one per module directory that has no physics
+golden yet (FCI, FTI, FQHEOnLattice, QuantumDots, more of HubbardModels
+and Spin) plus a few otherwise-untested families (spinful sphere, torus
+Coulomb, the GSL-only cylinder fermions). Each reproduces, to 10⁻⁹, the
+spectrum saved from this repository's r4493 build in
+`tests/data/regression/<case>.dat`, whose header records program,
+arguments, commit, preset, compiler and date. **A regression reference is
+not a golden**: it is what the build produced, right or wrong; the test
+detects change. The cases are in `tests/data/regression/cases.txt` and
+the references are regenerated with `python3 tests/regression_reference.py
+build/default --write` — only for an understood, intended change, said so
+in the commit. `check_spectrum numbers` compares a program's standard
+output when it writes no file (`PeriodicQuantumDot2D`).
+
+A second `known-bug` test came out of this batch (**U31**):
+`FCICheckerboardLatticeModel` without `--single-band` (the two-band model)
+segfaults after `start` for every size tried; the regression case uses
+`--single-band`, and `knownbug.fci.checkerboard.two_band_model_segfault`
+(`WILL_FAIL`) holds the reproducer.
+
 ### Physics goldens and cross-checks
 
 | Test | Program | Check | Why the answer is known |
@@ -218,8 +240,8 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-One `known-bug` test exists (U30, plain Lanczos below the ground state on
-a degenerate spectrum; see above). A `known-bug` test reproduces a defect documented in this repository and is
+Two `known-bug` tests exist (U30, plain Lanczos below the ground state on
+a degenerate spectrum; U31, the two-band checkerboard segfault; see above). A `known-bug` test reproduces a defect documented in this repository and is
 registered with `WILL_FAIL`: it passes while the defect is present, and the
 day someone fixes the defect it fails, so it can't be forgotten -- turn it
 into a `physics` test (drop `WILL_FAIL`) in the same change as the fix.
@@ -235,4 +257,4 @@ same tree (library coverage and `nm` symbol counts). It needs an autotools
 build to compare against and is not part of `ctest`; the ctest suite does
 not replace it, it checks different things (behaviour, not build parity).
 It reports 79 passed / 0 failed in the default configuration (FQHE and FTI
-on); with the default preset the ctest suite has 726 tests at r4493.
+on); with the default preset the ctest suite has 738 tests at r4493.

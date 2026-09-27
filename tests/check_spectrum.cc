@@ -33,6 +33,12 @@
 //       the K lowest values of COLUMN match the K lowest of REF_COLUMN to
 //       within |TOL| (a Lanczos run against a full diagonalisation)
 //
+//   check_spectrum numbers  FILE REFERENCE TOL
+//       every line of FILE made only of numbers matches the corresponding
+//       line of REFERENCE number by number to within |TOL|; lines with any
+//       non-numeric token (text, timings) are ignored on both sides
+//       (regression checks on a program's standard output)
+//
 //   check_spectrum nonzero  FILE COLUMN THRESHOLD N [FILTER_COLUMN FILTER_VALUE]...
 //       exactly N rows have COLUMN > THRESHOLD, among the rows whose
 //       FILTER_COLUMNs equal the FILTER_VALUEs (entanglement-spectrum
@@ -135,6 +141,7 @@ int Usage()
                "       check_spectrum count    FILE COLUMN VALUE TOL N\n"
                "       check_spectrum line     FILE KEY REFERENCE TOL\n"
                "       check_spectrum lowest   FILE COLUMN REFERENCE REF_COLUMN K TOL\n"
+               "       check_spectrum numbers  FILE REFERENCE TOL\n"
                "       check_spectrum nonzero  FILE COLUMN THRESHOLD N [FILTER_COLUMN FILTER_VALUE]...\n";
   return 2;
 }
@@ -165,6 +172,43 @@ bool ReadKeyedLine(const char* path, const std::string& key, std::vector<double>
     }
   std::cerr << "check_spectrum: no line starting with '" << key << " =' in " << path << std::endl;
   return false;
+}
+
+// the numeric lines of a file (lines whose every token parses as a double), flattened
+bool ReadNumericLines(const char* path, std::vector<double>& values, size_t& lines)
+{
+  std::ifstream in(path);
+  if (!in)
+    {
+      std::cerr << "check_spectrum: cannot open " << path << std::endl;
+      return false;
+    }
+  std::string line;
+  lines = 0;
+  while (std::getline(in, line))
+    {
+      std::istringstream fields(line);
+      std::vector<double> row;
+      std::string token;
+      bool numeric = true;
+      while (fields >> token)
+        {
+          char* end = 0;
+          double x = std::strtod(token.c_str(), &end);
+          if (end == token.c_str() || *end != '\0')
+            {
+              numeric = false;
+              break;
+            }
+          row.push_back(x);
+        }
+      if (numeric && !row.empty())
+        {
+          values.insert(values.end(), row.begin(), row.end());
+          ++lines;
+        }
+    }
+  return true;
 }
 
 // all rows of a whitespace table as doubles ('#' lines skipped)
@@ -303,6 +347,38 @@ int main(int argc, char** argv)
         }
       std::cout << k << " lowest eigenvalues, max |diff| = " << worst << " at index " << worstIndex
                 << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance " << tolerance << std::endl;
+      bool pass = worst <= tolerance;
+      std::cout << (pass ? "PASS" : "FAIL") << std::endl;
+      return pass ? 0 : 1;
+    }
+
+  if (mode == "numbers" && argc == 5)
+    {
+      std::vector<double> reference;
+      size_t n1 = 0, n2 = 0;
+      if (!ReadNumericLines(file, values, n1) || !ReadNumericLines(argv[3], reference, n2))
+        return 2;
+      double tolerance = std::fabs(ParseDouble(argv[4], "TOL"));
+      if (values.size() != reference.size() || n1 != n2)
+        {
+          std::cout << "FAIL: " << n1 << " numeric lines / " << values.size() << " numbers, reference has "
+                    << n2 << " / " << reference.size() << std::endl;
+          return 1;
+        }
+      double worst = 0.0;
+      size_t worstIndex = 0;
+      for (size_t i = 0; i < values.size(); ++i)
+        {
+          double diff = std::fabs(values[i] - reference[i]);
+          if (diff > worst)
+            {
+              worst = diff;
+              worstIndex = i;
+            }
+        }
+      std::cout << n1 << " numeric lines, " << values.size() << " numbers, max |diff| = " << worst << " at index "
+                << worstIndex << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance "
+                << tolerance << std::endl;
       bool pass = worst <= tolerance;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;

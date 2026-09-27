@@ -68,7 +68,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **726 of 726 ctest tests pass** — but read that number honestly: 107 are
+- **738 of 738 ctest tests pass** — but read that number honestly: 107 are
   physics goldens with independently known answers (Hilbert-space dimensions
   against exact counting; Laughlin, Moore–Read and Read–Rezayi zero modes
   and quasihole counts; Coulomb pseudopotentials against the closed form;
@@ -76,10 +76,10 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   counting; Hubbard tight binding; Heisenberg, XX, AKLT, Haldane–Shastry and transverse-Ising chains) plus independent Python exact
   diagonalisations (Hubbard, sphere pseudopotentials, spin chains), 4 are cross-checks between DiagHam
   programs or algorithms (spinful torus Coulomb; Lanczos vs full diagonalisation; LAPACK vs internal), 1 is a `find_package(DiagHam)` consumer
-  build, 14 are self-tests (manifest, six oracles, the checker and runner), 1 is a known-bug reproducer, and **599 are `--help` smoke tests**,
+  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 14 are self-tests (manifest, six oracles, the checker and runner), 2 are known-bug reproducers, and **599 are `--help` smoke tests**,
   which prove that a program links and parses options and nothing about its
   physics. `docs/reference/test-coverage.md` gives the per-program truth:
-  34 of 603 programs have a physics or cross-check test today (31 with an independently known answer). Expanding that is the
+  34 of 603 programs have a physics or cross-check test today (31 with an independently known answer) and 11 more a regression test (44 with any test beyond --help). Expanding that is the
   current work. See `docs/reference/tests.md`.
 - The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical
   (0 ULP) match to the analytic `-4√2` (see `benchmarks/BENCHMARK.md`).

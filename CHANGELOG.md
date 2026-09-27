@@ -15,6 +15,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- The documentation site: `mkdocs.yml` (Material for MkDocs, MathJax,
+  search), navigation generated from the tree by
+  `scripts_cmake/gen_mkdocs_nav.py`, published to GitHub Pages by
+  `.github/workflows/pages.yml` on every push to `main` and built with
+  `--strict` on pull requests; `docs/reference/programs/manuals/README.md`
+  (index of the attached manuals); `docs/how-to/develop/docs-site.md`.
 - Community and governance files: `GOVERNANCE.md` (two owners: the DiagHam
   authors for the physics, the maintainer for build/tests/docs/releases; how
   a fix travels upstream; the GitHub settings kept), `SUPPORT.md`,

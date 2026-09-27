@@ -1,6 +1,6 @@
 # DiagHam documentation
 
-Purpose: the index of everything under `docs/`, organised by what you want to do; every page is at most one click from here.
+Purpose: the index of everything under `docs/`, organised by what you want to do; every page is at most one click from here. Published as a site at <https://paulwatford.github.io/diagham-cmake-poc/>; the repository's root files ([README](https://github.com/PaulWatford/diagham-cmake-poc/blob/main/README.md), [CONTRIBUTING](https://github.com/PaulWatford/diagham-cmake-poc/blob/main/CONTRIBUTING.md), [GOVERNANCE](https://github.com/PaulWatford/diagham-cmake-poc/blob/main/GOVERNANCE.md), [CHANGELOG](https://github.com/PaulWatford/diagham-cmake-poc/blob/main/CHANGELOG.md)) are on GitHub.
 Source: new (2026-09-27), replacing the upstream wiki's hand-kept Main_Page. Layout follows the Diátaxis convention: tutorials (learning), how-to guides (doing), reference (looking up), explanation (understanding), plus `history/` (upstream files kept as found) and `drafts/` (pages that are not finished, with what is missing).
 
 Every page starts with a `Purpose:` and a `Source:` line saying where its content came from (upstream wiki, an earlier repository document, the build itself) and what was changed. Program pages are generated from `--help` and are not edited by hand.
@@ -46,6 +46,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 |---|---|
 | Add my own program, in the tree or as a separate project | [how-to/develop/create-a-program.md](how-to/develop/create-a-program.md) |
 | Add a spin Hilbert space with a discrete symmetry | [how-to/develop/new-spin-hilbert-space-with-symmetry.md](how-to/develop/new-spin-hilbert-space-with-symmetry.md) |
+| Preview or publish this documentation as a site | [how-to/develop/docs-site.md](how-to/develop/docs-site.md) |
 | Add a test that checks a spectrum against a known answer | [how-to/develop/add-a-golden-test.md](how-to/develop/add-a-golden-test.md) |
 | What the test suite checks, and what it does not | [reference/tests.md](reference/tests.md) |
 | Which programs actually have their physics tested (honest count) | [reference/test-coverage.md](reference/test-coverage.md) |

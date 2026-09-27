@@ -1,0 +1,49 @@
+name: Docs site
+
+# Builds the docs/ knowledge base with Material for MkDocs and publishes it to
+# GitHub Pages (Settings -> Pages -> Source: GitHub Actions). Pull requests only
+# build (strict: a broken link fails the job).
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", "mkdocs.yml", "scripts_cmake/gen_mkdocs_nav.py", ".github/workflows/pages.yml"]
+  pull_request:
+    paths: ["docs/**", "mkdocs.yml", "scripts_cmake/gen_mkdocs_nav.py", ".github/workflows/pages.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install mkdocs-material==9.*
+      - name: Navigation up to date
+        run: python3 scripts_cmake/gen_mkdocs_nav.py --check
+      - name: Build (strict)
+        run: mkdocs build --strict
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

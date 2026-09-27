@@ -156,7 +156,9 @@ checks run as ctest goldens on every build.
 ## Finding your way around
 
 `docs/README.md` is the index of the knowledge base, organised by what you
-want to do. `docs/reference/build-system.md` describes every option, file
+want to do; the same pages are published as a searchable site at
+<https://paulwatford.github.io/diagham-cmake-poc/> (Material for MkDocs,
+`.github/workflows/pages.yml`). `docs/reference/build-system.md` describes every option, file
 and mechanism of the build; `docs/reference/configure-flag-map.md` maps every
 configure flag; `docs/how-to/build/` has the per-platform build guides and
 the cluster recipe; `docs/reference/tests.md` describes the test suite. The

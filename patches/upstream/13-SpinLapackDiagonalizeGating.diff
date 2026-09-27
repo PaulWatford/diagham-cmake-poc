@@ -1,0 +1,284 @@
+diff --git Spin/src/Programs/2DToricCodeEntanglementEntropy.cc Spin/src/Programs/2DToricCodeEntanglementEntropy.cc
+index 5695da714..49b49dfda 100644
+--- Spin/src/Programs/2DToricCodeEntanglementEntropy.cc
++++ Spin/src/Programs/2DToricCodeEntanglementEntropy.cc
+@@ -304,7 +304,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -487,7 +491,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -709,7 +717,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -917,7 +929,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+diff --git Spin/src/Programs/HaahCodeEntropy.cc Spin/src/Programs/HaahCodeEntropy.cc
+index 3d9be476e..3f5c52c51 100644
+--- Spin/src/Programs/HaahCodeEntropy.cc
++++ Spin/src/Programs/HaahCodeEntropy.cc
+@@ -345,7 +345,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -534,7 +538,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -749,7 +757,11 @@ int main(int argc, char** argv)
+ 	      gettimeofday (&(StartingTime), 0);
+ 	      cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 	      RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 	      ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++	      ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 	      gettimeofday (&(EndingTime), 0);	      
+ 	      DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 			    ((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+diff --git Spin/src/Programs/PEPSComputeS2LocalEigenstate.cc Spin/src/Programs/PEPSComputeS2LocalEigenstate.cc
+index f735f2d6b..7a4d3b3ad 100644
+--- Spin/src/Programs/PEPSComputeS2LocalEigenstate.cc
++++ Spin/src/Programs/PEPSComputeS2LocalEigenstate.cc
+@@ -99,7 +99,11 @@ int main(int argc, char** argv)
+   RealDiagonalMatrix TmpS2Eigenvalues(NbrStates);
+   ComplexMatrix TmpBasis (NbrStates, NbrStates);
+   TmpBasis.SetToIdentity();
++#ifdef __LAPACK__
+   S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpBasis);
++#else
++  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpBasis);
++#endif
+   int NbrS0State = 0;
+   for (int i = 0; i < NbrStates; ++i)
+     {
+@@ -154,7 +158,11 @@ int main(int argc, char** argv)
+   RealDiagonalMatrix TmpC2Eigenvalues(NbrS0State);
+   ComplexMatrix TmpBasisC2 (NbrS0State,NbrS0State);
+   TmpBasisC2.SetToIdentity();
++#ifdef __LAPACK__
+   C2Matrix.LapackDiagonalize(TmpC2Eigenvalues, TmpBasisC2);
++#else
++  C2Matrix.Diagonalize(TmpC2Eigenvalues, TmpBasisC2);
++#endif
+   int Nbr1Eigenvalue=0;
+   for(int i =0; i <NbrS0State; i++)
+     {
+diff --git Spin/src/Programs/Spin1_2ChainFloquet.cc Spin/src/Programs/Spin1_2ChainFloquet.cc
+index 218227b9c..d4eb967ce 100644
+--- Spin/src/Programs/Spin1_2ChainFloquet.cc
++++ Spin/src/Programs/Spin1_2ChainFloquet.cc
+@@ -196,7 +196,11 @@ int main(int argc, char** argv)
+ 	  RealSymmetricMatrix HRep2 (Hamiltonian2->GetHilbertSpaceDimension(), true);
+ 	  RealDiagonalMatrix TmpDiag2 (Hamiltonian2->GetHilbertSpaceDimension());
+ 	  Hamiltonian2->GetHamiltonian(HRep2);
++#ifdef __LAPACK__
+ 	  HRep2.LapackDiagonalize(TmpDiag2, Basis2);
++#else
++	  HRep2.Diagonalize(TmpDiag2, Basis2);
++#endif
+ 	  delete Hamiltonian2;
+ 	  gettimeofday (&(TotalEndingTime), 0);
+ 	  Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+@@ -214,7 +218,11 @@ int main(int argc, char** argv)
+ 	      HermitianMatrix HRep3 (Hamiltonian3->GetHilbertSpaceDimension(), true);
+ 	      TmpDiag3 = RealDiagonalMatrix(Hamiltonian3->GetHilbertSpaceDimension());
+ 	      Hamiltonian3->GetHamiltonian(HRep3);
++#ifdef __LAPACK__
+ 	      HRep3.LapackDiagonalize(TmpDiag3, Basis3);
++#else
++	      HRep3.Diagonalize(TmpDiag3, Basis3);
++#endif
+ 	      delete Hamiltonian3;
+ 	      gettimeofday (&(TotalEndingTime), 0);
+ 	      Dt = (double) ((TotalEndingTime.tv_sec - TotalStartingTime.tv_sec) + 
+diff --git Spin/src/Programs/Spin1_2ChainFullFloquet.cc Spin/src/Programs/Spin1_2ChainFullFloquet.cc
+index 38827e379..49f2bd61a 100644
+--- Spin/src/Programs/Spin1_2ChainFullFloquet.cc
++++ Spin/src/Programs/Spin1_2ChainFullFloquet.cc
+@@ -443,7 +443,11 @@ int main(int argc, char** argv)
+ 	      cout << "done in " << Dt << "sec" << endl;      
+ 	      cout << "diagonalizing H" << j << " Hamiltonian" <<  endl;
+ 	      gettimeofday (&(TotalStartingTime), 0);
++#ifdef __LAPACK__
+ 	      HRep.LapackDiagonalize(HamiltonianEigenvalues[j], TmpBasis);
++#else
++	      HRep.Diagonalize(HamiltonianEigenvalues[j], TmpBasis);
++#endif
+ 	      delete Hamiltonian;
+ 	      if (StepMatrices[j].GetNbrRow() == 0)
+ 		{
+@@ -471,7 +475,11 @@ int main(int argc, char** argv)
+ 	  cout << "done in " << Dt << "sec" << endl;      
+ 	  cout << "diagonalizing H" << j << " Hamiltonian" <<  endl;
+ 	  gettimeofday (&(TotalStartingTime), 0);
++#ifdef __LAPACK__
+ 	  HRep.LapackDiagonalize(HamiltonianEigenvalues[j], StepMatrices[j + 1]);
++#else
++	  HRep.Diagonalize(HamiltonianEigenvalues[j], StepMatrices[j + 1]);
++#endif
+ 	  delete Hamiltonian;
+ 	  if (StepMatrices[j].GetNbrRow() == 0)
+ 	    {
+diff --git Spin/src/Programs/SpinChainComputeS2.cc Spin/src/Programs/SpinChainComputeS2.cc
+index 1ce10739c..32d7d0831 100644
+--- Spin/src/Programs/SpinChainComputeS2.cc
++++ Spin/src/Programs/SpinChainComputeS2.cc
+@@ -539,7 +539,11 @@ int main(int argc, char** argv)
+ 		  RealDiagonalMatrix TmpS2Eigenvalues(NbrStates);
+ 		  RealMatrix TmpBasis (NbrStates, NbrStates);
+ 		  TmpBasis.SetToIdentity();
++#ifdef __LAPACK__
+ 		  S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpBasis);
++#else
++		  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpBasis);
++#endif
+ 		  for (int i = 0; i < NbrStates; ++i)
+ 		    {
+ 		      double TmpS2 = TmpS2Eigenvalues[i];
+@@ -624,7 +628,11 @@ int main(int argc, char** argv)
+ 		  RealDiagonalMatrix TmpS2Eigenvalues(NbrStates);
+ 		  ComplexMatrix TmpBasis (NbrStates, NbrStates);
+ 		  TmpBasis.SetToIdentity();
++#ifdef __LAPACK__
+ 		  S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpBasis);
++#else
++		  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpBasis);
++#endif
+ 		  for (int i = 0; i < NbrStates; ++i)
+ 		    {
+ 		      double TmpS2 = TmpS2Eigenvalues[i];
+diff --git Spin/src/Programs/SpinChainMultipleComputeS2.cc Spin/src/Programs/SpinChainMultipleComputeS2.cc
+index ceac6bb72..09979ec5e 100644
+--- Spin/src/Programs/SpinChainMultipleComputeS2.cc
++++ Spin/src/Programs/SpinChainMultipleComputeS2.cc
+@@ -1615,7 +1615,11 @@ void SolveS2Degeneracy(RealMatrix& realEigenstates, int index, int degeneracy, d
+   RealMatrix TmpS2Eigenstates(degeneracy, degeneracy, true);	      
+   RealMatrix TmpBasis2 (TmpBasis, degeneracy);
+   TmpS2Eigenstates.SetToIdentity();
++#ifdef __LAPACK__
+   S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
++#else
++  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
++#endif
+   for (int i = 0; i < degeneracy; ++i)
+     {
+       s2Values[index + i] = TmpS2Eigenvalues[i];
+@@ -1651,7 +1655,11 @@ void SolveS2Degeneracy(ComplexMatrix& realEigenstates, int index, int degeneracy
+   ComplexMatrix TmpS2Eigenstates(degeneracy, degeneracy, true);	      
+   ComplexMatrix TmpBasis2 (TmpBasis, degeneracy);
+   TmpS2Eigenstates.SetToIdentity();
++#ifdef __LAPACK__
+   S2Matrix.LapackDiagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
++#else
++  S2Matrix.Diagonalize(TmpS2Eigenvalues, TmpS2Eigenstates);
++#endif
+   for (int i = 0; i < degeneracy; ++i)
+     {
+       s2Values[index + i] = TmpS2Eigenvalues[i];
+diff --git Spin/src/Programs/XCubeEntanglementEntropy.cc Spin/src/Programs/XCubeEntanglementEntropy.cc
+index 03f1e45e7..95f3e2119 100644
+--- Spin/src/Programs/XCubeEntanglementEntropy.cc
++++ Spin/src/Programs/XCubeEntanglementEntropy.cc
+@@ -360,7 +360,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -568,7 +572,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -811,7 +819,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));
+@@ -1040,7 +1052,11 @@ int main(int argc, char** argv)
+ 		  gettimeofday (&(StartingTime), 0);
+ 		  cout << "Diagonalizing the reduced density matrix (" << RegionAHilbertSpaceDimensionFixedParities << "x" << RegionAHilbertSpaceDimensionFixedParities << ")" << endl;
+ 		  RealDiagonalMatrix ReducedDensityMatrixEigenvalues(ReducedDensityMatrix.GetNbrRow(), true);
++#ifdef __LAPACK__
+ 		  ReducedDensityMatrix.LapackDiagonalize(ReducedDensityMatrixEigenvalues);
++#else
++		  ReducedDensityMatrix.Diagonalize(ReducedDensityMatrixEigenvalues);
++#endif
+ 		  gettimeofday (&(EndingTime), 0);	      
+ 		  DeltaTime  = ((double) (EndingTime.tv_sec - StartingTime.tv_sec) + 
+ 				((EndingTime.tv_usec - StartingTime.tv_usec) / 1000000.0));

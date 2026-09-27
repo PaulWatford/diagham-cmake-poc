@@ -23,6 +23,7 @@ SECTIONS = [  # (title, directory, subdirectories listed as sub-sections)
     ("Reference", "reference", []),
     ("Explanation", "explanation", []),
     ("History", "history", ["release-notes"]),
+    ("Upstream reports", "upstream-reports", []),
     ("Drafts", "drafts", []),
 ]
 SUBSECTION_TITLES = {"build": "Build", "develop": "Develop", "release-notes": "Release notes"}

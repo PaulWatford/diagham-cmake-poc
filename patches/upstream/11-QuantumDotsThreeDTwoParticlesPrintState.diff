@@ -1,0 +1,14 @@
+diff --git QuantumDots/src/HilbertSpace/ThreeDTwoParticles.cc QuantumDots/src/HilbertSpace/ThreeDTwoParticles.cc
+index 88f821f49..e981bce1b 100644
+--- QuantumDots/src/HilbertSpace/ThreeDTwoParticles.cc
++++ QuantumDots/src/HilbertSpace/ThreeDTwoParticles.cc
+@@ -141,6 +141,8 @@ ostream& ThreeDTwoParticles::PrintState (ostream& Str, int state)
+   int dimension2 = this->SecondParticle->GetHilbertSpaceDimension ();
+   int state1 = state / dimension2; int state2 = state - state1 * dimension2;
+ 
+-  Str << "'" << this->FirstParticle->PrintState (Str, state1) << ", " << this->SecondParticle->PrintState (Str, state2) << ")";
++  Str << "(";
++  this->FirstParticle->PrintState (Str, state1) << ", ";
++  this->SecondParticle->PrintState (Str, state2) << ")";
+   return Str;
+ }

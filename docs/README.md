@@ -53,6 +53,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | What the test suite checks, and what it does not | [reference/tests.md](reference/tests.md) |
 | Which programs actually have their physics tested (honest count) | [reference/test-coverage.md](reference/test-coverage.md) |
 | Fix something in DiagHam's own sources: the rules and the index of fixes so far | `CONTRIBUTING.md` at the root, then [explanation/upstream-fixes.md](explanation/upstream-fixes.md) |
+| Offer a fix or a finding to the DiagHam authors (reports + `svn patch` diffs) | [how-to/develop/send-a-fix-upstream.md](how-to/develop/send-a-fix-upstream.md), [upstream-reports/](upstream-reports/README.md) |
 | Code that is excluded from the build, and why | [explanation/deferred-code.md](explanation/deferred-code.md) |
 | The torus SU(2) Coulomb defect in detail | [explanation/torus-su2-coulomb-defect.md](explanation/torus-su2-coulomb-defect.md) |
 | How changes are reviewed (the guard pipeline) and the rules for AI-assisted work | [explanation/guard-design.md](explanation/guard-design.md), `AGENTS.md` at the root |

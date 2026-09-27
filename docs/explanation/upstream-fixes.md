@@ -3,6 +3,8 @@
 Purpose: the index of every change this repository makes to DiagHam's own sources, why, and its status with respect to upstream.
 Source: the commit trailers `Upstream-Patch:` on `main` (2026-09-26) and `patches/PATCHES.md`, the audit trail kept verbatim from the proof-of-concept era. Changed: this is a new index; the patch files in `patches/` are no longer applied at configure time — each is an ordinary commit.
 
+To send a fix upstream: `docs/upstream-reports/` holds one report and `patches/upstream/` one Subversion-applicable diff per row below, generated from the commits by `scripts_cmake/upstream_pack.py` (`docs/how-to/develop/send-a-fix-upstream.md`).
+
 Rules (from `CONTRIBUTING.md` and `AGENTS.md`): one fix per commit with its
 root cause and verification in the message; fixes that change computed
 physics are marked **for maintainer review** and go upstream as bug reports;

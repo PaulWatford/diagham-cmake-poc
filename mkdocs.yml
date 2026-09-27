@@ -87,6 +87,7 @@ nav:
           - 'Build DiagHam with long-double precision': how-to/develop/long-double.md
           - 'Write a spin Hilbert space with a discrete symmetry': how-to/develop/new-spin-hilbert-space-with-symmetry.md
           - 'Make a release': how-to/develop/release.md
+          - 'Offer a fix or a finding to the DiagHam authors': how-to/develop/send-a-fix-upstream.md
           - 'Bring new DiagHam revisions in from Subversion': how-to/develop/sync-upstream.md
   - Reference:
       - 'Build system reference': reference/build-system.md
@@ -110,6 +111,26 @@ nav:
       - 'docs/history — upstream files kept as found': history/README.md
       - Release notes:
           - 'Release 2026.9.0 — DiagHam r4493 with a CMake build, a physics test suite and a documentation set': history/release-notes/2026.9.0.md
+  - Upstream reports:
+      - 'Reports for the DiagHam authors': upstream-reports/README.md
+      - '01. FQHECylinderDensity: gate LapackDiagonalize behind __LAPACK__ (upstream build failure without LAPACK)': upstream-reports/01-FQHECylinderDensity.md
+      - '02. FQHECylinderWithSU2SpinDensity: gate LapackDiagonalize behind __LAPACK__': upstream-reports/02-FQHECylinderWithSU2SpinDensity.md
+      - '03. FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity: gate LapackDiagonalize behind __LAPACK__': upstream-reports/03-FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity.md
+      - '04. FCIHofstadterModelCompositeFermions: gate LapackDiagonalize behind __LAPACK__': upstream-reports/04-FCIHofstadterModelCompositeFermions.md
+      - '05. HubbardSquareLatticeModelJ2S2: gate LapackDiagonalize behind __LAPACK__': upstream-reports/05-HubbardSquareLatticeModelJ2S2.md
+      - '06. FCIDiceLatticeModel: use the existing BosonOnSquareLatticeWithSpinMomentumSpace header (never-existing *New.h include)': upstream-reports/06-FCIDiceLatticeModel.md
+      - '07. FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition: remove undeclared SubsystemSize (copy-paste from orbital-partition sibling)': upstream-reports/07-FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition.md
+      - '08. FermionOnSphere, FermionOnTorusWithMagneticTranslations: public getters needed by FCIWannierConstruction': upstream-reports/08-FCIWannierConstructionEnablement.md
+      - '09. FCIDiceLatticeModel: wire t1/t2/l1/l2 tight-binding options and use the completed SU2 boson class (physics defaults from FCIKagomeLatticeModel; needs maintainer sign-off)': upstream-reports/09-FCIDiceLatticeModelEnablement.md
+      - '10. FCIHofstadterCorrelation: write results at full double precision (max_digits10); file is CRLF upstream': upstream-reports/10-FCIHofstadterCorrelationPrecision.md
+      - '11. ThreeDTwoParticles::PrintState: chain the sub-state prints (invalid ostream << ostream& broke every QuantumDots program)': upstream-reports/11-QuantumDotsThreeDTwoParticlesPrintState.md
+      - '12. Spinful torus Coulomb: generate the basis in the order FindStateIndex searches, and add the missing up-down interaction (PHYSICS FIX, FOR MAINTAINER REVIEW; verified vs FQHETorusFermionsCoulomb and FQHETorusFermionsWithSpinAndTranslations to 1e-12)': upstream-reports/12-TorusSU2CoulombBasisOrderAndInterSpinInteraction.md
+      - '13. Spin programs: gate LapackDiagonalize calls behind __LAPACK__ (patch 13 regenerated against r4493; PairHoppingModelFSA already guarded upstream)': upstream-reports/13-SpinLapackDiagonalizeGating.md
+      - '14. Write computed results at full double precision: precision(14) -> numeric_limits<double>::max_digits10': upstream-reports/14-IEEE754PrecisionForEigenvalueOutput.md
+      - '15. ParticleOnCylinderPseudopotentialHamiltonian: fail clearly without GSL instead of undefined behaviour': upstream-reports/15-cylinder-pseudopotential-needs-gsl.md
+      - 'Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"': upstream-reports/open-U29.md
+      - 'Open defect U30: plain Lanczos (-n 1) returns an energy below the ground state on a degenerate spectrum': upstream-reports/open-U30.md
+      - 'Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band': upstream-reports/open-U31.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

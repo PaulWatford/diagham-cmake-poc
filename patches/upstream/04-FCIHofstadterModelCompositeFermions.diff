@@ -1,0 +1,16 @@
+diff --git FTI/src/Programs/FCI/FCIHofstadterModelCompositeFermions.cc FTI/src/Programs/FCI/FCIHofstadterModelCompositeFermions.cc
+index 8879d1f98..ac6b20df1 100644
+--- FTI/src/Programs/FCI/FCIHofstadterModelCompositeFermions.cc
++++ FTI/src/Programs/FCI/FCIHofstadterModelCompositeFermions.cc
+@@ -248,7 +248,11 @@ if(NoTranslationFlag == true)
+       ComplexMatrix TmpMatrix( Lx* Ly, Lx* Ly,true);
+       TmpMatrix.SetToIdentity();
+       RealDiagonalMatrix TmpDiag;
++#ifdef __LAPACK__
+       TmpHam.LapackDiagonalize(TmpDiag, TmpMatrix);
++#else
++      TmpHam.Diagonalize(TmpDiag, TmpMatrix);
++#endif
+       
+       Space.GetCompositeFermionWavefunction(TrialState, JastrowEigenVecs, CFEigenVecs,PhaseTranslationX );
+       cout <<"State Norm " << TrialState.Norm()<<endl;

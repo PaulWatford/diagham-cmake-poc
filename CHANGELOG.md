@@ -27,6 +27,13 @@ and the community/governance files. Release notes:
 down to the 2026-09-25 entry is part of it.
 
 ### Added
+- The upstream collaboration pack: `scripts_cmake/upstream_pack.py` generates,
+  from the commits with an `Upstream-Patch:` trailer, one report
+  (`docs/upstream-reports/`) and one `svn patch`-applicable diff
+  (`patches/upstream/`, upstream file names, line endings kept) per fix,
+  15 in all, verified to apply in series to the pristine `upstream` tree;
+  hand-written reproducer reports for the open defects U29–U31;
+  `docs/how-to/develop/send-a-fix-upstream.md`.
 - Reproducibility: `scripts_cmake/environment.sh` records commit, revision,
   CMake options, toolchain and library versions and `TestDiagHamConf`; CI
   keeps it with the ctest log as an artefact of every run;

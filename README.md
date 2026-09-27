@@ -132,7 +132,7 @@ the audit trail (root cause, what was compared, how it was verified) and
 
 Several of the "hidden" failures turned out to be programs upstream had
 dropped from its build lists rather than failures autotools concealed; the
-distinction is recorded per file in `PATCHES.md`. One earlier fix (an
+distinction is recorded per file in `patches/PATCHES.md`. One earlier fix (an
 uninitialised member in `SpinChainHamiltonianWithTranslations`) was dropped
 because upstream fixed it after 2020.
 
@@ -151,9 +151,11 @@ checks run as ctest goldens on every build.
 want to do. `docs/reference/build-system.md` describes every option, file
 and mechanism of the build; `docs/reference/configure-flag-map.md` maps every
 configure flag; `docs/how-to/build/` has the per-platform build guides and
-the cluster recipe; `docs/reference/tests.md` describes the test suite. The DiagHam user manual —
-program-by-program pages — is on the upstream wiki at nick-ux.org and is
-being brought into `docs/`.
+the cluster recipe; `docs/reference/tests.md` describes the test suite. The
+program-by-program reference (`docs/reference/programs/`, generated from
+`--help` for all 603 programs) carries the 132 manuals adapted from the
+upstream wiki at nick-ux.org; what is still unfinished is listed in
+`docs/drafts/INDEX.md`.
 
 ## AI-assisted contribution rules
 

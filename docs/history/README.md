@@ -1,5 +1,8 @@
 # docs/history — upstream files kept as found
 
+Purpose: say what each preserved upstream file is and which living page replaces it.
+Source: the DiagHam SVN tree at r4493 (2026-09-18); this index is new (2026-09-25).
+
 These files are preserved unchanged from the DiagHam Subversion tree (r4493)
 for the record. They are not maintained; the living equivalents are named.
 

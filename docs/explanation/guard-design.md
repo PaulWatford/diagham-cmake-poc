@@ -44,8 +44,8 @@ bounds for automated changes (`AGENTS.md`).
 
 ## Locked artefacts
 
-The test manifest (`tests/manifest.txt`), the golden values in
-`tests/CMakeLists.txt` and `tests/goldens/`, the saved reference spectra in
+The test manifest (`tests/manifest.txt`, to be added), the golden values in
+`tests/CMakeLists.txt` and the input data in `tests/data/`, the saved reference spectra in
 `benchmarks/`, and the default values of the module options. Changing any
 of them is Damage even if the build stays green: it is flagged and held,
 never merged on a green tick.

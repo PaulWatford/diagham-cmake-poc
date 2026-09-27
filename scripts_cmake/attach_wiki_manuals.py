@@ -223,7 +223,7 @@ def main(wiki, progs, drafts):
         f.write(f"# Parked wiki program pages\n\nSource: DiagHam wiki, archived {WIKI_DATE}. Each row: page, why it is parked, size. To complete a page: write purpose, inputs, outputs and an example, then move it to `docs/reference/programs/manuals/`.\n\n| Page | Reason | Bytes |\n|---|---|---:|\n")
         for n, why, sz in rows:
             if not why.startswith("attached"):
-                f.write(f"| {n} | {why} | {sz} |\n")
+                f.write(f"| [{n}]({n}.md) | {why} | {sz} |\n")
     print(f"attached {attached} manuals ({renamed_n} under a new program name, {banners} with option banners); parked {parked} in {stubs}")
 
 

@@ -176,7 +176,8 @@ No AI agent is on that list, now or ever.
 
 ## Locked artefacts
 
-- The manifest of test names (`ctest -N`, committed as `tests/manifest.txt`).
+- The manifest of test names (`ctest -N`, to be committed as `tests/manifest.txt`;
+  not yet added, see `docs/explanation/guard-design.md`).
 - Hubbard ED demo golden (analytic ground state, machine-precision
   tolerance).
 - Default CMake options that decide which DiagHam trees are built.

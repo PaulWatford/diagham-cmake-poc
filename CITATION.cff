@@ -1,9 +1,11 @@
 cff-version: 1.2.0
 message: >-
-  If DiagHam contributes to your work, please cite it as software using the
-  metadata below, and cite the papers relevant to the methods you used from
-  the DiagHam publication list (https://www.nick-ux.org/diagham/index.php/Articles).
-  DiagHam has no single reference paper.
+  If DiagHam contributes to your work, cite the DiagHam authors: the papers
+  relevant to the methods you used from the DiagHam publication list
+  (https://www.nick-ux.org/diagham/index.php/Articles; DiagHam has no single
+  reference paper) and, as software, DiagHam itself at https://www.nick-ux.org/diagham/.
+  This repository only adds a build system, a test suite and documentation
+  to their code; do not cite it in place of DiagHam.
 title: DiagHam
 type: software
 abstract: >-
@@ -33,7 +35,7 @@ url: https://www.nick-ux.org/diagham/
 version: 2026.9.0
 date-released: "2026-09-28"
 # DiagHam Subversion revision carried: r4493 (scripts_cmake/upstream-revision.txt).
-# identifiers: add the Zenodo concept DOI here after the first archived release (docs/how-to/develop/release.md).
+# No DOI is minted for this repository: DiagHam is the DiagHam authors' work, and any citable archive of it is theirs to create.
 keywords:
   - exact diagonalization
   - fractional quantum Hall effect

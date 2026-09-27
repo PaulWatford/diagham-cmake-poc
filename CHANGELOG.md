@@ -104,6 +104,11 @@ down to the 2026-09-25 entry is part of it.
   `tests/oracles/dimensions.py`; `selftest.dimension_oracle` re-derives the
   expected files.
 
+### Removed
+- The Zenodo deposit (`.zenodo.json`, the DOI step of the release checklist):
+  DiagHam is the DiagHam authors' work and a citable archive of it is theirs
+  to create; `CITATION.cff` now says to cite them, not this repository.
+
 ### Fixed
 - Mid-cycle audit (fresh clone, presets core/full/default): the `core`
   preset failed to configure (`set_tests_properties` on tests not

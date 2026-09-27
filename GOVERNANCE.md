@@ -38,7 +38,7 @@ These are GitHub settings, not files, and are listed here so they can be checked
 
 - `main` protected: pull requests only, CI required (`default`, `full`, `hpc`, `core`), no force pushes (the only force pushes so far were the history rewrites of 2026-09-27, before any fork existed, and are recorded in `CHANGELOG.md`).
 - Issues and Discussions on; wiki off (the knowledge base is `docs/`, versioned with the code and published as a site).
-- Releases follow `docs/how-to/develop/release.md` (calendar versions, one version number checked by CI) and carry a Zenodo DOI once the Zenodo integration is enabled.
+- Releases follow `docs/how-to/develop/release.md` (calendar versions, one version number checked by CI). No DOI is minted for this repository: DiagHam is the DiagHam authors' work, and a citable archive of it is theirs to create.
 
 ## Changing this document
 

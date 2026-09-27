@@ -66,7 +66,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 |---|---|
 | How this repository relates to the canonical DiagHam (SVN), what was agreed, what is done | [explanation/migration-history.md](explanation/migration-history.md) |
 | What changed, release by release | `CHANGELOG.md` at the root; release notes in [history/release-notes/](history/release-notes/2026.9.0.md) |
-| Make a release (version, tag, GitHub Release, Zenodo) | [how-to/develop/release.md](how-to/develop/release.md) |
+| Make a release (version, tag, GitHub Release) | [how-to/develop/release.md](how-to/develop/release.md) |
 | The upstream INSTALL, ChangeLog, TODO and NEWS, kept as found | [history/README.md](history/README.md) |
 | Who wrote DiagHam | `AUTHORS` at the root |
 | Who decides what, and how a fix reaches the DiagHam authors | `GOVERNANCE.md` at the root; `SUPPORT.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md` |

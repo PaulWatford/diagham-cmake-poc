@@ -24,7 +24,7 @@ Source: the JOSS review checklist, the FAIR4RS-based checklist (TU Delft / Nethe
 |---|---|---|
 | Version control, public repository, meaningful commits | done | 4,500 upstream commits + 53 migration commits, each with its rationale |
 | Issues, contribution guidelines, code of conduct | done | templates, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md` |
-| README, licence, citation file | done | `README.md`, `LICENSE`, `CITATION.cff`, `codemeta.json`, `.zenodo.json` |
+| README, licence, citation file | done | `README.md`, `LICENSE`, `CITATION.cff` (points at the DiagHam authors), `codemeta.json` |
 | Installation instructions, user and developer docs, tutorials | done | `docs/` (Diátaxis) |
 | Documentation hosted | done | GitHub Pages site (`.github/workflows/pages.yml`) — live after the first push with Pages enabled |
 | API reference from docstrings | not done | DiagHam's C++ classes are not documented with Doxygen here; the program reference covers the command line |
@@ -34,7 +34,8 @@ Source: the JOSS review checklist, the FAIR4RS-based checklist (TU Delft / Nethe
 | Code coverage tracked | partial | per-program coverage page (`test-coverage.md`, CI-enforced); no line-coverage tool |
 | Dependencies recorded | done | `codemeta.json`, presets, `environment.sh` records what was built with |
 | Linters / formatters | not done | deliberately: upstream sources are not reformatted (`AGENTS.md`); no linter on the CMake/Python layer yet |
-| DOI (Zenodo), semantic/calendar versioning, tagged releases, changelog | partial | versioning, `CHANGELOG.md`, release checklist and metadata ready; first tag and DOI after the push (`docs/how-to/develop/release.md`) |
+| Versioning, tagged releases, changelog | partial | calendar versioning, `CHANGELOG.md`, release checklist and metadata ready; first tag after the push (`docs/how-to/develop/release.md`) |
+| DOI for releases | not done, by decision | DiagHam is the DiagHam authors' work; a DOI on this repository would present it as the maintainer's. Theirs to mint, if ever |
 | Registry upload (PyPI/conda) | n/a | C++ programs; containers instead (`container/`) |
 
 ## The Turing Way — testing checklist

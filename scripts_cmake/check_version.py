@@ -5,7 +5,7 @@
 
 Source of truth: `project(DiagHam VERSION x.y.z)` in CMakeLists.txt (calendar
 versioning: YEAR.MONTH.PATCH, e.g. 2026.9.0). It must equal the `version:` of
-CITATION.cff, codemeta.json and .zenodo.json, and the newest release heading
+CITATION.cff and codemeta.json, and the newest release heading
 of CHANGELOG.md (`## [x.y.z] — YYYY-MM-DD`); the release date must agree
 between CITATION.cff, codemeta.json and that heading. CI runs this.
 """
@@ -32,10 +32,6 @@ if meta.get("version") != version:
 if cff_date and meta.get("dateModified") != cff_date.group(1):
     problems.append(f"codemeta.json dateModified {meta.get('dateModified')!r} != CITATION.cff date-released {cff_date.group(1)!r}")
 
-zen = json.loads((ROOT / ".zenodo.json").read_text())
-if zen.get("version") != version:
-    problems.append(f".zenodo.json version {zen.get('version')!r} != {version!r}")
-
 log = (ROOT / "CHANGELOG.md").read_text()
 heads = re.findall(r"^## \[([^\]]+)\](?: — ([0-9-]+))?", log, re.M)
 released = [(v, d) for v, d in heads if v != "Unreleased"]
@@ -47,4 +43,4 @@ elif cff_date and released[0][1] != cff_date.group(1):
 if problems:
     print("version check FAILED:\n  " + "\n  ".join(problems))
     sys.exit(1)
-print(f"version {version} ({cff_date.group(1) if cff_date else '?'}) consistent in CMakeLists.txt, CITATION.cff, codemeta.json, .zenodo.json, CHANGELOG.md")
+print(f"version {version} ({cff_date.group(1) if cff_date else '?'}) consistent in CMakeLists.txt, CITATION.cff, codemeta.json, CHANGELOG.md")

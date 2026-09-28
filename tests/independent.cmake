@@ -5,6 +5,10 @@
 #     pseudopotential Hamiltonians in the lowest Landau level (Clebsch-Gordan
 #     pair projectors, explicit Fock basis, numpy). The program's whole
 #     spectrum of an Lz sector must match it (label: physics, sphere, ed).
+#  1b. tests/oracles/torus_ed.py: the same on the torus (Landau gauge, Coulomb
+#     or pseudopotentials, fermions or bosons; label: physics, fqhe, torus, ed).
+#  1c. tests/oracles/fci_bands.py: the checkerboard lattice bands from the
+#     published Bloch Hamiltonian (label: physics, fci, checkerboard, bands).
 #  2. tests/oracles/spin_ed.py: dense numpy diagonalisation of XXZ / J1-J2
 #     chains with a field, open or periodic (label: physics, spin, ed).
 #  3. crosscheck: two algorithms on the same Hamiltonian must agree --
@@ -44,6 +48,84 @@ foreach(case
         OUTPUT "${stat}_ed_n_${n}_2s_${two_s}_lz.dat"
         CHECK spectrum @OUTPUT@ -1 ${ed_data}/${name}_spectrum.dat -1 1e-9
         LABELS fqhe sphere ed)
+endforeach()
+
+# --- 1b. torus ED -------------------------------------------------------------------------------
+# tests/oracles/torus_ed.py: Landau-gauge lowest-Landau-level exact diagonalisation on the torus,
+# Coulomb or Haldane pseudopotentials, fermions or bosons, one Ky sector; the program's whole
+# spectrum of that sector must match. Tolerance 1e-8 rather than 1e-9: the oracle's momentum sums
+# are converged to 1e-14 but DiagHam truncates its own at about 1e-10 (its degenerate pairs differ
+# in the tenth digit).
+# name | program | N | Nphi | ratio | Ky | interaction (coulomb, or the pseudopotential file stem)
+set(torus_ed_data ${DIAGHAM_TEST_DATA}/torus_ed)
+set(tfc FQHEOnTorus_FQHETorusFermionsCoulomb)
+set(tbc FQHEOnTorus_FQHETorusBosonsCoulomb)
+set(tfg FQHEOnTorus_FQHETorusFermionsTwoBodyGeneric)
+set(tbg FQHEOnTorus_FQHETorusBosonsTwoBodyGeneric)
+foreach(case
+        "fermions_n3_nphi9_coulomb_ky0|${tfc}|3|9|1.0|0|coulomb"
+        "fermions_n4_nphi8_coulomb_ky0|${tfc}|4|8|1.0|0|coulomb"
+        "fermions_n3_nphi9_coulomb_r2_ky0|${tfc}|3|9|2.0|0|coulomb"
+        "fermions_n4_nphi12_coulomb_ky0|${tfc}|4|12|1.0|0|coulomb"
+        "bosons_n3_nphi6_coulomb_ky0|${tbc}|3|6|1.0|0|coulomb"
+        "fermions_n3_nphi9_v1_ky0|${tfg}|3|9|1.0|0|v1"
+        "fermions_n4_nphi12_v1v3_ky0|${tfg}|4|12|1.0|0|v1v3"
+        "bosons_n4_nphi8_v0v2_ky0|${tbg}|4|8|1.0|0|v0v2")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 name)
+    list(GET c 1 prog)
+    list(GET c 2 n)
+    list(GET c 3 nphi)
+    list(GET c 4 ratio)
+    list(GET c 5 ky)
+    list(GET c 6 inter)
+    if(prog MATCHES "Bosons")
+        set(stat bosons)
+    else()
+        set(stat fermions)
+    endif()
+    if(inter STREQUAL "coulomb")
+        set(extra "")
+    else()
+        set(extra --interaction-file ${torus_ed_data}/${name}_pp.dat --interaction-name ${inter})
+    endif()
+    diagham_physics_test(physics.fqhe.torus.ed.${name}
+        PROGRAM ${prog}
+        ARGS -p ${n} -l ${nphi} --ratio ${ratio} --ky-momentum ${ky} --full-diag 100000 ${extra}
+        OUTPUT "${stat}_torus_kysym_${inter}_n_${n}_2s_${nphi}_ratio_*.dat"
+        CHECK spectrum @OUTPUT@ -1 ${torus_ed_data}/${name}_spectrum.dat -1 1e-8
+        LABELS fqhe torus ed)
+endforeach()
+
+# --- 1c. FCI band structures ---------------------------------------------------------------------
+# tests/oracles/fci_bands.py: the two bands of the checkerboard lattice model from the published
+# Bloch Hamiltonian (Sun, Gu, Katsura, Das Sarma 2011) at every lattice momentum. The program's
+# --export-onebodytext file (kx ky E_0 E_1 ...) must match column by column; one test per band.
+# name | Nx | Ny | extra program options
+set(fci_bands_data ${DIAGHAM_TEST_DATA}/fci_bands)
+set(fci_cb FCI_FCICheckerboardLatticeModel)
+foreach(case
+        "checkerboard_3x3|3|3|"
+        "checkerboard_4x4|4|4|"
+        "checkerboard_4x3_t2_0.2_tpp_0.1|4|3|--t2;0.2;--tpp;0.1")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 name)
+    list(GET c 1 nx)
+    list(GET c 2 ny)
+    list(LENGTH c len)
+    set(extra "")
+    if(len GREATER 3)
+        list(SUBLIST c 3 -1 extra)
+    endif()
+    foreach(band 0 1)
+        math(EXPR col "${band} + 2")
+        diagham_physics_test(physics.fci.checkerboard.bands.${name}.band${band}
+            PROGRAM ${fci_cb}
+            ARGS -p 2 -x ${nx} -y ${ny} --singleparticle-spectrum --export-onebodytext ${extra}
+            OUTPUT "fermions_checkerboardlattice_n_2_ns_*_x_${nx}_y_${ny}_tightbinding.dat"
+            CHECK spectrum @OUTPUT@ ${col} ${fci_bands_data}/${name}.dat ${col} 1e-12
+            LABELS fci checkerboard bands)
+    endforeach()
 endforeach()
 
 # --- 2. spin chain ED ------------------------------------------------------------------------
@@ -134,5 +216,10 @@ if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/sphere_ed.py --check ${ed_data})
     add_test(NAME selftest.spin_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/spin_ed.py --check ${spin_ed_data})
-    set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
+    add_test(NAME selftest.torus_ed_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_ed.py --check ${torus_ed_data})
+    add_test(NAME selftest.fci_bands_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_bands.py --check ${fci_bands_data})
+    set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle selftest.torus_ed_oracle
+        selftest.fci_bands_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
 endif()

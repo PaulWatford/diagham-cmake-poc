@@ -13,6 +13,35 @@ all present on the `upstream` branch: `git log upstream`).
 
 ## [Unreleased]
 
+### Added
+- `tests/oracles/torus_ed.py`, an independent Landau-gauge exact
+  diagonalisation on the torus (Coulomb or pseudopotentials, fermions or
+  bosons), and eight `physics.fqhe.torus.ed.*` goldens: the torus Coulomb
+  and two-body-generic programs reproduce whole K_y-sector spectra to 10⁻⁹.
+  Torus Coulomb energies are no longer listed as unverified.
+- `tests/oracles/fci_bands.py` and six `physics.fci.checkerboard.bands.*`
+  goldens: the checkerboard lattice bands against the published Bloch
+  Hamiltonian, the first independent number for an FCI program.
+- `scripts_cmake/sync_upstream.sh --pr`: the upstream sync on a branch, pushed
+  and opened as a pull request through the user's own `gh` login, so CI
+  runs before anything reaches `main` and nothing on `main` is a bot's.
+
+### Fixed
+- U30: `BasicLanczosAlgorithm` and `ComplexBasicLanczosAlgorithm` (plain
+  Lanczos, `-n 1`) detect the closure of the Krylov space and stop instead
+  of iterating on round-off; `-n 1` on the degenerate U = 0 2×4 Hubbard case
+  now gives every sector's exact energy instead of values below the ground
+  state. The known-bug test is promoted to
+  `physics.hubbard.2x4.U0.plain_lanczos_krylov_closure` (all eight sectors
+  against the tight-binding minima from `tests/oracles/spin_hubbard.py`).
+  Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
+
+### Changed
+- Test counts: 754 tests, 123 physics goldens, 36 of 603 programs with a
+  physics or cross-check test (34 against an independent answer), 16
+  self-tests, 1 known-bug reproducer; `tests/manifest.txt` and
+  `docs/reference/test-coverage.md` regenerated.
+
 ## [2026.9.0] — 2026-09-28
 
 The first numbered release: DiagHam r4493 with the CMake build (61

@@ -3,7 +3,6 @@ crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless
 crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
 install.find_package_consumer
 knownbug.fci.checkerboard.two_band_model_segfault
-physics.hubbard.2x4.U0.plain_lanczos_krylov_closure
 physics.dimension.disk.bosons_n3_lz6
 physics.dimension.disk.fermions_n3_lz6
 physics.dimension.disk.fermions_n4_lz10
@@ -31,6 +30,12 @@ physics.dimension.torus.fermions_n3_nphi6
 physics.dimension.torus.fermions_n4_nphi12
 physics.dimension.torus.showbasis_bosons_n3_nphi6_k00
 physics.dimension.torus.showbasis_fermions_n4_nphi12_k00
+physics.fci.checkerboard.bands.checkerboard_3x3.band0
+physics.fci.checkerboard.bands.checkerboard_3x3.band1
+physics.fci.checkerboard.bands.checkerboard_4x3_t2_0.2_tpp_0.1.band0
+physics.fci.checkerboard.bands.checkerboard_4x3_t2_0.2_tpp_0.1.band1
+physics.fci.checkerboard.bands.checkerboard_4x4.band0
+physics.fci.checkerboard.bands.checkerboard_4x4.band1
 physics.fqhe.cylinder.bosons_laughlin_1_2.one_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.two_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.unique_zero_mode
@@ -79,6 +84,14 @@ physics.fqhe.torus.bosons_laughlin_1_2.twofold_degeneracy
 physics.fqhe.torus.bosons_laughlin_1_2.twofold_degeneracy_n5
 physics.fqhe.torus.bosons_mooreread.threefold_degeneracy
 physics.fqhe.torus.bosons_mooreread.threefold_degeneracy_n6
+physics.fqhe.torus.ed.bosons_n3_nphi6_coulomb_ky0
+physics.fqhe.torus.ed.bosons_n4_nphi8_v0v2_ky0
+physics.fqhe.torus.ed.fermions_n3_nphi9_coulomb_ky0
+physics.fqhe.torus.ed.fermions_n3_nphi9_coulomb_r2_ky0
+physics.fqhe.torus.ed.fermions_n3_nphi9_v1_ky0
+physics.fqhe.torus.ed.fermions_n4_nphi12_coulomb_ky0
+physics.fqhe.torus.ed.fermions_n4_nphi12_v1v3_ky0
+physics.fqhe.torus.ed.fermions_n4_nphi8_coulomb_ky0
 physics.fqhe.torus.fermions_mooreread.sixfold_degeneracy
 physics.fqhe.torus.laughlin_1_3.one_quasihole_count
 physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
@@ -86,6 +99,7 @@ physics.fqhe.torus.laughlin_1_3.two_quasihole_count
 physics.hubbard.2x2.U0.ground_state_is_minus_8
 physics.hubbard.2x2.U4.full_spectrum
 physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2
+physics.hubbard.2x4.U0.plain_lanczos_krylov_closure
 physics.hubbard.2x4.U0.tight_binding
 physics.hubbard.2x4.U4.sector_ground_states
 physics.hubbard.3x2.U0.tight_binding
@@ -130,6 +144,7 @@ selftest.checker.rejects_short_spectrum
 selftest.checker.rejects_wrong_count
 selftest.checker.rejects_wrong_value
 selftest.dimension_oracle
+selftest.fci_bands_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
 selftest.manifest
@@ -137,6 +152,7 @@ selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle
 selftest.spin_ed_oracle
 selftest.spin_hubbard_oracle
+selftest.torus_ed_oracle
 smoke.Analysis_AbsorptionInQuantumWellBField
 smoke.Analysis_DOS
 smoke.Analysis_DefaultCylinderSymmetryInMagneticFieldOscillatorForce

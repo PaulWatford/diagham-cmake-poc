@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **34 of 603 programs with a physics or cross-check test** (31 of them against an independently known answer).
+headline today is **36 of 603 programs with a physics or cross-check test** (34 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **34 of 603 programs with a physics or cross-check test** (31 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state` (U30), `knownbug.fci.checkerboard.two_band_model_segfault` (U31) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -128,7 +128,7 @@ disk golden yet (U29, open, reproducer in the register).
 
 ### Spin chains and Hubbard goldens (`-L spin`, `-L hubbard`)
 
-15 physics tests (plus one known-bug test), values and tolerances from `tests/oracles/spin_hubbard.py`
+16 physics tests, values and tolerances from `tests/oracles/spin_hubbard.py`
 (`tests/data/spin_hubbard/values.txt`, re-derived by
 `selftest.spin_hubbard_oracle`, which needs numpy):
 
@@ -149,14 +149,18 @@ Programs: `GenericPeriodicSpinChain`, `PeriodicSpinChainAKLT`,
 `SpinChainAKLT`, `HaldaneShastrySpinChain`, `SpinChainXYZ`,
 `HubbardSquareLatticeModel`.
 
-A defect found on the way (**U30**): plain Lanczos (`-n 1`, no
-reorthogonalisation) on the U = 0 2×4 Hubbard case returns −18.41 and
-−17.87 in two momentum sectors, *below* the exact ground energy −16 — a
-Krylov breakdown on a degenerate spectrum that the algorithm does not
-detect (`--force-reorthogonalize` or `-n 4` give −16). Registered as the
-first `known-bug` test, `knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state`
-(`WILL_FAIL`): it passes while the defect is present and turns red when
-Lanczos is fixed. Users of `-n 1` on degenerate problems should read this.
+A defect found on the way (**U30**) and since fixed here: plain Lanczos
+(`-n 1`, no reorthogonalisation) on the U = 0 2×4 Hubbard case returned
+−18.41 and −17.87 in two momentum sectors, *below* the exact ground energy
+−16. On this degenerate spectrum the Krylov space of the start vector
+closes after 7 to 9 steps; the recurrence went on with the normalised
+round-off and produced Ritz values outside the spectrum. `BasicLanczosAlgorithm`
+and `ComplexBasicLanczosAlgorithm` now detect the closure and stop
+(`docs/upstream-reports/`, report 16). The former `known-bug` test is
+`physics.hubbard.2x4.U0.plain_lanczos_krylov_closure`: every one of the
+eight momentum sectors must give the tight-binding minimum of that sector,
+from `tight_binding_square_sectors` in `tests/oracles/spin_hubbard.py`
+(`tests/data/spin_hubbard/hubbard_2x4_N8_U0_sectors.dat`).
 
 **QuantumDots** has no golden yet: its programs are continuum
 finite-difference solvers parameterised in Ångström and effective masses,
@@ -193,6 +197,34 @@ with no exactly solvable case exposed at the command line; they get
   the right value; the runner must fail when a program writes no output
   file (stale output can never satisfy a check). If any of these ever
   "passes" the harness itself is broken.
+
+### Torus exact diagonalisation and FCI band goldens (`-L ed`, `-L bands`)
+
+`tests/oracles/torus_ed.py` is an independent lowest-Landau-level exact
+diagonalisation on the torus in Landau gauge (Yoshioka's two-body matrix
+element with the momentum sums converged to 10⁻¹⁴; Coulomb with the q = 0
+term dropped, or Haldane pseudopotentials 4π Σ_m V_m L_m(q²) e^{−q²/2}
+with q = 0 kept, normalised so that a pair of relative angular momentum m
+costs 2 V_m as in `sphere_ed.py`; fermions or bosons; one K_y sector).
+Eight tests `physics.fqhe.torus.ed.*`: Coulomb fermions N = 3, N_φ = 9 at
+aspect ratio 1 and 2, N = 4 at N_φ = 8 and 12, Coulomb bosons N = 3,
+N_φ = 6, V₁ and V₁ + V₃ fermions, V₀ + V₂ bosons. `FQHETorusFermionsCoulomb`,
+`FQHETorusBosonsCoulomb` and the two `TwoBodyGeneric` programs reproduce
+every eigenvalue of the sector to 10⁻⁹ (the tolerance is 10⁻⁸: DiagHam
+truncates its own momentum sums at about 10⁻¹⁰, visible in its degenerate
+pairs; the oracle is converged further). The reference spectra and the
+pseudopotential files are in `tests/data/torus_ed/`,
+`selftest.torus_ed_oracle` re-derives them.
+
+`tests/oracles/fci_bands.py` writes the two bands of the checkerboard
+lattice model from the published Bloch Hamiltonian (Sun, Gu, Katsura and
+Das Sarma, PRL 106, 236803) at every lattice momentum. Six tests
+`physics.fci.checkerboard.bands.*` (3×3 and 4×4 at the flat-band hoppings,
+4×3 away from them, one test per band) compare the E₀ and E₁ columns of
+`FCICheckerboardLatticeModel --singleparticle-spectrum --export-onebodytext`
+with `tests/data/fci_bands/` to 10⁻¹²; `selftest.fci_bands_oracle`
+re-derives the files. It is the first independent number for an FCI
+program; the many-body FCI spectra remain regression-only.
 
 ### Regression spectra (`-L regression`)
 
@@ -249,8 +281,9 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-Two `known-bug` tests exist (U30, plain Lanczos below the ground state on
-a degenerate spectrum; U31, the two-band checkerboard segfault; see above). A `known-bug` test reproduces a defect documented in this repository and is
+One `known-bug` test exists (U31, the two-band checkerboard segfault; see
+above; U30, plain Lanczos below the ground state on a degenerate spectrum,
+was fixed here and its test promoted to `physics`). A `known-bug` test reproduces a defect documented in this repository and is
 registered with `WILL_FAIL`: it passes while the defect is present, and the
 day someone fixes the defect it fails, so it can't be forgotten -- turn it
 into a `physics` test (drop `WILL_FAIL`) in the same change as the fix.

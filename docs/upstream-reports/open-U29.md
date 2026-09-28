@@ -28,3 +28,7 @@ gives 1, 1, 2, 3, 5 zero modes at Lz = 12…16 (`physics.fqhe.disk.*` in this re
 ## What is known
 
 Nothing beyond the symptom: the hang is after the interaction coefficients are built, before any eigenvalue is written. The fermionic disk Hamiltonian path (`ParticleOnDiskGenericHamiltonian` with `FermionOnDisk`) is the suspect; the bosonic path with the same options works.
+
+## Update 2026-09-29
+
+At N = 2 the program runs at L_z = 3 and segfaults at L_z = 5 ("Hilbert space dimension = 3", then the crash); at N = 3 it hangs at L_z = 6 and 9. `FQHEThinAnnulusFermionsTwoBodyGeneric` (same `FermionOnDisk` space) hangs the same way. The bosonic twin runs, so the fermionic Hilbert-space class is the suspect: `FermionOnDisk` reuses the state generation and look-up tables of `FermionOnSphere` with a shifted L_z convention. The pseudopotential Hamiltonian it would use is itself wrong for N >= 3 (U34).

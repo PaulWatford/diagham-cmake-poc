@@ -23,10 +23,12 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 | 14 | [Write computed results at full double precision: precision(14) -> numeric_limits<double>::](14-IEEE754PrecisionForEigenvalueOutput.md) | 544 | `patches/upstream/14-IEEE754PrecisionForEigenvalueOutput.diff` |
 | 15 | [ParticleOnCylinderPseudopotentialHamiltonian: fail clearly without GSL instead of undefine](15-cylinder-pseudopotential-needs-gsl.md) | 1 | `patches/upstream/15-cylinder-pseudopotential-needs-gsl.diff` |
 | 16 | [Plain Lanczos: detect the closure of the Krylov space instead of iterating on round-off (U](16-LanczosKrylovSpaceClosure.md) | 4 | `patches/upstream/16-LanczosKrylovSpaceClosure.diff` |
+| 17 | [ParticleOnCylinderCoulombHamiltonian: fail clearly without GSL instead of undefined behavi](17-cylinder-coulomb-needs-gsl.md) | 1 | `patches/upstream/17-cylinder-coulomb-needs-gsl.diff` |
 
 ## Registered defects without a fix (reproducers)
 
 - [Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"](open-U29.md)
 - [Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band](open-U31.md)
+- [Open defect U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3](open-U34.md)
 
-Generated from 16 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.
+Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

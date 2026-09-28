@@ -10,6 +10,8 @@
 #     fqhe, sphere, ed, spin).
 #  1b. tests/oracles/torus_ed.py: the same on the torus (Landau gauge, Coulomb
 #     or pseudopotentials, fermions or bosons; label: physics, fqhe, torus, ed).
+#  1b'. the same on the torus with SU(2)/SU(3)/SU(4) spin, bilayer Coulomb, Landau
+#     level 1 and the magnetic-translation (Kx, Ky) sectors (spectrum_species).
 #  1c. tests/oracles/fci_bands.py: the checkerboard lattice bands from the
 #     published Bloch Hamiltonian (label: physics, fci, checkerboard, bands).
 #  2. tests/oracles/spin_ed.py: dense numpy diagonalisation of XXZ / J1-J2
@@ -166,6 +168,74 @@ foreach(case
         CHECK spectrum @OUTPUT@ -1 ${torus_ed_data}/${name}_spectrum.dat -1 1e-8
         LABELS fqhe torus ed)
 endforeach()
+
+# --- 1b'. torus ED with spin, Landau level and magnetic-translation sectors ------------------------
+# spectrum_species in tests/oracles/torus_ed.py: several species (SU(2), SU(3), SU(4); bilayer Coulomb
+# 2 pi exp(-q d)/q between layers), Landau level n (form factor [L_n(q^2/2)]^2), and the (Kx, Ky)
+# sectors of the translation programs. Pseudopotential files carry the species-pair keys and
+# "Name = ed"; Coulomb programs take no file. Reference rows are "Ky E" or "Kx Ky E".
+function(diagham_torus_species_test name case)
+    cmake_parse_arguments(ARG "PP;KX" "PROGRAM;OUTPUT" "ARGS" ${ARGN})
+    set(extra "")
+    if(ARG_PP)
+        set(extra --interaction-file ${torus_ed_data}/${case}_pp.dat)
+    endif()
+    if(ARG_KX)
+        set(col 2)
+    else()
+        set(col -1)
+    endif()
+    diagham_physics_test(${name}
+        PROGRAM ${ARG_PROGRAM}
+        ARGS ${ARG_ARGS} ${extra} --full-diag 100000
+        OUTPUT "${ARG_OUTPUT}"
+        CHECK spectrum @OUTPUT@ ${col} ${torus_ed_data}/${case}_spectrum.dat ${col} 1e-8
+        LABELS fqhe torus ed)
+endfunction()
+set(tfwt FQHEOnTorus_FQHETorusFermionsWithTranslations)
+set(tbwt FQHEOnTorus_FQHETorusBosonsWithTranslations)
+set(tfs FQHEOnTorus_FQHETorusFermionsWithSpin)
+set(tfst FQHEOnTorus_FQHETorusFermionsWithSpinAndTranslations)
+set(tfsg FQHEOnTorus_FQHETorusFermionsWithSpinTwoBodyGeneric)
+set(tbsg FQHEOnTorus_FQHETorusBosonsWithSpinTwoBodyGeneric)
+set(tbst FQHEOnTorus_FQHETorusBosonsWithSpinAndTranslations)
+set(tb3g FQHEOnTorus_FQHETorusBosonsWithSU3SpinTwoBodyGeneric)
+set(tb3t FQHEOnTorus_FQHETorusBosonsWithSU3SpinAndTranslations)
+set(tb4g FQHEOnTorus_FQHETorusBosonsWithSU4SpinTwoBodyGeneric)
+diagham_torus_species_test(physics.fqhe.torus.ed.fermions_n3_nphi9_coulomb_ll1_ky0 fermions_n3_nphi9_coulomb_ll1_ky0
+    PROGRAM ${tfc} ARGS -p 3 -l 9 --ratio 1.0 --landau-level 1 --ky-momentum 0 OUTPUT "fermions_torus_kysym_coulomb_n_3_2s_9_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.fermions_n4_nphi8_v1v3_allky fermions_n4_nphi8_v1v3_allky PP
+    PROGRAM FQHEOnTorus_FQHETorusFermionsTwoBodyGenericAllMomenta ARGS -p 4 -l 8 -r 1 --interaction-name ed OUTPUT "fermions_torus_noky_ed_n_4_2s_8_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.translations.fermions_n4_nphi8_v1v3_kx2_ky0 fermions_n4_nphi8_v1v3_kx2_ky0 PP KX
+    PROGRAM ${tfwt} ARGS -p 4 -l 8 -R 1 -x 2 -y 0 OUTPUT "fermions_torus_ed_n_4_2s_8_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.translations.fermions_n4_nphi8_v1v3_kx1_ky2 fermions_n4_nphi8_v1v3_kx1_ky2 PP KX
+    PROGRAM ${tfwt} ARGS -p 4 -l 8 -R 1 -x 1 -y 2 OUTPUT "fermions_torus_ed_n_4_2s_8_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.translations.bosons_n4_nphi6_v0v2_kx0_ky0 bosons_n4_nphi6_v0v2_kx0_ky0 PP KX
+    PROGRAM ${tbwt} ARGS -p 4 -l 6 -R 1 -x 0 -y 0 OUTPUT "bosons_torus_ed_n_4_2s_6_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.translations.bosons_n4_nphi6_v0v2_kx1_ky2 bosons_n4_nphi6_v0v2_kx1_ky2 PP KX
+    PROGRAM ${tbwt} ARGS -p 4 -l 6 -R 1 -x 1 -y 2 OUTPUT "bosons_torus_ed_n_4_2s_6_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.fermions_n4_nphi8_generic_sz0_ky0 fermions_su2_n4_nphi8_generic_sz0_ky0 PP
+    PROGRAM ${tfsg} ARGS -p 4 -l 8 -s 0 -r 1 -y 0 --interaction-name ed OUTPUT "fermions_torus_su2_kysym_ed_n_4_2s_8_sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.fermions_n4_nphi8_generic_sz2_ky0 fermions_su2_n4_nphi8_generic_sz2_ky0 PP
+    PROGRAM ${tfsg} ARGS -p 4 -l 8 -s 2 -r 1 -y 0 --interaction-name ed OUTPUT "fermions_torus_su2_kysym_ed_n_4_2s_8_sz_2_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.bosons_n4_nphi6_generic_sz0_ky0 bosons_su2_n4_nphi6_generic_sz0_ky0 PP
+    PROGRAM ${tbsg} ARGS -p 4 -l 6 -s 0 -r 1 -y 0 --interaction-name ed OUTPUT "bosons_torus_su2_kysym_ed_n_4_2s_6_sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.fermions_n4_nphi8_coulomb_sz0_ky0 fermions_su2_n4_nphi8_coulomb_sz0_ky0
+    PROGRAM ${tfs} ARGS -p 4 -l 8 -s 0 -R 1 -y 0 OUTPUT "fermions_torus_su2_coulomb_n_4_2s_8_Sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.fermions_n4_nphi8_bilayer_d1_sz0_ky0 fermions_su2_n4_nphi8_bilayer_d1_sz0_ky0
+    PROGRAM ${tfs} ARGS -p 4 -l 8 -s 0 -R 1 -y 0 -d 1.0 OUTPUT "fermions_torus_d_1.000000_coulomb_n_4_2s_8_Sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.translations.fermions_n4_nphi8_bilayer_d0.5_kx0_ky0 fermions_su2_n4_nphi8_bilayer_d0.5_sz0_kx0_ky0 KX
+    PROGRAM ${tfst} ARGS -p 4 -l 8 -s 0 -r 1 -d 0.5 -x 0 -y 0 OUTPUT "fermions_torus_su2_coulomb_n_4_2s_8_d_0.500000_sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.translations.fermions_n4_nphi8_bilayer_d0.5_kx1_ky3 fermions_su2_n4_nphi8_bilayer_d0.5_sz0_kx1_ky3 KX
+    PROGRAM ${tfst} ARGS -p 4 -l 8 -s 0 -r 1 -d 0.5 -x 1 -y 3 OUTPUT "fermions_torus_su2_coulomb_n_4_2s_8_d_0.500000_sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su2.translations.bosons_n4_nphi6_generic_kx1_ky1 bosons_su2_n4_nphi6_generic_sz0_kx1_ky1 PP KX
+    PROGRAM ${tbst} ARGS -p 4 -l 6 -s 0 -r 1 -x 1 -y 1 --interaction-name ed OUTPUT "bosons_torus_su2_ed_n_4_2s_6_sz_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su3.bosons_n4_nphi6_generic_ky0 bosons_su3_n4_nphi6_generic_ky0 PP
+    PROGRAM ${tb3g} ARGS -p 4 -l 6 --nbr-n1 2 --nbr-n2 1 --nbr-n3 1 -r 1 -y 0 --interaction-name ed OUTPUT "bosons_torus_su3_kysym_ed_n_4_2s_6_tz_1_y_1_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su3.translations.bosons_n3_nphi6_generic_kx1_ky2 bosons_su3_n3_nphi6_generic_kx1_ky2 PP KX
+    PROGRAM ${tb3t} ARGS -p 3 -l 6 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 -r 1 -x 1 -y 2 --interaction-name ed OUTPUT "bosons_torus_su3_ed_n_3_2s_6_tz_0_y_0_ratio_*.dat")
+diagham_torus_species_test(physics.fqhe.torus.ed.su4.bosons_n4_nphi5_generic_ky0 bosons_su4_n4_nphi5_generic_ky0 PP
+    PROGRAM ${tb4g} ARGS -p 4 -l 5 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 --nbr-n4 1 -r 1 -y 0 --interaction-name ed OUTPUT "bosons_torus_su4_kysym_ed_n_4_2s_5_sz_0_iz_0_pz_0_ratio_*.dat")
 
 # --- 1c. FCI band structures ---------------------------------------------------------------------
 # tests/oracles/fci_bands.py: the two bands of the checkerboard lattice model from the published

@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Torus ED oracle with several species, Landau level index, bilayer Coulomb
+  and magnetic-translation (K_x, K_y) sectors (`spectrum_species` in
+  `tests/oracles/torus_ed.py`); 17 goldens `physics.fqhe.torus.ed.*` over
+  eleven more torus programs (translations, spin, SU(3), SU(4), all momenta,
+  first Landau level), whole sectors to 10⁻⁹.
 - Sphere ED oracle with SU(2), SU(3) and SU(4) spin (`spectrum_su2`,
   `spectrum_sun` in `tests/oracles/sphere_ed.py`) and 15 goldens
   `physics.fqhe.sphere.ed.su2/su3/su4.*`: `FQHESphereFermionsWithSpin`,
@@ -50,8 +55,8 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 774 tests, 142 physics goldens, 42 of 603 programs with a
-  physics or cross-check test (40 against an independent answer), 16
+- Test counts: 791 tests, 159 physics goldens, 51 of 603 programs with a
+  physics or cross-check test (51 against an independent answer), 16
   self-tests, 2 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 

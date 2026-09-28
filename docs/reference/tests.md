@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **42 of 603 programs with a physics or cross-check test** (40 of them against an independently known answer).
+headline today is **51 of 603 programs with a physics or cross-check test** (51 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -234,6 +234,30 @@ truncates its own momentum sums at about 10⁻¹⁰, visible in its degenerate
 pairs; the oracle is converged further). The reference spectra and the
 pseudopotential files are in `tests/data/torus_ed/`,
 `selftest.torus_ed_oracle` re-derives them.
+
+`spectrum_species` in the same oracle takes several species (one Fock block
+each, kernels per species pair, a different-species pair of relative
+angular momentum m costing 2 V_m like a same-species one), the Landau
+level index (form factor [L_n(q²/2)]² e^{−q²/2}), the inter-layer Coulomb
+kernel 2π e^{−qd}/q, and the magnetic-translation sectors: inside a K_y
+sector the translation of every particle by N_φ/gcd(N, N_φ) orbitals is a
+signed permutation whose eigenvalues e^{2πi K_x/g} label the K_x sectors
+(the program's labelling of K_x, fixed once on N = 4, N_φ = 8, is the only
+convention taken). Seventeen further tests: `FQHETorusFermionsCoulomb` in
+Landau level 1; `FQHETorusFermionsTwoBodyGenericAllMomenta` (every K_y at
+once); `FQHETorusFermionsWithTranslations` and `BosonsWithTranslations`
+((K_x, K_y) sectors); `FQHETorusFermionsWithSpinTwoBodyGeneric`,
+`BosonsWithSpinTwoBodyGeneric` (spin-dependent pseudopotentials, keys
+`PseudopotentialsUpUp/DownDown/UpDown`, Sz = 0 and 1);
+`FQHETorusFermionsWithSpin` (SU(2) Coulomb and bilayer Coulomb at d = 1);
+`FQHETorusFermionsWithSpinAndTranslations` (bilayer d = 0.5, two (K_x, K_y)
+sectors); `FQHETorusBosonsWithSpinAndTranslations`;
+`FQHETorusBosonsWithSU3SpinTwoBodyGeneric`, `WithSU3SpinAndTranslations`
+(keys `Pseudopotentials11` … `33`) and `FQHETorusBosonsWithSU4SpinTwoBodyGeneric`
+(ten channels). All whole sectors to 10⁻⁹ (tolerance 10⁻⁸). While writing
+it the oracle disagreed with the program once: the fermionic operator
+order of the two-species term was wrong in the oracle (the momentum
+transfer must stay within a species); the bosonic cases had hidden it.
 
 `tests/oracles/fci_bands.py` writes the two bands of the checkerboard
 lattice model from the published Bloch Hamiltonian (Sun, Gu, Katsura and

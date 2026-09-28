@@ -15,8 +15,8 @@ These are the two claims this repository stands on. **No agent may
 weaken either of them**, in code, in tests, or in what it reports about
 them:
 
-- **The ctest suite passes in full** (`ctest --preset default`: 774 tests at
-  DiagHam r4493, of which 142 physics goldens + 1 Python cross-check, 3-4
+- **The ctest suite passes in full** (`ctest --preset default`: 791 tests at
+  DiagHam r4493, of which 159 physics goldens + 1 Python cross-check, 3-4
   cross-checks (one needs LAPACK), 11-12 regression (one needs GSL), 599 `--help` smokes, 1 install, 16 self-tests, 2 known-bug; the
   list of test names is the locked manifest `tests/manifest.txt`, checked by
   `selftest.manifest`). `cmake/verify_build.sh`, the autotools-parity script,

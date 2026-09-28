@@ -1,0 +1,3 @@
+# fermions N=4 per species [4] Nphi=8 ratio=1.0 Kx=1 Ky=2: V1 + V3, (Kx, Ky) = (1, 2); 2 eigenvalues from tests/oracles/torus_ed.py (Kx Ky E)
+1 2 4.40800328571509
+1 2 5.25181493524149

@@ -1,0 +1,4 @@
+# fermions N=4 per species [4] Nphi=8 ratio=1.0 Kx=2 Ky=0: V1 + V3, magnetic-translation sector (Kx, Ky) = (2, 0); 3 eigenvalues from tests/oracles/torus_ed.py (Kx Ky E)
+2 0 3.71915830994016
+2 0 4.04671269379857
+2 0 5.24963722843522

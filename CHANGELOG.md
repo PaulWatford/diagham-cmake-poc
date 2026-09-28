@@ -14,6 +14,21 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/geometry_ed.py`: two-body pseudopotential ED on the cylinder
+  (Landau gauge, no periodic images) and the disk (symmetric-gauge pair
+  projectors, plus an exact rational first-quantised cross-check); 4 goldens
+  in every build (cylinder delta and Laplacian-delta programs, the disk
+  Coulomb pseudopotentials' closed form Γ(m+½)/(2 m!)) and 4 more with GSL
+  (`FQHECylinderFermionsTwoBodyGeneric` at three aspect ratios and two
+  momentum sectors).
+- U34 registered with three `known-bug` tests: the disk pseudopotential
+  Hamiltonian (`FQHEDiskBosonsTwoBodyGeneric`) gives wrong energies for
+  N ≥ 3 while its zero modes are right; the tests carry the exact spectra.
+
+### Fixed
+- U33: `ParticleOnCylinderCoulombHamiltonian` fails clearly without GSL
+  instead of segfaulting (`FQHECylinderFermionsCoulomb` in the default
+  build), the same fix as U28. Report 17 in `docs/upstream-reports/`.
 - `tests/oracles/sphere_nbody.py`: three- and four-body pseudopotential
   Hamiltonians on the sphere from L-multiplet projectors; 8 goldens
   `physics.fqhe.sphere.ed.nbody.*` (hard core and generic three-body sets,
@@ -60,9 +75,9 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 800 tests, 167 physics goldens, 53 of 603 programs with a
-  physics or cross-check test (53 against an independent answer), 17
-  self-tests, 2 known-bug reproducers; `tests/manifest.txt` and
+- Test counts: 808 tests (+4 with GSL), 171 physics goldens, 55 of 603 programs with a
+  physics or cross-check test (55 against an independent answer), 18
+  self-tests, 5 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

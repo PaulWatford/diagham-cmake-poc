@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **53 of 603 programs with a physics or cross-check test** (53 of them against an independently known answer).
+headline today is **55 of 603 programs with a physics or cross-check test** (55 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **53 of 603 programs with a physics or cross-check test** (53 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -182,6 +182,29 @@ with no exactly solvable case exposed at the command line; they get
   While writing it the oracle disagreed with the program twice; both times
   the oracle was wrong (operator order; summing over particles instead of
   orbitals for bosons) — the disagreement→check loop the plan asks for.
+- **Cylinder and disk ED** (4 tests in every build, 4 more with GSL,
+  `physics.fqhe.cylinder.ed.*`, `physics.fqhe.disk.coulomb_pseudopotentials.*`):
+  `tests/oracles/geometry_ed.py` carries the torus matrix element over to
+  an infinite cylinder (no periodic images, the q_x sum an integral; the
+  programs' circumference is L = √(2π r N_orb) for their `-r`, and they
+  label momentum sectors by twice the momentum, `-y 2k --nbr-ky 1`) and
+  builds the disk pair projectors from (z₁−z₂)^m (z₁+z₂)^M expanded with
+  binomials. `FQHECylinderBosonsDeltaInteraction` (delta = V₀, two
+  ratios and sectors), `FQHECylinderFermionsLaplacianDelta` (= V₁) and,
+  with GSL, `FQHECylinderFermionsTwoBodyGeneric` (V₁ + V₃ at ratio 1, 2
+  and ½ and in the Ky = 2 sector) reproduce whole sectors to 10⁻¹²;
+  `FQHEDiskCoulombPseudopotentials` equals Γ(m+½)/(2 m!) to 10⁻¹⁵. The
+  disk Hamiltonian is another story (**U34**): `FQHEDiskBosonsTwoBodyGeneric`
+  gives the right zero modes and wrong nonzero energies from N = 3 on
+  (three bosons at Lz = 6 with V₀: 1.5951, 1.9825, 2.0000 … where the
+  exact values are 3/2, 15/8, 33/16 …). Two independent computations in
+  the oracle agree to 10⁻¹⁵: the second-quantised projector assembly, and
+  an exact rational first-quantised projection in the basis of monomial
+  symmetric polynomials (the relative-angular-momentum decomposition is
+  orthogonal, so no metric is needed); `selftest.geometry_ed_oracle`
+  checks them against each other. The three `knownbug.fqhe.disk.*` tests
+  carry the exact spectra and turn red when the program is fixed; the
+  fermionic program hangs (U29) and could not be tested at all.
 - **k-body sphere ED** (8 tests, `physics.fqhe.sphere.ed.nbody.*`):
   `tests/oracles/sphere_nbody.py` builds three- and four-body
   pseudopotential Hamiltonians from the projectors onto the L = kl − m
@@ -344,8 +367,9 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-Two `known-bug` tests exist (U31, the two-band checkerboard segfault; U32,
-the empty fermionic basis with both symmetrisation flags; see above. U30,
+Five `known-bug` tests exist (U31, the two-band checkerboard segfault; U32,
+the empty fermionic basis with both symmetrisation flags; U34, the disk
+pseudopotential Hamiltonian, three cases; see above. U30,
 plain Lanczos below the ground state on a degenerate spectrum, was fixed
 here and its test promoted to `physics`). A `known-bug` test reproduces a defect documented in this repository and is
 registered with `WILL_FAIL`: it passes while the defect is present, and the

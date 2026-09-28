@@ -27,6 +27,7 @@ fixes upstream has since made itself are not carried.
 | A | Spin programs: gate 21 `LapackDiagonalize` calls (13, regenerated) + one in `PairHoppingModelFSA` | 9 | same as class A | upstream guarded one file after 2020; the rest still needed |
 | I | spinful torus Coulomb: basis order vs `FindStateIndex`; missing up-down interaction (14) | 3 | **physics**: results wrong for N ≥ 3 and for every unpolarised case | **for maintainer review**; applies cleanly to r4493 (files unchanged since 2020) — see `torus-su2-coulomb-defect.md` |
 | J | plain Lanczos (`BasicLanczosAlgorithm`, `ComplexBasicLanczosAlgorithm`): detect the closure of the Krylov space and stop instead of iterating on round-off (16) | 4 | **physics**: `-n 1` returned energies below the ground state on degenerate spectra (U30) | still needed |
+| J | `ParticleOnCylinderCoulombHamiltonian`: fail clearly without GSL instead of undefined behaviour (17) | 1 | same as U28: a segfault in every no-GSL run of `FQHECylinderFermionsCoulomb` | still needed |
 | — | `SpinChainHamiltonianWithTranslations` uninitialised members (was 15) | — | dropped | **fixed upstream after 2020** (r4493 initialises them); not carried |
 
 Also on `main`, not upstream changes: two FQHEOnDisk programs renamed to

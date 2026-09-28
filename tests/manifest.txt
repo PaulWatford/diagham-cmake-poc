@@ -3,6 +3,9 @@ crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless
 crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
 install.find_package_consumer
 knownbug.fci.checkerboard.two_band_model_segfault
+knownbug.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
+knownbug.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
+knownbug.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
 physics.dimension.disk.bosons_n3_lz6
 physics.dimension.disk.fermions_n3_lz6
@@ -44,6 +47,9 @@ physics.fqhe.cylinder.bosons_laughlin_1_2.unique_zero_mode_n5
 physics.fqhe.cylinder.bosons_mooreread.two_quasihole_count
 physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode
 physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode_n6
+physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r1_ky0
+physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r2_ky1
+physics.fqhe.cylinder.ed.fermions_n4_norb9_laplacian_delta_r1_ky0
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz12
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz13
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz14
@@ -51,6 +57,7 @@ physics.fqhe.disk.bosons_laughlin_1_2.n4_lz15
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz16
 physics.fqhe.disk.bosons_laughlin_1_2.n5_lz20
 physics.fqhe.disk.bosons_laughlin_1_2.n5_lz22
+physics.fqhe.disk.coulomb_pseudopotentials.2s8
 physics.fqhe.sphere.bosons_laughlin_1_2.jack_equals_ed
 physics.fqhe.sphere.bosons_laughlin_1_2.one_quasihole_half_integer_lz
 physics.fqhe.sphere.bosons_laughlin_1_2.two_quasihole_count
@@ -192,6 +199,7 @@ selftest.dimension_oracle
 selftest.fci_bands_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
+selftest.geometry_ed_oracle
 selftest.manifest
 selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle

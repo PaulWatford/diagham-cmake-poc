@@ -131,8 +131,10 @@ nav:
       - '14. Write computed results at full double precision: precision(14) -> numeric_limits<double>::max_digits10': upstream-reports/14-IEEE754PrecisionForEigenvalueOutput.md
       - '15. ParticleOnCylinderPseudopotentialHamiltonian: fail clearly without GSL instead of undefined behaviour': upstream-reports/15-cylinder-pseudopotential-needs-gsl.md
       - '16. Plain Lanczos: detect the closure of the Krylov space instead of iterating on round-off (U30)': upstream-reports/16-LanczosKrylovSpaceClosure.md
+      - '17. ParticleOnCylinderCoulombHamiltonian: fail clearly without GSL instead of undefined behaviour (U33)': upstream-reports/17-cylinder-coulomb-needs-gsl.md
       - 'Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"': upstream-reports/open-U29.md
       - 'Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band': upstream-reports/open-U31.md
+      - 'Open defect U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3': upstream-reports/open-U34.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

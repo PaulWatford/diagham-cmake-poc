@@ -1,0 +1,13 @@
+# disk bosons N=3 Lz=9: three bosons at Lz = 9, V2 = 1: four zero modes then 3/32, 3/4, 27/32, ...; 12 eigenvalues from tests/oracles/geometry_ed.py
+9 -6.87294419102353e-17
+9 1.25124706683326e-17
+9 2.20657044374521e-16
+9 9.89087919421681e-16
+9 0.0937500000000002
+9 0.75
+9 0.84375
+9 1.5
+9 3
+9 3.5625
+9 3.9375
+9 4.5

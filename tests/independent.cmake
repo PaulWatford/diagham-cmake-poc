@@ -14,6 +14,8 @@
 #     or pseudopotentials, fermions or bosons; label: physics, fqhe, torus, ed).
 #  1b'. the same on the torus with SU(2)/SU(3)/SU(4) spin, bilayer Coulomb, Landau
 #     level 1 and the magnetic-translation (Kx, Ky) sectors (spectrum_species).
+#  1b''. tests/oracles/geometry_ed.py: two-body pseudopotentials on the cylinder and the
+#     disk (label: physics, fqhe, cylinder / disk, ed).
 #  1c. tests/oracles/fci_bands.py: the checkerboard lattice bands from the
 #     published Bloch Hamiltonian (label: physics, fci, checkerboard, bands).
 #  2. tests/oracles/spin_ed.py: dense numpy diagonalisation of XXZ / J1-J2
@@ -273,6 +275,68 @@ diagham_torus_species_test(physics.fqhe.torus.ed.su3.translations.bosons_n3_nphi
 diagham_torus_species_test(physics.fqhe.torus.ed.su4.bosons_n4_nphi5_generic_ky0 bosons_su4_n4_nphi5_generic_ky0 PP
     PROGRAM ${tb4g} ARGS -p 4 -l 5 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 --nbr-n4 1 -r 1 -y 0 --interaction-name ed OUTPUT "bosons_torus_su4_kysym_ed_n_4_2s_5_sz_0_iz_0_pz_0_ratio_*.dat")
 
+# --- 1b''. cylinder and disk ED ---------------------------------------------------------------------
+# tests/oracles/geometry_ed.py: the Landau-gauge matrix element on a cylinder (no periodic images,
+# integral over q_x; L = sqrt(2 pi r N_orb) as the programs define it; the programs label momentum
+# sectors by twice the momentum, -y 2k --nbr-ky 1), and the symmetric-gauge pair projectors on the
+# disk. The pseudopotential cylinder programs need GSL (U28), so those tests exist only with it and
+# are listed in tests/manifest-optional.txt; the delta programs run in every build.
+set(geo_data ${DIAGHAM_TEST_DATA}/geometry_ed)
+function(diagham_geometry_test name case)
+    cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT;TOL" "ARGS;LABELS" ${ARGN})
+    if(NOT ARG_TOL)
+        set(ARG_TOL 1e-9)
+    endif()
+    diagham_physics_test(${name}
+        PROGRAM ${ARG_PROGRAM}
+        ARGS ${ARG_ARGS} --full-diag 100000
+        OUTPUT "${ARG_OUTPUT}"
+        CHECK spectrum @OUTPUT@ -1 ${geo_data}/${case}_spectrum.dat -1 ${ARG_TOL}
+        LABELS fqhe ed ${ARG_LABELS})
+endfunction()
+set(cyf2 FQHEOnCylinder_FQHECylinderFermionsTwoBodyGeneric)
+if(DIAGHAM_USE_GSL)
+    foreach(case "fermions_n4_norb9_v1v3_r1_ky0|1|0" "fermions_n4_norb9_v1v3_r2_ky0|2|0" "fermions_n4_norb9_v1v3_r0.5_ky0|0.5|0" "fermions_n4_norb9_v1v3_r1_ky2|1|4")
+        string(REPLACE "|" ";" c "${case}")
+        list(GET c 0 name)
+        list(GET c 1 ratio)
+        list(GET c 2 y)
+        diagham_geometry_test(physics.fqhe.cylinder.ed.${name} ${name}
+            PROGRAM ${cyf2} ARGS -p 4 -l 8 -r ${ratio} -y ${y} --nbr-ky 1 --interaction-file ${geo_data}/${name}_pp.dat --interaction-name ed
+            OUTPUT "fermions_cylinder_ky_ed_n_4_2s_8_ratio_*.dat" LABELS cylinder)
+    endforeach()
+endif()
+diagham_geometry_test(physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r1_ky0 bosons_n4_norb7_delta_r1_ky0
+    PROGRAM ${cbd} ARGS -p 4 -l 6 -r 1 -y 0 --nbr-ky 1 OUTPUT "bosons_cylinder_ky_delta_n_4_2s_6_ratio_*.dat" LABELS cylinder)
+diagham_geometry_test(physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r2_ky1 bosons_n4_norb7_delta_r2_ky1
+    PROGRAM ${cbd} ARGS -p 4 -l 6 -r 2 -y 2 --nbr-ky 1 OUTPUT "bosons_cylinder_ky_delta_n_4_2s_6_ratio_*.dat" LABELS cylinder)
+diagham_geometry_test(physics.fqhe.cylinder.ed.fermions_n4_norb9_laplacian_delta_r1_ky0 fermions_n4_norb9_laplacian_delta_r1_ky0
+    PROGRAM FQHEOnCylinder_FQHECylinderFermionsLaplacianDelta ARGS -p 4 -l 8 -r 1 -y 0 --nbr-ky 1 OUTPUT "fermions_cylinder_ky_delta_n_4_2s_8_ratio_*.dat" LABELS cylinder)
+# (FQHECylinderFermionsCoulomb, U33: needs GSL too, now fails clearly without it; its Coulomb
+#  matrix elements on a cylinder are not yet in the oracle)
+# disk: the Coulomb pseudopotentials have the closed form Gamma(m+1/2)/(2 m!)
+diagham_physics_test(physics.fqhe.disk.coulomb_pseudopotentials.2s8
+    PROGRAM FQHEOnDisk_FQHEDiskCoulombPseudopotentials
+    ARGS -s 8
+    OUTPUT "pseudopotential_disk_coulomb_l_0_2s_8.dat"
+    CHECK line @OUTPUT@ Pseudopotentials ${geo_data}/disk_coulomb_2s8.txt 1e-13
+    LABELS fqhe disk)
+# U34: the disk pseudopotential Hamiltonian is wrong for N >= 3 (zero modes right, nonzero energies off);
+# the exact spectra are in the reference files (two independent routes agree). WILL_FAIL until fixed.
+foreach(case "bosons_n3_lz6_v0|3|6" "bosons_n4_lz12_v0_v2|4|12" "bosons_n3_lz9_v2|3|9")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 name)
+    list(GET c 1 n)
+    list(GET c 2 lz)
+    diagham_physics_test(knownbug.fqhe.disk.bosons_two_body_generic.${name}
+        PROGRAM ${db2}
+        ARGS -p ${n} --minimum-momentum ${lz} --maximum-momentum ${lz} --interaction-file ${geo_data}/${name}_pp.dat --interaction-name ed --full-diag 100000
+        OUTPUT "bosons_disk_ed_n_${n}_lz_${lz}.dat"
+        CHECK spectrum @OUTPUT@ -1 ${geo_data}/${name}_spectrum.dat -1 1e-9
+        WILL_FAIL
+        LABELS fqhe disk)
+endforeach()
+
 # --- 1c. FCI band structures ---------------------------------------------------------------------
 # tests/oracles/fci_bands.py: the two bands of the checkerboard lattice model from the published
 # Bloch Hamiltonian (Sun, Gu, Katsura, Das Sarma 2011) at every lattice momentum. The program's
@@ -394,10 +458,12 @@ if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/spin_ed.py --check ${spin_ed_data})
     add_test(NAME selftest.sphere_nbody_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/sphere_nbody.py --check ${nbody_data})
+    add_test(NAME selftest.geometry_ed_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/geometry_ed.py --check ${geo_data})
     add_test(NAME selftest.torus_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_ed.py --check ${torus_ed_data})
     add_test(NAME selftest.fci_bands_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_bands.py --check ${fci_bands_data})
     set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle selftest.torus_ed_oracle
-        selftest.fci_bands_oracle selftest.sphere_nbody_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
+        selftest.fci_bands_oracle selftest.sphere_nbody_oracle selftest.geometry_ed_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
 endif()

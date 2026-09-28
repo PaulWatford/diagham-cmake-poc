@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **36 of 603 programs with a physics or cross-check test** (34 of them against an independently known answer).
+headline today is **42 of 603 programs with a physics or cross-check test** (40 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **36 of 603 programs with a physics or cross-check test** (34 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -169,7 +169,7 @@ with no exactly solvable case exposed at the command line; they get
 
 ### Independent solvers (`-L ed`), algorithm consensus, and self-tests
 
-- **Sphere pseudopotential ED** (7 tests, `physics.fqhe.sphere.ed.*`):
+- **Sphere pseudopotential ED** (8 tests, `physics.fqhe.sphere.ed.*`, one of them with the first-Landau-level Coulomb pseudopotentials):
   `tests/oracles/sphere_ed.py` builds the lowest-Landau-level Hamiltonian
   for any Haldane pseudopotentials from scratch — Clebsch–Gordan pair
   projectors from exact Wigner 3j symbols, an explicit Fock basis of one
@@ -182,6 +182,25 @@ with no exactly solvable case exposed at the command line; they get
   While writing it the oracle disagreed with the program twice; both times
   the oracle was wrong (operator order; summing over particles instead of
   orbitals for bosons) — the disagreement→check loop the plan asks for.
+- **Spinful sphere ED** (15 tests, `physics.fqhe.sphere.ed.su2.*`,
+  `su3.*`, `su4.*`): the same oracle with k species (`spectrum_su2`,
+  `spectrum_sun`), one Fock block per species and pseudopotentials per
+  species pair; a different-species pair of relative angular momentum m
+  costs 2 V_m like a same-species one (fixed with one up and one down
+  particle). `FQHESphereFermionsWithSpin`, `FQHESphereBosonsWithSpin`
+  (SU(2)-symmetric Coulomb and spin-dependent sets, Sz = 0 and 1),
+  `FQHESphereFermionsWithSU3Spin`, `FQHESphereBosonsWithSU3Spin` (keys
+  `Pseudopotentials11` … `33`, sectors by 2Tz/3Y or particle numbers),
+  `FQHESphereBosonsWithSU4Spin` (ten channels) reproduce whole spectra to
+  10⁻⁹. The `--szsymmetrized-basis` and `--lzsymmetrized-basis` sectors
+  (± parity) are checked one by one against the oracle's projection onto
+  the eigenspaces of the exchange operators (25 + 22 and 28 + 19 of the 47
+  Sz = 0, Lz = 0 states); both flags together give an empty fermionic basis
+  (**U32**, `known-bug`). The legacy `QHEFermionsSphereWithSpin -v -w` has
+  its own normalisation (a pair costs V_m, V in the up-down m = 0 channel,
+  W in every m = 1 channel) and is checked in it. Not matched:
+  `FQHESphereFermionsWithSpinFull` (four-index keys, its convention is not
+  established) and the two-Landau-level programs (next session).
 - **Spin-chain ED** (6 tests, `physics.spin.ed.*`): `tests/oracles/spin_ed.py`,
   dense numpy diagonalisation of XXZ / J₁–J₂ chains with a field, open
   and periodic, spin ½ and 1, L up to 10, against `GenericOpenSpinChain`
@@ -281,9 +300,10 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-One `known-bug` test exists (U31, the two-band checkerboard segfault; see
-above; U30, plain Lanczos below the ground state on a degenerate spectrum,
-was fixed here and its test promoted to `physics`). A `known-bug` test reproduces a defect documented in this repository and is
+Two `known-bug` tests exist (U31, the two-band checkerboard segfault; U32,
+the empty fermionic basis with both symmetrisation flags; see above. U30,
+plain Lanczos below the ground state on a degenerate spectrum, was fixed
+here and its test promoted to `physics`). A `known-bug` test reproduces a defect documented in this repository and is
 registered with `WILL_FAIL`: it passes while the defect is present, and the
 day someone fixes the defect it fails, so it can't be forgotten -- turn it
 into a `physics` test (drop `WILL_FAIL`) in the same change as the fix.

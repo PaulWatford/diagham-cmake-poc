@@ -78,6 +78,18 @@ foreach(two_s 6 10 15)
         CHECK line @OUTPUT@ Pseudopotentials ${sphere_data}/coulomb_2s${two_s}.txt 1e-13
         LABELS fqhe sphere)
 endforeach()
+# higher Landau levels: l = S + n orbitals, the monopole-harmonic form of the same closed form
+foreach(case "8|1" "6|2" "10|1")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 two_s)
+    list(GET c 1 ll)
+    diagham_physics_test(physics.fqhe.sphere.coulomb_pseudopotentials.2s${two_s}_ll${ll}
+        PROGRAM FQHEOnSphere_CoulombPseudopotentials
+        ARGS -s ${two_s} -l ${ll}
+        OUTPUT "pseudopotential_coulomb_l_${ll}_2s_${two_s}.dat"
+        CHECK line @OUTPUT@ Pseudopotentials ${sphere_data}/coulomb_2s${two_s}_ll${ll}.txt 1e-13
+        LABELS fqhe sphere)
+endforeach()
 
 # --- 3. Jack polynomial vs exact diagonalisation ------------------------------------------
 # Each chain: ED eigenstate -> Jack generator (squeezed basis) -> full basis -> overlap.

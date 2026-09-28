@@ -1,0 +1,3 @@
+# Coulomb pseudopotentials on the sphere in Landau level n=1, 2S=10 (l = S + n, 13 values), units e^2/(eps l_B), R=sqrt(S)
+# from Wigner 3j/6j algebra with the monopole-harmonic Gaunt coefficients (tests/oracles/fqhe_sphere.py); do not edit
+Pseudopotentials = 0.740692482163388 0.519412620253465 0.593696795133923 0.420866268623535 0.359527233816887 0.324265662548148 0.301049867336986 0.284818952357102 0.273188154955907 0.264870609371061 0.25911975301722 0.255492194007289 0.25373584619215

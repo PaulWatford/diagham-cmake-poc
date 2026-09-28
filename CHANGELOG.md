@@ -14,6 +14,19 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Sphere ED oracle with SU(2), SU(3) and SU(4) spin (`spectrum_su2`,
+  `spectrum_sun` in `tests/oracles/sphere_ed.py`) and 15 goldens
+  `physics.fqhe.sphere.ed.su2/su3/su4.*`: `FQHESphereFermionsWithSpin`,
+  `FQHESphereBosonsWithSpin`, both `WithSU3Spin` programs,
+  `FQHESphereBosonsWithSU4Spin` and the legacy `QHEFermionsSphereWithSpin`
+  reproduce whole spectra to 10⁻⁹, including the ± parity sectors of the
+  `--szsymmetrized-basis` and `--lzsymmetrized-basis` options.
+- Coulomb pseudopotentials in higher Landau levels: the closed form in
+  `tests/oracles/fqhe_sphere.py` takes the level index (monopole-harmonic
+  form, l = S + n); three goldens for `CoulombPseudopotentials --landau-level`
+  and one first-Landau-level ED spectrum.
+- U32 registered with a `known-bug` test: `FQHESphereFermionsWithSpin` with
+  both symmetrisation flags builds an empty basis.
 - `tests/oracles/torus_ed.py`, an independent Landau-gauge exact
   diagonalisation on the torus (Coulomb or pseudopotentials, fermions or
   bosons), and eight `physics.fqhe.torus.ed.*` goldens: the torus Coulomb
@@ -37,9 +50,9 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 754 tests, 123 physics goldens, 36 of 603 programs with a
-  physics or cross-check test (34 against an independent answer), 16
-  self-tests, 1 known-bug reproducer; `tests/manifest.txt` and
+- Test counts: 774 tests, 142 physics goldens, 42 of 603 programs with a
+  physics or cross-check test (40 against an independent answer), 16
+  self-tests, 2 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

@@ -5,6 +5,9 @@
 #     pseudopotential Hamiltonians in the lowest Landau level (Clebsch-Gordan
 #     pair projectors, explicit Fock basis, numpy). The program's whole
 #     spectrum of an Lz sector must match it (label: physics, sphere, ed).
+#  1a. the same oracle with SU(2), SU(3) and SU(4) spin (spectrum_su2, spectrum_sun),
+#     including the Sz and Lz parity sectors of the symmetrised bases (label: physics,
+#     fqhe, sphere, ed, spin).
 #  1b. tests/oracles/torus_ed.py: the same on the torus (Landau gauge, Coulomb
 #     or pseudopotentials, fermions or bosons; label: physics, fqhe, torus, ed).
 #  1c. tests/oracles/fci_bands.py: the checkerboard lattice bands from the
@@ -30,7 +33,8 @@ foreach(case
         "fermions_n4_2s11_coulomb_lz2|${fer2}|4|11|4"
         "bosons_n4_2s6_coulomb|${bos2}|4|6|0"
         "bosons_n5_2s6_v0_v2|${bos2}|5|6|0"
-        "bosons_n6_2s8_coulomb|${bos2}|6|8|0")
+        "bosons_n6_2s8_coulomb|${bos2}|6|8|0"
+        "fermions_n4_2s8_ll1_coulomb|${fer2}|4|10|0")
     string(REPLACE "|" ";" c "${case}")
     list(GET c 0 name)
     list(GET c 1 prog)
@@ -49,6 +53,72 @@ foreach(case
         CHECK spectrum @OUTPUT@ -1 ${ed_data}/${name}_spectrum.dat -1 1e-9
         LABELS fqhe sphere ed)
 endforeach()
+
+# --- 1a. sphere ED with SU(2), SU(3) and SU(4) spin -----------------------------------------------
+# The same oracle with several species (tests/oracles/sphere_ed.py spectrum_su2 / spectrum_sun); the
+# pseudopotential files carry the species-pair keys the programs read. Same-species and
+# different-species pairs of relative angular momentum m both cost 2 V_m.
+set(su2f FQHEOnSphere_FQHESphereFermionsWithSpin)
+set(su2b FQHEOnSphere_FQHESphereBosonsWithSpin)
+set(su3f FQHEOnSphere_FQHESphereFermionsWithSU3Spin)
+set(su3b FQHEOnSphere_FQHESphereBosonsWithSU3Spin)
+set(su4b FQHEOnSphere_FQHESphereBosonsWithSU4Spin)
+function(diagham_spin_sphere_ed_test name case)
+    cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT" "ARGS" ${ARGN})
+    diagham_physics_test(${name}
+        PROGRAM ${ARG_PROGRAM}
+        ARGS ${ARG_ARGS} --interaction-file ${ed_data}/${case}_pp.dat --interaction-name ed --full-diag 100000
+        OUTPUT "${ARG_OUTPUT}"
+        CHECK spectrum @OUTPUT@ -1 ${ed_data}/${case}_spectrum.dat -1 1e-9
+        LABELS fqhe sphere ed spin)
+endfunction()
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.fermions_n4_2s6_coulomb_sz0 fermions_su2_n4_2s6_coulomb_sz0
+    PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.fermions_n4_2s6_aniso_sz0 fermions_su2_n4_2s6_aniso_sz0
+    PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.fermions_n4_2s7_coulomb_sz2 fermions_su2_n4_2s7_coulomb_sz2
+    PROGRAM ${su2f} ARGS -p 4 -l 7 -s 2 --initial-lz 0 --nbr-lz 1 OUTPUT "fermions_sphere_su2_ed_n_4_2s_7_sz_2_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.bosons_n4_2s4_v0_v2_sz0 bosons_su2_n4_2s4_v0_v2_sz0
+    PROGRAM ${su2b} ARGS -p 4 -l 4 -s 0 --initial-lz 0 --nbr-lz 1 OUTPUT "bosons_sphere_su2_ed_n_4_2s_4_sz_0_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.bosons_n4_2s5_v0_v2_sz2 bosons_su2_n4_2s5_v0_v2_sz2
+    PROGRAM ${su2b} ARGS -p 4 -l 5 -s 2 --initial-lz 0 --nbr-lz 1 OUTPUT "bosons_sphere_su2_ed_n_4_2s_5_sz_2_lz*.dat")
+# the symmetrised bases: each parity sector of the Coulomb Sz=0 case against the oracle's projection
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.symmetrized_basis.sz_plus fermions_su2_n4_2s6_coulomb_sz0_szplus
+    PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --szsymmetrized-basis OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.symmetrized_basis.sz_minus fermions_su2_n4_2s6_coulomb_sz0_szminus
+    PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --szsymmetrized-basis --minus-szparity OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.symmetrized_basis.lz_plus fermions_su2_n4_2s6_coulomb_sz0_lzplus
+    PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --lzsymmetrized-basis OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.symmetrized_basis.lz_minus fermions_su2_n4_2s6_coulomb_sz0_lzminus
+    PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --lzsymmetrized-basis --minus-lzparity OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
+# U32: with both --lzsymmetrized-basis and --szsymmetrized-basis the fermionic basis comes out empty
+# (dimension 0 for every size tried; the bosonic program is fine). The oracle's even-even sector has
+# 20 states. WILL_FAIL: passes while the defect is present, turns red when the basis is fixed.
+diagham_physics_test(knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
+    PROGRAM ${su2f}
+    ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --lzsymmetrized-basis --szsymmetrized-basis --interaction-file ${ed_data}/fermions_su2_n4_2s6_coulomb_sz0_szplus_lzplus_pp.dat --interaction-name ed --full-diag 100000
+    OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat"
+    CHECK spectrum @OUTPUT@ -1 ${ed_data}/fermions_su2_n4_2s6_coulomb_sz0_szplus_lzplus_spectrum.dat -1 1e-9
+    WILL_FAIL
+    LABELS fqhe sphere spin)
+# the legacy program QHEFermionsSphereWithSpin (-v, -w): its own normalisation, every Lz >= 0 sector
+diagham_physics_test(physics.fqhe.sphere.ed.su2.legacy_fermions_n4_2s6_v1_w0.5
+    PROGRAM FQHEOnSphere_QHEFermionsSphereWithSpin
+    ARGS -p 4 -l 6 -s 0 -v 1 -w 0.5 --initial-lz 0 --nbr-lz 1 --full-diag 100000
+    OUTPUT "fermions_sphere_spin_n_4_2S_6_Sz_0_V_*_lz*.dat"
+    CHECK spectrum @OUTPUT@ -1 ${ed_data}/fermions_su2_n4_2s6_legacy_v1_w0.5_spectrum.dat -1 1e-9
+    LABELS fqhe sphere ed spin)
+# SU(3) and SU(4)
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su3.fermions_n3_2s4_coulomb fermions_su3_n3_2s4_coulomb
+    PROGRAM ${su3f} ARGS -p 3 -l 4 -t 0 -y 0 --initial-lz 0 --nbr-lz 1 OUTPUT "fermions_sphere_su3_ed_n_3_2s_4_tz_0_y_0*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su3.fermions_n4_2s5_generic_tz1_y1 fermions_su3_n4_2s5_generic_tz1_y1
+    PROGRAM ${su3f} ARGS -p 4 -l 5 -t 1 -y 1 --initial-lz 0 --nbr-lz 1 OUTPUT "fermions_sphere_su3_ed_n_4_2s_5_tz_1_y_1*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su3.bosons_n4_2s3_generic bosons_su3_n4_2s3_generic
+    PROGRAM ${su3b} ARGS -p 4 -l 3 --nbr-n1 2 --nbr-n2 1 --nbr-n3 1 --initial-lz 0 --nbr-lz 1 OUTPUT "bosons_sphere_su3_ed_n_4_2s_3_tz_1_y_1*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su3.bosons_n3_2s5_coulomb bosons_su3_n3_2s5_coulomb
+    PROGRAM ${su3b} ARGS -p 3 -l 5 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 --initial-lz 1 --nbr-lz 1 OUTPUT "bosons_sphere_su3_ed_n_3_2s_5_tz_0_y_0*.dat")
+diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su4.bosons_n4_2s3_generic bosons_su4_n4_2s3_generic
+    PROGRAM ${su4b} ARGS -p 4 -l 3 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 --nbr-n4 1 --initial-lz 0 --nbr-lz 1 OUTPUT "bosons_sphere_su4_ed_n_4_2s_3_sz_0_iz_0_pz_0*.dat")
 
 # --- 1b. torus ED -------------------------------------------------------------------------------
 # tests/oracles/torus_ed.py: Landau-gauge lowest-Landau-level exact diagonalisation on the torus,

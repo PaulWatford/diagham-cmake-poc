@@ -22,11 +22,11 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 | 13 | [Spin programs: gate LapackDiagonalize calls behind __LAPACK__ (patch 13 regenerated agains](13-SpinLapackDiagonalizeGating.md) | 8 | `patches/upstream/13-SpinLapackDiagonalizeGating.diff` |
 | 14 | [Write computed results at full double precision: precision(14) -> numeric_limits<double>::](14-IEEE754PrecisionForEigenvalueOutput.md) | 544 | `patches/upstream/14-IEEE754PrecisionForEigenvalueOutput.diff` |
 | 15 | [ParticleOnCylinderPseudopotentialHamiltonian: fail clearly without GSL instead of undefine](15-cylinder-pseudopotential-needs-gsl.md) | 1 | `patches/upstream/15-cylinder-pseudopotential-needs-gsl.diff` |
+| 16 | [Plain Lanczos: detect the closure of the Krylov space instead of iterating on round-off (U](16-LanczosKrylovSpaceClosure.md) | 4 | `patches/upstream/16-LanczosKrylovSpaceClosure.diff` |
 
 ## Registered defects without a fix (reproducers)
 
 - [Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"](open-U29.md)
-- [Open defect U30: plain Lanczos (-n 1) returns an energy below the ground state on a degenerate spectrum](open-U30.md)
 - [Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band](open-U31.md)
 
-Generated from 15 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.
+Generated from 16 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

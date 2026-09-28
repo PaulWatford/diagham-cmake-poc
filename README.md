@@ -68,7 +68,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **791 of 791 ctest tests pass** — but read that number honestly: 159 are
+- **800 of 800 ctest tests pass** — but read that number honestly: 167 are
   physics goldens with independently known answers (Hilbert-space dimensions
   against exact counting; Laughlin, Moore–Read and Read–Rezayi zero modes
   and quasihole counts; Coulomb pseudopotentials against the closed form;
@@ -76,7 +76,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   counting; Hubbard tight binding; Heisenberg, XX, AKLT, Haldane–Shastry and transverse-Ising chains) plus independent Python exact
   diagonalisations (Hubbard, sphere and torus Coulomb and pseudopotential Hamiltonians with and without SU(2), SU(3) and SU(4) spin, spin chains) and the checkerboard band structure, 4 are cross-checks between DiagHam
   programs or algorithms (spinful torus Coulomb; Lanczos vs full diagonalisation; LAPACK vs internal), 1 is a `find_package(DiagHam)` consumer
-  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 16 are self-tests (manifest, eight oracles, the checker and runner), 2 are known-bug reproducers, and **599 are `--help` smoke tests**,
+  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 17 are self-tests (manifest, nine oracles, the checker and runner), 2 are known-bug reproducers, and **599 are `--help` smoke tests**,
   which prove that a program links and parses options and nothing about its
   physics. `docs/reference/test-coverage.md` gives the per-program truth:
   34 of 603 programs have a physics or cross-check test today (31 with an independently known answer) and 11 more a regression test (44 with any test beyond --help). Expanding that is the

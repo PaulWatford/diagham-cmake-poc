@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **51 of 603 programs with a physics or cross-check test** (51 of them against an independently known answer).
+headline today is **53 of 603 programs with a physics or cross-check test** (53 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -182,6 +182,26 @@ with no exactly solvable case exposed at the command line; they get
   While writing it the oracle disagreed with the program twice; both times
   the oracle was wrong (operator order; summing over particles instead of
   orbitals for bosons) — the disagreement→check loop the plan asks for.
+- **k-body sphere ED** (8 tests, `physics.fqhe.sphere.ed.nbody.*`):
+  `tests/oracles/sphere_nbody.py` builds three- and four-body
+  pseudopotential Hamiltonians from the projectors onto the L = kl − m
+  multiplets of the k-particle space (L² from the summed ladder operators,
+  no Clebsch–Gordan algebra; for the m with a single relative state that
+  multiplet projector is the pseudopotential projector) and assembles the
+  N-body matrix as Σ ⟨a|v|b⟩ A†_a A_b over normalised k-particle Fock
+  states. DiagHam's k-body pseudopotentials are not projector weights: for
+  V^(k)_m = 1 the k-particle multiplet has an energy that depends on m and
+  2S (1.5 for three bosons at m = 0 and any 2S, 2.9993 at m = 2 and 2S = 6,
+  0.1639 at m = 3 …; the hard-core programs use yet another constant).
+  Those constants are read off the k-particle runs and are the only thing
+  taken from the programs; the N = 5 and 6 spectra of
+  `FQHESphereBosonsNBodyHardCore` (3- and 4-body), `QHEFermionsNBodyHardCore`,
+  `FQHESphereBosonsThreeBodyGeneric` and `FQHESphereFermionsThreeBodyGeneric`
+  (three-body sets with and without a two-body term) are then predicted and
+  match to 10⁻¹³. The two-body term through the same machinery reproduces
+  `sphere_ed.py`. Not covered: the spinful three-body programs, the torus,
+  cylinder and disk n-body programs (their contact matrix elements need
+  the geometry; sessions 4 and later).
 - **Spinful sphere ED** (15 tests, `physics.fqhe.sphere.ed.su2.*`,
   `su3.*`, `su4.*`): the same oracle with k species (`spectrum_su2`,
   `spectrum_sun`), one Fock block per species and pseudopotentials per

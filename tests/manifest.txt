@@ -75,6 +75,14 @@ physics.fqhe.sphere.ed.fermions_n4_2s8_ll1_coulomb
 physics.fqhe.sphere.ed.fermions_n4_2s9_coulomb
 physics.fqhe.sphere.ed.fermions_n4_2s9_v1_v3
 physics.fqhe.sphere.ed.fermions_n5_2s12_coulomb
+physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_hardcore3
+physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_v0_v2_v3
+physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_v0_v2_v3_plus_twobody
+physics.fqhe.sphere.ed.nbody.bosons_n5_2s8_v0_v2
+physics.fqhe.sphere.ed.nbody.bosons_n6_2s4_hardcore4
+physics.fqhe.sphere.ed.nbody.fermions_n5_2s10_hardcore3
+physics.fqhe.sphere.ed.nbody.fermions_n5_2s10_v3_v5
+physics.fqhe.sphere.ed.nbody.fermions_n5_2s10_v3_v5_plus_twobody
 physics.fqhe.sphere.ed.su2.bosons_n4_2s4_v0_v2_sz0
 physics.fqhe.sphere.ed.su2.bosons_n4_2s5_v0_v2_sz2
 physics.fqhe.sphere.ed.su2.fermions_n4_2s6_aniso_sz0
@@ -187,6 +195,7 @@ selftest.fqhe_sphere_oracle
 selftest.manifest
 selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle
+selftest.sphere_nbody_oracle
 selftest.spin_ed_oracle
 selftest.spin_hubbard_oracle
 selftest.torus_ed_oracle

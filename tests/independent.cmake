@@ -8,6 +8,8 @@
 #  1a. the same oracle with SU(2), SU(3) and SU(4) spin (spectrum_su2, spectrum_sun),
 #     including the Sz and Lz parity sectors of the symmetrised bases (label: physics,
 #     fqhe, sphere, ed, spin).
+#  1a'. tests/oracles/sphere_nbody.py: three- and four-body pseudopotentials on the sphere
+#     from L-multiplet projectors (label: physics, fqhe, sphere, ed, nbody).
 #  1b. tests/oracles/torus_ed.py: the same on the torus (Landau gauge, Coulomb
 #     or pseudopotentials, fermions or bosons; label: physics, fqhe, torus, ed).
 #  1b'. the same on the torus with SU(2)/SU(3)/SU(4) spin, bilayer Coulomb, Landau
@@ -121,6 +123,40 @@ diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su3.bosons_n3_2s5_coulomb bos
     PROGRAM ${su3b} ARGS -p 3 -l 5 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 --initial-lz 1 --nbr-lz 1 OUTPUT "bosons_sphere_su3_ed_n_3_2s_5_tz_0_y_0*.dat")
 diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su4.bosons_n4_2s3_generic bosons_su4_n4_2s3_generic
     PROGRAM ${su4b} ARGS -p 4 -l 3 --nbr-n1 1 --nbr-n2 1 --nbr-n3 1 --nbr-n4 1 --initial-lz 0 --nbr-lz 1 OUTPUT "bosons_sphere_su4_ed_n_4_2s_3_sz_0_iz_0_pz_0*.dat")
+
+# --- 1a'. k-body sphere ED --------------------------------------------------------------------------
+# tests/oracles/sphere_nbody.py: three- and four-body pseudopotential Hamiltonians from the L-multiplet
+# projectors of the k-particle space (no Clebsch-Gordan algebra). DiagHam's k-body pseudopotentials
+# multiply projectors normalised per (k, m, 2S); those constants are read off the k-particle runs
+# (the only thing taken from the programs), every N > k spectrum is a prediction.
+set(nbody_data ${DIAGHAM_TEST_DATA}/sphere_nbody)
+set(bos3 FQHEOnSphere_FQHESphereBosonsThreeBodyGeneric)
+set(fer3 FQHEOnSphere_FQHESphereFermionsThreeBodyGeneric)
+function(diagham_nbody_test name case)
+    cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT" "ARGS" ${ARGN})
+    diagham_physics_test(${name}
+        PROGRAM ${ARG_PROGRAM}
+        ARGS ${ARG_ARGS} --initial-lz 0 --nbr-lz 1 --full-diag 100000
+        OUTPUT "${ARG_OUTPUT}"
+        CHECK spectrum @OUTPUT@ -1 ${nbody_data}/${case}_spectrum.dat -1 1e-9
+        LABELS fqhe sphere ed nbody)
+endfunction()
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_hardcore3 bosons_n5_2s6_hardcore3
+    PROGRAM ${bosN} ARGS -p 5 -l 6 --nbr-nbody 3 OUTPUT "bosons_hardcore_nbody_3_n_5_2s_6_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.bosons_n6_2s4_hardcore4 bosons_n6_2s4_hardcore4
+    PROGRAM ${bosN} ARGS -p 6 -l 4 --nbr-nbody 4 OUTPUT "bosons_hardcore_nbody_4_n_6_2s_4_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.fermions_n5_2s10_hardcore3 fermions_n5_2s10_hardcore3
+    PROGRAM ${ferN} ARGS -p 5 -l 10 --nbr-nbody 3 OUTPUT "fermions_hardcore_nbody_3_n_5_2s_10_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_v0_v2_v3 bosons_n5_2s6_v0_v2_v3
+    PROGRAM ${bos3} ARGS -p 5 -l 6 --interaction-file ${nbody_data}/bosons_n5_2s6_v0_v2_v3_pp.dat --interaction-name ed OUTPUT "bosons_ed_n_5_2s_6_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_v0_v2_v3_plus_twobody bosons_n5_2s6_v0_v2_v3_plus_twobody
+    PROGRAM ${bos3} ARGS -p 5 -l 6 --interaction-file ${nbody_data}/bosons_n5_2s6_v0_v2_v3_plus_twobody_pp.dat --interaction-name ed OUTPUT "bosons_ed_n_5_2s_6_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.bosons_n5_2s8_v0_v2 bosons_n5_2s8_v0_v2
+    PROGRAM ${bos3} ARGS -p 5 -l 8 --interaction-file ${nbody_data}/bosons_n5_2s8_v0_v2_pp.dat --interaction-name ed OUTPUT "bosons_ed_n_5_2s_8_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.fermions_n5_2s10_v3_v5 fermions_n5_2s10_v3_v5
+    PROGRAM ${fer3} ARGS -p 5 -l 10 --interaction-file ${nbody_data}/fermions_n5_2s10_v3_v5_pp.dat --interaction-name ed OUTPUT "fermions_ed_n_5_2s_10_lz*.dat")
+diagham_nbody_test(physics.fqhe.sphere.ed.nbody.fermions_n5_2s10_v3_v5_plus_twobody fermions_n5_2s10_v3_v5_plus_twobody
+    PROGRAM ${fer3} ARGS -p 5 -l 10 --interaction-file ${nbody_data}/fermions_n5_2s10_v3_v5_plus_twobody_pp.dat --interaction-name ed OUTPUT "fermions_ed_n_5_2s_10_lz*.dat")
 
 # --- 1b. torus ED -------------------------------------------------------------------------------
 # tests/oracles/torus_ed.py: Landau-gauge lowest-Landau-level exact diagonalisation on the torus,
@@ -356,10 +392,12 @@ if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/sphere_ed.py --check ${ed_data})
     add_test(NAME selftest.spin_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/spin_ed.py --check ${spin_ed_data})
+    add_test(NAME selftest.sphere_nbody_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/sphere_nbody.py --check ${nbody_data})
     add_test(NAME selftest.torus_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_ed.py --check ${torus_ed_data})
     add_test(NAME selftest.fci_bands_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_bands.py --check ${fci_bands_data})
     set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle selftest.torus_ed_oracle
-        selftest.fci_bands_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
+        selftest.fci_bands_oracle selftest.sphere_nbody_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
 endif()

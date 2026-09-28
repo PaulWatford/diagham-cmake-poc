@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/sphere_nbody.py`: three- and four-body pseudopotential
+  Hamiltonians on the sphere from L-multiplet projectors; 8 goldens
+  `physics.fqhe.sphere.ed.nbody.*` (hard core and generic three-body sets,
+  bosons and fermions, N = 5 and 6) for the two NBodyHardCore programs and
+  the two ThreeBodyGeneric programs, whole spectra to 10⁻⁹.
 - Torus ED oracle with several species, Landau level index, bilayer Coulomb
   and magnetic-translation (K_x, K_y) sectors (`spectrum_species` in
   `tests/oracles/torus_ed.py`); 17 goldens `physics.fqhe.torus.ed.*` over
@@ -55,8 +60,8 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 791 tests, 159 physics goldens, 51 of 603 programs with a
-  physics or cross-check test (51 against an independent answer), 16
+- Test counts: 800 tests, 167 physics goldens, 53 of 603 programs with a
+  physics or cross-check test (53 against an independent answer), 17
   self-tests, 2 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 

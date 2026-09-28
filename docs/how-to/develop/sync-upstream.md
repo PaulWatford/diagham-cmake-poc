@@ -44,9 +44,17 @@ What the script does, and refuses to do:
 
 Then, if programs or options changed: regenerate the program reference and the coverage page (the script prints the commands), commit, push.
 
+## As a pull request (recommended)
+
+```
+scripts_cmake/sync_upstream.sh --pr
+```
+
+does the same on a branch `sync/r<rev>`, pushes it and opens the pull request through your `gh` login, so the commits, the push and the pull request are yours and CI runs before anything reaches `main`. Review the upstream commits in the PR, wait for the checks, merge. The weekly job never does this by itself: an automatic sync would put unreviewed physics changes on `main` under a bot's name.
+
 ## The weekly drift check
 
-The scheduled CI job compares trunk's revision with `upstream-revision.txt` and, when trunk has moved on, opens (or updates) an issue labelled `upstream-drift` naming the revisions. Bringing them in is deliberate — this script, run by a person, reviewed as a pull request — never automatic.
+The scheduled CI job compares trunk's revision with `upstream-revision.txt` and, when trunk has moved on, opens (or updates) an issue labelled `upstream-drift` naming the revisions. Bringing them in is deliberate: this script with `--pr`, run by a person, reviewed as a pull request; never automatic.
 
 ## Branches and tags of the Subversion repository
 

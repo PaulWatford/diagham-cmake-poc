@@ -139,7 +139,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           title="DiagHam trunk is at r${{ steps.drift.outputs.head }}; this repository carries r${{ steps.drift.outputs.recorded }}"
-          body=$(printf 'The weekly check found new Subversion revisions.\n\nBring them in with `scripts_cmake/sync_upstream.sh` (see docs/how-to/develop/sync-upstream.md) and open a pull request.\n\n```\n%s\n```\n' "$(head -c 60000 drift.log)")
+          body=$(printf 'The weekly check found new Subversion revisions.\n\nBring them in with `scripts_cmake/sync_upstream.sh --pr` (see docs/how-to/develop/sync-upstream.md): it syncs on a branch and opens a pull request as you.\n\n```\n%s\n```\n' "$(head -c 60000 drift.log)")
           existing=$(gh issue list --label upstream-drift --state open --json number --jq '.[0].number')
           if [ -n "$existing" ]; then
             gh issue edit "$existing" --title "$title" --body "$body"

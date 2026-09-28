@@ -8,11 +8,16 @@
 #     SVN trunk --(git svn fetch)--> conversion clone --(rebase onto upstream)--> upstream --(merge)--> main
 #
 # Usage (from the repository root, on a clean `main`):
-#   scripts_cmake/sync_upstream.sh [--dry-run] [--no-build] [--to REV]
+#   scripts_cmake/sync_upstream.sh [--dry-run] [--no-build] [--to REV] [--pr]
 #
 #   --dry-run   fetch and report what would change; touch nothing in this repository
 #   --no-build  skip the configure/build/ctest step after merging
 #   --to REV    stop at SVN revision REV instead of trunk HEAD (for tests)
+#   --pr        do the sync on a branch sync/r<REV> instead of main, push it and open
+#               a pull request with `gh` -- as the person running this, so the commits,
+#               the push and the PR are theirs; CI then runs before anything reaches main.
+#               (The weekly CI job only opens an issue when trunk moves on; it never
+#               syncs by itself, so nothing on main is ever a bot's.)
 #
 # Environment:
 #   DIAGHAM_SVN_CLONE   the git-svn conversion clone (default: ../DiagHam-svn-full, created
@@ -24,11 +29,12 @@
 # told once to trust it (see docs/how-to/develop/sync-upstream.md).
 set -euo pipefail
 
-DRY_RUN=0; BUILD=1; TO_REV=""
+DRY_RUN=0; BUILD=1; TO_REV=""; PR=0
 while [ $# -gt 0 ]; do
     case "$1" in
         --dry-run) DRY_RUN=1 ;;
         --no-build) BUILD=0 ;;
+        --pr) PR=1 ;;
         --to) TO_REV="$2"; shift ;;
         *) echo "unknown option $1" >&2; exit 2 ;;
     esac
@@ -85,6 +91,13 @@ git -C "$CLONE" log --reverse --format="   %h %ad %an: %s" --date=short "$BASE".
 if [ "$DRY_RUN" -eq 1 ]; then
     say "dry run: stopping here"; exit 0
 fi
+WORK_BRANCH=main
+if [ "$PR" -eq 1 ]; then
+    command -v gh >/dev/null || { echo "--pr needs the GitHub CLI (gh) logged in" >&2; exit 1; }
+    WORK_BRANCH="sync/r$TARGET_REV"
+    say "working on branch $WORK_BRANCH"
+    git checkout -q -B "$WORK_BRANCH" main
+fi
 
 # --- 2. upstream: rebase the new conversion commits onto our upstream ---------------------
 # (our upstream may carry author corrections, so its SHAs differ from the clone's;
@@ -101,16 +114,16 @@ git checkout -q svn-import
 git rebase -q --onto upstream "$BASE" svn-import
 NEW_TIP=$(git rev-parse HEAD)
 if [ "$(git rev-parse "$NEW_TIP^{tree}")" != "$(git -C "$CLONE" rev-parse "$TARGET^{tree}")" ]; then
-    echo "tree after import differs from the conversion clone; refusing" >&2; git checkout -q main; exit 1
+    echo "tree after import differs from the conversion clone; refusing" >&2; git checkout -q "$WORK_BRANCH"; exit 1
 fi
 git branch -f upstream "$NEW_TIP"
-git checkout -q main
+git checkout -q "$WORK_BRANCH"
 git branch -D svn-import > /dev/null
 git update-ref -d refs/svn/import
 say "upstream is now r$TARGET_REV ($(git rev-parse --short upstream)); tree verified against the clone"
 
 # --- 3. main: merge, regenerate, record ------------------------------------------------------
-say "merging upstream into main"
+say "merging upstream into $WORK_BRANCH"
 if ! git merge --no-edit -m "Merge DiagHam SVN r$((RECORDED + 1))-r$TARGET_REV (upstream) into main" upstream; then
     cat >&2 <<EOF
 merge conflicts: an upstream change touched a file this repository patched.
@@ -139,4 +152,14 @@ if [ "$BUILD" -eq 1 ]; then
     echo "   python3 scripts_cmake/gen_program_reference.py build/default docs/reference/programs"
     echo "   python3 tests/coverage.py build/default --manifest tests/manifest.txt --write docs/reference/test-coverage.md"
 fi
-say "done: main now carries DiagHam r$TARGET_REV; review 'git log upstream -$NEW' and push when satisfied"
+if [ "$PR" -eq 1 ]; then
+    say "pushing $WORK_BRANCH and upstream, opening the pull request"
+    git push -u origin "$WORK_BRANCH"
+    git push origin upstream
+    gh pr create --base main --head "$WORK_BRANCH" \
+        --title "Sync DiagHam SVN r$((RECORDED + 1))-r$TARGET_REV" \
+        --body "$(printf 'Brings DiagHam Subversion revisions r%s to r%s onto `upstream` (tree verified against the git-svn clone) and merges them into main; per-directory CMakeLists.txt regenerated; scripts_cmake/upstream-revision.txt = %s.\n\nMade with `scripts_cmake/sync_upstream.sh --pr` (docs/how-to/develop/sync-upstream.md). Review the upstream commits (`git log upstream -%s`), let CI run, then merge. If programs or options changed, regenerate the program reference and the coverage page before merging.' "$((RECORDED + 1))" "$TARGET_REV" "$TARGET_REV" "$NEW")"
+    say "done: pull request open; main is untouched until it is merged"
+else
+    say "done: main now carries DiagHam r$TARGET_REV; review 'git log upstream -$NEW' and push when satisfied"
+fi

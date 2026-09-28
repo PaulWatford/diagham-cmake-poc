@@ -71,18 +71,20 @@ foreach(case "2 4 8" "4 2 8" "3 2 6")
         OUTPUT "fermions_hubbard_square_x_${lx}_y_${ly}_n_${n}_ns_*_t_1.000000_tp_0.000000_sz_0.dat" LABELS fti hubbard)
 endforeach()
 
-# --- known defect U30: plain Lanczos (-n 1, no reorthogonalisation) on the U = 0 2x4 case
-# returns -18.41 and -17.87 in two sectors, BELOW the exact ground energy -16 (a Krylov
-# breakdown on the degenerate spectrum that the algorithm does not detect). Registered
-# WILL_FAIL: it passes while the defect is present and turns red the day Lanczos is fixed.
-# --force-reorthogonalize or -n 4 give -16.
-diagham_physics_test(knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state
+# --- U30, fixed here: plain Lanczos (-n 1, no reorthogonalisation) on the U = 0 2x4 case used
+# to return -18.41 and -17.87 in two momentum sectors, BELOW the exact ground energy -16. On this
+# degenerate spectrum the Krylov space of the start vector closes after 7 to 9 steps; the
+# recurrence went on with the normalised round-off and produced Ritz values outside the spectrum.
+# BasicLanczosAlgorithm and ComplexBasicLanczosAlgorithm now detect the closure and stop
+# (docs/upstream-reports/, "Lanczos Krylov space closure"). The ground energy of every one of
+# the eight momentum sectors must equal the tight-binding minimum of that sector, from
+# tests/oracles/spin_hubbard.py (was the known-bug test knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state).
+diagham_physics_test(physics.hubbard.2x4.U0.plain_lanczos_krylov_closure
     PROGRAM ${hubbard}
     ARGS -p 8 -x 2 -y 4 --u-potential 0 -n 1 --full-diag 100
     OUTPUT "fermions_hubbard_square_x_2_y_4_n_8_ns_8_t_1.000000_tp_0.000000_sz_0.dat"
-    CHECK min-abs @OUTPUT@ -1 -16 1e-8
-    WILL_FAIL
-    LABELS fti hubbard)
+    CHECK spectrum @OUTPUT@ -1 ${sh_data}/hubbard_2x4_N8_U0_sectors.dat -1 1e-8
+    LABELS fti hubbard lanczos)
 
 if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
     add_test(NAME selftest.spin_hubbard_oracle

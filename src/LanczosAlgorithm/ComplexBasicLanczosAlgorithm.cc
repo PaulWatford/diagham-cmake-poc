@@ -29,6 +29,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 
+#include <cmath>
 #include "config.h"
 #include "LanczosAlgorithm/ComplexBasicLanczosAlgorithm.h"
 #include "Vector/ComplexVector.h"
@@ -36,6 +37,10 @@
 #include "Architecture/ArchitectureOperation/VectorHamiltonianMultiplyOperation.h"
 #include "Architecture/ArchitectureOperation/AddComplexLinearCombinationOperation.h"
 #include <stdlib.h>
+
+// relative size of the recurrence residual below which the Krylov space is
+// considered closed (an invariant subspace was reached)
+#define LANCZOS_KRYLOV_CLOSURE_THRESHOLD 1e-13
 
 
 // default constructor
@@ -70,6 +75,7 @@ ComplexBasicLanczosAlgorithm::ComplexBasicLanczosAlgorithm(AbstractArchitecture*
     }
   this->Architecture = architecture;
   this->PreviousLastWantedEigenvalue = 0.0;
+  this->KrylovSpaceExhausted = false;
   this->EigenvaluePrecision = MACHINE_PRECISION;
 }
 
@@ -80,6 +86,7 @@ ComplexBasicLanczosAlgorithm::ComplexBasicLanczosAlgorithm(AbstractArchitecture*
 ComplexBasicLanczosAlgorithm::ComplexBasicLanczosAlgorithm(const ComplexBasicLanczosAlgorithm& algorithm) 
 {
   this->Index = algorithm.Index;
+  this->KrylovSpaceExhausted = algorithm.KrylovSpaceExhausted;
   this->Hamiltonian = algorithm.Hamiltonian;
   this->V1 = algorithm.V1;
   this->V2 = algorithm.V2;
@@ -145,7 +152,13 @@ Vector& ComplexBasicLanczosAlgorithm::GetGroundState()
 
 void ComplexBasicLanczosAlgorithm::RunLanczosAlgorithm (int nbrIter) 
 {
-   int Dimension;
+  int Dimension;
+  if (this->KrylovSpaceExhausted == true)
+    {
+      // the eigenvalues of the closed space are exact: report them as converged
+      this->PreviousLastWantedEigenvalue = this->DiagonalizedMatrix.DiagonalElement(this->NbrEigenvalue - 1);
+      return;
+    }
   if (this->Index == 0)
     {
       Dimension = this->TridiagonalizedMatrix.GetNbrRow() + nbrIter;
@@ -178,7 +191,10 @@ void ComplexBasicLanczosAlgorithm::RunLanczosAlgorithm (int nbrIter)
       TmpCoefficient[1] = -this->TridiagonalizedMatrix.DiagonalElement(this->Index + 1);
       AddComplexLinearCombinationOperation Operation4 (&(this->V3),  TmpVector, 2, TmpCoefficient);
       Operation4.ApplyOperation(this->Architecture);
-      this->V3 /= this->V3.Norm();
+      double ResidualNorm = this->V3.Norm();
+      if (this->TestKrylovSpaceClosure(ResidualNorm) == true)
+	break;
+      this->V3 /= ResidualNorm;
       ComplexVector TmpV (this->V1);
       this->V1 = this->V2;
       this->V2 = this->V3;
@@ -205,6 +221,45 @@ void ComplexBasicLanczosAlgorithm::RunLanczosAlgorithm (int nbrIter)
     }
 }
   
+// test if convergence has been reached
+//
+// return value = true if convergence has been reached
+
+// test whether the Krylov space has closed, i.e. the recurrence residual vanished:
+// the start vector then spans an invariant subspace of dimension Index + 2
+// (typical of a degenerate spectrum), the tridiagonal matrix built so far is
+// complete and its eigenvalues are exact. Normalising the residual (round-off
+// noise) and continuing would produce Ritz values outside the spectrum.
+//
+// residualNorm = norm of the recurrence residual before normalisation
+// return value = true if the Krylov space has closed (the iteration must stop)
+
+bool ComplexBasicLanczosAlgorithm::TestKrylovSpaceClosure(double residualNorm)
+{
+  double Scale = fabs(this->TridiagonalizedMatrix.DiagonalElement(this->Index + 1));
+  double Tmp = fabs(this->TridiagonalizedMatrix.DiagonalElement(this->Index));
+  if (Tmp > Scale)
+    Scale = Tmp;
+  Tmp = fabs(this->TridiagonalizedMatrix.UpperDiagonalElement(this->Index));
+  if (Tmp > Scale)
+    Scale = Tmp;
+  if (residualNorm > (Scale * LANCZOS_KRYLOV_CLOSURE_THRESHOLD))
+    return false;
+  int ClosedDimension = this->Index + 2;
+  if (ClosedDimension < this->NbrEigenvalue)
+    {
+      cout << "warning: the Lanczos Krylov space closed at dimension " << ClosedDimension << " (residual norm " << residualNorm
+	   << ") but " << this->NbrEigenvalue << " eigenvalues were requested; the eigenvalues beyond the " << ClosedDimension
+	   << " exact ones are not reliable (use --force-reorthogonalize or another initial vector)" << endl;
+      return false;
+    }
+  cout << "the Lanczos Krylov space closed at dimension " << ClosedDimension << " (residual norm " << residualNorm
+       << "): its eigenvalues are exact, stopping the iteration" << endl;
+  this->TridiagonalizedMatrix.Resize(ClosedDimension, ClosedDimension);
+  this->KrylovSpaceExhausted = true;
+  return true;
+}
+
 // test if convergence has been reached
 //
 // return value = true if convergence has been reached

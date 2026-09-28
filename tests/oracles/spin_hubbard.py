@@ -23,7 +23,7 @@ matrix, no symmetry, nothing shared with DiagHam):
   (established by matching, then checked at 1e-12; the generic XYZ case
   with three couplings did not match any simple convention and is left out).
 """
-import argparse, math, sys
+import argparse, itertools, math, sys
 from pathlib import Path
 
 
@@ -45,6 +45,21 @@ def haldane_shastry(L):
 def tight_binding_square(Lx, Ly, N, t=1.0):
     eps = sorted(-2 * t * (math.cos(2 * math.pi * i / Lx) + math.cos(2 * math.pi * j / Ly)) for i in range(Lx) for j in range(Ly))
     return 2 * sum(eps[:N // 2])
+
+
+def tight_binding_square_sectors(Lx, Ly, N, t=1.0):
+    """U = 0 ground energy of every total-momentum sector (kx, ky), N/2 up + N/2 down electrons:
+    the lowest sum of single-particle energies over the fillings whose momenta add up to (kx, ky)."""
+    orbitals = [(i, j, -2 * t * (math.cos(2 * math.pi * i / Lx) + math.cos(2 * math.pi * j / Ly)))
+                for i in range(Lx) for j in range(Ly)]
+    best = {}
+    for up in itertools.combinations(orbitals, N // 2):
+        for down in itertools.combinations(orbitals, N - N // 2):
+            k = (sum(o[0] for o in up + down) % Lx, sum(o[1] for o in up + down) % Ly)
+            e = sum(o[2] for o in up + down)
+            if k not in best or e < best[k]:
+                best[k] = e
+    return [(kx, ky, best[(kx, ky)]) for kx in range(Lx) for ky in range(Ly)]
 
 
 def _numpy_spin_chain(L, s2, terms, field=0.0, coupling_scale=1.0):
@@ -99,6 +114,15 @@ def render():
     return "\n".join(lines) + "\n"
 
 
+SECTOR_FILE = "hubbard_2x4_N8_U0_sectors.dat"
+
+
+def render_sectors():
+    return ("# kx ky E: tight-binding ground energy of each total-momentum sector of the 2x4 Hubbard model at U = 0,\n"
+            "# 4 up + 4 down electrons (tests/oracles/spin_hubbard.py tight_binding_square_sectors; do not edit)\n"
+            + "".join(f"{kx} {ky} {e:.16g}\n" for kx, ky, e in tight_binding_square_sectors(2, 4, 8)))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--write", metavar="DIR")
@@ -108,7 +132,8 @@ def main():
     if a.write:
         Path(a.write).mkdir(parents=True, exist_ok=True)
         (Path(a.write) / "values.txt").write_text(text)
-        print(f"wrote {len(CASES)} values to {a.write}/values.txt")
+        (Path(a.write) / SECTOR_FILE).write_text(render_sectors())
+        print(f"wrote {len(CASES)} values to {a.write}/values.txt and {SECTOR_FILE}")
     if a.check:
         # numeric comparison within each case's tolerance: the last digits of the numpy
         # results depend on the BLAS build and thread count, the physics does not
@@ -124,7 +149,10 @@ def main():
                     ok = False
                     print(f"MISMATCH {oname}: committed {oval!r}, recomputed {nval!r}, tolerance {ntol:g}")
         print("values.txt", "matches within tolerance" if ok else "MISMATCH")
-        sys.exit(0 if ok else 1)
+        ps = Path(a.check) / SECTOR_FILE
+        sectors_ok = ps.exists() and ps.read_text() == render_sectors()
+        print(SECTOR_FILE, "matches" if sectors_ok else "MISMATCH")
+        sys.exit(0 if (ok and sectors_ok) else 1)
     if not a.write and not a.check:
         print(text)
 

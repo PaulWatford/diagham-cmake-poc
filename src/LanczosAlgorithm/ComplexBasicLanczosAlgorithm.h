@@ -56,6 +56,18 @@ class ComplexBasicLanczosAlgorithm : public AbstractLanczosAlgorithm
   // value of the last wanted eigenvalue at previous Lanczos iteration
   double PreviousLastWantedEigenvalue;
 
+  // true once the Krylov space has closed (the recurrence residual vanished): the
+  // tridiagonal matrix is then complete, its eigenvalues are exact and no further
+  // iteration is possible
+  bool KrylovSpaceExhausted;
+
+  // test whether the Krylov space has closed and, if so, truncate the tridiagonal
+  // matrix to the closed space and stop the iteration
+  //
+  // residualNorm = norm of the recurrence residual before normalisation
+  // return value = true if the Krylov space has closed
+  bool TestKrylovSpaceClosure(double residualNorm);
+
  public:
 
   // default constructor

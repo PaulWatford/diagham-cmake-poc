@@ -3,7 +3,7 @@ crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spinless
 crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
 install.find_package_consumer
 knownbug.fci.checkerboard.two_band_model_segfault
-knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state
+physics.hubbard.2x4.U0.plain_lanczos_krylov_closure
 physics.dimension.disk.bosons_n3_lz6
 physics.dimension.disk.fermions_n3_lz6
 physics.dimension.disk.fermions_n4_lz10

@@ -16,7 +16,7 @@ Send the report and the diff together. If the fix changes a computed number (mar
 
 ## What to send for a defect without a fix
 
-`docs/upstream-reports/open-*.md` hold the reproducers of registered defects that are not fixed here (U29 disk hang, U30 Lanczos below the ground state, U31 two-band checkerboard segfault): the exact command, what happens, what was expected and why, the build it was seen in. The `known-bug` tests in ctest carry the same reproducers and turn red when upstream fixes them.
+`docs/upstream-reports/open-*.md` hold the reproducers of registered defects that are not fixed here (U29 disk hang, U31 two-band checkerboard segfault): the exact command, what happens, what was expected and why, the build it was seen in. The `known-bug` tests in ctest carry the same reproducers and turn red when upstream fixes them.
 
 ## When upstream has taken a fix
 

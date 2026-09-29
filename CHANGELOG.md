@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `scripts_cmake/reproduce_on_pristine_trunk.sh` and
+  `docs/how-to/develop/reproduce-on-pristine-trunk.md`: export the trunk
+  revision from the Subversion server, build it with DiagHam's own autotools
+  and run every defect reproducer there; the 2026-09-29 run against r4493
+  reproduces U29, U30, U32, U33 and U34 with the same numbers.
 - `tests/oracles/geometry_ed.py`: two-body pseudopotential ED on the cylinder
   (Landau gauge, no periodic images) and the disk (symmetric-gauge pair
   projectors, plus an exact rational first-quantised cross-check); 4 goldens

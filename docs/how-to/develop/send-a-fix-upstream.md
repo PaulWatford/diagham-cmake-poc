@@ -14,6 +14,10 @@ The physics code is theirs (`GOVERNANCE.md`): a fix is only finished when it is 
 
 Send the report and the diff together. If the fix changes a computed number (marked *PHYSICS FIX, FOR MAINTAINER REVIEW* in its subject), say so first and include the cross-check that supports it (`docs/reference/tests.md` names the tests).
 
+## Show it is upstream's, not ours
+
+`scripts_cmake/reproduce_on_pristine_trunk.sh` exports the trunk revision this repository carries straight from the Subversion server, builds it with DiagHam's own autotools and runs every reproducer there next to a positive control ([reproduce-on-pristine-trunk.md](reproduce-on-pristine-trunk.md)). Run it before sending a report, and quote its output.
+
 ## What to send for a defect without a fix
 
 `docs/upstream-reports/open-*.md` hold the reproducers of registered defects that are not fixed here (U29 disk hang, U31 two-band checkerboard segfault, U34 wrong disk pseudopotential energies): the exact command, what happens, what was expected and why, the build it was seen in. The `known-bug` tests in ctest carry the same reproducers and turn red when upstream fixes them.

@@ -87,6 +87,7 @@ nav:
           - 'Build DiagHam with long-double precision': how-to/develop/long-double.md
           - 'Write a spin Hilbert space with a discrete symmetry': how-to/develop/new-spin-hilbert-space-with-symmetry.md
           - 'Make a release': how-to/develop/release.md
+          - 'Reproduce the registered defects on a pristine trunk': how-to/develop/reproduce-on-pristine-trunk.md
           - 'Offer a fix or a finding to the DiagHam authors': how-to/develop/send-a-fix-upstream.md
           - 'Bring new DiagHam revisions in from Subversion': how-to/develop/sync-upstream.md
   - Reference:

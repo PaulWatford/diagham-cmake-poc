@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **63 of 603 programs with a physics or cross-check test** (63 of them against an independently known answer).
+headline today is **66 of 603 programs with a physics or cross-check test** (66 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -244,6 +244,28 @@ with no exactly solvable case exposed at the command line; they get
   W in every m = 1 channel) and is checked in it. Not matched:
   `FQHESphereFermionsWithSpinFull` (four-index keys, its convention is not
   established) and the two-Landau-level programs (next session).
+- **Lattice fermions** (5 tests, `physics.hubbard.ed.*`, plus
+  `physics.spin.ed.kitaev_heisenberg_honeycomb_2x2`):
+  `tests/oracles/lattice_fermions.py` diagonalises spinful fermions on a
+  Hermitian hopping matrix with an on-site U on the explicit Fock basis of
+  an (N↑, N↓) sector. `HubbardSquareLatticeModel` on 2×3 at U = 2 (every
+  momentum sector, 400 states; the x bonds are doubled for nx = 2);
+  `HubbardHaldaneLatticeModel` on a 3×3 honeycomb cluster with two
+  particles (324 states) at U = 0, U = 2 and with `--mu-s 0.1`, where three
+  things had to be pinned: the program's `--phi` is in radians unless
+  `--phase-in-pi` is given, its cluster Hamiltonian is the inverse Fourier
+  transform of its own Bloch Hamiltonian over the cluster momenta (on 2×2
+  that differs from a bond list because periodic images coincide, so 3×3
+  is used), and `--mu-s` sits on the A sublattice only;
+  `HubbardSSHModel` (spinless, intra-cell hopping −t(1−δ), inter-cell
+  −t(1+δ), translations off); and the Kitaev–Heisenberg honeycomb spin
+  model of `HubbardExtendedKitaevHeisenbergHoneycombModel --spin`
+  (J₁ S·S + jK Sᵍ Sᵍ with S operators, 256 states). These programs agree to
+  about 10⁻⁸, so the tolerance is 10⁻⁷. Not matched: `KitaevChain` (the
+  many-body convention of its BdG pairing Hamiltonian was not found),
+  `HubbardKagomeLatticeModel` (a fermionic space of 676,732 states even
+  with `--fixed-sz`), `HubbardHoneycombClusterChargingLatticeModel`,
+  `HubbardSquareLatticeModelJ2S2`, `KondoModelFlatBands`.
 - **Spin models from operator lists** (14 tests in every build, one more
   with GSL, `physics.spin.ed.*`): `tests/oracles/spin_models.py` builds a
   model from explicit terms (coefficient, list of (site, operator)) with

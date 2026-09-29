@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/lattice_fermions.py`: Fock-basis ED of Hubbard-family
+  models; 6 goldens over four programs: the square-lattice Hubbard model at
+  U = 2, the Haldane-Hubbard model on a 3×3 honeycomb cluster (its phase
+  option in radians, its staggered potential on one sublattice), the SSH
+  chain, and the Kitaev–Heisenberg honeycomb spin model.
 - `tests/oracles/spin_models.py`: dense ED of spin models given as explicit
   operator lists with Sz and momentum projectors; 14 goldens
   `physics.spin.ed.*` (15 with GSL) over ten more Spin programs: XYZ chain
@@ -90,8 +95,8 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 824 tests (+5 with GSL), 185 physics goldens, 63 of 603 programs with a
-  physics or cross-check test (63 against an independent answer), 19
+- Test counts: 831 tests (+5 with GSL), 191 physics goldens, 66 of 603 programs with a
+  physics or cross-check test (66 against an independent answer), 20
   self-tests, 6 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 

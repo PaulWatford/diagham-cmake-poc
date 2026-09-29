@@ -23,6 +23,8 @@
 #  2b. tests/oracles/spin_models.py: dense ED of models given as operator lists
 #     (XYZ, 2D Heisenberg and Ising, J1-J2, double triangle, generalised AKLT,
 #     O'Brien-Fendley as coded, disorder, Potts; label: physics, spin, ed).
+#  2c. tests/oracles/lattice_fermions.py: Fock-basis ED of Hubbard-family models (square,
+#     Haldane honeycomb, SSH; label: physics, fti, hubbard, ed).
 #  3. crosscheck: two algorithms on the same Hamiltonian must agree --
 #     Lanczos (-n 4, reorthogonalised) against full diagonalisation, and
 #     LAPACK against DiagHam's own diagonaliser when the build has LAPACK.
@@ -454,6 +456,35 @@ if(DIAGHAM_USE_GSL)
         PROGRAM Spin_GenericOpenSpinChainWithDisorder ARGS -s 1 -p 6 -j 1 -z 0.2 --disorder-file ${sm_data}/disorder_open_L6.dat --nbr-sz 1 OUTPUT "spin_1_2_openchain_n_6.dat")
 endif()
 
+# --- 2c. lattice fermions (Hubbard-family programs) --------------------------------------------------
+# tests/oracles/lattice_fermions.py: Fock-basis ED of spinful fermions on a Hermitian hopping matrix with an
+# on-site U; the Haldane cluster is the inverse Fourier transform of DiagHam's own Bloch Hamiltonian
+# (its --phi is in radians, its --mu-s sits on the A sublattice). Tolerance 1e-7: these programs
+# reproduce the oracle to about 1e-8.
+set(lf_data ${DIAGHAM_TEST_DATA}/lattice_fermions)
+function(diagham_lattice_test name case)
+    cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT" "ARGS" ${ARGN})
+    diagham_physics_test(${name}
+        PROGRAM ${ARG_PROGRAM}
+        ARGS ${ARG_ARGS} --full-diag 100000
+        OUTPUT "${ARG_OUTPUT}"
+        CHECK spectrum @OUTPUT@ -1 ${lf_data}/${case}_spectrum.dat -1 1e-7
+        LABELS fti hubbard ed)
+endfunction()
+set(hald HubbardModels_HubbardHaldaneLatticeModel)
+diagham_lattice_test(physics.hubbard.ed.square_2x3_n6_u2 square_2x3_n6_u2_sz0
+    PROGRAM ${hubbard} ARGS -p 6 -x 2 -y 3 --u-potential 2 OUTPUT "fermions_hubbard_square_x_2_y_3_n_6_ns_6_*_u_2.000000_sz_0.dat")
+diagham_lattice_test(physics.hubbard.ed.haldane_3x3_n2_u0 haldane_3x3_n2_u0_sz0
+    PROGRAM ${hald} ARGS -p 2 -x 3 -y 3 --u-potential 0 --only-sz 0 OUTPUT "fermions_hubbard_haldane_x_3_y_3_n_2_ns_18_*_phi_0.333333_sz_0.dat")
+diagham_lattice_test(physics.hubbard.ed.haldane_3x3_n2_u2 haldane_3x3_n2_u2_sz0
+    PROGRAM ${hald} ARGS -p 2 -x 3 -y 3 --u-potential 2 --only-sz 0 OUTPUT "fermions_hubbard_haldane_x_3_y_3_n_2_ns_18_*_u_2.000000_sz_0.dat")
+diagham_lattice_test(physics.hubbard.ed.haldane_3x3_n2_u2_mus0.1 haldane_3x3_n2_u2_mus0.1_sz0
+    PROGRAM ${hald} ARGS -p 2 -x 3 -y 3 --u-potential 2 --mu-s 0.1 --only-sz 0 OUTPUT "fermions_hubbard_haldane_x_3_y_3_n_2_ns_18_*_u_2.000000_sz_0.dat")
+diagham_lattice_test(physics.hubbard.ed.ssh_4cells_n4_delta0.3 ssh_4cells_n4_delta0.3
+    PROGRAM HubbardModels_HubbardSSHModel ARGS -p 4 -x 4 --delta 0.3 --no-translation OUTPUT "fermions_ssh_x_4_n_4_ns_8_d_0.3.dat")
+diagham_spin_model_test(physics.spin.ed.kitaev_heisenberg_honeycomb_2x2 kitaev_heisenberg_honeycomb_2x2_j1_jk0.5
+    PROGRAM HubbardModels_HubbardExtendedKitaevHeisenbergHoneycombModel ARGS -x 2 -y 2 --spin --j1 1 --jK 0.5 OUTPUT "spin_kitaev_heisenberg_honeycomb_x_2_y_2_ns_8_j1_*_hz_0.000000.dat" TOL 1e-7 LABELS lattice)
+
 # --- 3. algorithm consensus (crosscheck) ------------------------------------------------------
 # Lanczos with reorthogonalisation (-n 4) vs full diagonalisation: same program, same
 # Hamiltonian (Coulomb, N=6, 2S=15, Lz=0, 338 states), the 4 lowest eigenvalues to 1e-10.
@@ -520,11 +551,13 @@ if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/geometry_ed.py --check ${geo_data})
     add_test(NAME selftest.spin_models_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/spin_models.py --check ${sm_data})
+    add_test(NAME selftest.lattice_fermions_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/lattice_fermions.py --check ${lf_data})
     add_test(NAME selftest.torus_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_ed.py --check ${torus_ed_data})
     add_test(NAME selftest.fci_bands_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_bands.py --check ${fci_bands_data})
     set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle selftest.torus_ed_oracle
         selftest.fci_bands_oracle selftest.sphere_nbody_oracle selftest.geometry_ed_oracle
-        selftest.spin_models_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
+        selftest.spin_models_oracle selftest.lattice_fermions_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
 endif()

@@ -157,6 +157,11 @@ physics.hubbard.2x4.U0.tight_binding
 physics.hubbard.2x4.U4.sector_ground_states
 physics.hubbard.3x2.U0.tight_binding
 physics.hubbard.4x2.U0.tight_binding
+physics.hubbard.ed.haldane_3x3_n2_u0
+physics.hubbard.ed.haldane_3x3_n2_u2
+physics.hubbard.ed.haldane_3x3_n2_u2_mus0.1
+physics.hubbard.ed.square_2x3_n6_u2
+physics.hubbard.ed.ssh_4cells_n4_delta0.3
 physics.spin.aklt_open_chain_L6.edge_state_count
 physics.spin.aklt_ring_L6
 physics.spin.aklt_ring_L8
@@ -168,6 +173,7 @@ physics.spin.ed.heisenberg2d_3x3_jz0.7
 physics.spin.ed.j1j2_L8_sz0_k0
 physics.spin.ed.j1j2_L8_sz0_k1
 physics.spin.ed.j1j2_L8_sz0_k3
+physics.spin.ed.kitaev_heisenberg_honeycomb_2x2
 physics.spin.ed.obrienfendley_spin1_L4_sz0
 physics.spin.ed.open_heisenberg_L8
 physics.spin.ed.open_spin1_heisenberg_L6
@@ -215,6 +221,7 @@ selftest.fci_bands_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
 selftest.geometry_ed_oracle
+selftest.lattice_fermions_oracle
 selftest.manifest
 selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle

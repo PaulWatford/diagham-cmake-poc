@@ -262,8 +262,24 @@ def potts3_open(L, j, f):
     return terms
 
 
+def kitaev_heisenberg_honeycomb(nx, ny, j1, jk):
+    """HubbardExtendedKitaevHeisenbergHoneycombModel --spin: J1 S_i.S_j + jK S^g_i S^g_j on the nx x ny periodic honeycomb,
+    site (x, y, s) -> ((x * ny + y) * 2 + s), bonds A(x,y)-B(x,y) [z], A(x,y)-B(x-1,y) [x], A(x,y)-B(x,y-1) [y]
+    (any consistent labelling gives the same spectrum, a global spin rotation permutes them)."""
+    idx = lambda x, y, s: ((x % nx) * ny + (y % ny)) * 2 + s
+    terms = []
+    for x in range(nx):
+        for y in range(ny):
+            for dx, dy, g in ((0, 0, "z"), (-1, 0, "x"), (0, -1, "y")):
+                i, j = idx(x, y, 0), idx(x + dx, y + dy, 1)
+                terms += [(j1, [(i, a), (j, a)]) for a in "xyz"]
+                terms.append((jk, [(i, g), (j, g)]))
+    return terms
+
+
 # name, L, 2s, terms, sector (sz = 2 Sz or None, k or None), note
 CASES = [
+    ("kitaev_heisenberg_honeycomb_2x2_j1_jk0.5", 8, 1, lambda: kitaev_heisenberg_honeycomb(2, 2, 1.0, 0.5), None, None, "HubbardExtendedKitaevHeisenbergHoneycombModel --spin, 2x2 honeycomb (8 spins), J1=1, jK=0.5; whole spectrum (256)"),
     ("xyz_open_L8_h0.2", 8, 1, lambda: xyz_chain(8, 1.0, 0.6, 0.3, False, h=0.2), None, None, "SpinChainXYZ open, Jx=1 Jy=0.6 Jz=0.3 (Pauli, negated), field 0.2 S^z; whole spectrum"),
     ("xyz_periodic_L8", 8, 1, lambda: xyz_chain(8, 1.0, 0.6, 0.3, True), None, None, "SpinChainXYZ -b 1: parity-twisted boundary bond; whole spectrum"),
     ("fullgeneric_open_L6_fields", 6, 1, lambda: heisenberg_xyz(6, 1.0, 0.6, 0.3, False, h=0.3, hx=0.2, hy=0.1), None, None, "FullGenericOpenSpinChain: S couplings and three fields; whole spectrum"),

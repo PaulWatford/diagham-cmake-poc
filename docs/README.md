@@ -94,6 +94,6 @@ docs/
 
 ## Keeping it truthful
 
-- Counts quoted in the docs (61 libraries, 603 programs, 858 tests, 216 physics goldens) are those of the r4493 build; [reference/build-system.md](reference/build-system.md) is where they are defined and the other pages follow it.
+- Counts quoted in the docs (61 libraries, 603 programs, 870 tests, 223 physics goldens) are those of the r4493 build; [reference/build-system.md](reference/build-system.md) is where they are defined and the other pages follow it.
 - `docs/reference/programs/` is regenerated with `python3 scripts_cmake/gen_program_reference.py build/lapack docs/reference/programs` after any change to a program's options; the manuals are re-attached with `scripts_cmake/attach_wiki_manuals.py`.
 - A page that cannot be verified against the build goes to `drafts/` with a note on what is missing, not into the sections above.

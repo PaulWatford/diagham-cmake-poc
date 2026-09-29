@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **71 of 603 programs with a physics or cross-check test** (71 of them against an independently known answer).
+headline today is **72 of 603 programs with a physics or cross-check test** (72 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **71 of 603 programs with a physics or cross-check test** (71 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `knownbug.spin.tfim2d.open_boundaries_ignored` (U35), `knownbug.fti.hopf3d.segfault_after_band_file` (U36), `knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only` (U37) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `knownbug.spin.tfim2d.open_boundaries_ignored` (U35), `knownbug.fti.hopf3d.segfault_after_band_file` (U36), `knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only` (U37), `knownbug.fci.*.manybody.*` (U39, four cases) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -361,7 +361,9 @@ Das Sarma, PRL 106, 236803) at every lattice momentum. Six tests
 `FCICheckerboardLatticeModel --singleparticle-spectrum --export-onebodytext`
 with `tests/data/fci_bands/` to 10⁻¹²; `selftest.fci_bands_oracle`
 re-derives the files. It is the first independent number for an FCI
-program; the many-body FCI spectra remain regression-only.
+program.
+
+`tests/oracles/fci_manybody.py` adds the many-body side: a dense ED of the checkerboard model projected onto its lowest band (A sites at R, B sites at R + (½, ½), Bloch functions in the position gauge, U on the four nearest-neighbour A-B bonds, `H = sum eps_k n_k + U sum P n_A n_B P`, every total-momentum sector). The full spectra of `FCICheckerboardLatticeModel --single-band --flat-band --full-momentum` match it to 10⁻⁹ (measured 4·10⁻¹²) for N = 2 and 3 on 3×3 and N = 2 on 4×3 at changed t₂, t′; the many-body spectrum does not depend on the eigenvector gauge or on the sublattice convention. The same oracle carries the exact atomic limit of `FCIAtomicLimitLatticeModel`: bosons pay 4U per same-cell pair (the convention of the program; three cases), fermions are inert (all E = 0). The dispersive cases (`--flat-band` off) do **not** match: U39, four `known-bug` tests (checkerboard at U = 0 and U = 1, Haldane and Kagome at N = 1).
 
 The same file now carries five more models, each as the eigenvalues of
 the published Bloch matrix diagonalised with numpy on the lattice
@@ -450,7 +452,7 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-Eight `known-bug` tests exist (U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Twelve `known-bug` tests exist (U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

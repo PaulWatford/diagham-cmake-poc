@@ -139,6 +139,7 @@ nav:
       - 'Open defect U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds': upstream-reports/open-U35.md
       - 'Open defect U36: FTI3DHopf segfaults after writing its band file': upstream-reports/open-U36.md
       - 'Open defect U37: 3D --export-onebodytext writes only the kz = 0 slice': upstream-reports/open-U37.md
+      - 'Open defect U39: the one-body energy of the single-band many-body Hamiltonians is wrong': upstream-reports/open-U39.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

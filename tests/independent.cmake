@@ -479,6 +479,89 @@ diagham_spin_ed_test(physics.spin.ed.ring_j1j2_L8 ring_j1j2_L8_j2_0.4
 diagham_spin_ed_test(physics.spin.ed.ring_xxz_L10 ring_xxz_L10_jz0.5
     PROGRAM ${gps} ARGS -p 10 --nbr-sz 1 --nn-coupling -0.5 --full-diag 5000 OUTPUT "spin_1_2_periodicchain_n_10.dat")
 
+# --- 1d. FCI many-body spectra ---------------------------------------------------------------------
+# tests/oracles/fci_manybody.py: dense ED of the band-projected interacting problem (numpy), sector by sector
+# in the total momentum, and the exact atomic limit. The programs' full spectra (--full-momentum) must match as
+# sorted lists. Physics of the checkerboard checks: A sites at R, B sites at R + (1/2, 1/2), U on the four
+# nearest-neighbour A-B bonds, projected onto the lowest band.
+set(fci_mb_data ${DIAGHAM_TEST_DATA}/fci_manybody)
+set(fci_al FCI_FCIAtomicLimitLatticeModel)
+
+# flat band (eps = 0, U fixed at 1 by the program): only the projected interaction remains
+diagham_physics_test(physics.fci.checkerboard.manybody.3x3_n2_flat
+    PROGRAM ${fci_cb}
+    ARGS -p 2 -x 3 -y 3 --single-band --flat-band --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_18_x_3_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n2_flat.dat 2 1e-9
+    LABELS fci checkerboard manybody)
+diagham_physics_test(physics.fci.checkerboard.manybody.3x3_n3_flat
+    PROGRAM ${fci_cb}
+    ARGS -p 3 -x 3 -y 3 --single-band --flat-band --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_checkerboardlattice_n_3_ns_18_x_3_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n3_flat.dat 2 1e-9
+    LABELS fci checkerboard manybody)
+diagham_physics_test(physics.fci.checkerboard.manybody.4x3_n2_flat_t2_0.2_tpp_0.1
+    PROGRAM ${fci_cb}
+    ARGS -p 2 -x 4 -y 3 --single-band --flat-band --t2 0.2 --tpp 0.1 --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_24_x_4_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_4x3_n2_flat_t2_0.2_tpp_0.1.dat 2 1e-9
+    LABELS fci checkerboard manybody)
+
+# atomic limit: bosons pay 4 U per same-cell pair (the convention of the program), fermions are inert
+diagham_physics_test(physics.fci.atomiclimit.bosons_3x3_n2_u1.5
+    PROGRAM ${fci_al}
+    ARGS -p 2 -x 3 -y 3 --boson --single-band --u-potential 1.5 --full-diag 5000
+    OUTPUT "bosons_singleband_atomiclimit_band_0_n_2_x_3_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_3x3_n2_u1.5.dat 2 1e-9
+    LABELS fci atomiclimit manybody)
+diagham_physics_test(physics.fci.atomiclimit.bosons_3x3_n3_u1
+    PROGRAM ${fci_al}
+    ARGS -p 3 -x 3 -y 3 --boson --single-band --u-potential 1 --full-diag 5000
+    OUTPUT "bosons_singleband_atomiclimit_band_0_n_3_x_3_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_3x3_n3_u1.dat 2 1e-9
+    LABELS fci atomiclimit manybody)
+diagham_physics_test(physics.fci.atomiclimit.bosons_4x2_n2_u1
+    PROGRAM ${fci_al}
+    ARGS -p 2 -x 4 -y 2 --boson --single-band --u-potential 1 --full-diag 5000
+    OUTPUT "bosons_singleband_atomiclimit_band_0_n_2_x_4_y_2_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_4x2_n2_u1.dat 2 1e-9
+    LABELS fci atomiclimit manybody)
+diagham_physics_test(physics.fci.atomiclimit.fermions_3x3_n2_inert
+    PROGRAM ${fci_al}
+    ARGS -p 2 -x 3 -y 3 --single-band --u-potential 1 --v-potential 1 --full-diag 5000
+    OUTPUT "fermions_singleband_atomiclimit_band_0_n_2_x_3_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_fermion_3x3_n2.dat 2 1e-9
+    LABELS fci atomiclimit manybody)
+
+# U39: the one-body energy of the single-band many-body Hamiltonian is wrong. Non-flat checkerboard: the
+# band energy is overwritten by an interaction-derived term (EvaluateInteractionFactors, second assignment
+# of OneBodyInteractionFactors), so U = 0 does not give the band-energy sum; Haldane and Kagome: with no
+# interaction, N = 1 gives exactly half of the band energy. WILL_FAIL until fixed.
+diagham_physics_test(knownbug.fci.checkerboard.manybody.3x3_n2_u0_band_energy_overwritten
+    PROGRAM ${fci_cb}
+    ARGS -p 2 -x 3 -y 3 --single-band --u-potential 0 --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_18_x_3_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n2_u0.dat 2 1e-9
+    WILL_FAIL LABELS fci checkerboard manybody known-bug)
+diagham_physics_test(knownbug.fci.checkerboard.manybody.4x3_n2_u1_band_energy_overwritten
+    PROGRAM ${fci_cb}
+    ARGS -p 2 -x 4 -y 3 --single-band --t2 0.2 --tpp 0.1 --u-potential 1 --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_24_x_4_y_3_*_gx_*.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_4x3_n2_u1_t2_0.2_tpp_0.1.dat 2 1e-9
+    WILL_FAIL LABELS fci checkerboard manybody known-bug)
+diagham_physics_test(knownbug.fci.haldane.manybody.3x3_n1_band_energy_halved
+    PROGRAM FCI_FCIHaldaneModel
+    ARGS -p 1 -x 3 -y 3 --single-band --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_haldane_n_1_x_3_y_3_*_gy_0.000000.dat"
+    CHECK min-abs @OUTPUT@ 2 -4.5350243553983 1e-9
+    WILL_FAIL LABELS fci haldane manybody known-bug)
+diagham_physics_test(knownbug.fci.kagome.manybody.3x3_n1_band_energy_halved
+    PROGRAM FCI_FCIKagomeLatticeModel
+    ARGS -p 1 -x 3 -y 3 --full-diag 5000 --full-momentum
+    OUTPUT "fermions_singleband_kagomelattice_n_1_x_3_y_3_*_gx_*.dat"
+    CHECK min-abs @OUTPUT@ 2 -2.8 1e-9
+    WILL_FAIL LABELS fci kagome manybody known-bug)
+
 # --- 2b. spin models from explicit operator lists ------------------------------------------------
 # tests/oracles/spin_models.py: dense ED of a model given as operator terms, with Sz and momentum
 # sectors; each program's convention (S or Pauli, signs, boundary terms) is recorded in the oracle.
@@ -635,7 +718,9 @@ if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_ed.py --check ${torus_ed_data})
     add_test(NAME selftest.fci_bands_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_bands.py --check ${fci_bands_data})
+    add_test(NAME selftest.fci_manybody_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_manybody.py --check ${fci_mb_data})
     set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle selftest.torus_ed_oracle
-        selftest.fci_bands_oracle selftest.sphere_nbody_oracle selftest.geometry_ed_oracle
+        selftest.fci_bands_oracle selftest.fci_manybody_oracle selftest.sphere_nbody_oracle selftest.geometry_ed_oracle
         selftest.spin_models_oracle selftest.lattice_fermions_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
 endif()

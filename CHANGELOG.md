@@ -14,6 +14,7 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/fci_manybody.py`: band-projected many-body ED of the checkerboard model (every total-momentum sector) and the exact atomic limit; 7 goldens (flat-band N = 2, 3 on 3×3, N = 2 on 4×3; three bosonic and one fermionic atomic-limit cases) and a self-test. U39 registered (the one-body energy of the single-band many-body Hamiltonians is halved for Haldane and Kagome, overwritten by an interaction term for the non-flat checkerboard) with four `known-bug` tests and report `open-U39.md`.
 - `tests/oracles/fci_bands.py` extended from the checkerboard model to Haldane,
   Kagome (three bands), Zhang–Qi, BHZ (four bands) and the 3D simple
   topological insulator, plus a Fukui–Hatsugai Chern number; 25 goldens over
@@ -105,9 +106,9 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 858 tests (+5 with GSL), 216 physics goldens, 71 of 603 programs with a
-  physics or cross-check test (71 against an independent answer), 20
-  self-tests, 8 known-bug reproducers; `tests/manifest.txt` and
+- Test counts: 870 tests (+5 with GSL), 223 physics goldens, 72 of 603 programs with a
+  physics or cross-check test (72 against an independent answer), 21
+  self-tests, 12 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

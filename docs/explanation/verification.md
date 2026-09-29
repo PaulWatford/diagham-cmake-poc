@@ -7,12 +7,12 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 
 | Level | Tests | What a pass means | What it does not mean |
 |---|---:|---|---|
-| **Physics golden** (`physics`) | 223 (+5 with GSL) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
+| **Physics golden** (`physics`) | 234 (+5 with GSL, +4 with LAPACK) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
 | **Cross-check** (`crosscheck`) | 3 (+1 with LAPACK) | two DiagHam implementations, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree | both could be wrong the same way |
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 21 self-tests of the harness (the manifest, thirteen oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 8 `known-bug` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 22 self-tests of the harness (the manifest, fourteen oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 14 `known-bug` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
 
 ## Programs, by module
 
@@ -24,15 +24,15 @@ Plus 21 self-tests of the harness (the manifest, thirteen oracle re-derivations,
 | FQHEOnDisk | 27 | 3 | 0 | 0 | 3 |
 | FQHEOnLattice | 22 | 0 | 0 | 1 | 1 |
 | FQHEOnSphere | 193 | 18 | 1 | 1 | 18 |
-| FQHEOnTorus | 64 | 19 | 3 | 1 | 19 |
+| FQHEOnTorus | 64 | 20 | 3 | 1 | 20 |
 | FTI | 36 | 3 | 0 | 1 | 3 |
 | HubbardModels | 25 | 5 | 0 | 2 | 6 |
 | QuantumDots | 19 | 0 | 0 | 1 | 1 |
-| Spin | 71 | 15 | 0 | 2 | 15 |
+| Spin | 71 | 16 | 0 | 2 | 16 |
 | core (`src/Programs`) | 36 | 1 | 0 | 0 | 1 |
-| **all** | **603** | **72** | **4** | **11** | **75** |
+| **all** | **603** | **74** | **4** | **11** | **77** |
 
-So: **72 programs have their physics checked** (72 against independent answers), **3 more are watched for change**, and **524 are smoke-tested only**. A green suite says the 75 are right or unchanged; it says nothing about the other 524.
+So: **74 programs have their physics checked** (74 against independent answers), **3 more are watched for change**, and **522 are smoke-tested only**. A green suite says the 77 are right or unchanged; it says nothing about the other 522.
 
 ## What the physics goldens establish
 
@@ -45,6 +45,7 @@ So: **72 programs have their physics checked** (72 against independent answers),
 - **k-body interactions** (8 tests): three- and four-body pseudopotential Hamiltonians on the sphere (hard core, generic three-body sets, with and without a two-body term, bosons and fermions, N = 5 and 6) against an independent ED built from the L-multiplet projectors of the k-particle space (`tests/oracles/sphere_nbody.py`); DiagHam's per-multiplet normalisation of its k-body pseudopotentials is read off the k-particle runs, every N > k spectrum is then predicted to 10⁻⁹.
 - **Torus interactions** (25 tests): the Coulomb and pseudopotential spectra of fermions and bosons on the torus, whole K_y sectors at aspect ratio 1 and 2, against an independent Landau-gauge exact diagonalisation (`tests/oracles/torus_ed.py`), to 10⁻⁹; with SU(2), SU(3) and SU(4) spin, bilayer Coulomb at a layer separation, the first excited Landau level, every K_y sector at once, and the magnetic-translation (K_x, K_y) sectors of the translation programs, spinless and with spin.
 - **FCI and FTI band structures** (31 tests): every band of the checkerboard, Haldane, Kagome (three bands), Zhang–Qi, Bernevig–Hughes–Zhang (four bands) and 3D simple topological insulator programs at every lattice momentum, at default and at changed parameters, against numpy eigenvalues of the published Bloch Hamiltonians (`tests/oracles/fci_bands.py`), and the Chern number of the lowest Haldane band (+1, −1 and 0 for a trivial mass) against the Fukui–Hatsugai integer. 
+- **Entanglement** (13 tests + 4 with LAPACK + 1 self-test): the 2D toric code entropy for seven regions and both parity sectors against a GF(2) rank formula (`tests/oracles/entanglement.py`, nothing shared with DiagHam), the torus particle entanglement spectrum of the Laughlin 1/3 state (N = 4, Nphi = 12) with the number of non-zero levels per Ky equal to the cyclic admissible counting, and with LAPACK the spin-1/2 chain entropy of a Bell pair (ln 2, two levels 1/2) and of a product state (0). Not covered: the sphere entanglement spectrum (the naive admissible counting does not match, not understood), the cylinder and disk entropy programs, the Haah code (crashes on every size tried), Potts, Hubbard and FTI entropies.
 - **FCI many-body spectra** (11 tests + 1 self-test): the full checkerboard spectra in the flat-band limit (N = 2 and 3 on 3×3, N = 2 on 4×3 at changed hoppings) sector by sector against a band-projected exact diagonalisation (`tests/oracles/fci_manybody.py`), and the exactly solvable atomic limit (bosons and fermions). The dispersive many-body Hamiltonians are wrong (U39: the band energy is halved for Haldane and Kagome, overwritten for the checkerboard); four `known-bug` tests carry the correct values.
 
 What they do **not** establish: Coulomb energies on the cylinder (the matrix elements need a regularised q = 0 term, not yet in the oracle); any interaction energy on the disk beyond zero modes (the program is wrong, U34, and the fermionic one hangs, U29); spin on the cylinder and disk beyond dimension counting (the sphere and torus with spin are covered); the two-Landau-level programs on the sphere and torus, `FQHESphereFermionsWithSpinFull` (four-index pseudopotential keys, convention not matched), the twisted torus and the product geometries (T²×T², T²×S², T²×cylinder); the FCI/FTI many-body programs other than the checkerboard flat band and the atomic limit (regression only; the single-particle bands are verified); Landau-level mixing, real-space entanglement, Monte Carlo, MPS/DMRG, time evolution; every MPI and ScaLAPACK code path (compiled and linked in the `hpc` preset, never run by a test); QuantumDots (regression only); the Analysis tools (need input spectra).
@@ -61,11 +62,13 @@ What they do **not** establish: Coulomb energies on the cylinder (the matrix ele
 | U30 | plain Lanczos (`-n 1`) returned an energy below the ground state on a degenerate spectrum: the Krylov space had closed and the iteration went on with round-off | **fixed here** (closure detected, iteration stops); report 16 in `docs/upstream-reports/`; test `physics.hubbard.2x4.U0.plain_lanczos_krylov_closure` |
 | U31 | `FCICheckerboardLatticeModel` two-band model segfaults | open; `known-bug` test; use `--single-band` |
 | U36 | `FTI3DHopf` writes its band file and then segfaults (also on a pristine autotools build) | open; `known-bug` test; report `open-U36.md` |
+| U41 | `2DToricCodeEntanglementEntropy --kept-sites` with a path in the name writes no spectrum file (the path is pasted into the output name) | open; not tested; report `open-U41.md` |
+| U40 | `SpinChainEntanglementEntropy` aborts in a build without LAPACK (undeclared option read) | open; two `known-bug` tests in the default build; report `open-U40.md` |
 | U39 | the one-body energy of the single-band many-body Hamiltonians is wrong (Haldane and Kagome: half the band energy; checkerboard: overwritten by an interaction term); flat-band spectra are right | open; four `known-bug` tests; report `open-U39.md` |
 | U37 | the 3D tight-binding programs' `--export-onebodytext` file holds only the kz = 0 slice, in the 2D layout | open; `known-bug` test; the plain `.dat` has every momentum; report `open-U37.md` |
 | U32 | `FQHESphereFermionsWithSpin` with both `--lzsymmetrized-basis` and `--szsymmetrized-basis` builds an empty basis | open; `known-bug` test; use one symmetry at a time |
 
-The full register (32 entries, most of them build-level) is `docs/reference/known-defects.md`.
+The full register (34 entries, most of them build-level) is `docs/reference/known-defects.md`.
 
 ## How to read a failure
 

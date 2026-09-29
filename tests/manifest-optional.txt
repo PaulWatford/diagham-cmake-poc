@@ -6,3 +6,7 @@ physics.fqhe.cylinder.ed.fermions_n4_norb9_v1v3_r2_ky0
 physics.fqhe.cylinder.ed.fermions_n4_norb9_v1v3_r0.5_ky0
 physics.fqhe.cylinder.ed.fermions_n4_norb9_v1v3_r1_ky2
 physics.spin.ed.disorder_open_L6_sz0
+physics.entanglement.spin_chain.bell_pair_entropy_ln2
+physics.entanglement.spin_chain.bell_pair_two_levels_one_half
+physics.entanglement.spin_chain.product_state_entropy_zero
+physics.entanglement.spin_chain.product_state_one_level

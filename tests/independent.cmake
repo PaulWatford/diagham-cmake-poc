@@ -20,6 +20,9 @@
 #     published Bloch Hamiltonian (label: physics, fci, checkerboard, bands).
 #  2. tests/oracles/spin_ed.py: dense numpy diagonalisation of XXZ / J1-J2
 #     chains with a field, open or periodic (label: physics, spin, ed).
+#  2b. tests/oracles/spin_models.py: dense ED of models given as operator lists
+#     (XYZ, 2D Heisenberg and Ising, J1-J2, double triangle, generalised AKLT,
+#     O'Brien-Fendley as coded, disorder, Potts; label: physics, spin, ed).
 #  3. crosscheck: two algorithms on the same Hamiltonian must agree --
 #     Lanczos (-n 4, reorthogonalised) against full diagonalisation, and
 #     LAPACK against DiagHam's own diagonaliser when the build has LAPACK.
@@ -396,6 +399,61 @@ diagham_spin_ed_test(physics.spin.ed.ring_j1j2_L8 ring_j1j2_L8_j2_0.4
 diagham_spin_ed_test(physics.spin.ed.ring_xxz_L10 ring_xxz_L10_jz0.5
     PROGRAM ${gps} ARGS -p 10 --nbr-sz 1 --nn-coupling -0.5 --full-diag 5000 OUTPUT "spin_1_2_periodicchain_n_10.dat")
 
+# --- 2b. spin models from explicit operator lists ------------------------------------------------
+# tests/oracles/spin_models.py: dense ED of a model given as operator terms, with Sz and momentum
+# sectors; each program's convention (S or Pauli, signs, boundary terms) is recorded in the oracle.
+set(sm_data ${DIAGHAM_TEST_DATA}/spin_models)
+function(diagham_spin_model_test name case)
+    cmake_parse_arguments(ARG "WILL_FAIL" "PROGRAM;OUTPUT;TOL" "ARGS;LABELS" ${ARGN})
+    if(NOT ARG_TOL)
+        set(ARG_TOL 1e-9)
+    endif()
+    set(wf "")
+    if(ARG_WILL_FAIL)
+        set(wf WILL_FAIL)
+    endif()
+    diagham_physics_test(${name}
+        PROGRAM ${ARG_PROGRAM}
+        ARGS ${ARG_ARGS} --full-diag 100000
+        OUTPUT "${ARG_OUTPUT}"
+        CHECK spectrum @OUTPUT@ -1 ${sm_data}/${case}_spectrum.dat -1 ${ARG_TOL}
+        ${wf}
+        LABELS spin ed ${ARG_LABELS})
+endfunction()
+diagham_spin_model_test(physics.spin.ed.xyz_open_L8_h0.2 xyz_open_L8_h0.2
+    PROGRAM Spin_SpinChainXYZ ARGS -p 8 -x 1 -y 0.6 -z 0.3 -f 0.2 -b 0 --no-parity OUTPUT "spin_1_2_x_1.000000_y_0.600000_z_0.300000_h_0.200000_b_0_n_8.dat")
+diagham_spin_model_test(physics.spin.ed.xyz_periodic_L8_parity_boundary xyz_periodic_L8
+    PROGRAM Spin_SpinChainXYZ ARGS -p 8 -x 1 -y 0.6 -z 0.3 -b 1 --no-parity OUTPUT "spin_1_2_x_1.000000_y_0.600000_z_0.300000_b_1_n_8.dat")
+diagham_spin_model_test(physics.spin.ed.fullgeneric_open_L6_three_fields fullgeneric_open_L6_fields
+    PROGRAM Spin_FullGenericOpenSpinChain ARGS -s 1 -p 6 -x 1 -y 0.6 -z 0.3 --hx-value 0.2 --hy-value 0.1 --hz-value 0.3 OUTPUT "spin_1_2_openchain_n_6_jx_*.dat")
+diagham_spin_model_test(physics.spin.ed.heisenberg2d_3x3_jz0.7 heisenberg2d_3x3_jz0.7_sz1
+    PROGRAM Spin_TwoDimensionalHeisenbergModel ARGS -x 3 -y 3 --j-value 1 --jz-value 0.7 --nbr-sz 1 --disable-momentum --disable-inversion --disable-szsymmetry OUTPUT "spin_1_2_2dheisenberg_n_9_x_3_y_3_*.dat" LABELS lattice)
+foreach(k 0 1 3)
+    diagham_spin_model_test(physics.spin.ed.j1j2_L8_sz0_k${k} j1j2_L8_sz0_k${k}
+        PROGRAM Spin_PeriodicSpinChainJ1J2 ARGS -s 1 -p 8 -1 1 -2 0.4 --nbr-sz 1 --momentum ${k} --disable-szsymmetry --disable-inversionsymmetry OUTPUT "spin_1_2_periodicj1j2_j1_1.000000_j2_0.400000_n_8.dat")
+endforeach()
+diagham_spin_model_test(physics.spin.ed.doubletriangle_L8_sz0 doubletriangle_L8_sz0
+    PROGRAM Spin_DoubleTriangleSpinChain ARGS -s 1 -p 8 -j 1 -g 0.5 --djz1-value 0.2 --djz2-value 0.1 --nbr-sz 1 --no-translations OUTPUT "spin_1_2_doubletrianglechain_*_n_8.dat")
+foreach(k 0 2)
+    diagham_spin_model_test(physics.spin.ed.aklt_p3p4_spin2_L4_sz0_k${k} aklt_p3p4_spin2_L4_sz0_k${k}
+        PROGRAM Spin_PeriodicSpinChainGeneralizedAKLT ARGS -s 4 -p 4 --nbr-sz 1 --momentum ${k} --disable-szsymmetry --disable-inversionsymmetry OUTPUT "spin_2_periodicaklt_*_n_4.dat" TOL 1e-7)
+endforeach()
+diagham_spin_model_test(physics.spin.ed.tfim2d_2x3_periodic tfim2d_2x3_periodic
+    PROGRAM Spin_TwoDimensionalTransverseFieldIsingModel ARGS -x 2 -y 3 --jz-value 1 --hx-value 0.7 --hz-value 0.2 --use-periodic --disable-momentum --disable-inversion OUTPUT "spin_1_2_ising_transversefield_closed_n_6_*.dat" LABELS lattice)
+diagham_spin_model_test(physics.spin.ed.tfim2d_3x3_periodic tfim2d_3x3_periodic
+    PROGRAM Spin_TwoDimensionalTransverseFieldIsingModel ARGS -x 3 -y 3 --jz-value 1 --hx-value 0.7 --hz-value 0.2 --use-periodic --disable-momentum --disable-inversion OUTPUT "spin_1_2_ising_transversefield_closed_n_9_*.dat" LABELS lattice)
+# U35: without --use-periodic the program still adds the wrap-around Ising bonds (its "open" spectrum equals the periodic one)
+diagham_spin_model_test(knownbug.spin.tfim2d.open_boundaries_ignored tfim2d_2x3_open
+    PROGRAM Spin_TwoDimensionalTransverseFieldIsingModel ARGS -x 2 -y 3 --jz-value 1 --hx-value 0.7 --hz-value 0.2 OUTPUT "spin_1_2_ising_transversefield_open_n_6_*.dat" WILL_FAIL LABELS lattice)
+diagham_spin_model_test(physics.spin.ed.obrienfendley_spin1_L4_sz0 obrienfendley_spin1_L4_sz0
+    PROGRAM Spin_PeriodicSpinChainOBrienFendley ARGS -s 2 -p 4 --nbr-sz 1 --disable-szsymmetry --disable-inversionsymmetry --disable-momentum OUTPUT "spin_1_periodicobrienfendley_nomomentum_n_4.dat")
+diagham_spin_model_test(physics.spin.ed.potts3_open_L6 potts3_open_L6
+    PROGRAM Spin_Potts3ChainModel ARGS -p 6 -j 1 -f 0.5 --nbr-q 0 OUTPUT "potts3_openchain_*_n_6.dat")
+if(DIAGHAM_USE_GSL)
+    diagham_spin_model_test(physics.spin.ed.disorder_open_L6_sz0 disorder_open_L6_sz0
+        PROGRAM Spin_GenericOpenSpinChainWithDisorder ARGS -s 1 -p 6 -j 1 -z 0.2 --disorder-file ${sm_data}/disorder_open_L6.dat --nbr-sz 1 OUTPUT "spin_1_2_openchain_n_6.dat")
+endif()
+
 # --- 3. algorithm consensus (crosscheck) ------------------------------------------------------
 # Lanczos with reorthogonalisation (-n 4) vs full diagonalisation: same program, same
 # Hamiltonian (Coulomb, N=6, 2S=15, Lz=0, 338 states), the 4 lowest eigenvalues to 1e-10.
@@ -460,10 +518,13 @@ if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/sphere_nbody.py --check ${nbody_data})
     add_test(NAME selftest.geometry_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/geometry_ed.py --check ${geo_data})
+    add_test(NAME selftest.spin_models_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/spin_models.py --check ${sm_data})
     add_test(NAME selftest.torus_ed_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_ed.py --check ${torus_ed_data})
     add_test(NAME selftest.fci_bands_oracle
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fci_bands.py --check ${fci_bands_data})
     set_tests_properties(selftest.sphere_ed_oracle selftest.spin_ed_oracle selftest.torus_ed_oracle
-        selftest.fci_bands_oracle selftest.sphere_nbody_oracle selftest.geometry_ed_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
+        selftest.fci_bands_oracle selftest.sphere_nbody_oracle selftest.geometry_ed_oracle
+        selftest.spin_models_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 900)
 endif()

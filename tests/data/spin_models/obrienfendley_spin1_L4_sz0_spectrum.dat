@@ -1,0 +1,20 @@
+# L=4 2s=2 sector 2Sz=0 k=None: PeriodicSpinChainOBrienFendley default factors, spin-1, Sz=0 (19 states); 19 eigenvalues from tests/oracles/spin_models.py
+-4
+-3
+-3
+-2.77200187265877
+-2.56155281280883
+-1
+-1
+-1.12882805733293e-15
+-5.46228930264138e-17
+1.06216963251311e-16
+3.90390771826444e-16
+0.999999999999999
+1
+1.56155281280883
+2
+2
+2
+2
+5.77200187265877

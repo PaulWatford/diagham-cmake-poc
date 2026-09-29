@@ -14,6 +14,16 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/spin_models.py`: dense ED of spin models given as explicit
+  operator lists with Sz and momentum projectors; 14 goldens
+  `physics.spin.ed.*` (15 with GSL) over ten more Spin programs: XYZ chain
+  (with its parity-twisted periodic boundary), fully generic open chain, 2D
+  Heisenberg, 2D transverse-field Ising, J₁–J₂ with momentum sectors,
+  double-triangle chain, spin-2 generalised AKLT, O'Brien–Fendley (default
+  factors), three-state Potts, disordered chain.
+- U35 registered with a `known-bug` test: the 2D transverse-field Ising
+  program adds the wrap-around bonds whether or not `--use-periodic` is
+  given.
 - `scripts_cmake/reproduce_on_pristine_trunk.sh` and
   `docs/how-to/develop/reproduce-on-pristine-trunk.md`: export the trunk
   revision from the Subversion server, build it with DiagHam's own autotools
@@ -80,9 +90,9 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 808 tests (+4 with GSL), 171 physics goldens, 55 of 603 programs with a
-  physics or cross-check test (55 against an independent answer), 18
-  self-tests, 5 known-bug reproducers; `tests/manifest.txt` and
+- Test counts: 824 tests (+5 with GSL), 185 physics goldens, 63 of 603 programs with a
+  physics or cross-check test (63 against an independent answer), 19
+  self-tests, 6 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

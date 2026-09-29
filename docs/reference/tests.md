@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **55 of 603 programs with a physics or cross-check test** (55 of them against an independently known answer).
+headline today is **63 of 603 programs with a physics or cross-check test** (63 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **55 of 603 programs with a physics or cross-check test** (55 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `knownbug.spin.tfim2d.open_boundaries_ignored` (U35) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -244,6 +244,35 @@ with no exactly solvable case exposed at the command line; they get
   W in every m = 1 channel) and is checked in it. Not matched:
   `FQHESphereFermionsWithSpinFull` (four-index keys, its convention is not
   established) and the two-Landau-level programs (next session).
+- **Spin models from operator lists** (14 tests in every build, one more
+  with GSL, `physics.spin.ed.*`): `tests/oracles/spin_models.py` builds a
+  model from explicit terms (coefficient, list of (site, operator)) with
+  Kronecker products and projects on the Sz and momentum sectors. What was
+  pinned, case by case, on two-spin and small cases: `SpinChainXYZ` uses
+  Pauli couplings that the source negates, H = −Σ (Jx σσ + Jy σσ + Jz σσ)
+  + h Σ Sᶻ, and with `-b 1` its boundary xx and yy bonds are multiplied by
+  the parity Π σᶻ (its "translation invariant boundary term"); the
+  `FullGenericOpenSpinChain` has S couplings and S fields; the J₁–J₂ chain
+  is full Heisenberg for both couplings (unlike `GenericPeriodicSpinChain`'s
+  Sᶻ Sᶻ next-nearest term) and its `--momentum k` sectors match the
+  translation projector; `DoubleTriangleSpinChain` is a periodic zigzag
+  with the z couplings J₁ + δ₁ and J₂ + δ₂; the generalised AKLT program
+  is P₃ + P₄ on every bond of a spin-2 chain (projectors from the S·S
+  polynomial); the 2D Heisenberg model on a periodic 3×3 cluster; the 2D
+  transverse-field Ising model with Jz Sᶻ Sᶻ + hx Sˣ + hz Sᶻ on the bonds
+  the source builds (for nx = 2 the x bonds are doubled); the
+  `PeriodicSpinChainOBrienFendley` default Hamiltonian as coded
+  (Σ SˣSˣ + SʸSʸ + ¼ Σ [(S⁻S⁺)² + h.c.], zero diagonal; its
+  `--linear-factor` path uses another class and is not matched); the
+  three-state Potts chain H = −J Σ (σσ† + h.c.) − f Σ (τ + τ†); a
+  disordered chain with fields from a fixed `Disorder =` file (GSL build).
+  Found on the way (**U35**): the 2D Ising program adds the wrap-around
+  bonds whether or not `--use-periodic` is given, so its "open" spectrum
+  is the periodic one (2×3 and 3×3 identical); `known-bug` test against
+  the true open spectrum. Not matched: `SpinChainLongRangeXYZ` (none of the
+  distance conventions tried), `NDMAPSpinChain` (rejects the options its
+  own help lists), `FullGenericOpenSpinChain` with spin 1 (refused by the
+  program).
 - **Spin-chain ED** (6 tests, `physics.spin.ed.*`): `tests/oracles/spin_ed.py`,
   dense numpy diagonalisation of XXZ / J₁–J₂ chains with a field, open
   and periodic, spin ½ and 1, L up to 10, against `GenericOpenSpinChain`
@@ -367,9 +396,10 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-Five `known-bug` tests exist (U31, the two-band checkerboard segfault; U32,
+Six `known-bug` tests exist (U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
-pseudopotential Hamiltonian, three cases; see above. U30,
+pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
+ignored open boundaries; see above. U30,
 plain Lanczos below the ground state on a degenerate spectrum, was fixed
 here and its test promoted to `physics`). A `known-bug` test reproduces a defect documented in this repository and is
 registered with `WILL_FAIL`: it passes while the defect is present, and the

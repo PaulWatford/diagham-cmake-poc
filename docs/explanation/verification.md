@@ -7,12 +7,12 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 
 | Level | Tests | What a pass means | What it does not mean |
 |---|---:|---|---|
-| **Physics golden** (`physics`) | 171 (+4 with GSL) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
+| **Physics golden** (`physics`) | 185 (+5 with GSL) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
 | **Cross-check** (`crosscheck`) | 3 (+1 with LAPACK) | two DiagHam implementations, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree | both could be wrong the same way |
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 18 self-tests of the harness (the manifest, ten oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 5 `known-bug` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 19 self-tests of the harness (the manifest, eleven oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 6 `known-bug` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
 
 ## Programs, by module
 
@@ -28,18 +28,18 @@ Plus 18 self-tests of the harness (the manifest, ten oracle re-derivations, the 
 | FTI | 36 | 1 | 0 | 1 | 2 |
 | HubbardModels | 25 | 2 | 0 | 2 | 4 |
 | QuantumDots | 19 | 0 | 0 | 1 | 1 |
-| Spin | 71 | 7 | 0 | 2 | 9 |
+| Spin | 71 | 15 | 0 | 2 | 15 |
 | core (`src/Programs`) | 36 | 1 | 0 | 0 | 1 |
-| **all** | **603** | **55** | **4** | **11** | **63** |
+| **all** | **603** | **63** | **4** | **11** | **69** |
 
-So: **55 programs have their physics checked** (55 against independent answers), **8 more are watched for change**, and **536 are smoke-tested only**. A green suite says the 63 are right or unchanged; it says nothing about the other 536.
+So: **63 programs have their physics checked** (63 against independent answers), **6 more are watched for change**, and **530 are smoke-tested only**. A green suite says the 69 are right or unchanged; it says nothing about the other 530.
 
 ## What the physics goldens establish
 
 - **Hilbert spaces** (27 tests): the sphere, torus (magnetic-translation sectors), disk, single-band lattice, Hubbard and spin-chain classes enumerate the right number of states in the right sectors — exact combinatorics, including the fermionic sign structure of torus translations.
 - **Model states** (43 tests): the Laughlin, Moore–Read and Read–Rezayi states are the unique zero modes of their parent interactions on the sphere, torus, cylinder and disk, with the exact quasihole and edge-mode countings ((k,r)-admissible configurations); the Jack-polynomial construction and exact diagonalisation give the same state (overlap 1); the particle entanglement spectrum of the Laughlin state has exactly the quasihole counting.
 - **Interactions** (14 tests): the sphere Coulomb pseudopotentials equal the closed form from Wigner algebra to 10⁻¹⁵, in the lowest Landau level and (monopole-harmonic form, l = S + n) in the first and second; for any pseudopotentials, fermions or bosons, the two-body sphere programs reproduce the full spectrum of an independent exact diagonalisation (7 cases).
-- **Chains and lattices** (29 tests): XX, AKLT and Haldane–Shastry rings against closed forms; Heisenberg (spin ½ and 1), XXZ, J₁–J₂ and transverse-Ising chains against independent dense diagonalisation; Hubbard at U = 0 against the tight-binding sum and at U = 4 on 2×2 against −4√2; the plain-Lanczos path (`-n 1`) gives every momentum sector of the 2×4 lattice its tight-binding energy (the U30 case, fixed here).
+- **Chains and lattices** (43 tests): XX, AKLT and Haldane–Shastry rings against closed forms; Heisenberg (spin ½ and 1), XXZ, J₁–J₂ and transverse-Ising chains against independent dense diagonalisation; Hubbard at U = 0 against the tight-binding sum and at U = 4 on 2×2 against −4√2; the plain-Lanczos path (`-n 1`) gives every momentum sector of the 2×4 lattice its tight-binding energy (the U30 case, fixed here); the XYZ chain (open, and periodic with its parity-twisted boundary bond), the fully generic open chain with three fields, the 2D Heisenberg and transverse-field Ising models on periodic clusters, the J₁–J₂ chain in three momentum sectors, the double-triangle chain, the spin-2 generalised AKLT model (P₃ + P₄) in two momentum sectors, the O'Brien–Fendley program with its default factors, the three-state Potts chain, and (with GSL) a disordered chain from a fixed field file, all whole sectors against `tests/oracles/spin_models.py` (models given as explicit operator lists, dense ED, Sz and momentum projectors).
 - **Spinful sphere interactions** (15 tests): the same sphere oracle with two, three and four species (SU(2), SU(3), SU(4) spin, species-dependent pseudopotentials, unpolarised and polarised sectors), including the Sz ↔ −Sz and Lz ↔ −Lz parity sectors of the symmetrised bases and the legacy `QHEFermionsSphereWithSpin` program in its own normalisation; whole spectra to 10⁻⁹.
 - **Cylinder and disk interactions** (4 tests, +4 with GSL): the delta and Laplacian-delta cylinder programs, and with GSL the cylinder pseudopotential program at three aspect ratios and two momentum sectors, reproduce an independent Landau-gauge exact diagonalisation (`tests/oracles/geometry_ed.py`) to 10⁻¹²; the disk Coulomb pseudopotentials equal Γ(m+½)/(2 m!) to 10⁻¹⁵. The disk pseudopotential Hamiltonian itself is **wrong** for N ≥ 3 (U34 below): its three known-bug tests carry the exact spectra.
 - **k-body interactions** (8 tests): three- and four-body pseudopotential Hamiltonians on the sphere (hard core, generic three-body sets, with and without a two-body term, bosons and fermions, N = 5 and 6) against an independent ED built from the L-multiplet projectors of the k-particle space (`tests/oracles/sphere_nbody.py`); DiagHam's per-multiplet normalisation of its k-body pseudopotentials is read off the k-particle runs, every N > k spectrum is then predicted to 10⁻⁹.
@@ -56,6 +56,7 @@ What they do **not** establish: Coulomb energies on the cylinder (the matrix ele
 | U29 | `FQHEDiskFermionsTwoBodyGeneric` hangs (N ≥ 3; segfaults at N = 2 for Lz ≥ 5) | open; reproducer report |
 | U33 | `FQHECylinderFermionsCoulomb` segfaulted in builds without GSL | fixed here (fails clearly, as U28); report 17 |
 | U34 | the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3 (zero modes right) | open; three `known-bug` tests with the exact spectra; report `open-U34.md` |
+| U35 | `TwoDimensionalTransverseFieldIsingModel` adds the wrap-around Ising bonds whether or not `--use-periodic` is given (its "open" spectrum is the periodic one) | open; `known-bug` test; reproducer `open-U35.md` |
 | U30 | plain Lanczos (`-n 1`) returned an energy below the ground state on a degenerate spectrum: the Krylov space had closed and the iteration went on with round-off | **fixed here** (closure detected, iteration stops); report 16 in `docs/upstream-reports/`; test `physics.hubbard.2x4.U0.plain_lanczos_krylov_closure` |
 | U31 | `FCICheckerboardLatticeModel` two-band model segfaults | open; `known-bug` test; use `--single-band` |
 | U32 | `FQHESphereFermionsWithSpin` with both `--lzsymmetrized-basis` and `--szsymmetrized-basis` builds an empty basis | open; `known-bug` test; use one symmetry at a time |

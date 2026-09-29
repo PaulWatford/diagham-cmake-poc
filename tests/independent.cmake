@@ -373,6 +373,84 @@ foreach(case
     endforeach()
 endforeach()
 
+# Further band-structure models: one test per listed band, comparing the sorted column of the
+# program's export with the numpy eigenvalues of the Bloch matrix (tests/oracles/fci_bands.py).
+# name | program | dims | output glob | first data column | bands | extra options
+# (2D programs write kx ky E_0 ... in *_tightbinding.dat; the 3D ones write kx ky kz E_0 ... in the
+# plain .dat, because their *_tightbinding.dat only holds the kz = 0 slice, see U36)
+function(diagham_band_case name program nx ny nz glob col0 bands)
+    foreach(band ${bands})
+        math(EXPR col "${band} + ${col0}")
+        diagham_physics_test(physics.${program}.bands.${name}.band${band}
+            PROGRAM ${program}
+            ARGS -p 2 -x ${nx} -y ${ny} ${ARGN}
+            OUTPUT "${glob}"
+            CHECK spectrum @OUTPUT@ ${col} ${fci_bands_data}/${name}.dat ${col} ${fci_band_tol}
+            LABELS fci bands)
+    endforeach()
+endfunction()
+
+set(fci_export --singleparticle-spectrum --export-onebodytext)
+set(fci_band_tol 1e-10)
+diagham_band_case(haldane_3x3 FCI_FCIHaldaneModel 3 3 0
+    "fermions_singleband_haldane_n_2_x_3_y_3_*_tightbinding.dat" 2 "0;1" --single-band ${fci_export})
+diagham_band_case(haldane_4x3_t2_0.4_phi_0.9_mus_0.3 FCI_FCIHaldaneModel 4 3 0
+    "fermions_singleband_haldane_n_2_x_4_y_3_*_tightbinding.dat" 2 "0;1"
+    --single-band --t2 0.4 --phi 0.9 --mu-s 0.3 ${fci_export})
+diagham_band_case(kagome_3x3 FCI_FCIKagomeLatticeModel 3 3 0
+    "fermions_threeband_kagomelattice_n_2_x_3_y_3_tightbinding.dat" 2 "0;1;2" --three-bands ${fci_export})
+diagham_band_case(kagome_4x3_t2_0.1_l1_0.5 FCI_FCIKagomeLatticeModel 4 3 0
+    "fermions_threeband_kagomelattice_n_2_x_4_y_3_*tightbinding.dat" 2 "0;1;2"
+    --three-bands --t2 0.1 --l1 0.5 --l2 0 ${fci_export})
+diagham_band_case(zhangqi_3x3 FCI_FCIZhangQiLatticeModel 3 3 0
+    "fermions_singleband_zhangqi_n_2_x_3_y_3_tightbinding.dat" 2 "0;1" ${fci_export})
+diagham_band_case(zhangqi_4x3_theta_0.15_mus_0.2 FCI_FCIZhangQiLatticeModel 4 3 0
+    "fermions_singleband_zhangqi_n_2_x_4_y_3_*tightbinding.dat" 2 "0;1" --theta 0.15 --mu-s 0.2 ${fci_export})
+diagham_band_case(bhz_3x3 FTI_FQSH2DBHZModel 3 3 0
+    "fermions_quantumspihall2d_BHZlattice_n_2_x_3_y_3_*_tightbinding.dat" 2 "0;1;2;3" --nbr-bands 2 ${fci_export})
+# the 3D plain .dat carries six significant digits only
+set(fci_band_tol 1e-5)
+diagham_band_case(simple_ti3d_3x3x2_m1.5 FTI_FTI3DSimpleTI 3 3 2
+    "fermions_quantumspinhall3d_simpleti_fourbands_n_2_x_3_y_3_z_2_u_*_gz_0.000000.dat" 3 "0;3"
+    -z 2 --four-bands --mass 1.5 ${fci_export})
+diagham_band_case(simple_ti3d_3x2x3_m2.5 FTI_FTI3DSimpleTI 3 2 3
+    "fermions_quantumspinhall3d_simpleti_fourbands_n_2_x_3_y_2_z_3_u_*_gz_0.000000.dat" 3 "0;3"
+    -z 3 --four-bands --mass 2.5 ${fci_export})
+
+# U36: FTI3DHopf writes its band file and then segfaults (exit 139, every size and --lambda tried;
+# the same on a pristine autotools build of r4493). WILL_FAIL until it is fixed.
+diagham_physics_test(knownbug.fti.hopf3d.segfault_after_band_file
+    PROGRAM FTI_FTI3DHopf
+    ARGS -p 2 -x 3 -y 3 -z 3 --singleparticle-spectrum
+    OUTPUT "fermions_singleband_hopf_p_2_x_3_y_3_z_3_l_1.dat"
+    CHECK count @OUTPUT@ -1 0 1e-10 0
+    WILL_FAIL LABELS fci)
+
+# U37: for the 3D tight-binding programs --export-onebodytext writes the two-dimensional layout
+# (header "kx ky E_0 ...") and only the kz = 0 slice: 9 rows for a 3x3x2 grid instead of 18.
+diagham_physics_test(knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only
+    PROGRAM FTI_FTI3DSimpleTI
+    ARGS -p 2 -x 3 -y 3 -z 2 --four-bands --mass 1.5 ${fci_export}
+    OUTPUT "fermions_quantumspinhall3d_simpleti_fourbands_n_2_x_3_y_3_z_2_*_tightbinding.dat"
+    CHECK spectrum @OUTPUT@ 2 ${fci_bands_data}/simple_ti3d_3x3x2_m1.5.dat 3 1e-5
+    WILL_FAIL LABELS fci)
+
+# Chern number of the lowest Haldane band (--singleparticle-chernnumber prints it on a line of its
+# own in the log): the Fukui-Hatsugai integer with DiagHam's orientation, at N = 64 where the
+# program's small-angle formula is within 0.008 of it.
+foreach(case "haldane_phi0.5_mus0.3|0.5|0.3" "haldane_phi-0.5_mus0.3|-0.5|0.3" "haldane_phi0.5_mus6|0.5|6")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 name)
+    list(GET c 1 phi)
+    list(GET c 2 mus)
+    diagham_physics_test(physics.fci.chern.${name}
+        PROGRAM FCI_FCIHaldaneModel
+        ARGS -p 2 -x 64 -y 64 --single-band --phi ${phi} --mu-s ${mus} --singleparticle-spectrum --singleparticle-chernnumber
+        OUTPUT "program.log"
+        CHECK numbers @OUTPUT@ ${fci_bands_data}/chern_${name}.txt 0.02
+        LABELS fci bands)
+endforeach()
+
 # --- 2. spin chain ED ------------------------------------------------------------------------
 function(diagham_spin_ed_test name case)
     cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT" "ARGS" ${ARGN})

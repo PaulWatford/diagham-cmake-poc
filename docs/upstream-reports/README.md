@@ -31,5 +31,7 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band](open-U31.md)
 - [Open defect U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3](open-U34.md)
 - [Open defect U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds](open-U35.md)
+- [Open defect U36: FTI3DHopf segfaults after writing its band file](open-U36.md)
+- [Open defect U37: 3D --export-onebodytext writes only the kz = 0 slice](open-U37.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

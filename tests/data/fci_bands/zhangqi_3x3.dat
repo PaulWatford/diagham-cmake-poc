@@ -1,0 +1,10 @@
+# momentum indices then sorted energies -- Zhang-Qi, theta = pi/4, 3x3; from the Bloch Hamiltonian in tests/oracles/fci_bands.py, do not edit
+0 0 -4 4
+0 1 -2 2
+0 2 -2 2
+1 0 -2 2
+1 1 -2 2
+1 2 -2.64575131106459 2.64575131106459
+2 0 -2 2
+2 1 -2.64575131106459 2.64575131106459
+2 2 -2 2

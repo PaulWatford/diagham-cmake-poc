@@ -20,7 +20,7 @@ agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
 [test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **66 of 603 programs with a physics or cross-check test** (66 of them against an independently known answer).
+headline today is **71 of 603 programs with a physics or cross-check test** (71 of them against an independently known answer).
 
 | Label | Tests | What passes means |
 |---|---|---|
@@ -31,7 +31,7 @@ headline today is **66 of 603 programs with a physics or cross-check test** (66 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `knownbug.spin.tfim2d.open_boundaries_ignored` (U35) | the defect is still present (`WILL_FAIL`); see below |
+| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `knownbug.spin.tfim2d.open_boundaries_ignored` (U35), `knownbug.fti.hopf3d.segfault_after_band_file` (U36), `knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only` (U37) | the defect is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -363,6 +363,38 @@ with `tests/data/fci_bands/` to 10⁻¹²; `selftest.fci_bands_oracle`
 re-derives the files. It is the first independent number for an FCI
 program; the many-body FCI spectra remain regression-only.
 
+The same file now carries five more models, each as the eigenvalues of
+the published Bloch matrix diagonalised with numpy on the lattice
+momenta 2π(i/Nx, j/Ny[, l/Nz]), sorted per momentum: Haldane
+(`FCIHaldaneModel --single-band`, default and t₂ = 0.4, φ = 0.9,
+μₛ = 0.3), the three-band Kagome model (`FCIKagomeLatticeModel
+--three-bands`, default and t₂ = 0.1, λ₁ = 0.5, λ₂ = 0), Zhang–Qi
+(`FCIZhangQiLatticeModel`, θ = π/4 and θ = 0.15π with μₛ = 0.2), the
+four-band BHZ model with its inversion-breaking Δ (`FQSH2DBHZModel
+--nbr-bands 2`) and the 3D simple topological insulator
+(`FTI3DSimpleTI --four-bands`, M = 1.5 on 3×3×2 and M = 2.5 on 3×2×3).
+22 tests `physics.<program>.bands.<case>.band<n>` compare one band each
+(all bands for Kagome and BHZ, the lowest and highest for the 3D model);
+2D programs are read from `*_tightbinding.dat` to 10⁻¹⁰, the 3D ones from
+the plain `.dat` (six significant digits, so 10⁻⁵) because their
+`*_tightbinding.dat` only holds the kz = 0 slice (U37). Three tests
+`physics.fci.chern.haldane_*` run `--singleparticle-chernnumber` on a
+64×64 grid and compare its number with the Fukui–Hatsugai integer of the
+lowest band (`fukui_hatsugai` in the oracle, 24×24). What had to be
+pinned: DiagHam's value has the opposite orientation to the link order
+kx then ky (it is minus the Fukui–Hatsugai number), and it is a
+small-angle formula, Im of a product of overlaps over 8π instead of the
+arg of a plaquette product, so it reaches the integer only as 1/N²
+(0.67, 0.89, 0.97, 0.99 at N = 8, 16, 32, 64) and is not an integer on the
+grids the many-body programs use; the tolerance is 0.02. The Kagome and
+checkerboard Bloch matrices are not periodic in k → k + 2π (half-angle
+cosines), so their Chern numbers are not checked here. `FCIHaldaneModel`'s
+help text says `--phi` is in multiples of π; it is in radians unless `--phase-in-pi` is given (U38, cosmetic).
+Two defects turned up on the way: `FTI3DHopf` segfaults after writing
+its band file, on every size and `--lambda` tried and also on a
+pristine autotools build (U36), and the 3D programs'
+`--export-onebodytext` writes only the kz = 0 slice with a 2D header (U37).
+
 ### Regression spectra (`-L regression`)
 
 12 tests, `regression.*`, one per module directory that has no physics
@@ -418,7 +450,7 @@ DiagHam library, so the goldens run anywhere the programs do.
 
 ### Known upstream defects
 
-Six `known-bug` tests exist (U31, the two-band checkerboard segfault; U32,
+Eight `known-bug` tests exist (U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

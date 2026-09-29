@@ -7,32 +7,32 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 
 | Level | Tests | What a pass means | What it does not mean |
 |---|---:|---|---|
-| **Physics golden** (`physics`) | 191 (+5 with GSL) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
+| **Physics golden** (`physics`) | 216 (+5 with GSL) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
 | **Cross-check** (`crosscheck`) | 3 (+1 with LAPACK) | two DiagHam implementations, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree | both could be wrong the same way |
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 20 self-tests of the harness (the manifest, twelve oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 6 `known-bug` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 20 self-tests of the harness (the manifest, twelve oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 8 `known-bug` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
 
 ## Programs, by module
 
 | Module directory | Programs | Physics golden | Cross-check | Regression | Any of the three |
 |---|---:|---:|---:|---:|---:|
 | Analysis | 19 | 0 | 0 | 0 | 0 |
-| FCI | 56 | 1 | 0 | 2 | 2 |
+| FCI | 56 | 4 | 0 | 2 | 4 |
 | FQHEOnCylinder | 35 | 3 | 0 | 0 | 3 |
 | FQHEOnDisk | 27 | 3 | 0 | 0 | 3 |
 | FQHEOnLattice | 22 | 0 | 0 | 1 | 1 |
 | FQHEOnSphere | 193 | 18 | 1 | 1 | 18 |
 | FQHEOnTorus | 64 | 19 | 3 | 1 | 19 |
-| FTI | 36 | 1 | 0 | 1 | 2 |
+| FTI | 36 | 3 | 0 | 1 | 3 |
 | HubbardModels | 25 | 5 | 0 | 2 | 6 |
 | QuantumDots | 19 | 0 | 0 | 1 | 1 |
 | Spin | 71 | 15 | 0 | 2 | 15 |
 | core (`src/Programs`) | 36 | 1 | 0 | 0 | 1 |
-| **all** | **603** | **66** | **4** | **11** | **71** |
+| **all** | **603** | **71** | **4** | **11** | **74** |
 
-So: **66 programs have their physics checked** (66 against independent answers), **5 more are watched for change**, and **528 are smoke-tested only**. A green suite says the 71 are right or unchanged; it says nothing about the other 528.
+So: **71 programs have their physics checked** (71 against independent answers), **3 more are watched for change**, and **525 are smoke-tested only**. A green suite says the 74 are right or unchanged; it says nothing about the other 525.
 
 ## What the physics goldens establish
 
@@ -44,7 +44,7 @@ So: **66 programs have their physics checked** (66 against independent answers),
 - **Cylinder and disk interactions** (4 tests, +4 with GSL): the delta and Laplacian-delta cylinder programs, and with GSL the cylinder pseudopotential program at three aspect ratios and two momentum sectors, reproduce an independent Landau-gauge exact diagonalisation (`tests/oracles/geometry_ed.py`) to 10⁻¹²; the disk Coulomb pseudopotentials equal Γ(m+½)/(2 m!) to 10⁻¹⁵. The disk pseudopotential Hamiltonian itself is **wrong** for N ≥ 3 (U34 below): its three known-bug tests carry the exact spectra.
 - **k-body interactions** (8 tests): three- and four-body pseudopotential Hamiltonians on the sphere (hard core, generic three-body sets, with and without a two-body term, bosons and fermions, N = 5 and 6) against an independent ED built from the L-multiplet projectors of the k-particle space (`tests/oracles/sphere_nbody.py`); DiagHam's per-multiplet normalisation of its k-body pseudopotentials is read off the k-particle runs, every N > k spectrum is then predicted to 10⁻⁹.
 - **Torus interactions** (25 tests): the Coulomb and pseudopotential spectra of fermions and bosons on the torus, whole K_y sectors at aspect ratio 1 and 2, against an independent Landau-gauge exact diagonalisation (`tests/oracles/torus_ed.py`), to 10⁻⁹; with SU(2), SU(3) and SU(4) spin, bilayer Coulomb at a layer separation, the first excited Landau level, every K_y sector at once, and the magnetic-translation (K_x, K_y) sectors of the translation programs, spinless and with spin.
-- **FCI bands** (6 tests): both bands of the checkerboard lattice model at every lattice momentum, at and away from the flat-band hoppings, against the published Bloch Hamiltonian (`tests/oracles/fci_bands.py`), to 10⁻¹⁵.
+- **FCI and FTI band structures** (31 tests): every band of the checkerboard, Haldane, Kagome (three bands), Zhang–Qi, Bernevig–Hughes–Zhang (four bands) and 3D simple topological insulator programs at every lattice momentum, at default and at changed parameters, against numpy eigenvalues of the published Bloch Hamiltonians (`tests/oracles/fci_bands.py`), and the Chern number of the lowest Haldane band (+1, −1 and 0 for a trivial mass) against the Fukui–Hatsugai integer. The many-body FCI and FTI spectra remain regression-only.
 
 What they do **not** establish: Coulomb energies on the cylinder (the matrix elements need a regularised q = 0 term, not yet in the oracle); any interaction energy on the disk beyond zero modes (the program is wrong, U34, and the fermionic one hangs, U29); spin on the cylinder and disk beyond dimension counting (the sphere and torus with spin are covered); the two-Landau-level programs on the sphere and torus, `FQHESphereFermionsWithSpinFull` (four-index pseudopotential keys, convention not matched), the twisted torus and the product geometries (T²×T², T²×S², T²×cylinder); the FCI/FTI many-body programs (regression only; the checkerboard single-particle bands are verified); Landau-level mixing, real-space entanglement, Monte Carlo, MPS/DMRG, time evolution; every MPI and ScaLAPACK code path (compiled and linked in the `hpc` preset, never run by a test); QuantumDots (regression only); the Analysis tools (need input spectra).
 
@@ -59,6 +59,8 @@ What they do **not** establish: Coulomb energies on the cylinder (the matrix ele
 | U35 | `TwoDimensionalTransverseFieldIsingModel` adds the wrap-around Ising bonds whether or not `--use-periodic` is given (its "open" spectrum is the periodic one) | open; `known-bug` test; reproducer `open-U35.md` |
 | U30 | plain Lanczos (`-n 1`) returned an energy below the ground state on a degenerate spectrum: the Krylov space had closed and the iteration went on with round-off | **fixed here** (closure detected, iteration stops); report 16 in `docs/upstream-reports/`; test `physics.hubbard.2x4.U0.plain_lanczos_krylov_closure` |
 | U31 | `FCICheckerboardLatticeModel` two-band model segfaults | open; `known-bug` test; use `--single-band` |
+| U36 | `FTI3DHopf` writes its band file and then segfaults (also on a pristine autotools build) | open; `known-bug` test; report `open-U36.md` |
+| U37 | the 3D tight-binding programs' `--export-onebodytext` file holds only the kz = 0 slice, in the 2D layout | open; `known-bug` test; the plain `.dat` has every momentum; report `open-U37.md` |
 | U32 | `FQHESphereFermionsWithSpin` with both `--lzsymmetrized-basis` and `--szsymmetrized-basis` builds an empty basis | open; `known-bug` test; use one symmetry at a time |
 
 The full register (31 entries, most of them build-level) is `docs/reference/known-defects.md`.

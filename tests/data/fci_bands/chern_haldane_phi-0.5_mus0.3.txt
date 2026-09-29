@@ -1,0 +1,2 @@
+# lattice Chern number, Haldane phi = -0.5 rad, mu_s = 0.3; from tests/oracles/fci_bands.py, do not edit
+-1

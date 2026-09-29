@@ -14,6 +14,16 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/fci_bands.py` extended from the checkerboard model to Haldane,
+  Kagome (three bands), Zhang–Qi, BHZ (four bands) and the 3D simple
+  topological insulator, plus a Fukui–Hatsugai Chern number; 25 goldens over
+  five more programs (22 band tests, 3 Chern tests on the Haldane band).
+  DiagHam's `--singleparticle-chernnumber` has the opposite orientation and
+  converges as 1/N², so it is checked on a 64×64 grid.
+- U36 (`FTI3DHopf` segfaults after writing its band file) and U37 (the 3D
+  `--export-onebodytext` holds only the kz = 0 slice) registered with
+  `known-bug` tests and reports; U38 (help text of `FCIHaldaneModel --phi`)
+  listed as cosmetic.
 - `tests/oracles/lattice_fermions.py`: Fock-basis ED of Hubbard-family
   models; 6 goldens over four programs: the square-lattice Hubbard model at
   U = 2, the Haldane-Hubbard model on a 3×3 honeycomb cluster (its phase
@@ -95,9 +105,9 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 831 tests (+5 with GSL), 191 physics goldens, 66 of 603 programs with a
-  physics or cross-check test (66 against an independent answer), 20
-  self-tests, 6 known-bug reproducers; `tests/manifest.txt` and
+- Test counts: 858 tests (+5 with GSL), 216 physics goldens, 71 of 603 programs with a
+  physics or cross-check test (71 against an independent answer), 20
+  self-tests, 8 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

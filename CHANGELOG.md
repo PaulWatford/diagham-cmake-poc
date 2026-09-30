@@ -14,6 +14,7 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `tests/oracles/xcube.py` and `tests/xcube.cmake`: X-cube entanglement entropy by GF(2) rank (8 goldens on 2×2×2 to 3×2×2, agreeing with the program in the default and LAPACK builds, explicit-state check in mpmath) and a `known-bug` test for 3×3×3 (`std::bad_alloc`, 2^48 array against rank 46: the U43 defect, now recorded for XCube too). `tests/oracles/haah.py --check` also verifies k = 2L³ − 2·rank V against Table II of Haah's paper for L = 2..12. A dynamic sweep of the U42 exposure (whole suite plus about 30 targeted runs with an instrumented copy of the library) found `HaahCodeEntropy` as the only caller reaching the 1×1 Householder path; the library is unchanged.
 - `tests/oracles/haah.py` and `tests/haah.cmake`: Haah cubic-code entropy by GF(2) rank (8 goldens on 2×2×2 to 4×2×2, plus the one-site case with LAPACK), with an explicit-state check of the rank formula in mpmath (L = 2; L = 3 with `HAAH_FULL=1`); two `known-bug` tests (U42, U43). Defects U42 (`RealSymmetricMatrix::Householder` overruns its arrays for a 1×1 matrix; the default-build Haah crash) and U43 (`HaahCodeEntropy` sizes its array 2^(Z terms), 2^63 for 4×4×4) registered with reports `open-U42.md` and `open-U43.md`; the library is unchanged.
 - `tests/oracles/entanglement.py` and `tests/entanglement.cmake`: toric-code entropy (GF(2) rank formula, seven regions and both parity sectors), torus Laughlin particle-entanglement level counting per Ky, and (LAPACK) spin-chain entropy of a Bell pair and a product state; 11 goldens, 2 known-bug tests and a self-test. U40 (`SpinChainEntanglementEntropy` aborts without LAPACK) and U41 (`--kept-sites` with a path loses the toric-code spectrum) registered with reports `open-U40.md`, `open-U41.md`.
 - `tests/oracles/fci_manybody.py`: band-projected many-body ED of the checkerboard model (every total-momentum sector) and the exact atomic limit; 7 goldens (flat-band N = 2, 3 on 3×3, N = 2 on 4×3; three bosonic and one fermionic atomic-limit cases) and a self-test. U39 registered (the one-body energy of the single-band many-body Hamiltonians is halved for Haldane and Kagome, overwritten by an interaction term for the non-flat checkerboard) with four `known-bug` tests and report `open-U39.md`.
@@ -108,9 +109,9 @@ all present on the `upstream` branch: `git log upstream`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
 
 ### Changed
-- Test counts: 895 tests (+5 with GSL, +5 with LAPACK), 242 physics goldens, 75 of 603 programs with a
-  physics or cross-check test (75 against an independent answer), 23
-  self-tests, 16 known-bug reproducers; `tests/manifest.txt` and
+- Test counts: 905 tests (+5 with GSL, +5 with LAPACK), 250 physics goldens, 76 of 603 programs with a
+  physics or cross-check test (76 against an independent answer), 24
+  self-tests, 17 known-bug reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

@@ -18,6 +18,7 @@ knownbug.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
 knownbug.spin.tfim2d.open_boundaries_ignored
 knownbug.spin_chain_entanglement.use_svd_ungated.bell_pair_entropy_ln2
 knownbug.spin_chain_entanglement.use_svd_ungated.product_state_entropy_zero
+knownbug.xcube.ground_state_array_2_pow_nterms.3x3x3_region_2x2x2
 physics.FCI_FCIHaldaneModel.bands.haldane_3x3.band0
 physics.FCI_FCIHaldaneModel.bands.haldane_3x3.band1
 physics.FCI_FCIHaldaneModel.bands.haldane_4x3_t2_0.4_phi_0.9_mus_0.3.band0
@@ -86,6 +87,14 @@ physics.entanglement.torus.laughlin_1_3.one_particle_one_level_per_sector
 physics.entanglement.torus.laughlin_1_3.one_particle_twelve_levels
 physics.entanglement.torus.laughlin_1_3.two_particles_ky0_admissible
 physics.entanglement.torus.laughlin_1_3.two_particles_ky1_admissible
+physics.entanglement.xcube.2x2x2_region_1x1x1
+physics.entanglement.xcube.2x2x2_region_1x1x2
+physics.entanglement.xcube.2x2x2_region_1x2x2
+physics.entanglement.xcube.2x2x2_region_2x1x1
+physics.entanglement.xcube.2x2x3_region_1x1x2
+physics.entanglement.xcube.2x3x2_region_1x2x1
+physics.entanglement.xcube.3x2x2_region_1x1x1
+physics.entanglement.xcube.3x2x2_region_2x1x1
 physics.fci.atomiclimit.bosons_3x3_n2_u1.5
 physics.fci.atomiclimit.bosons_3x3_n3_u1
 physics.fci.atomiclimit.bosons_4x2_n2_u1
@@ -294,6 +303,7 @@ selftest.spin_ed_oracle
 selftest.spin_hubbard_oracle
 selftest.spin_models_oracle
 selftest.torus_ed_oracle
+selftest.xcube_oracle
 smoke.Analysis_AbsorptionInQuantumWellBField
 smoke.Analysis_DOS
 smoke.Analysis_DefaultCylinderSymmetryInMagneticFieldOscillatorForce

@@ -10,6 +10,9 @@ superposition over a linear subspace is a stabilizer state, so for a region A of
     S(A) / ln 2 = rank P_A V + rank P_B V - rank V        (GF(2) linear algebra, nothing shared with DiagHam).
 The check mode also
   * verifies the closed form S = 6 a^2 - 6 a + 2 for an a x a x a cube on the L^3 torus (a < L),
+  * verifies the number of encoded qubits k = 2 L^3 - 2 rank V against Table II (Code 1) of Haah,
+    Phys. Rev. A 83, 042330 (arXiv:1101.1962), k(L) = 2 [1 - 2 q2 + 2^(r+1) (q2 + 12 q15 + 60 q63)] with
+    q_n = 1 if n divides L, else 0, and 2^r the largest power of 2 dividing L, for L = 2..12,
   * (if mpmath and numpy are installed) builds the state explicitly for L = 2 (and L = 3 with the
     environment variable HAAH_FULL set, about 2 GB) with a one-site region, forms the reduced density matrix and diagonalizes it with mpmath at 40 digits,
     which shares neither the rank formula nor DiagHam's matrix code.
@@ -137,6 +140,14 @@ def mpmath_check():
     return bad
 
 
+def k_paper(L):
+    q = lambda n: 1 if L % n == 0 else 0
+    r = 0
+    while L % 2 ** (r + 1) == 0:
+        r += 1
+    return 2 * (1 - 2 * q(2) + 2 ** (r + 1) * (q(2) + 12 * q(15) + 60 * q(63)))
+
+
 def main():
     if len(sys.argv) != 3 or sys.argv[1] not in ("--write", "--check"):
         print(__doc__)
@@ -161,6 +172,11 @@ def main():
             if entropy((L, L, L), a, a, a) != 6 * a * a - 6 * a + 2:
                 print("cube L=%d a=%d: entropy %d, closed form %d" % (L, a, entropy((L, L, L), a, a, a), 6 * a * a - 6 * a + 2))
                 bad += 1
+    for L in range(2, 13):
+        k = 2 * L ** 3 - 2 * rank(masks((L, L, L)))
+        if k != k_paper(L):
+            print("L=%d: k = %d from the masks, %d from Haah's Table II" % (L, k, k_paper(L)))
+            bad += 1
     bad += mpmath_check()
     print("ok" if not bad else "%d problems" % bad)
     return 1 if bad else 0

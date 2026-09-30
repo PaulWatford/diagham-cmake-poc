@@ -27,4 +27,4 @@ Size the array from the rank of the terms (reduce them first), or generate the s
 
 ## Consequence for the tests
 
-`knownbug.haah_code.ground_state_array_2_pow_nterms.4x4x4_region_2x2x2` (WILL_FAIL) expects the oracle value 14. The 65-spin `ULONGLONG` branch of the program cannot be exercised for the same reason. The XCube variant with 3x3x3 also fails with `std::bad_alloc`; not investigated.
+`knownbug.haah_code.ground_state_array_2_pow_nterms.4x4x4_region_2x2x2` (WILL_FAIL) expects the oracle value 14. The 65-spin `ULONGLONG` branch of the program cannot be exercised for the same reason. The XCube variant has the same line (`Spin/src/Programs/XCubeEntanglementEntropy.cc`, line 165): 3x3x3 has 48 terms of rank 46, so it asks for 2^48 entries and throws `std::bad_alloc`; `knownbug.xcube.ground_state_array_2_pow_nterms.3x3x3_region_2x2x2` expects the oracle value 18 (`tests/oracles/xcube.py`, which agrees with the program on the eight smaller cases in the default and LAPACK builds).

@@ -141,6 +141,8 @@ nav:
       - 'Open defect U37: 3D --export-onebodytext writes only the kz = 0 slice': upstream-reports/open-U37.md
       - 'Open defect U39: the one-body energy of the single-band many-body Hamiltonians is wrong': upstream-reports/open-U39.md
       - 'Open defect U40: SpinChainEntanglementEntropy aborts in a build without LAPACK': upstream-reports/open-U40.md
+      - 'Open defect U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix': upstream-reports/open-U42.md
+      - 'Open defect U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)': upstream-reports/open-U43.md
       - 'Open defect U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path': upstream-reports/open-U41.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md

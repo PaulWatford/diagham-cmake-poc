@@ -87,6 +87,8 @@ prints all); `FQHETorusShowBasis` always uses magnetic translations, so
   quasihole counting of N_A particles (Sterdyniak, Regnault & Bernevig
   2011).
 
+- **Haah cubic code entanglement entropy** (8, plus 1 with LAPACK): `HaahCodeEntropy --export-entspectrum` on 2×2×2 (regions 1×1×2, 2×1×1, 1×2×2, and 1×1×2 with `--low-memory`), 2×2×3, 2×3×2, 3×2×2 and 4×2×2 against `tests/oracles/haah.py`. The state is a uniform superposition over a GF(2) subspace V, so S/ln 2 = rank P_A V + rank P_B V − rank V. The oracle's self-test cross-checks the rank formula by building the state for L = 2 explicitly, forming the reduced density matrix and diagonalising it with mpmath at 40 digits (L = 3 with `HAAH_FULL=1`, about 2 GB), and checks S = 6a² − 6a + 2 for an a-cube. The one-site region 2×2×2 / 1×1×1 needs LAPACK (U42, `known-bug` test without); the 4×4×4 / 2×2×2 case (entropy 14) is a `known-bug` test (U43).
+
 Chains (eigenstate → Jack → overlap; eigenstate → PES) use the `PRE_STEPS`
 option of `diagham_physics_test`; the checker gained the modes `line`
 (pseudopotential lines) and `nonzero` (level counts per sector).

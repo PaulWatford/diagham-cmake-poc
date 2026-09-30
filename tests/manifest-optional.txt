@@ -10,3 +10,4 @@ physics.entanglement.spin_chain.bell_pair_entropy_ln2
 physics.entanglement.spin_chain.bell_pair_two_levels_one_half
 physics.entanglement.spin_chain.product_state_entropy_zero
 physics.entanglement.spin_chain.product_state_one_level
+physics.entanglement.haah_code.2x2x2_region_1x1x1

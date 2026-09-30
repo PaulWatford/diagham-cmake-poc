@@ -13,6 +13,8 @@ knownbug.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
 knownbug.fti.hopf3d.segfault_after_band_file
 knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only
+knownbug.haah_code.ground_state_array_2_pow_nterms.4x4x4_region_2x2x2
+knownbug.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
 knownbug.spin.tfim2d.open_boundaries_ignored
 knownbug.spin_chain_entanglement.use_svd_ungated.bell_pair_entropy_ln2
 knownbug.spin_chain_entanglement.use_svd_ungated.product_state_entropy_zero
@@ -65,6 +67,14 @@ physics.dimension.torus.fermions_n3_nphi6
 physics.dimension.torus.fermions_n4_nphi12
 physics.dimension.torus.showbasis_bosons_n3_nphi6_k00
 physics.dimension.torus.showbasis_fermions_n4_nphi12_k00
+physics.entanglement.haah_code.2x2x2_region_1x1x2
+physics.entanglement.haah_code.2x2x2_region_1x1x2_low_memory
+physics.entanglement.haah_code.2x2x2_region_1x2x2
+physics.entanglement.haah_code.2x2x2_region_2x1x1
+physics.entanglement.haah_code.2x2x3_region_1x1x2
+physics.entanglement.haah_code.2x3x2_region_1x2x1
+physics.entanglement.haah_code.3x2x2_region_2x1x1
+physics.entanglement.haah_code.4x2x2_region_2x2x1
 physics.entanglement.toric_code.3x3_region_1x1
 physics.entanglement.toric_code.3x3_region_2x2
 physics.entanglement.toric_code.3x3_region_2x2_low_memory
@@ -274,6 +284,7 @@ selftest.fci_manybody_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
 selftest.geometry_ed_oracle
+selftest.haah_oracle
 selftest.lattice_fermions_oracle
 selftest.manifest
 selftest.runner.rejects_missing_output

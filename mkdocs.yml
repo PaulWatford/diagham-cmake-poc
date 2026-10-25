@@ -85,6 +85,7 @@ nav:
           - 'Add a new program to DiagHam': how-to/develop/create-a-program.md
           - 'Preview and publish the documentation site': how-to/develop/docs-site.md
           - 'Build DiagHam with long-double precision': how-to/develop/long-double.md
+          - 'Move the repository to GitLab': how-to/develop/move-to-gitlab.md
           - 'Write a spin Hilbert space with a discrete symmetry': how-to/develop/new-spin-hilbert-space-with-symmetry.md
           - 'Make a release': how-to/develop/release.md
           - 'Reproduce the registered findings on a pristine trunk': how-to/develop/reproduce-on-pristine-trunk.md

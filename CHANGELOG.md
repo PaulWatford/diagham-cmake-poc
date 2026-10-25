@@ -14,6 +14,15 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- GitLab readiness: `.gitlab-ci.yml` brought level with the GitHub workflows
+  (the core preset with clang, ccache, the environment record and test log
+  kept for 90 days, an opt-in container job, a scheduled upstream-drift job,
+  docs checks on merge requests and GitLab Pages on `main`). It validates
+  against GitLab's CI schema, and `gitlab-ci-local` expands each kind of
+  pipeline to the intended jobs. New checklist
+  `docs/how-to/develop/move-to-gitlab.md`: what moves, the decisions to make
+  first, an exact copy of branches and tags with a check that nothing
+  changed, settings, addresses to update, CI, and closing GitHub.
 - `docs/explanation/alps-cross-benchmarks.md`: the six programs proposed for
   cross-benchmarking with ALPS (open and periodic XXZ chains, J1-J2 ring,
   square-lattice Heisenberg, transverse-field Ising ring, square-lattice

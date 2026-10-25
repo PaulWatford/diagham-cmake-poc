@@ -22,10 +22,13 @@ is how it was established that the mirror stopped in October 2020 and that
 the live SVN was 379 revisions (six years, ~200 fix commits) ahead. Every
 CMake commit on `main` is now on top of r4493.
 
-### 2. Host: University of Kent GitLab — pending
+### 2. Host: GitLab, confirmed; the move is pending
 
-The production home is to be Kent's GitLab instance. This GitHub repository
-is the development home in the meantime. Nothing here is GitHub-specific:
+The team confirmed GitLab as the public host on 20 October 2026 (Kent's
+GitLab instance was the earlier plan; the instance and the project path
+await the approval of the GitLab structure). This GitHub repository is the
+development home in the meantime; the move is a checklist,
+`docs/how-to/develop/move-to-gitlab.md`. Nothing here is GitHub-specific:
 the CI pipeline is one script (`scripts_cmake/ci.sh`) that both the GitHub
 workflow and the GitLab file call, so the move is a transfer, not a rework.
 New Subversion revisions are brought in by `scripts_cmake/sync_upstream.sh`

@@ -39,6 +39,26 @@ def git(*args, binary=False):
     return r.stdout if binary else r.stdout.decode("utf-8", "replace")
 
 
+# The commit messages predate the team's wording (October 2026): render them with the current terms and the
+# current test names, so a regenerated report matches the rest of the documentation.
+WORDING = [
+    (r"knownbug\.", "openfinding."), (r"known-bug", "open-finding"), (r"known-defects", "open-findings"),
+    (r"torus-su2-coulomb-defect", "torus-su2-coulomb-finding"),
+    (r"\bKnown defects\b", "Open findings"), (r"\bknown defects\b", "open findings"),
+    (r"\bDefect register\b", "Findings register"), (r"\bdefect register\b", "findings register"),
+    (r"\bDefects\b", "Findings"), (r"\bdefects\b", "findings"), (r"\bDefect\b", "Finding"), (r"\bdefect\b", "finding"),
+    (r"\bbug fixes\b", "fixes"), (r"\bbug fix\b", "fix"), (r"\bbugs\b", "errors"), (r"\bbug\b", "error"),
+    (r"\bBugs\b", "Errors"), (r"\bBug\b", "Error"), (r"\bhonestly\b", "plainly"), (r"\bhonest\b", "accurate"),
+    (r"\b([Aa]) (error|errors|open-finding|`open-finding)", lambda m: ("An" if m.group(1) == "A" else "an") + " " + m.group(2)),
+]
+
+
+def reword(text):
+    for pat, rep in WORDING:
+        text = re.sub(pat, rep, text)
+    return text
+
+
 def fixes():
     out = []
     log = git("log", "--reverse", "--format=%H%x00%s%x00%b%x00%(trailers:key=Upstream-Patch,valueonly)%x00%(trailers:key=Upstream-Base,valueonly)%x01",
@@ -54,7 +74,7 @@ def fixes():
         if not files:
             continue
         body = re.sub(r"\n*Upstream-Patch:.*$", "", body, flags=re.S).strip()
-        out.append(dict(sha=sha, subject=subject, body=body, patch=patch.strip(), base=base.strip(), files=files))
+        out.append(dict(sha=sha, subject=reword(subject), body=reword(body), patch=patch.strip(), base=base.strip(), files=files))
     return out
 
 

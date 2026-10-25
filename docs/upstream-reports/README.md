@@ -35,8 +35,8 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U37: 3D --export-onebodytext writes only the kz = 0 slice](open-U37.md)
 - [Open finding U39: the one-body energy of the single-band many-body Hamiltonians is wrong](open-U39.md)
 - [Open finding U40: SpinChainEntanglementEntropy aborts in a build without LAPACK](open-U40.md)
+- [Open finding U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path](open-U41.md)
 - [Open finding U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix](open-U42.md)
 - [Open finding U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)](open-U43.md)
-- [Open finding U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path](open-U41.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

@@ -133,6 +133,16 @@ def render(rows, note):
     return f"# {note}; from tests/oracles/fci_manybody.py, do not edit\n# kx ky E\n" + "".join(f"{a} {b} {e:.15g}\n" for a, b, e in rows)
 
 
+def sectors(text):
+    """{(kx, ky): sorted energies} from a rendered spectrum."""
+    out = {}
+    for line in text.splitlines():
+        if line and not line.startswith("#"):
+            kx, ky, e = line.split()
+            out.setdefault((kx, ky), []).append(float(e))
+    return {k: sorted(v) for k, v in out.items()}
+
+
 def render_all():
     return {name + ".dat": render(f(), name) for name, f in CASES.items()}
 
@@ -154,9 +164,11 @@ def main():
             p = Path(a.check) / n
             if not p.exists():
                 print("missing", n); bad += 1; continue
-            old = [l.split() for l in p.read_text().splitlines() if l and not l.startswith("#")]
-            new = [l.split() for l in t.splitlines() if l and not l.startswith("#")]
-            if len(old) != len(new) or any(o[:2] != m[:2] or abs(float(o[2]) - float(m[2])) > 1e-9 for o, m in zip(old, new)):
+            # compare sector by sector: rows are sorted by energy only, so degenerate levels of different
+            # momentum sectors come out in an order set by rounding noise, which differs between NumPy builds
+            old, new = sectors(p.read_text()), sectors(t)
+            if old.keys() != new.keys() or any(len(old[k]) != len(new[k]) or
+                                               any(abs(x - y) > 1e-9 for x, y in zip(old[k], new[k])) for k in old):
                 print("differs", n); bad += 1
         sys.exit(1 if bad else 0)
 

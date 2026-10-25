@@ -60,6 +60,10 @@ all present on the `upstream` branch: `git log upstream`).
   N ≥ 3 while its zero modes are right; the tests carry the exact spectra.
 
 ### Fixed
+- CI red at `d28738d95` (run of 30 September) although no physics test failed:
+  - `selftest.manifest` failed in the LAPACK builds (full, hpc, container), because three `known-bug` tests that exist only without LAPACK (U40, U42) were not in `tests/manifest-optional.txt`. They are now.
+  - `selftest.fci_manybody_oracle` failed with the NumPy of Ubuntu 24.04 (1.26.4), not with 2.5. Reproduced with 1.26.4: every momentum sector agrees to 1e-14, but rows are sorted by energy only, so degenerate levels of different sectors came out in a different order. The check now compares each sector's sorted energies (same 1e-9 tolerance); it still fails on a changed energy. All 16 other Python self-tests pass with 1.26.4. Reference data unchanged.
+  - The documentation site build stopped at its navigation check (stale `mkdocs.yml` nav); regenerated, and `mkdocs build --strict` passes.
 - U33: `ParticleOnCylinderCoulombHamiltonian` fails clearly without GSL
   instead of segfaulting (`FQHECylinderFermionsCoulomb` in the default
   build), the same fix as U28. Report 17 in `docs/upstream-reports/`.

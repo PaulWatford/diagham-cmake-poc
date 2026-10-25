@@ -11,3 +11,7 @@ physics.entanglement.spin_chain.bell_pair_two_levels_one_half
 physics.entanglement.spin_chain.product_state_entropy_zero
 physics.entanglement.spin_chain.product_state_one_level
 physics.entanglement.haah_code.2x2x2_region_1x1x1
+# registered only WITHOUT LAPACK (open findings U40 and U42 that the LAPACK build does not reach)
+knownbug.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
+knownbug.spin_chain_entanglement.use_svd_ungated.bell_pair_entropy_ln2
+knownbug.spin_chain_entanglement.use_svd_ungated.product_state_entropy_zero

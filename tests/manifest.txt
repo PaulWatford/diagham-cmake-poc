@@ -6,6 +6,9 @@ openfinding.fci.checkerboard.manybody.3x3_n2_u0_band_energy_overwritten
 openfinding.fci.checkerboard.manybody.4x3_n2_u1_band_energy_overwritten
 openfinding.fci.checkerboard.two_band_model_segfault
 openfinding.fci.haldane.manybody.3x3_n1_band_energy_halved
+openfinding.fci.hofstadter.realspace_fermions_segfault
+openfinding.fci.hofstadter.realspace_hardcore_bosons_below_bound.n2_x4_y2
+openfinding.fci.hofstadter.realspace_hardcore_bosons_below_bound.n3_x3_y2
 openfinding.fci.kagome.manybody.3x3_n1_band_energy_halved
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
@@ -41,6 +44,10 @@ physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x2x3_m2.5.band0
 physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x2x3_m2.5.band3
 physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x3x2_m1.5.band0
 physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x3x2_m1.5.band3
+physics.core.level_statistics.alternating_spacings_r_half
+physics.core.level_statistics.uniform_spacings_r_one
+physics.core.vector_ascii2binary.bit_exact
+physics.core.vector_binary2ascii.printed_digits
 physics.dimension.disk.bosons_n3_lz6
 physics.dimension.disk.fermions_n3_lz6
 physics.dimension.disk.fermions_n4_lz10
@@ -111,6 +118,9 @@ physics.fci.checkerboard.manybody.4x3_n2_flat_t2_0.2_tpp_0.1
 physics.fci.chern.haldane_phi-0.5_mus0.3
 physics.fci.chern.haldane_phi0.5_mus0.3
 physics.fci.chern.haldane_phi0.5_mus6
+physics.fci.hofstadter.one_particle_lowest_band.x2_y3_X1_Y4_q1
+physics.fci.hofstadter.one_particle_lowest_band.x3_y2_X1_Y4_q1
+physics.fci.hofstadter.one_particle_lowest_band.x4_y2_X1_Y3_q1
 physics.fqhe.cylinder.bosons_laughlin_1_2.one_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.two_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.unique_zero_mode
@@ -178,6 +188,10 @@ physics.fqhe.sphere.ed.su3.fermions_n4_2s5_generic_tz1_y1
 physics.fqhe.sphere.ed.su4.bosons_n4_2s3_generic
 physics.fqhe.sphere.fermions_mooreread.two_quasihole_count
 physics.fqhe.sphere.fermions_mooreread.unique_zero_mode
+physics.fqhe.sphere.l2.bosons_n3_2s5_2lz3
+physics.fqhe.sphere.l2.bosons_n4_2s6_lz0
+physics.fqhe.sphere.l2.fermions_n3_2s6_2lz2
+physics.fqhe.sphere.l2.fermions_n4_2s9_lz0
 physics.fqhe.sphere.laughlin_1_3.jack_equals_ed
 physics.fqhe.sphere.laughlin_1_3.pes_laughlin_n6_2s15_na2_all
 physics.fqhe.sphere.laughlin_1_3.pes_laughlin_n6_2s15_na3_2lz-1
@@ -296,10 +310,12 @@ selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
 selftest.geometry_ed_oracle
 selftest.haah_oracle
+selftest.hofstadter_oracle
 selftest.lattice_fermions_oracle
 selftest.manifest
 selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle
+selftest.sphere_l2_oracle
 selftest.sphere_nbody_oracle
 selftest.spin_ed_oracle
 selftest.spin_hubbard_oracle

@@ -38,5 +38,7 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path](open-U41.md)
 - [Open finding U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix](open-U42.md)
 - [Open finding U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)](open-U43.md)
+- [Open finding U44: FCIHofstadterModel --real-space crashes for spinless fermions](open-U44.md)
+- [Open finding U45: FCIHofstadterModel --real-space hard-core bosons lie below their own lower bound](open-U45.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

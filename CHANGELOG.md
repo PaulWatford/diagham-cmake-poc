@@ -14,6 +14,17 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Physics tests for five core-list programs that had only a start-up check (`tests/core_programs.cmake`; 16 tests). Programs with a physics test: 76 → 81.
+  - `VectorAscii2Binary` and `VectorBinary2Ascii`: against the documented binary layout (`tests/oracles/vector_io.py`), bit-exact one way and 14 printed digits the other.
+  - `LevelStatistics`: spacing ratio of two exact synthetic spectra.
+  - `FQHESphereL2Diagonalize`: L(L+1) multiplet counts from exact state counting (`tests/oracles/sphere_l2.py`), four cases.
+  - `FCIHofstadterModel`: one-particle lowest band against an independent Hofstadter exact diagonalisation (`tests/oracles/hofstadter.py`), three lattices.
+  - Two new open findings, both identical on a pristine autotools build of r4493:
+    - U44: `--real-space` spinless fermions print "case not implented yet" and segfault;
+    - U45: `--real-space` hard-core bosons lie below the bound 2 e_0 set by the program's own one-particle spectrum. A question for the authors.
+
+    Three `open-finding` tests and two oracle self-tests cover them (923 tests).
+  - Each new test was also checked to fail on a planted error: a wrong program, a 1e-9 change in a reference value, and a reference for another flux.
 - Test tolerances to the team's standard (20 October 2026):
   - `tests/check_spectrum.cc` accepts relative tolerances, `rel:X` meaning |a − b| ≤ X · max(|a|, |b|, 1), and every check prints the largest absolute and relative difference it found.
   - The new cache variable `DIAGHAM_TEST_TOLERANCE` (default `rel:1e-12`) is the tolerance of every value comparison that reaches it, measured in the default, LAPACK and full builds: 23 test definitions (84 tests) and the Heisenberg L = 10 ring, tightened from absolute 1e-9 or 1e-10.

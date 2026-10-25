@@ -7,32 +7,32 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 
 | Level | Tests | What a pass means | What it does not mean |
 |---|---:|---|---|
-| **Physics golden** (`physics`) | 250 (+5 with GSL, +5 with LAPACK) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
+| **Physics golden** (`physics`) | 261 (+5 with GSL, +5 with LAPACK) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
 | **Cross-check** (`crosscheck`) | 3 (+1 with LAPACK) | two DiagHam implementations, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree | both could be wrong the same way |
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 26 self-tests of the harness (the manifest, sixteen oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 17 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 28 self-tests of the harness (the manifest, eighteen oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 20 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
 
 ## Programs, by module
 
 | Module directory | Programs | Physics golden | Cross-check | Regression | Any of the three |
 |---|---:|---:|---:|---:|---:|
 | Analysis | 19 | 0 | 0 | 0 | 0 |
-| FCI | 56 | 5 | 0 | 2 | 5 |
+| FCI | 56 | 6 | 0 | 2 | 6 |
 | FQHEOnCylinder | 35 | 3 | 0 | 0 | 3 |
 | FQHEOnDisk | 27 | 3 | 0 | 0 | 3 |
 | FQHEOnLattice | 22 | 0 | 0 | 1 | 1 |
-| FQHEOnSphere | 193 | 18 | 1 | 1 | 18 |
+| FQHEOnSphere | 193 | 19 | 1 | 1 | 19 |
 | FQHEOnTorus | 64 | 20 | 3 | 1 | 20 |
 | FTI | 36 | 3 | 0 | 1 | 3 |
 | HubbardModels | 25 | 5 | 0 | 2 | 6 |
 | QuantumDots | 19 | 0 | 0 | 1 | 1 |
-| Spin | 71 | 16 | 0 | 2 | 16 |
-| core (`src/Programs`) | 36 | 1 | 0 | 0 | 1 |
-| **all** | **603** | **74** | **4** | **11** | **77** |
+| Spin | 71 | 18 | 0 | 2 | 18 |
+| core (`src/Programs`) | 36 | 4 | 0 | 0 | 4 |
+| **all** | **603** | **81** | **4** | **11** | **84** |
 
-So: **74 programs have their physics checked** (74 against independent answers), **3 more are watched for change**, and **522 are smoke-tested only**. A green suite says the 77 are right or unchanged; it says nothing about the other 522.
+So: **81 programs have their physics checked** (81 against independent answers), **3 more are watched for change**, and **519 are smoke-tested only or untested**. A green suite says the 84 are right or unchanged; it says nothing about the other 519.
 
 ## What the physics goldens establish
 

@@ -18,18 +18,18 @@ all present on the `upstream` branch: `git log upstream`).
   - `DIAGHAM_PROGRAM_SET` (`all`, the default and unchanged; `core`; `custom`) and `DIAGHAM_PROGRAMS` choose which programs are built. A misspelt name stops the configure step.
   - `cmake/core-programs.txt` holds the provisional core list, the 42 programs of 19 October 2026, to be settled by wiki development.
   - New presets `core-programs` (LAPACK, GSL, GMP) and `core-programs-portable` (no libraries), with a CI job on GitHub and GitLab.
-  - Tests follow the build: the core set is checked against its own locked list `tests/manifest-core-programs.txt` (260 tests); any other selection must be a subset of `tests/manifest.txt`.
-  - Measured: `core-programs` 48 s and 266/266 tests; `core-programs-portable` 50 s and 260/260; a custom two-program build 45 s and 50/50; every program 60 s and 923/923 (32 cores). The libraries dominate the build time.
-- Physics tests for five core-list programs that had only a start-up check (`tests/core_programs.cmake`; 16 tests). Programs with a physics test: 76 → 81.
+  - Tests follow the build: the core set is checked against its own locked list `tests/manifest-core-programs.txt` (262 tests); any other selection must be a subset of `tests/manifest.txt`.
+  - Measured: `core-programs` 48 s and 266/266 tests; `core-programs-portable` 50 s and 260/260; a custom two-program build 45 s and 50/50; every program 60 s and 923/923 (before the two real-space Hofstadter tests, which add 2 to each count except the custom build) (32 cores). The libraries dominate the build time.
+- Physics tests for five core-list programs that had only a start-up check (`tests/core_programs.cmake`; 18 tests). Programs with a physics test: 76 → 81.
   - `VectorAscii2Binary` and `VectorBinary2Ascii`: against the documented binary layout (`tests/oracles/vector_io.py`), bit-exact one way and 14 printed digits the other.
   - `LevelStatistics`: spacing ratio of two exact synthetic spectra.
   - `FQHESphereL2Diagonalize`: L(L+1) multiplet counts from exact state counting (`tests/oracles/sphere_l2.py`), four cases.
-  - `FCIHofstadterModel`: one-particle lowest band against an independent Hofstadter exact diagonalisation (`tests/oracles/hofstadter.py`), three lattices.
+  - `FCIHofstadterModel`: one-particle lowest band (three lattices) and the real-space spectra of two and three hard-core bosons with `-Y 1`, against an independent Hofstadter exact diagonalisation (`tests/oracles/hofstadter.py`).
   - Two new open findings, both identical on a pristine autotools build of r4493:
     - U44: `--real-space` spinless fermions print "case not implented yet" and segfault;
-    - U45: `--real-space` hard-core bosons lie below the bound 2 e_0 set by the program's own one-particle spectrum. A question for the authors.
+    - U45: `--real-space` accepts `-Y` other than 1, which the program's wiki page says does not work, and gives a spectrum below the bound 2 e_0 set by its own one-particle spectrum. With `-Y 1` it is right.
 
-    Three `open-finding` tests and two oracle self-tests cover them (923 tests).
+    Three `open-finding` tests and two oracle self-tests cover them (925 tests).
   - Each new test was also checked to fail on a planted error: a wrong program, a 1e-9 change in a reference value, and a reference for another flux.
 - Test tolerances to the team's standard (20 October 2026):
   - `tests/check_spectrum.cc` accepts relative tolerances, `rel:X` meaning |a − b| ≤ X · max(|a|, |b|, 1), and every check prints the largest absolute and relative difference it found.

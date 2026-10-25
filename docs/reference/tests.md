@@ -408,13 +408,13 @@ These are physics tests for five programs of the provisional core list that had 
 - **`VectorAscii2Binary`, `VectorBinary2Ascii`** (2 tests, Python). `tests/oracles/vector_io.py` writes and reads the documented binary vector layout itself, with Python's `struct` module: a 4-byte dimension, then little-endian doubles. Text to binary must be bit-exact for ten values chosen to need every bit, including 1/3, 1e-300, -0.1 and an integer above 2^53. Binary to text must match to the 14 printed digits.
 - **`LevelStatistics`** (2 tests). Two synthetic spectra with an exact mean spacing ratio ⟨r⟩: spacings 1, 2, 1, 2, ... give exactly 1/2, and equal spacings give exactly 1. The test checks the `<r>=` line of the program's output.
 - **`FQHESphereL2Diagonalize`** (4 tests). The L² spectrum of an Lz sector is L(L+1) once per multiplet. The number of multiplets of each L is d(L) - d(L+1), from exact state counting (`tests/oracles/sphere_l2.py`, built on `dimensions.py`). The tests cover fermions and bosons, at Lz = 0 and Lz ≠ 0.
-- **`FCIHofstadterModel`** (3 tests and 3 `open-finding` tests).
-  - **One particle, lowest band** (the program's default band projection), on three lattices at flux 1/3 and 1/4, against `tests/oracles/hofstadter.py`: an independent exact diagonalisation in the Landau gauge, which reproduces the program's one-particle spectrum to about 1e-14.
-  - **The real-space mode** gave two findings (both identical on a pristine autotools build):
-    - U44: spinless fermions print `case not implented yet` and crash;
-    - U45: hard-core bosons have a ground state below 2 e_0, the rigorous bound set by the program's own one-particle spectrum.
+- **`FCIHofstadterModel`** (5 tests and 3 `open-finding` tests), against `tests/oracles/hofstadter.py`, an independent exact diagonalisation in the Landau gauge that is periodic on each torus:
+  - **one particle, lowest band** (the program's default band projection), on three lattices at flux 1/3 and 1/4;
+  - **real space, hard-core bosons**: the full spectra of two and three bosons (276 and 2,024 levels) with `-Y 1`, the only unit-cell height the program supports in real space, according to its wiki page.
 
-  The `open-finding` tests carry the spectra of the consistent model. Whether the real-space mode intends a different model is a question for the authors.
+  Both agree to about 1e-14. Two findings, both identical on a pristine autotools build:
+  - **U44:** spinless fermions in real space print `case not implented yet` and crash.
+  - **U45:** real space accepts `-Y` other than 1 and gives a wrong spectrum, below the bound 2 e_0 set by the program's own one-particle spectrum. The wiki warns about it, but the program does not check it.
 
 `FQHECylinderFermionsTwoBodyGeneric`, the sixth gap, needs GSL for its matrix elements. It has four physics tests in builds with GSL, and the core preset will include GSL.
 

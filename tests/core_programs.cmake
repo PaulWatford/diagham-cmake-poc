@@ -7,11 +7,12 @@
 #    equal spacings);
 #  - FQHESphereL2Diagonalize: the L^2 spectrum of an Lz sector is L(L+1) once per multiplet, the multiplet
 #    counts d(L) - d(L+1) from exact state counting (tests/oracles/sphere_l2.py);
-#  - FCIHofstadterModel: the lowest band of one particle against an independent Hofstadter exact
-#    diagonalisation (tests/oracles/hofstadter.py), on three lattices and two fluxes.
-# Two open findings met on the way: U44 (--real-space with fermions prints "case not implented yet" and
-# crashes) and U45 (--real-space hard-core bosons: ground state below the bound set by the program's own
-# one-particle spectrum). Both are the same on a pristine autotools build of r4493.
+#  - FCIHofstadterModel: against an independent Hofstadter exact diagonalisation (tests/oracles/hofstadter.py):
+#    the lowest band of one particle on three lattices at two fluxes, and the full spectra of two and three
+#    hard-core bosons in the real-space mode (-Y 1, the only unit-cell height it supports there).
+# Two open findings met on the way, both the same on a pristine autotools build of r4493: U44 (--real-space
+# with spinless fermions prints "case not implented yet" and crashes) and U45 (--real-space accepts -Y other
+# than 1, which its wiki page says does not work, and then gives a wrong spectrum).
 # ----------------------------------------------------------------------------
 set(core_data ${DIAGHAM_TEST_DATA})
 
@@ -71,19 +72,36 @@ foreach(case "4|2|1|3|1" "3|2|1|4|1" "2|3|1|4|1")
         LABELS fci hofstadter)
 endforeach()
 
-# U44: --real-space with fermions prints "case not implented yet" and then segfaults (exit 139), with or
-# without interaction; the same on a pristine autotools build of r4493. WILL_FAIL until it is fixed.
+# real space, hard-core bosons, -Y 1: the full spectrum (276 and 2024 levels) to the agreed tolerance
+foreach(case "2|4|2|3|1|1" "3|3|2|4|1|1")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 n)
+    list(GET c 1 x)
+    list(GET c 2 y)
+    list(GET c 3 cx)
+    list(GET c 4 cy)
+    list(GET c 5 q)
+    diagham_physics_test(physics.fci.hofstadter.realspace_hardcore_bosons.n${n}_x${x}_y${y}_X${cx}_Y${cy}_q${q}
+        PROGRAM FCI_FCIHofstadterModel
+        ARGS --real-space --redundant-kx --redundant-ky -p ${n} -x ${x} -y ${y} -X ${cx} -Y ${cy} -q ${q} --boson --hardcore --full-diag 5000
+        OUTPUT "bosons_realspace_gutzwiller_hofstadter_*.dat"
+        CHECK spectrum @OUTPUT@ -1 ${core_data}/hofstadter/hardcore_bosons_n${n}_x${x}_y${y}_X${cx}_Y${cy}_q${q}.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+        LABELS fci hofstadter)
+endforeach()
+
+# U44: --real-space with spinless fermions prints "case not implented yet" and then segfaults (exit 139), with
+# or without interaction and whatever -Y; the same on a pristine autotools build of r4493. WILL_FAIL until fixed.
 diagham_physics_test(openfinding.fci.hofstadter.realspace_fermions_segfault
     PROGRAM FCI_FCIHofstadterModel
-    ARGS --real-space -p 2 -x 4 -y 2 -X 1 -Y 3 -q 1 --full-diag 5000
+    ARGS --real-space -p 2 -x 4 -y 2 -X 3 -Y 1 -q 1 --full-diag 5000
     OUTPUT "*.dat"
     CHECK count @OUTPUT@ -1 0 1e-10 0
     WILL_FAIL LABELS fci hofstadter)
 
-# U45: --real-space hard-core bosons give a spectrum whose ground state lies below 2 e_0, the rigorous lower
-# bound from the program's own one-particle spectrum (-6.129 against -5.464 here), and which matches the
-# hard-core restriction of that one-particle Hamiltonian in neither Landau gauge nor any uniform flux.
-# These tests carry the spectrum of the consistent model; byte-identical output on a pristine build of r4493.
+# U45: the program's wiki page says the code works only with -Y 1; with -Y 3 or 4 --real-space does not refuse
+# the input but gives a spectrum whose ground state lies below 2 e_0, the rigorous bound from the program's own
+# one-particle spectrum (-6.129 against -5.464 for the first case). These tests carry what it should give;
+# the program's output is byte-identical on a pristine autotools build of r4493.
 foreach(case "2|4|2|1|3|1" "3|3|2|1|4|1")
     string(REPLACE "|" ";" c "${case}")
     list(GET c 0 n)
@@ -92,7 +110,7 @@ foreach(case "2|4|2|1|3|1" "3|3|2|1|4|1")
     list(GET c 3 cx)
     list(GET c 4 cy)
     list(GET c 5 q)
-    diagham_physics_test(openfinding.fci.hofstadter.realspace_hardcore_bosons_below_bound.n${n}_x${x}_y${y}
+    diagham_physics_test(openfinding.fci.hofstadter.realspace_unit_cell_y_not_1_accepted.n${n}_x${x}_y${y}
         PROGRAM FCI_FCIHofstadterModel
         ARGS --real-space --redundant-kx --redundant-ky -p ${n} -x ${x} -y ${y} -X ${cx} -Y ${cy} -q ${q} --boson --hardcore --full-diag 5000
         OUTPUT "bosons_realspace_gutzwiller_hofstadter_*.dat"

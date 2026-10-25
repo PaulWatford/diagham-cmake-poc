@@ -68,7 +68,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **923 of 923 ctest tests pass** — but read that number plainly: 261 are
+- **925 of 925 ctest tests pass** — but read that number plainly: 263 are
   physics goldens with independently known answers (Hilbert-space dimensions
   against exact counting; Laughlin, Moore–Read and Read–Rezayi zero modes
   and quasihole counts; Coulomb pseudopotentials against the closed form;

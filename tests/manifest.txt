@@ -7,8 +7,8 @@ openfinding.fci.checkerboard.manybody.4x3_n2_u1_band_energy_overwritten
 openfinding.fci.checkerboard.two_band_model_segfault
 openfinding.fci.haldane.manybody.3x3_n1_band_energy_halved
 openfinding.fci.hofstadter.realspace_fermions_segfault
-openfinding.fci.hofstadter.realspace_hardcore_bosons_below_bound.n2_x4_y2
-openfinding.fci.hofstadter.realspace_hardcore_bosons_below_bound.n3_x3_y2
+openfinding.fci.hofstadter.realspace_unit_cell_y_not_1_accepted.n2_x4_y2
+openfinding.fci.hofstadter.realspace_unit_cell_y_not_1_accepted.n3_x3_y2
 openfinding.fci.kagome.manybody.3x3_n1_band_energy_halved
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
@@ -121,6 +121,8 @@ physics.fci.chern.haldane_phi0.5_mus6
 physics.fci.hofstadter.one_particle_lowest_band.x2_y3_X1_Y4_q1
 physics.fci.hofstadter.one_particle_lowest_band.x3_y2_X1_Y4_q1
 physics.fci.hofstadter.one_particle_lowest_band.x4_y2_X1_Y3_q1
+physics.fci.hofstadter.realspace_hardcore_bosons.n2_x4_y2_X3_Y1_q1
+physics.fci.hofstadter.realspace_hardcore_bosons.n3_x3_y2_X4_Y1_q1
 physics.fqhe.cylinder.bosons_laughlin_1_2.one_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.two_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.unique_zero_mode

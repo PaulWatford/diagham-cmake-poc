@@ -102,6 +102,7 @@ nav:
           - 'Program reference (all 603, generated)': reference/programs/README.md
           - 'Manuals from the DiagHam wiki (133)': reference/programs/manuals/README.md
   - Explanation:
+      - 'Cross-benchmarking with ALPS: which programs, and how the conventions map': explanation/alps-cross-benchmarks.md
       - 'Scored against the field''s checklists': explanation/checklists.md
       - 'Deferred and excluded upstream code': explanation/deferred-code.md
       - 'The review pipeline ("CMake AI Guard") — design': explanation/guard-design.md

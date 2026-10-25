@@ -14,6 +14,13 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `docs/explanation/alps-cross-benchmarks.md`: the six programs proposed for
+  cross-benchmarking with ALPS (open and periodic XXZ chains, J1-J2 ring,
+  square-lattice Heisenberg, transverse-field Ising ring, square-lattice
+  Hubbard), and the parameter mapping between the two codes. Every DiagHam
+  convention is one an existing physics test already fixes; the ALPS side is
+  from the ALPS 2.0 paper, with four details to confirm on the first ALPS
+  installation. No ALPS run yet.
 - One official citation and Zenodo archiving, after the team's decisions of
   20 October 2026: `CITATION.cff` has a `preferred-citation` (DiagHam, by
   the DiagHam authors) and no per-program citation rules; `.zenodo.json`

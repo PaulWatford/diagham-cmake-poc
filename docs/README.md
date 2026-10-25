@@ -58,6 +58,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | Offer a fix or a finding to the DiagHam authors (reports + `svn patch` diffs) | [how-to/develop/send-a-fix-upstream.md](how-to/develop/send-a-fix-upstream.md), [upstream-reports/](upstream-reports/README.md) |
 | Code that is excluded from the build, and why | [explanation/deferred-code.md](explanation/deferred-code.md) |
 | The torus SU(2) Coulomb finding in detail | [explanation/torus-su2-coulomb-finding.md](explanation/torus-su2-coulomb-finding.md) |
+| Comparing DiagHam with ALPS: which programs, and how the parameters map | [explanation/alps-cross-benchmarks.md](explanation/alps-cross-benchmarks.md) |
 | How changes are reviewed (the guard pipeline) and the rules for AI-assisted work | [explanation/guard-design.md](explanation/guard-design.md), `AGENTS.md` at the root |
 
 ### …understand where this repository comes from
@@ -87,7 +88,7 @@ docs/
   tutorials/     learning by doing: first build, first FQHE run, Hubbard walkthrough
   how-to/        build/ (per platform, presets), develop/ (programs, tests, symmetries), MPI, ScaLAPACK, install
   reference/     build system, configure-flag map, data formats, tests, findings, publications, programs/ (generated) + manuals/
-  explanation/   migration history, upstream fixes, deferred code, the torus finding, guard design, why CMake
+  explanation/   migration history, upstream fixes, deferred code, the torus finding, guard design, why CMake, ALPS cross-benchmarks
   history/       upstream INSTALL, ChangeLog, TODO, NEWS — unchanged
   drafts/        incomplete pages and the index of what went where
 ```

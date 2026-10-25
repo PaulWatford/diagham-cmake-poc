@@ -1,7 +1,7 @@
 # The review pipeline ("CMake AI Guard") — design
 
 Purpose: why the repository's review process is shaped the way it is, and how each part maps onto CI.
-Source: the "CMake AI Guard" specification (Paul Watford, September 2026) and the pipeline section of `AGENTS.md`. Changed: the spec's "79-name manifest" is expressed in terms of the ctest suite that now exists; implementation status stated honestly.
+Source: the "CMake AI Guard" specification (Paul Watford, September 2026) and the pipeline section of `AGENTS.md`. Changed: the spec's "79-name manifest" is expressed in terms of the ctest suite that now exists; implementation status stated plainly.
 
 ## The idea in one sentence
 

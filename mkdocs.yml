@@ -87,14 +87,14 @@ nav:
           - 'Build DiagHam with long-double precision': how-to/develop/long-double.md
           - 'Write a spin Hilbert space with a discrete symmetry': how-to/develop/new-spin-hilbert-space-with-symmetry.md
           - 'Make a release': how-to/develop/release.md
-          - 'Reproduce the registered defects on a pristine trunk': how-to/develop/reproduce-on-pristine-trunk.md
+          - 'Reproduce the registered findings on a pristine trunk': how-to/develop/reproduce-on-pristine-trunk.md
           - 'Offer a fix or a finding to the DiagHam authors': how-to/develop/send-a-fix-upstream.md
           - 'Bring new DiagHam revisions in from Subversion': how-to/develop/sync-upstream.md
   - Reference:
       - 'Build system reference': reference/build-system.md
       - 'configure.ac → CMake flag map': reference/configure-flag-map.md
       - 'Data formats and file tools': reference/data-formats.md
-      - 'Known defects in the DiagHam sources — register': reference/known-defects.md
+      - 'Open findings in the DiagHam sources — register': reference/open-findings.md
       - 'Publications using DiagHam': reference/publications.md
       - 'Test coverage by program': reference/test-coverage.md
       - 'Test suite reference': reference/tests.md
@@ -106,7 +106,7 @@ nav:
       - 'Deferred and excluded upstream code': explanation/deferred-code.md
       - 'The review pipeline ("CMake AI Guard") — design': explanation/guard-design.md
       - 'Migration history and the production plan': explanation/migration-history.md
-      - 'Bug report: spinful torus Coulomb ground state is wrong for N >= 3': explanation/torus-su2-coulomb-defect.md
+      - 'Problem report: spinful torus Coulomb ground state is wrong for N >= 3': explanation/torus-su2-coulomb-finding.md
       - 'Upstream fixes carried on `main`': explanation/upstream-fixes.md
       - 'What is verified, what is only watched, what is untested': explanation/verification.md
       - 'Why CMake, and why a generated build': explanation/why-cmake.md
@@ -133,17 +133,17 @@ nav:
       - '15. ParticleOnCylinderPseudopotentialHamiltonian: fail clearly without GSL instead of undefined behaviour': upstream-reports/15-cylinder-pseudopotential-needs-gsl.md
       - '16. Plain Lanczos: detect the closure of the Krylov space instead of iterating on round-off (U30)': upstream-reports/16-LanczosKrylovSpaceClosure.md
       - '17. ParticleOnCylinderCoulombHamiltonian: fail clearly without GSL instead of undefined behaviour (U33)': upstream-reports/17-cylinder-coulomb-needs-gsl.md
-      - 'Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"': upstream-reports/open-U29.md
-      - 'Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band': upstream-reports/open-U31.md
-      - 'Open defect U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3': upstream-reports/open-U34.md
-      - 'Open defect U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds': upstream-reports/open-U35.md
-      - 'Open defect U36: FTI3DHopf segfaults after writing its band file': upstream-reports/open-U36.md
-      - 'Open defect U37: 3D --export-onebodytext writes only the kz = 0 slice': upstream-reports/open-U37.md
-      - 'Open defect U39: the one-body energy of the single-band many-body Hamiltonians is wrong': upstream-reports/open-U39.md
-      - 'Open defect U40: SpinChainEntanglementEntropy aborts in a build without LAPACK': upstream-reports/open-U40.md
-      - 'Open defect U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path': upstream-reports/open-U41.md
-      - 'Open defect U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix': upstream-reports/open-U42.md
-      - 'Open defect U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)': upstream-reports/open-U43.md
+      - 'Open finding U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"': upstream-reports/open-U29.md
+      - 'Open finding U31: FCICheckerboardLatticeModel segfaults without --single-band': upstream-reports/open-U31.md
+      - 'Open finding U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3': upstream-reports/open-U34.md
+      - 'Open finding U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds': upstream-reports/open-U35.md
+      - 'Open finding U36: FTI3DHopf segfaults after writing its band file': upstream-reports/open-U36.md
+      - 'Open finding U37: 3D --export-onebodytext writes only the kz = 0 slice': upstream-reports/open-U37.md
+      - 'Open finding U39: the one-body energy of the single-band many-body Hamiltonians is wrong': upstream-reports/open-U39.md
+      - 'Open finding U40: SpinChainEntanglementEntropy aborts in a build without LAPACK': upstream-reports/open-U40.md
+      - 'Open finding U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path': upstream-reports/open-U41.md
+      - 'Open finding U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix': upstream-reports/open-U42.md
+      - 'Open finding U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)': upstream-reports/open-U43.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

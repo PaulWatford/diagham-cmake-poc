@@ -1,7 +1,7 @@
-# Open defect U37: 3D --export-onebodytext writes only the kz = 0 slice
+# Open finding U37: 3D --export-onebodytext writes only the kz = 0 slice
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (`knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only` in ctest holds it).
-Source: `docs/reference/known-defects.md` (U37), found 2026-09-29 while writing the band-structure goldens; r4493 sources, `default` preset, GCC 15.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (`openfinding.fti.simple_ti3d.export_onebodytext_kz0_slice_only` in ctest holds it).
+Source: `docs/reference/open-findings.md` (U37), found 2026-09-29 while writing the band-structure goldens; r4493 sources, `default` preset, GCC 15.
 
 ## What happens
 

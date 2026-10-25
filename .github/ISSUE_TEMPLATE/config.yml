@@ -2,7 +2,7 @@ blank_issues_enabled: false
 contact_links:
   - name: Question or discussion
     url: https://github.com/PaulWatford/diagham-cmake-poc/discussions
-    about: How-do-I questions and anything that is not a defect
+    about: How-do-I questions and anything that is not a finding
   - name: Security report
     url: https://github.com/PaulWatford/diagham-cmake-poc/security/advisories/new
     about: Report privately; see SECURITY.md

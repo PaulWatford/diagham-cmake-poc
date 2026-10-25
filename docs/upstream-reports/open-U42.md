@@ -1,7 +1,7 @@
-# Open defect U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix
+# Open finding U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix
 
 Purpose: reproducer for the DiagHam authors; no fix is carried in the tree.
-Source: `docs/reference/known-defects.md` (U42), found 2026-09-30 while auditing the default-build crash of `HaahCodeEntropy`; r4493 sources (`src/Matrix/RealSymmetricMatrix.cc` is byte-identical to SVN), GCC 15.
+Source: `docs/reference/open-findings.md` (U42), found 2026-09-30 while auditing the default-build crash of `HaahCodeEntropy`; r4493 sources (`src/Matrix/RealSymmetricMatrix.cc` is byte-identical to SVN), GCC 15.
 
 ## What happens
 
@@ -36,4 +36,4 @@ On a copy of the sources under AddressSanitizer this gives correct eigenvalues (
 
 ## Consequence for the tests
 
-`knownbug.haah_code.householder_1x1_crash.2x2x2_region_1x1x1` (default build, WILL_FAIL) documents the crash; with LAPACK the same case is the physics test `physics.entanglement.haah_code.2x2x2_region_1x1x1`. The other callers were swept dynamically: the library was instrumented to log every 1x1 call (a scratch copy, not in the tree) and the whole suite (895 tests, default build) run, plus about 30 targeted runs (sphere and torus Coulomb with dimension-1 sectors, with and without eigenstates; toric-code, X-cube and Haah regions of one and more sites). Only `HaahCodeEntropy` reached it. The sphere, torus, disk and generic real main tasks guard the call with `GetHilbertSpaceDimension() > 1`. A static scan finds about 330 further `Householder`/`Diagonalize` sites on `RealSymmetricMatrix` (entanglement-entropy, MPS and DMRG programs and tools), which the guard-free library would let through for a 1x1 input; they are unverified, and the library guard above covers all of them at once.
+`openfinding.haah_code.householder_1x1_crash.2x2x2_region_1x1x1` (default build, WILL_FAIL) documents the crash; with LAPACK the same case is the physics test `physics.entanglement.haah_code.2x2x2_region_1x1x1`. The other callers were swept dynamically: the library was instrumented to log every 1x1 call (a scratch copy, not in the tree) and the whole suite (895 tests, default build) run, plus about 30 targeted runs (sphere and torus Coulomb with dimension-1 sectors, with and without eigenstates; toric-code, X-cube and Haah regions of one and more sites). Only `HaahCodeEntropy` reached it. The sphere, torus, disk and generic real main tasks guard the call with `GetHilbertSpaceDimension() > 1`. A static scan finds about 330 further `Householder`/`Diagonalize` sites on `RealSymmetricMatrix` (entanglement-entropy, MPS and DMRG programs and tools), which the guard-free library would let through for a 1x1 input; they are unverified, and the library guard above covers all of them at once.

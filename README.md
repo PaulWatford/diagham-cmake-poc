@@ -68,7 +68,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **905 of 905 ctest tests pass** — but read that number honestly: 250 are
+- **905 of 905 ctest tests pass** — but read that number plainly: 250 are
   physics goldens with independently known answers (Hilbert-space dimensions
   against exact counting; Laughlin, Moore–Read and Read–Rezayi zero modes
   and quasihole counts; Coulomb pseudopotentials against the closed form;
@@ -76,7 +76,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   counting; Hubbard tight binding; Haah cubic-code, X-cube and toric-code entanglement entropies against GF(2) rank formulas; Heisenberg, XX, AKLT, Haldane–Shastry and transverse-Ising chains) plus independent Python exact
   diagonalisations (Hubbard, sphere and torus Coulomb and pseudopotential Hamiltonians with and without SU(2), SU(3) and SU(4) spin, spin chains) and the band structures of seven lattice models with the Haldane Chern number, checkerboard many-body spectra in the flat-band limit against a band-projected exact diagonalisation and the exactly solvable atomic limit, 4 are cross-checks between DiagHam
   programs or algorithms (spinful torus Coulomb; Lanczos vs full diagonalisation; LAPACK vs internal), 1 is a `find_package(DiagHam)` consumer
-  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 24 are self-tests (manifest, sixteen oracles, the checker and runner), 17 are known-bug reproducers, and **599 are `--help` smoke tests**,
+  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 24 are self-tests (manifest, sixteen oracles, the checker and runner), 17 are open-finding reproducers, and **599 are `--help` smoke tests**,
   which prove that a program links and parses options and nothing about its
   physics. `docs/reference/test-coverage.md` gives the per-program truth:
   76 of 603 programs have a physics or cross-check test today (76 with an independently known answer) and 3 more a regression test (79 with any test beyond --help). Expanding that is the
@@ -137,7 +137,7 @@ the audit trail (root cause, what was compared, how it was verified) and
 | E | 1 | `precision(14)` at result-output sites writes 14 of double's 17 significant digits | opt-in: the 980 sites (545 files) read `DIAGHAM_OUTPUT_PRECISION`, 14 by default as upstream, 17 with `DIAGHAM_FULL_PRECISION_OUTPUT`; deliberate display widths left alone |
 | F, G | 2 | `FCIWannierConstruction` and `FCIDiceLatticeModel` never compiled or linked upstream | enabled; the Dice-lattice defaults need a maintainer's sign-off |
 | H | 1 | Invalid C++ (`ostream << ostream&`) that broke every QuantumDots program | fixed |
-| I | 1 | **Physics defect**: spinful torus Coulomb wrong for N ≥ 3 and for every unpolarised case (basis order vs `FindStateIndex`; dropped same-orbital up-down terms) | fixed, verified against two independent programs to 1e-12; **pending maintainer review** |
+| I | 1 | **Physics finding**: spinful torus Coulomb wrong for N ≥ 3 and for every unpolarised case (basis order vs `FindStateIndex`; dropped same-orbital up-down terms) | fixed, verified against two independent programs to 1e-12; **pending maintainer review** |
 
 Several of the "hidden" failures turned out to be programs upstream had
 dropped from its build lists rather than failures autotools concealed; the

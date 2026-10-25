@@ -31,7 +31,7 @@ headline today is **74 of 603 programs with a physics or cross-check test** (74 
 | `python` | `python.hubbard_ed_cross_check` | DiagHam's Hubbard ground state agrees with the independent Python ED in `benchmarks/hubbard_ed.py` to 1e-10, on four lattices/couplings (needs numpy; skipped at configure time without it) |
 | `smoke` | `smoke.<target>`, one per program | the program starts, parses options and exits 0 on `--help` (catches link and static-initialisation breakage in the programs no golden reaches). Four programs are left out, with the reason in `tests/CMakeLists.txt`: `QHEBosons`, `MultipleSpinChain` and `TestDiagHamVectors` have no option parser; `EvaluateBroadening` checks its required `--input` before `--help` |
 | `install` | `install.find_package_consumer` | the `Development` install component, used through `find_package(DiagHam)` alone from a separate CMake project, compiles, links, and diagonalises a tight-binding ring correctly |
-| `known-bug` | `knownbug.fci.checkerboard.two_band_model_segfault` (U31), `knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `knownbug.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `knownbug.spin.tfim2d.open_boundaries_ignored` (U35), `knownbug.fti.hopf3d.segfault_after_band_file` (U36), `knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only` (U37), `knownbug.fci.*.manybody.*` (U39, four cases) | the defect is still present (`WILL_FAIL`); see below |
+| `open-finding` | `openfinding.fci.checkerboard.two_band_model_segfault` (U31), `openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty` (U32), `openfinding.fqhe.disk.bosons_two_body_generic.*` (U34, three cases), `openfinding.spin.tfim2d.open_boundaries_ignored` (U35), `openfinding.fti.hopf3d.segfault_after_band_file` (U36), `openfinding.fti.simple_ti3d.export_onebodytext_kz0_slice_only` (U37), `openfinding.fci.*.manybody.*` (U39, four cases) | the finding is still present (`WILL_FAIL`); see below |
 
 ### Hilbert-space dimension goldens (`-L dimension`)
 
@@ -87,9 +87,9 @@ prints all); `FQHETorusShowBasis` always uses magnetic translations, so
   quasihole counting of N_A particles (Sterdyniak, Regnault & Bernevig
   2011).
 
-- **Haah cubic code entanglement entropy** (8, plus 1 with LAPACK): `HaahCodeEntropy --export-entspectrum` on 2×2×2 (regions 1×1×2, 2×1×1, 1×2×2, and 1×1×2 with `--low-memory`), 2×2×3, 2×3×2, 3×2×2 and 4×2×2 against `tests/oracles/haah.py`. The state is a uniform superposition over a GF(2) subspace V, so S/ln 2 = rank P_A V + rank P_B V − rank V. The oracle's self-test cross-checks the rank formula by building the state for L = 2 explicitly, forming the reduced density matrix and diagonalising it with mpmath at 40 digits (L = 3 with `HAAH_FULL=1`, about 2 GB), and checks S = 6a² − 6a + 2 for an a-cube. The oracle's self-test also checks the number of encoded qubits k = 2L³ − 2·rank V against Table II (Code 1) of Haah's paper (PRA 83, 042330) for L = 2..12. The one-site region 2×2×2 / 1×1×1 needs LAPACK (U42, `known-bug` test without); the 4×4×4 / 2×2×2 case (entropy 14) is a `known-bug` test (U43).
+- **Haah cubic code entanglement entropy** (8, plus 1 with LAPACK): `HaahCodeEntropy --export-entspectrum` on 2×2×2 (regions 1×1×2, 2×1×1, 1×2×2, and 1×1×2 with `--low-memory`), 2×2×3, 2×3×2, 3×2×2 and 4×2×2 against `tests/oracles/haah.py`. The state is a uniform superposition over a GF(2) subspace V, so S/ln 2 = rank P_A V + rank P_B V − rank V. The oracle's self-test cross-checks the rank formula by building the state for L = 2 explicitly, forming the reduced density matrix and diagonalising it with mpmath at 40 digits (L = 3 with `HAAH_FULL=1`, about 2 GB), and checks S = 6a² − 6a + 2 for an a-cube. The oracle's self-test also checks the number of encoded qubits k = 2L³ − 2·rank V against Table II (Code 1) of Haah's paper (PRA 83, 042330) for L = 2..12. The one-site region 2×2×2 / 1×1×1 needs LAPACK (U42, `open-finding` test without); the 4×4×4 / 2×2×2 case (entropy 14) is an `open-finding` test (U43).
 
-- **X-cube entanglement entropy** (8, plus a `known-bug` test): `XCubeEntanglementEntropy --export-entspectrum` on 2×2×2 (regions 1×1×1, 1×1×2, 1×2×2, 2×1×1), 2×2×3, 2×3×2 and 3×2×2 (two regions) against `tests/oracles/xcube.py`, the same GF(2) rank formula with three qubits per site and the two four-spin term types; the oracle's self-test checks one case against an explicit reduced density matrix diagonalised with mpmath. The 3×3×3 system (region 2×2×2, entropy 18) needs 2^48 components in the program against a rank of 46 and throws `std::bad_alloc` (`known-bug`, U43).
+- **X-cube entanglement entropy** (8, plus an `open-finding` test): `XCubeEntanglementEntropy --export-entspectrum` on 2×2×2 (regions 1×1×1, 1×1×2, 1×2×2, 2×1×1), 2×2×3, 2×3×2 and 3×2×2 (two regions) against `tests/oracles/xcube.py`, the same GF(2) rank formula with three qubits per site and the two four-spin term types; the oracle's self-test checks one case against an explicit reduced density matrix diagonalised with mpmath. The 3×3×3 system (region 2×2×2, entropy 18) needs 2^48 components in the program against a rank of 46 and throws `std::bad_alloc` (`open-finding`, U43).
 
 Chains (eigenstate → Jack → overlap; eigenstate → PES) use the `PRE_STEPS`
 option of `diagham_physics_test`; the checker gained the modes `line`
@@ -124,7 +124,7 @@ fixed total Lz on the disk.
   at Lz₀ = N(N−1) and its edge excitations at Lz₀+ΔL, p(ΔL) = 1, 1, 2, 3, 5
   of them for ΔL = 0…4 (N=4) and N=5.
 
-Two defects met on the way, both in the register: `FQHECylinderFermionsTwoBodyGeneric`
+Two findings met on the way, both in the register: `FQHECylinderFermionsTwoBodyGeneric`
 crashed with "stack smashing detected" in every run of a build without
 GSL (U28, fixed — it now says it needs GSL); `FQHEDiskFermionsTwoBodyGeneric`
 hangs after printing `start` for every case tried, so there is no fermionic
@@ -153,14 +153,14 @@ Programs: `GenericPeriodicSpinChain`, `PeriodicSpinChainAKLT`,
 `SpinChainAKLT`, `HaldaneShastrySpinChain`, `SpinChainXYZ`,
 `HubbardSquareLatticeModel`.
 
-A defect found on the way (**U30**) and since fixed here: plain Lanczos
+A finding found on the way (**U30**) and since fixed here: plain Lanczos
 (`-n 1`, no reorthogonalisation) on the U = 0 2×4 Hubbard case returned
 −18.41 and −17.87 in two momentum sectors, *below* the exact ground energy
 −16. On this degenerate spectrum the Krylov space of the start vector
 closes after 7 to 9 steps; the recurrence went on with the normalised
 round-off and produced Ritz values outside the spectrum. `BasicLanczosAlgorithm`
 and `ComplexBasicLanczosAlgorithm` now detect the closure and stop
-(`docs/upstream-reports/`, report 16). The former `known-bug` test is
+(`docs/upstream-reports/`, report 16). The former `open-finding` test is
 `physics.hubbard.2x4.U0.plain_lanczos_krylov_closure`: every one of the
 eight momentum sectors must give the tight-binding minimum of that sector,
 from `tight_binding_square_sectors` in `tests/oracles/spin_hubbard.py`
@@ -206,7 +206,7 @@ with no exactly solvable case exposed at the command line; they get
   an exact rational first-quantised projection in the basis of monomial
   symmetric polynomials (the relative-angular-momentum decomposition is
   orthogonal, so no metric is needed); `selftest.geometry_ed_oracle`
-  checks them against each other. The three `knownbug.fqhe.disk.*` tests
+  checks them against each other. The three `openfinding.fqhe.disk.*` tests
   carry the exact spectra and turn red when the program is fixed; the
   fermionic program hangs (U29) and could not be tested at all.
 - **k-body sphere ED** (8 tests, `physics.fqhe.sphere.ed.nbody.*`):
@@ -243,7 +243,7 @@ with no exactly solvable case exposed at the command line; they get
   (± parity) are checked one by one against the oracle's projection onto
   the eigenspaces of the exchange operators (25 + 22 and 28 + 19 of the 47
   Sz = 0, Lz = 0 states); both flags together give an empty fermionic basis
-  (**U32**, `known-bug`). The legacy `QHEFermionsSphereWithSpin -v -w` has
+  (**U32**, `open-finding`). The legacy `QHEFermionsSphereWithSpin -v -w` has
   its own normalisation (a pair costs V_m, V in the up-down m = 0 channel,
   W in every m = 1 channel) and is checked in it. Not matched:
   `FQHESphereFermionsWithSpinFull` (four-index keys, its convention is not
@@ -294,7 +294,7 @@ with no exactly solvable case exposed at the command line; they get
   disordered chain with fields from a fixed `Disorder =` file (GSL build).
   Found on the way (**U35**): the 2D Ising program adds the wrap-around
   bonds whether or not `--use-periodic` is given, so its "open" spectrum
-  is the periodic one (2×3 and 3×3 identical); `known-bug` test against
+  is the periodic one (2×3 and 3×3 identical); `open-finding` test against
   the true open spectrum. Not matched: `SpinChainLongRangeXYZ` (none of the
   distance conventions tried), `NDMAPSpinChain` (rejects the options its
   own help lists), `FullGenericOpenSpinChain` with spin 1 (refused by the
@@ -367,7 +367,7 @@ with `tests/data/fci_bands/` to 10⁻¹²; `selftest.fci_bands_oracle`
 re-derives the files. It is the first independent number for an FCI
 program.
 
-`tests/oracles/fci_manybody.py` adds the many-body side: a dense ED of the checkerboard model projected onto its lowest band (A sites at R, B sites at R + (½, ½), Bloch functions in the position gauge, U on the four nearest-neighbour A-B bonds, `H = sum eps_k n_k + U sum P n_A n_B P`, every total-momentum sector). The full spectra of `FCICheckerboardLatticeModel --single-band --flat-band --full-momentum` match it to 10⁻⁹ (measured 4·10⁻¹²) for N = 2 and 3 on 3×3 and N = 2 on 4×3 at changed t₂, t′; the many-body spectrum does not depend on the eigenvector gauge or on the sublattice convention. The same oracle carries the exact atomic limit of `FCIAtomicLimitLatticeModel`: bosons pay 4U per same-cell pair (the convention of the program; three cases), fermions are inert (all E = 0). The dispersive cases (`--flat-band` off) do **not** match: U39, four `known-bug` tests (checkerboard at U = 0 and U = 1, Haldane and Kagome at N = 1).
+`tests/oracles/fci_manybody.py` adds the many-body side: a dense ED of the checkerboard model projected onto its lowest band (A sites at R, B sites at R + (½, ½), Bloch functions in the position gauge, U on the four nearest-neighbour A-B bonds, `H = sum eps_k n_k + U sum P n_A n_B P`, every total-momentum sector). The full spectra of `FCICheckerboardLatticeModel --single-band --flat-band --full-momentum` match it to 10⁻⁹ (measured 4·10⁻¹²) for N = 2 and 3 on 3×3 and N = 2 on 4×3 at changed t₂, t′; the many-body spectrum does not depend on the eigenvector gauge or on the sublattice convention. The same oracle carries the exact atomic limit of `FCIAtomicLimitLatticeModel`: bosons pay 4U per same-cell pair (the convention of the program; three cases), fermions are inert (all E = 0). The dispersive cases (`--flat-band` off) do **not** match: U39, four `open-finding` tests (checkerboard at U = 0 and U = 1, Haldane and Kagome at N = 1).
 
 The same file now carries five more models, each as the eigenvalues of
 the published Bloch matrix diagonalised with numpy on the lattice
@@ -396,7 +396,7 @@ grids the many-body programs use; the tolerance is 0.02. The Kagome and
 checkerboard Bloch matrices are not periodic in k → k + 2π (half-angle
 cosines), so their Chern numbers are not checked here. `FCIHaldaneModel`'s
 help text says `--phi` is in multiples of π; it is in radians unless `--phase-in-pi` is given (U38, cosmetic).
-Two defects turned up on the way: `FTI3DHopf` segfaults after writing
+Two findings turned up on the way: `FTI3DHopf` segfaults after writing
 its band file, on every size and `--lambda` tried and also on a
 pristine autotools build (U36), and the 3D programs'
 `--export-onebodytext` writes only the kz = 0 slice with a 2D header (U37).
@@ -422,14 +422,14 @@ LAPACK (it is checked before being added). `FQSHCheckerboardModelTwoBands`
 does not: its bands are degenerate, so the projected model depends on the
 eigensolver's choice of basis (differences of 0.14–0.17 between the
 internal diagonaliser and LAPACK). That is a property of the model set-up,
-not a defect, but it makes the program unsuitable for a portable reference;
+not a finding, but it makes the program unsuitable for a portable reference;
 `FTI3DSimpleTI` (identical to 10⁻¹⁵ in both builds) stands in for the FTI
 module.
 
-A second `known-bug` test came out of this batch (**U31**):
+A second `open-finding` test came out of this batch (**U31**):
 `FCICheckerboardLatticeModel` without `--single-band` (the two-band model)
 segfaults after `start` for every size tried; the regression case uses
-`--single-band`, and `knownbug.fci.checkerboard.two_band_model_segfault`
+`--single-band`, and `openfinding.fci.checkerboard.two_band_model_segfault`
 (`WILL_FAIL`) holds the reproducer.
 
 ### Physics goldens and cross-checks
@@ -454,16 +454,16 @@ change in the physics (which moves the 12th digit or earlier) fails.
 `tests/check_spectrum.cc` does the comparison; it needs no Python and no
 DiagHam library, so the goldens run anywhere the programs do.
 
-### Known upstream defects
+### Known upstream findings
 
-Fourteen `known-bug` tests exist (U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Fourteen `open-finding` tests exist (U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,
 plain Lanczos below the ground state on a degenerate spectrum, was fixed
-here and its test promoted to `physics`). A `known-bug` test reproduces a defect documented in this repository and is
-registered with `WILL_FAIL`: it passes while the defect is present, and the
-day someone fixes the defect it fails, so it can't be forgotten -- turn it
+here and its test promoted to `physics`). An `open-finding` test reproduces a finding documented in this repository and is
+registered with `WILL_FAIL`: it passes while the finding is present, and the
+day someone fixes the finding it fails, so it can't be forgotten -- turn it
 into a `physics` test (drop `WILL_FAIL`) in the same change as the fix.
 
 ## Adding a golden

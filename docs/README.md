@@ -38,7 +38,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | Run under MPI, or mixed MPI/SMP, and profile it | [how-to/run-mpi.md](how-to/run-mpi.md) |
 | Use ScaLAPACK for full diagonalisation on a parallel machine | [how-to/run-scalapack.md](how-to/run-scalapack.md) |
 | Full diagonalisation vs Lanczos; excited states with projectors | [drafts/lanczos-diagonalisation-schemes.md](drafts/lanczos-diagonalisation-schemes.md) (draft: two sections empty on the wiki) |
-| Is the result I got affected by a known defect? | [reference/known-defects.md](reference/known-defects.md) |
+| Is the result I got affected by a known finding? | [reference/open-findings.md](reference/open-findings.md) |
 | Papers that used DiagHam; how to cite it | [reference/publications.md](reference/publications.md), `CITATION.cff` at the root |
 
 ### …change or extend the code
@@ -53,11 +53,11 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | What the test suite checks, and what it does not | [reference/tests.md](reference/tests.md) |
 | What is proven, what is only watched, what is untested — in one page | [explanation/verification.md](explanation/verification.md) |
 | How this repository scores against JOSS / FAIR4RS / Turing Way / CERTIFY-ED | [explanation/checklists.md](explanation/checklists.md) |
-| Which programs actually have their physics tested (honest count) | [reference/test-coverage.md](reference/test-coverage.md) |
+| Which programs actually have their physics tested (accurate count) | [reference/test-coverage.md](reference/test-coverage.md) |
 | Fix something in DiagHam's own sources: the rules and the index of fixes so far | `CONTRIBUTING.md` at the root, then [explanation/upstream-fixes.md](explanation/upstream-fixes.md) |
 | Offer a fix or a finding to the DiagHam authors (reports + `svn patch` diffs) | [how-to/develop/send-a-fix-upstream.md](how-to/develop/send-a-fix-upstream.md), [upstream-reports/](upstream-reports/README.md) |
 | Code that is excluded from the build, and why | [explanation/deferred-code.md](explanation/deferred-code.md) |
-| The torus SU(2) Coulomb defect in detail | [explanation/torus-su2-coulomb-defect.md](explanation/torus-su2-coulomb-defect.md) |
+| The torus SU(2) Coulomb finding in detail | [explanation/torus-su2-coulomb-finding.md](explanation/torus-su2-coulomb-finding.md) |
 | How changes are reviewed (the guard pipeline) and the rules for AI-assisted work | [explanation/guard-design.md](explanation/guard-design.md), `AGENTS.md` at the root |
 
 ### …understand where this repository comes from
@@ -86,8 +86,8 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 docs/
   tutorials/     learning by doing: first build, first FQHE run, Hubbard walkthrough
   how-to/        build/ (per platform, presets), develop/ (programs, tests, symmetries), MPI, ScaLAPACK, install
-  reference/     build system, configure-flag map, data formats, tests, defects, publications, programs/ (generated) + manuals/
-  explanation/   migration history, upstream fixes, deferred code, the torus defect, guard design, why CMake
+  reference/     build system, configure-flag map, data formats, tests, findings, publications, programs/ (generated) + manuals/
+  explanation/   migration history, upstream fixes, deferred code, the torus finding, guard design, why CMake
   history/       upstream INSTALL, ChangeLog, TODO, NEWS — unchanged
   drafts/        incomplete pages and the index of what went where
 ```

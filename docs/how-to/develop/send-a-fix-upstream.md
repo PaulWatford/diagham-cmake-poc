@@ -1,6 +1,6 @@
 # Offer a fix or a finding to the DiagHam authors
 
-Purpose: turn a fix carried on `main`, or a defect found by the tests, into something the DiagHam authors can act on in their Subversion repository.
+Purpose: turn a fix carried on `main`, or a finding found by the tests, into something the DiagHam authors can act on in their Subversion repository.
 Source: new (2026-09-28); `scripts_cmake/upstream_pack.py`, `docs/upstream-reports/`, `patches/upstream/`, `GOVERNANCE.md`.
 
 The physics code is theirs (`GOVERNANCE.md`): a fix is only finished when it is in Subversion, and until then this repository carries it as one commit with the trailers `Upstream-Patch:` / `Upstream-Base:`. Nothing in this repository sends anything; the maintainer does, by e-mail or by whatever route the authors prefer.
@@ -18,13 +18,13 @@ Send the report and the diff together. If the fix changes a computed number (mar
 
 `scripts_cmake/reproduce_on_pristine_trunk.sh` exports the trunk revision this repository carries straight from the Subversion server, builds it with DiagHam's own autotools and runs every reproducer there next to a positive control ([reproduce-on-pristine-trunk.md](reproduce-on-pristine-trunk.md)). Run it before sending a report, and quote its output.
 
-## What to send for a defect without a fix
+## What to send for a finding without a fix
 
-`docs/upstream-reports/open-*.md` hold the reproducers of registered defects that are not fixed here (U29 disk hang, U31 two-band checkerboard segfault, U34 wrong disk pseudopotential energies, U35 ignored open boundaries in the 2D Ising program): the exact command, what happens, what was expected and why, the build it was seen in. The `known-bug` tests in ctest carry the same reproducers and turn red when upstream fixes them.
+`docs/upstream-reports/open-*.md` hold the reproducers of registered findings that are not fixed here (U29 disk hang, U31 two-band checkerboard segfault, U34 wrong disk pseudopotential energies, U35 ignored open boundaries in the 2D Ising program): the exact command, what happens, what was expected and why, the build it was seen in. The `open-finding` tests in ctest carry the same reproducers and turn red when upstream fixes them.
 
 ## When upstream has taken a fix
 
-The next `scripts_cmake/sync_upstream.sh` run will either merge cleanly (upstream applied the same change) or conflict (upstream fixed it differently). In both cases: drop our commit's change if it is now redundant, update the row in `docs/explanation/upstream-fixes.md` to "fixed upstream at r…", and let the known-bug test (if any) be promoted to an ordinary test.
+The next `scripts_cmake/sync_upstream.sh` run will either merge cleanly (upstream applied the same change) or conflict (upstream fixed it differently). In both cases: drop our commit's change if it is now redundant, update the row in `docs/explanation/upstream-fixes.md` to "fixed upstream at r…", and let the open-finding test (if any) be promoted to an ordinary test.
 
 ## Writing a new report by hand
 

@@ -1,7 +1,7 @@
-# Open defect U40: SpinChainEntanglementEntropy aborts in a build without LAPACK
+# Open finding U40: SpinChainEntanglementEntropy aborts in a build without LAPACK
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (`knownbug.spin_chain_entanglement.use_svd_ungated.*` in ctest hold it in the default build).
-Source: `docs/reference/known-defects.md` (U40), found 2026-09-29 while writing the entanglement goldens; r4493 sources, `default` preset (no LAPACK), GCC 15.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (`openfinding.spin_chain_entanglement.use_svd_ungated.*` in ctest hold it in the default build).
+Source: `docs/reference/open-findings.md` (U40), found 2026-09-29 while writing the entanglement goldens; r4493 sources, `default` preset (no LAPACK), GCC 15.
 
 ## What happens
 

@@ -78,7 +78,7 @@ endforeach()
 # BasicLanczosAlgorithm and ComplexBasicLanczosAlgorithm now detect the closure and stop
 # (docs/upstream-reports/, "Lanczos Krylov space closure"). The ground energy of every one of
 # the eight momentum sectors must equal the tight-binding minimum of that sector, from
-# tests/oracles/spin_hubbard.py (was the known-bug test knownbug.hubbard.2x4.U0.plain_lanczos_below_ground_state).
+# tests/oracles/spin_hubbard.py (was the open-finding test openfinding.hubbard.2x4.U0.plain_lanczos_below_ground_state).
 diagham_physics_test(physics.hubbard.2x4.U0.plain_lanczos_krylov_closure
     PROGRAM ${hubbard}
     ARGS -p 8 -x 2 -y 4 --u-potential 0 -n 1 --full-diag 100

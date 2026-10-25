@@ -52,9 +52,9 @@ foreach(line ${regression_cases})
     endif()
 endforeach()
 
-# known defect U31: FCICheckerboardLatticeModel without --single-band (the two-band model)
+# known finding U31: FCICheckerboardLatticeModel without --single-band (the two-band model)
 # segfaults after "start" for every size tried; WILL_FAIL until it is fixed.
-diagham_physics_test(knownbug.fci.checkerboard.two_band_model_segfault
+diagham_physics_test(openfinding.fci.checkerboard.two_band_model_segfault
     PROGRAM FCI_FCICheckerboardLatticeModel
     ARGS -p 3 -x 3 -y 3 --flat-band --full-diag 5000
     OUTPUT "fermions_checkerboardlattice_*_gx_*.dat"

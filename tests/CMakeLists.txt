@@ -23,8 +23,8 @@
 #              find_package(DiagHam) from a separate project
 #   python     independent Python exact diagonalisation cross-check
 #              (registered only when Python 3 with numpy is available)
-#   known-bug  reproducers for documented upstream defects, registered with
-#              WILL_FAIL so they pass while the defect is present and turn
+#   open-finding  reproducers for documented upstream findings, registered with
+#              WILL_FAIL so they pass while the finding is present and turn
 #              red -- prompting their promotion to a physics test -- the
 #              moment it is fixed
 #
@@ -102,7 +102,7 @@ function(diagham_physics_test name)
         set(labels crosscheck ${ARG_LABELS})
     endif()
     if(ARG_WILL_FAIL)
-        set(labels known-bug ${ARG_LABELS})
+        set(labels open-finding ${ARG_LABELS})
     endif()
     set_tests_properties(${name} PROPERTIES
         LABELS "${labels}"
@@ -242,7 +242,7 @@ diagham_physics_test(physics.spin.heisenberg_ring_L10
 # FQHE: spinful (SU(2)) torus Coulomb, FQHETorusFermionsWithSpin
 #
 # Cross-checks guarding the spinful torus Coulomb fix
-# (docs/explanation/torus-su2-coulomb-defect.md). Each compares the program
+# (docs/explanation/torus-su2-coulomb-finding.md). Each compares the program
 # with another DiagHam implementation, full spectrum:
 #
 #  - fully polarised (total spin = N) must reproduce the spinless Coulomb

@@ -1,7 +1,7 @@
-# Open defect U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds
+# Open finding U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (`knownbug.spin.tfim2d.open_boundaries_ignored` in ctest holds it).
-Source: `docs/reference/known-defects.md` (U35), found 2026-09-29 while writing the spin-model goldens; r4493 sources, `default` preset, GCC 15.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (`openfinding.spin.tfim2d.open_boundaries_ignored` in ctest holds it).
+Source: `docs/reference/open-findings.md` (U35), found 2026-09-29 while writing the spin-model goldens; r4493 sources, `default` preset, GCC 15.
 
 ## What happens
 

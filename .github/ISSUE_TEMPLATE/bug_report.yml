@@ -1,11 +1,11 @@
-name: Bug report
+name: Problem report
 description: A build failure, a test failure, a crash, or a result you believe is wrong
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        Before filing: check `docs/reference/known-defects.md` (registered upstream defects) and
+        Before filing: check `docs/reference/open-findings.md` (registered upstream findings) and
         `docs/reference/test-coverage.md` (whether this program's physics has been checked at all).
   - type: dropdown
     id: kind
@@ -59,4 +59,4 @@ body:
       label: Checks
       options:
         - label: I ran `ctest --preset <preset>` and report whether it is green
-        - label: I looked at `docs/reference/known-defects.md`
+        - label: I looked at `docs/reference/open-findings.md`

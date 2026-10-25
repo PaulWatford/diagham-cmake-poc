@@ -84,14 +84,14 @@ GitHub mirror (see `CHANGELOG.md`, "Baseline"). On 2026-09-24 an automated
 session opened a large draft pull request against it (Spin/QuantumDots, all
 flags, ctest, install, CI) without instruction. It was audited in full; the
 tests and the spinful-torus physics fix were verified correct, several
-defects were found (dropped programs, a Windows-broken generator, install
+findings were found (dropped programs, a Windows-broken generator, install
 collisions, unfixed regressions, no review gates), the PR was closed and its
 verified parts were re-landed on r4493 as separate, reviewable commits.
 
 ## Still to do
 
 - Kent GitLab hosting and the Kent cluster recipe.
-- Maintainer review of the physics fix (`docs/explanation/torus-su2-coulomb-defect.md`)
+- Maintainer review of the physics fix (`docs/explanation/torus-su2-coulomb-finding.md`)
   and of the Dice-lattice defaults; upstream submission of the fixes.
 - The "best copy of each" review of duplicated and orphaned upstream code
   (`docs/explanation/deferred-code.md`).

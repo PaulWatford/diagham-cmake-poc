@@ -44,7 +44,7 @@ Every non-program page of the DiagHam wiki (archived 2026-09-24); program pages 
 | `MODULE_MAP.md` | merged | [reference/build-system.md](../reference/build-system.md) |
 | `HUBBARD_BENCHMARK.md` | merged | [tutorials/hubbard-walkthrough.md](../tutorials/hubbard-walkthrough.md); the full log stays at `benchmarks/BENCHMARK.md` |
 | `TESTING.md` | moved | [reference/tests.md](../reference/tests.md); its "Adding a golden" section is [how-to/develop/add-a-golden-test.md](../how-to/develop/add-a-golden-test.md) |
-| `MIGRATION_ROADMAP.md`, `DEFERRED.md`, `BUG_torus_su2_coulomb.md` | moved | [explanation/](../explanation/migration-history.md): migration-history, deferred-code, torus-su2-coulomb-defect (+ [reference/known-defects.md](../reference/known-defects.md)) |
+| `MIGRATION_ROADMAP.md`, `DEFERRED.md`, `BUG_torus_su2_coulomb.md` | moved | [explanation/](../explanation/migration-history.md): migration-history, deferred-code, torus-su2-coulomb-finding (+ [reference/open-findings.md](../reference/open-findings.md)) |
 | `patches/PATCHES.md` | kept, frozen | audit trail of the proof-of-concept fixes; the live index is [explanation/upstream-fixes.md](../explanation/upstream-fixes.md) |
 | `docs/how-to/build/kent.md` | parked | [kent-cluster-build.md](kent-cluster-build.md) — site values unknown |
 | `COPYING` and `LICENSE` | renamed | `COPYING` (GPL-2 text) → `LICENSE`; the contribution notice → `NOTICE` (2026-09-27, so the licence is machine-detected) |

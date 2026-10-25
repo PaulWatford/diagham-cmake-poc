@@ -1,8 +1,8 @@
-# Bug report: spinful torus Coulomb ground state is wrong for N >= 3
+# Problem report: spinful torus Coulomb ground state is wrong for N >= 3
 
-Source: `BUG_torus_su2_coulomb.md` (May 2026). Status 2026-09-26: **root-caused and fixed on `main`** (commit "Spinful torus Coulomb: generate the basis in the order FindStateIndex searches, and add the missing up-down interaction"), pending a DiagHam maintainer's review before it goes upstream. The localisation below was close but not exact: the operator's arithmetic is fine; the basis it searches was generated (recursion both→up→down→none, copied from the sphere class) in an order the ascending `FindStateIndex` cannot search, and `FindStateIndex` returns a valid index when it fails, so lookups landed on wrong states silently. A second, independent defect in `ParticleOnTorusCoulombWithSpinHamiltonian` reused the same-spin antisymmetrised combination for the up-down term and dropped every same-orbital term, so unpolarised results were wrong even for N = 2 (exactly twice the correct energy there). With the fix: polarised N = 3 agrees with the spinless program to 4e-14 over 84 states; Sz = 0, N = 4 agrees with the independent `FQHETorusFermionsWithSpinAndTranslations` to 2.4e-12 over 4,356 states; SU(2) multiplet nesting holds to 4e-14; fast multiplication on and off give identical spectra. Two ctest goldens (`physics.fqhe.torus.su2_coulomb.*`) guard it. Note for the "best copy" review: upstream has not touched these classes since 2020 and develops the `…AndMagneticTranslations` path instead. The original report follows unchanged.
+Source: `BUG_torus_su2_coulomb.md` (May 2026). Status 2026-09-26: **root-caused and fixed on `main`** (commit "Spinful torus Coulomb: generate the basis in the order FindStateIndex searches, and add the missing up-down interaction"), pending a DiagHam maintainer's review before it goes upstream. The localisation below was close but not exact: the operator's arithmetic is fine; the basis it searches was generated (recursion both→up→down→none, copied from the sphere class) in an order the ascending `FindStateIndex` cannot search, and `FindStateIndex` returns a valid index when it fails, so lookups landed on wrong states silently. A second, independent finding in `ParticleOnTorusCoulombWithSpinHamiltonian` reused the same-spin antisymmetrised combination for the up-down term and dropped every same-orbital term, so unpolarised results were wrong even for N = 2 (exactly twice the correct energy there). With the fix: polarised N = 3 agrees with the spinless program to 4e-14 over 84 states; Sz = 0, N = 4 agrees with the independent `FQHETorusFermionsWithSpinAndTranslations` to 2.4e-12 over 4,356 states; SU(2) multiplet nesting holds to 4e-14; fast multiplication on and off give identical spectra. Two ctest goldens (`physics.fqhe.torus.su2_coulomb.*`) guard it. Note for the "best copy" review: upstream has not touched these classes since 2020 and develops the `…AndMagneticTranslations` path instead. The original report follows unchanged.
 
-This is a physics correctness bug in current DiagHam, independent of the
+This is a physics correctness error in current DiagHam, independent of the
 CMake migration. It was found while verifying that the canonical program
 `FQHETorusFermionsWithSpin` is a sound replacement for the broken,
 excluded `QHEFermionsTorusWithSpin` (see `deferred-code.md`).
@@ -61,7 +61,7 @@ ground state is too high.
 The discriminating variable is the number of spectator particles, not
 the filling: N = 2 is correct at filling 1/3, 1/4, and 1/6 alike, while
 N = 3 and N = 4 both fail. With only one pair (N = 2) there are no
-spectators and the bug does not trigger.
+spectators and the error does not trigger.
 
 ## What is NOT the cause (ruled out by independent checks)
 
@@ -79,11 +79,11 @@ spectators and the bug does not trigger.
 - Antisymmetrisation: both build the identical four-term combination
   V(m1,m2,m3,m4) + V(m2,m1,m4,m3) - V(m1,m2,m4,m3) - V(m2,m1,m3,m4).
 - Fast multiplication: disabling it (`--memory 0`) gives the identical
-  wrong answer, so the bug is not in the fast-multiplication cache.
+  wrong answer, so the error is not in the fast-multiplication cache.
 
-## Where the bug is
+## Where the error is
 
-The bug is in the shared core operator path, not in the Hamiltonian's
+The error is in the shared core operator path, not in the Hamiltonian's
 coefficient or caching layers. The spin-polarized two-body term is
 applied through
 
@@ -101,7 +101,7 @@ contains active debugging output (several `cout << "Sign after ..."` and
 `cout << "TmpState ..."` lines, e.g. lines 619, 630, 638, 658, 678),
 which indicates the SU(2) torus operators in this class were left in an
 incompletely debugged state. This is circumstantial, not proof that the
-fault is on a specific line; the exact defect (in `AduAduAuAu` itself or
+fault is on a specific line; the exact finding (in `AduAduAuAu` itself or
 in the `FindStateIndex` / highest-bit bookkeeping it relies on) has not
 been isolated to a single statement.
 
@@ -113,7 +113,7 @@ been isolated to a single statement.
    the latter.
 2. Should `FermionOnTorusWithSpinNew::AduAduAuAu` reproduce the spinless
    result under full polarization? (Physically it must.) If so, the
-   N >= 3 rank deficiency is a confirmed defect.
+   N >= 3 rank deficiency is a confirmed finding.
 3. Given that the broken `QHEFermionsTorusWithSpin.cc` would have depended
    on this same family of operators, is there any spinful torus Coulomb
    result in the literature that relied on this code path and should be

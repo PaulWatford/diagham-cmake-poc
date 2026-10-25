@@ -121,7 +121,7 @@ int main(int argc, char** argv)
 
 Three habits worth copying from the existing programs: check `--help`
 *before* checking required arguments (or `--help` never works — see
-`EvaluateBroadening` in the defect register); gate `LapackDiagonalize`
+`EvaluateBroadening` in the findings register); gate `LapackDiagonalize`
 behind `#ifdef __LAPACK__` with the built-in `Diagonalize` as the fallback
 (the most common upstream build failure); and print results with
 `precision(DIAGHAM_OUTPUT_PRECISION)` (14 digits, or 17 with `DIAGHAM_FULL_PRECISION_OUTPUT`), not a literal.

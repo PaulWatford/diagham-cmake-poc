@@ -1,7 +1,7 @@
-# Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"
+# Open finding U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"
 
 Purpose: reproducer for the DiagHam authors; no fix is carried here.
-Source: `docs/reference/known-defects.md` (U29), found 2026-09-27 while writing the disk goldens; seen on the r4493 sources, `default` and `full` presets, GCC 15 (Ubuntu) and GCC 13 (Ubuntu 24.04, CI).
+Source: `docs/reference/open-findings.md` (U29), found 2026-09-27 while writing the disk goldens; seen on the r4493 sources, `default` and `full` presets, GCC 15 (Ubuntu) and GCC 13 (Ubuntu 24.04, CI).
 
 ## What happens
 

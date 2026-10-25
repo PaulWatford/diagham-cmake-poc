@@ -1,6 +1,6 @@
-# Reproduce the registered defects on a pristine trunk
+# Reproduce the registered findings on a pristine trunk
 
-Purpose: show that a defect in `docs/reference/known-defects.md` is in DiagHam's Subversion trunk as DiagHam's own build produces it, not in this repository's conversion or its CMake build.
+Purpose: show that a finding in `docs/reference/open-findings.md` is in DiagHam's Subversion trunk as DiagHam's own build produces it, not in this repository's conversion or its CMake build.
 Source: `scripts_cmake/reproduce_on_pristine_trunk.sh`; first run 2026-09-29 against trunk r4493.
 
 ## What the script does
@@ -28,4 +28,4 @@ It needs `svn`, autotools and a C++ compiler, and about half an hour for the bui
 - U30: −17.8677 and −18.4122 in two momentum sectors, below the exact −16 (the sources on `main` carry the fix; the pristine build does not).
 - U33: segmentation fault after "Hilbert space dimension = 12" (same: fixed on `main`, present in the pristine build).
 
-The registers (`docs/reference/known-defects.md`, `docs/explanation/verification.md`) say "present at r4493" for these; this is the evidence behind that column. Rerun the script when trunk moves.
+The registers (`docs/reference/open-findings.md`, `docs/explanation/verification.md`) say "present at r4493" for these; this is the evidence behind that column. Rerun the script when trunk moves.

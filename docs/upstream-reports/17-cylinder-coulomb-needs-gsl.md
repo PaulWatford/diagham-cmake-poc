@@ -13,9 +13,9 @@ which showed up as a segmentation fault right after "Hilbert space
 dimension" in every run of FQHECylinderFermionsCoulomb built without
 DIAGHAM_USE_GSL (the default preset). Now an #else branch prints which
 build option is needed and exits 1. Behaviour with GSL unchanged. The
-same defect and the same fix as U28 (ParticleOnCylinderPseudopotentialHamiltonian).
+same finding and the same fix as U28 (ParticleOnCylinderPseudopotentialHamiltonian).
 
-Found while writing the cylinder goldens (defect register U33).
+Found while writing the cylinder goldens (findings register U33).
 
 ## Applying to a Subversion working copy
 

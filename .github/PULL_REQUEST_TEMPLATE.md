@@ -1,4 +1,4 @@
-<!-- Thank you. The checklist is what the maintainer will look for; ticking it honestly saves a round trip. -->
+<!-- Thank you. The checklist is what the maintainer will look for; ticking it plainly saves a round trip. -->
 
 ## What this changes and why
 

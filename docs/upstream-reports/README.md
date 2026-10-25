@@ -1,7 +1,7 @@
 # Reports for the DiagHam authors
 
-Purpose: everything needed to offer this repository's fixes and findings upstream — one report and one `svn patch`-applicable diff per fix, and a report per open defect.
-Source: generated from the commits on `main` that carry an `Upstream-Patch:` trailer (`scripts_cmake/upstream_pack.py`; `--check` applies the diffs in series to a pristine `upstream` tree); the open-defect reports are hand-written from `docs/reference/known-defects.md`. Nothing here is sent automatically: `docs/how-to/develop/send-a-fix-upstream.md` says how.
+Purpose: everything needed to offer this repository's fixes and findings upstream — one report and one `svn patch`-applicable diff per fix, and a report per open finding.
+Source: generated from the commits on `main` that carry an `Upstream-Patch:` trailer (`scripts_cmake/upstream_pack.py`; `--check` applies the diffs in series to a pristine `upstream` tree); the open-finding reports are hand-written from `docs/reference/open-findings.md`. Nothing here is sent automatically: `docs/how-to/develop/send-a-fix-upstream.md` says how.
 
 ## Fixes carried on `main` (diffs in `patches/upstream/`, a series to apply in order)
 
@@ -25,18 +25,18 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 | 16 | [Plain Lanczos: detect the closure of the Krylov space instead of iterating on round-off (U](16-LanczosKrylovSpaceClosure.md) | 4 | `patches/upstream/16-LanczosKrylovSpaceClosure.diff` |
 | 17 | [ParticleOnCylinderCoulombHamiltonian: fail clearly without GSL instead of undefined behavi](17-cylinder-coulomb-needs-gsl.md) | 1 | `patches/upstream/17-cylinder-coulomb-needs-gsl.diff` |
 
-## Registered defects without a fix (reproducers)
+## Registered findings without a fix (reproducers)
 
-- [Open defect U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"](open-U29.md)
-- [Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band](open-U31.md)
-- [Open defect U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3](open-U34.md)
-- [Open defect U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds](open-U35.md)
-- [Open defect U36: FTI3DHopf segfaults after writing its band file](open-U36.md)
-- [Open defect U37: 3D --export-onebodytext writes only the kz = 0 slice](open-U37.md)
-- [Open defect U39: the one-body energy of the single-band many-body Hamiltonians is wrong](open-U39.md)
-- [Open defect U40: SpinChainEntanglementEntropy aborts in a build without LAPACK](open-U40.md)
-- [Open defect U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix](open-U42.md)
-- [Open defect U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)](open-U43.md)
-- [Open defect U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path](open-U41.md)
+- [Open finding U29: FQHEDiskFermionsTwoBodyGeneric hangs after printing "start"](open-U29.md)
+- [Open finding U31: FCICheckerboardLatticeModel segfaults without --single-band](open-U31.md)
+- [Open finding U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3](open-U34.md)
+- [Open finding U35: TwoDimensionalTransverseFieldIsingModel ignores open boundaries for the Ising bonds](open-U35.md)
+- [Open finding U36: FTI3DHopf segfaults after writing its band file](open-U36.md)
+- [Open finding U37: 3D --export-onebodytext writes only the kz = 0 slice](open-U37.md)
+- [Open finding U39: the one-body energy of the single-band many-body Hamiltonians is wrong](open-U39.md)
+- [Open finding U40: SpinChainEntanglementEntropy aborts in a build without LAPACK](open-U40.md)
+- [Open finding U42: RealSymmetricMatrix::Householder overruns its arrays for a 1x1 matrix](open-U42.md)
+- [Open finding U43: HaahCodeEntropy sizes its state array 2^(number of Z terms)](open-U43.md)
+- [Open finding U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path](open-U41.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

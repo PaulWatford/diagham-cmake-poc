@@ -17,7 +17,7 @@ them:
 
 - **The ctest suite passes in full** (`ctest --preset default`: 905 tests at
   DiagHam r4493, of which 250 physics goldens + 1 Python cross-check, 3-4
-  cross-checks (one needs LAPACK), 11-12 regression (one needs GSL), 599 `--help` smokes, 1 install, 24 self-tests, 17 known-bug; the
+  cross-checks (one needs LAPACK), 11-12 regression (one needs GSL), 599 `--help` smokes, 1 install, 24 self-tests, 17 open-finding; the
   list of test names is the locked manifest `tests/manifest.txt`, checked by
   `selftest.manifest`). `cmake/verify_build.sh`, the autotools-parity script,
   reports 79 passes in the default configuration (FQHE and FTI on) and is a

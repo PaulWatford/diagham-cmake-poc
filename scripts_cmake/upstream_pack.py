@@ -17,7 +17,7 @@ writes
                                         verified (the commit message, or the fix index row
                                         and the audit trail when the message is only a
                                         subject), files, how to apply
-and an index. Hand-written reports for defects that are registered but not fixed
+and an index. Hand-written reports for findings that are registered but not fixed
 (docs/upstream-reports/open-*.md) are listed in the index as well.
 """
 import re, shutil, subprocess, sys, tempfile
@@ -173,8 +173,8 @@ def main():
         old.unlink()
     index = ["# Reports for the DiagHam authors",
              "",
-             "Purpose: everything needed to offer this repository's fixes and findings upstream — one report and one `svn patch`-applicable diff per fix, and a report per open defect.",
-             "Source: generated from the commits on `main` that carry an `Upstream-Patch:` trailer (`scripts_cmake/upstream_pack.py`; `--check` applies the diffs in series to a pristine `upstream` tree); the open-defect reports are hand-written from `docs/reference/known-defects.md`. Nothing here is sent automatically: `docs/how-to/develop/send-a-fix-upstream.md` says how.",
+             "Purpose: everything needed to offer this repository's fixes and findings upstream — one report and one `svn patch`-applicable diff per fix, and a report per open finding.",
+             "Source: generated from the commits on `main` that carry an `Upstream-Patch:` trailer (`scripts_cmake/upstream_pack.py`; `--check` applies the diffs in series to a pristine `upstream` tree); the open-finding reports are hand-written from `docs/reference/open-findings.md`. Nothing here is sent automatically: `docs/how-to/develop/send-a-fix-upstream.md` says how.",
              "",
              "## Fixes carried on `main` (diffs in `patches/upstream/`, a series to apply in order)",
              "",
@@ -187,7 +187,7 @@ def main():
         index.append(f"| {n:02d} | [{fix['subject'][:90]}]({n:02d}-{s}.md) | {len(fix['files'])} | `patches/upstream/{n:02d}-{s}.diff` |")
     opens = sorted(REPORTS.glob("open-*.md"))
     if opens:
-        index += ["", "## Registered defects without a fix (reproducers)", ""]
+        index += ["", "## Registered findings without a fix (reproducers)", ""]
         for p in opens:
             title = next((l[2:] for l in p.read_text().splitlines() if l.startswith("# ")), p.stem)
             index.append(f"- [{title}]({p.name})")

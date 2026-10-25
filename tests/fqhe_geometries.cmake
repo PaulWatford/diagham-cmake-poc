@@ -84,7 +84,7 @@ diagham_geometry_test(physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode_n6
 diagham_geometry_test(physics.fqhe.cylinder.bosons_mooreread.two_quasihole_count CASE cylinder_bosons_mooreread_n6_l5 GEOMETRY cylinder
     PROGRAM ${cb3} ARGS -p 6 -l 5 --full-diag 5000 OUTPUT "bosons_cylinder_ky_3b_n_6_2s_5_ratio_1.000000.dat")
 
-# --- disk (bosons only: FQHEDiskFermionsTwoBodyGeneric hangs, defect U29) ----------------
+# --- disk (bosons only: FQHEDiskFermionsTwoBodyGeneric hangs, finding U29) ----------------
 set(db2 FQHEOnDisk_FQHEDiskBosonsTwoBodyGeneric)
 foreach(lz 12 13 14 15 16)
     diagham_geometry_test(physics.fqhe.disk.bosons_laughlin_1_2.n4_lz${lz} CASE disk_bosons_laughlin_1_2_n4_lz${lz} GEOMETRY disk

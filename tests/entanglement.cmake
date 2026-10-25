@@ -103,7 +103,7 @@ if(DIAGHAM_USE_LAPACK)
 else()
     # U40: use-svd is read unconditionally but only registered with LAPACK, so without it the program
     # stops with "Option 'use-svd' was requested, but is not implemented!". WILL_FAIL until gated.
-    diagham_spin_entropy_tests(knownbug.spin_chain_entanglement.use_svd_ungated WILL_FAIL LABELS known-bug)
+    diagham_spin_entropy_tests(openfinding.spin_chain_entanglement.use_svd_ungated WILL_FAIL LABELS open-finding)
 endif()
 
 if(Python3_Interpreter_FOUND)

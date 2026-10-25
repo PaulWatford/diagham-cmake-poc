@@ -1,7 +1,7 @@
-# Open defect U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3
+# Open finding U34: the disk pseudopotential Hamiltonian gives wrong energies for N ≥ 3
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (three `known-bug` tests, `knownbug.fqhe.disk.bosons_two_body_generic.*`, hold the exact spectra).
-Source: `docs/reference/known-defects.md` (U34), found 2026-09-29 while writing the disk goldens; r4493 sources, `default` (no GSL) and `full` (GSL) presets, GCC 15.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (three `open-finding` tests, `openfinding.fqhe.disk.bosons_two_body_generic.*`, hold the exact spectra).
+Source: `docs/reference/open-findings.md` (U34), found 2026-09-29 while writing the disk goldens; r4493 sources, `default` (no GSL) and `full` (GSL) presets, GCC 15.
 
 ## What happens
 

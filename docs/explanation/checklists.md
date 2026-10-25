@@ -46,7 +46,7 @@ Source: the JOSS review checklist, the FAIR4RS-based checklist (TU Delft / Nethe
 | Unit tests | not done | no C++ unit tests; the oracles unit-test *themselves* (`selftest.*_oracle`) |
 | Integration tests | done | program-level goldens are integration tests of Hilbert space + Hamiltonian + diagonaliser |
 | System tests on common paths | partial | the most used programs (sphere/torus two-body, Hubbard, spin chains) are covered; most of the 603 are not |
-| Regression tests | done | 11 (+1), labelled honestly |
+| Regression tests | done | 11 (+1), labelled plainly |
 | Runtime/self tests | done | harness self-tests, manifest, oracle checks |
 | Tests documented and runnable in one command | done | `ctest --preset default`; `docs/reference/tests.md` |
 | Run in CI | done | |

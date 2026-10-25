@@ -1,7 +1,7 @@
-# Open defect U31: FCICheckerboardLatticeModel segfaults without --single-band
+# Open finding U31: FCICheckerboardLatticeModel segfaults without --single-band
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (`knownbug.fci.checkerboard.two_band_model_segfault` in ctest holds it).
-Source: `docs/reference/known-defects.md` (U31), found 2026-09-28; r4493 sources, `default` and `full` presets, GCC 15.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (`openfinding.fci.checkerboard.two_band_model_segfault` in ctest holds it).
+Source: `docs/reference/open-findings.md` (U31), found 2026-09-28; r4493 sources, `default` and `full` presets, GCC 15.
 
 ## What happens
 

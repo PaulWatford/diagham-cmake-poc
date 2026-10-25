@@ -14,7 +14,7 @@ FQHECylinderFermionsTwoBodyGeneric (and any program using this
 Hamiltonian) built without DIAGHAM_USE_GSL. Now an #else branch prints
 which build option is needed and exits 1. Behaviour with GSL unchanged.
 
-Found while writing the cylinder zero-mode goldens (defect register U28).
+Found while writing the cylinder zero-mode goldens (findings register U28).
 
 ## Applying to a Subversion working copy
 

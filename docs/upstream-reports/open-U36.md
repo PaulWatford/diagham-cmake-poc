@@ -1,7 +1,7 @@
-# Open defect U36: FTI3DHopf segfaults after writing its band file
+# Open finding U36: FTI3DHopf segfaults after writing its band file
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (`knownbug.fti.hopf3d.segfault_after_band_file` in ctest holds it).
-Source: `docs/reference/known-defects.md` (U36), found 2026-09-29 while writing the band-structure goldens; r4493 sources, `default` preset, GCC 15, and a pristine autotools build of r4493.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (`openfinding.fti.hopf3d.segfault_after_band_file` in ctest holds it).
+Source: `docs/reference/open-findings.md` (U36), found 2026-09-29 while writing the band-structure goldens; r4493 sources, `default` preset, GCC 15, and a pristine autotools build of r4493.
 
 ## What happens
 

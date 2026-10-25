@@ -14,10 +14,10 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
-- `tests/oracles/xcube.py` and `tests/xcube.cmake`: X-cube entanglement entropy by GF(2) rank (8 goldens on 2×2×2 to 3×2×2, agreeing with the program in the default and LAPACK builds, explicit-state check in mpmath) and a `known-bug` test for 3×3×3 (`std::bad_alloc`, 2^48 array against rank 46: the U43 defect, now recorded for XCube too). `tests/oracles/haah.py --check` also verifies k = 2L³ − 2·rank V against Table II of Haah's paper for L = 2..12. A dynamic sweep of the U42 exposure (whole suite plus about 30 targeted runs with an instrumented copy of the library) found `HaahCodeEntropy` as the only caller reaching the 1×1 Householder path; the library is unchanged.
-- `tests/oracles/haah.py` and `tests/haah.cmake`: Haah cubic-code entropy by GF(2) rank (8 goldens on 2×2×2 to 4×2×2, plus the one-site case with LAPACK), with an explicit-state check of the rank formula in mpmath (L = 2; L = 3 with `HAAH_FULL=1`); two `known-bug` tests (U42, U43). Defects U42 (`RealSymmetricMatrix::Householder` overruns its arrays for a 1×1 matrix; the default-build Haah crash) and U43 (`HaahCodeEntropy` sizes its array 2^(Z terms), 2^63 for 4×4×4) registered with reports `open-U42.md` and `open-U43.md`; the library is unchanged.
-- `tests/oracles/entanglement.py` and `tests/entanglement.cmake`: toric-code entropy (GF(2) rank formula, seven regions and both parity sectors), torus Laughlin particle-entanglement level counting per Ky, and (LAPACK) spin-chain entropy of a Bell pair and a product state; 11 goldens, 2 known-bug tests and a self-test. U40 (`SpinChainEntanglementEntropy` aborts without LAPACK) and U41 (`--kept-sites` with a path loses the toric-code spectrum) registered with reports `open-U40.md`, `open-U41.md`.
-- `tests/oracles/fci_manybody.py`: band-projected many-body ED of the checkerboard model (every total-momentum sector) and the exact atomic limit; 7 goldens (flat-band N = 2, 3 on 3×3, N = 2 on 4×3; three bosonic and one fermionic atomic-limit cases) and a self-test. U39 registered (the one-body energy of the single-band many-body Hamiltonians is halved for Haldane and Kagome, overwritten by an interaction term for the non-flat checkerboard) with four `known-bug` tests and report `open-U39.md`.
+- `tests/oracles/xcube.py` and `tests/xcube.cmake`: X-cube entanglement entropy by GF(2) rank (8 goldens on 2×2×2 to 3×2×2, agreeing with the program in the default and LAPACK builds, explicit-state check in mpmath) and an `open-finding` test for 3×3×3 (`std::bad_alloc`, 2^48 array against rank 46: the U43 finding, now recorded for XCube too). `tests/oracles/haah.py --check` also verifies k = 2L³ − 2·rank V against Table II of Haah's paper for L = 2..12. A dynamic sweep of the U42 exposure (whole suite plus about 30 targeted runs with an instrumented copy of the library) found `HaahCodeEntropy` as the only caller reaching the 1×1 Householder path; the library is unchanged.
+- `tests/oracles/haah.py` and `tests/haah.cmake`: Haah cubic-code entropy by GF(2) rank (8 goldens on 2×2×2 to 4×2×2, plus the one-site case with LAPACK), with an explicit-state check of the rank formula in mpmath (L = 2; L = 3 with `HAAH_FULL=1`); two `open-finding` tests (U42, U43). Findings U42 (`RealSymmetricMatrix::Householder` overruns its arrays for a 1×1 matrix; the default-build Haah crash) and U43 (`HaahCodeEntropy` sizes its array 2^(Z terms), 2^63 for 4×4×4) registered with reports `open-U42.md` and `open-U43.md`; the library is unchanged.
+- `tests/oracles/entanglement.py` and `tests/entanglement.cmake`: toric-code entropy (GF(2) rank formula, seven regions and both parity sectors), torus Laughlin particle-entanglement level counting per Ky, and (LAPACK) spin-chain entropy of a Bell pair and a product state; 11 goldens, 2 open-finding tests and a self-test. U40 (`SpinChainEntanglementEntropy` aborts without LAPACK) and U41 (`--kept-sites` with a path loses the toric-code spectrum) registered with reports `open-U40.md`, `open-U41.md`.
+- `tests/oracles/fci_manybody.py`: band-projected many-body ED of the checkerboard model (every total-momentum sector) and the exact atomic limit; 7 goldens (flat-band N = 2, 3 on 3×3, N = 2 on 4×3; three bosonic and one fermionic atomic-limit cases) and a self-test. U39 registered (the one-body energy of the single-band many-body Hamiltonians is halved for Haldane and Kagome, overwritten by an interaction term for the non-flat checkerboard) with four `open-finding` tests and report `open-U39.md`.
 - `tests/oracles/fci_bands.py` extended from the checkerboard model to Haldane,
   Kagome (three bands), Zhang–Qi, BHZ (four bands) and the 3D simple
   topological insulator, plus a Fukui–Hatsugai Chern number; 25 goldens over
@@ -26,7 +26,7 @@ all present on the `upstream` branch: `git log upstream`).
   converges as 1/N², so it is checked on a 64×64 grid.
 - U36 (`FTI3DHopf` segfaults after writing its band file) and U37 (the 3D
   `--export-onebodytext` holds only the kz = 0 slice) registered with
-  `known-bug` tests and reports; U38 (help text of `FCIHaldaneModel --phi`)
+  `open-finding` tests and reports; U38 (help text of `FCIHaldaneModel --phi`)
   listed as cosmetic.
 - `tests/oracles/lattice_fermions.py`: Fock-basis ED of Hubbard-family
   models; 6 goldens over four programs: the square-lattice Hubbard model at
@@ -40,13 +40,13 @@ all present on the `upstream` branch: `git log upstream`).
   Heisenberg, 2D transverse-field Ising, J₁–J₂ with momentum sectors,
   double-triangle chain, spin-2 generalised AKLT, O'Brien–Fendley (default
   factors), three-state Potts, disordered chain.
-- U35 registered with a `known-bug` test: the 2D transverse-field Ising
+- U35 registered with an `open-finding` test: the 2D transverse-field Ising
   program adds the wrap-around bonds whether or not `--use-periodic` is
   given.
 - `scripts_cmake/reproduce_on_pristine_trunk.sh` and
   `docs/how-to/develop/reproduce-on-pristine-trunk.md`: export the trunk
   revision from the Subversion server, build it with DiagHam's own autotools
-  and run every defect reproducer there; the 2026-09-29 run against r4493
+  and run every finding reproducer there; the 2026-09-29 run against r4493
   reproduces U29, U30, U32, U33 and U34 with the same numbers.
 - `tests/oracles/geometry_ed.py`: two-body pseudopotential ED on the cylinder
   (Landau gauge, no periodic images) and the disk (symmetric-gauge pair
@@ -55,7 +55,7 @@ all present on the `upstream` branch: `git log upstream`).
   Coulomb pseudopotentials' closed form Γ(m+½)/(2 m!)) and 4 more with GSL
   (`FQHECylinderFermionsTwoBodyGeneric` at three aspect ratios and two
   momentum sectors).
-- U34 registered with three `known-bug` tests: the disk pseudopotential
+- U34 registered with three `open-finding` tests: the disk pseudopotential
   Hamiltonian (`FQHEDiskBosonsTwoBodyGeneric`) gives wrong energies for
   N ≥ 3 while its zero modes are right; the tests carry the exact spectra.
 
@@ -64,7 +64,7 @@ all present on the `upstream` branch: `git log upstream`).
 
 ### Fixed
 - CI red at `d28738d95` (run of 30 September) although no physics test failed:
-  - `selftest.manifest` failed in the LAPACK builds (full, hpc, container), because three `known-bug` tests that exist only without LAPACK (U40, U42) were not in `tests/manifest-optional.txt`. They are now.
+  - `selftest.manifest` failed in the LAPACK builds (full, hpc, container), because three `open-finding` tests that exist only without LAPACK (U40, U42) were not in `tests/manifest-optional.txt`. They are now.
   - `selftest.fci_manybody_oracle` failed with the NumPy of Ubuntu 24.04 (1.26.4), not with 2.5. Reproduced with 1.26.4: every momentum sector agrees to 1e-14, but rows are sorted by energy only, so degenerate levels of different sectors came out in a different order. The check now compares each sector's sorted energies (same 1e-9 tolerance); it still fails on a changed energy. All 16 other Python self-tests pass with 1.26.4. Reference data unchanged.
   - The documentation site build stopped at its navigation check (stale `mkdocs.yml` nav); regenerated, and `mkdocs build --strict` passes.
 - U33: `ParticleOnCylinderCoulombHamiltonian` fails clearly without GSL
@@ -91,7 +91,7 @@ all present on the `upstream` branch: `git log upstream`).
   `tests/oracles/fqhe_sphere.py` takes the level index (monopole-harmonic
   form, l = S + n); three goldens for `CoulombPseudopotentials --landau-level`
   and one first-Landau-level ED spectrum.
-- U32 registered with a `known-bug` test: `FQHESphereFermionsWithSpin` with
+- U32 registered with an `open-finding` test: `FQHESphereFermionsWithSpin` with
   both symmetrisation flags builds an empty basis.
 - `tests/oracles/torus_ed.py`, an independent Landau-gauge exact
   diagonalisation on the torus (Coulomb or pseudopotentials, fermions or
@@ -110,7 +110,7 @@ all present on the `upstream` branch: `git log upstream`).
   Lanczos, `-n 1`) detect the closure of the Krylov space and stop instead
   of iterating on round-off; `-n 1` on the degenerate U = 0 2×4 Hubbard case
   now gives every sector's exact energy instead of values below the ground
-  state. The known-bug test is promoted to
+  state. The open-finding test is promoted to
   `physics.hubbard.2x4.U0.plain_lanczos_krylov_closure` (all eight sectors
   against the tight-binding minima from `tests/oracles/spin_hubbard.py`).
   Report and Subversion-applicable diff 16 in `docs/upstream-reports/`.
@@ -118,7 +118,7 @@ all present on the `upstream` branch: `git log upstream`).
 ### Changed
 - Test counts: 905 tests (+5 with GSL, +5 with LAPACK), 250 physics goldens, 76 of 603 programs with a
   physics or cross-check test (76 against an independent answer), 24
-  self-tests, 17 known-bug reproducers; `tests/manifest.txt` and
+  self-tests, 17 open-finding reproducers; `tests/manifest.txt` and
   `docs/reference/test-coverage.md` regenerated.
 
 ## [2026.9.0] — 2026-09-28

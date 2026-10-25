@@ -104,8 +104,8 @@ diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.symmetrized_basis.lz_minu
     PROGRAM ${su2f} ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --lzsymmetrized-basis --minus-lzparity OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat")
 # U32: with both --lzsymmetrized-basis and --szsymmetrized-basis the fermionic basis comes out empty
 # (dimension 0 for every size tried; the bosonic program is fine). The oracle's even-even sector has
-# 20 states. WILL_FAIL: passes while the defect is present, turns red when the basis is fixed.
-diagham_physics_test(knownbug.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
+# 20 states. WILL_FAIL: passes while the finding is present, turns red when the basis is fixed.
+diagham_physics_test(openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
     PROGRAM ${su2f}
     ARGS -p 4 -l 6 -s 0 --initial-lz 0 --nbr-lz 1 --lzsymmetrized-basis --szsymmetrized-basis --interaction-file ${ed_data}/fermions_su2_n4_2s6_coulomb_sz0_szplus_lzplus_pp.dat --interaction-name ed --full-diag 100000
     OUTPUT "fermions_sphere_su2_ed_n_4_2s_6_sz_0_lz*.dat"
@@ -333,7 +333,7 @@ foreach(case "bosons_n3_lz6_v0|3|6" "bosons_n4_lz12_v0_v2|4|12" "bosons_n3_lz9_v
     list(GET c 0 name)
     list(GET c 1 n)
     list(GET c 2 lz)
-    diagham_physics_test(knownbug.fqhe.disk.bosons_two_body_generic.${name}
+    diagham_physics_test(openfinding.fqhe.disk.bosons_two_body_generic.${name}
         PROGRAM ${db2}
         ARGS -p ${n} --minimum-momentum ${lz} --maximum-momentum ${lz} --interaction-file ${geo_data}/${name}_pp.dat --interaction-name ed --full-diag 100000
         OUTPUT "bosons_disk_ed_n_${n}_lz_${lz}.dat"
@@ -419,7 +419,7 @@ diagham_band_case(simple_ti3d_3x2x3_m2.5 FTI_FTI3DSimpleTI 3 2 3
 
 # U36: FTI3DHopf writes its band file and then segfaults (exit 139, every size and --lambda tried;
 # the same on a pristine autotools build of r4493). WILL_FAIL until it is fixed.
-diagham_physics_test(knownbug.fti.hopf3d.segfault_after_band_file
+diagham_physics_test(openfinding.fti.hopf3d.segfault_after_band_file
     PROGRAM FTI_FTI3DHopf
     ARGS -p 2 -x 3 -y 3 -z 3 --singleparticle-spectrum
     OUTPUT "fermions_singleband_hopf_p_2_x_3_y_3_z_3_l_1.dat"
@@ -428,7 +428,7 @@ diagham_physics_test(knownbug.fti.hopf3d.segfault_after_band_file
 
 # U37: for the 3D tight-binding programs --export-onebodytext writes the two-dimensional layout
 # (header "kx ky E_0 ...") and only the kz = 0 slice: 9 rows for a 3x3x2 grid instead of 18.
-diagham_physics_test(knownbug.fti.simple_ti3d.export_onebodytext_kz0_slice_only
+diagham_physics_test(openfinding.fti.simple_ti3d.export_onebodytext_kz0_slice_only
     PROGRAM FTI_FTI3DSimpleTI
     ARGS -p 2 -x 3 -y 3 -z 2 --four-bands --mass 1.5 ${fci_export}
     OUTPUT "fermions_quantumspinhall3d_simpleti_fourbands_n_2_x_3_y_3_z_2_*_tightbinding.dat"
@@ -537,30 +537,30 @@ diagham_physics_test(physics.fci.atomiclimit.fermions_3x3_n2_inert
 # band energy is overwritten by an interaction-derived term (EvaluateInteractionFactors, second assignment
 # of OneBodyInteractionFactors), so U = 0 does not give the band-energy sum; Haldane and Kagome: with no
 # interaction, N = 1 gives exactly half of the band energy. WILL_FAIL until fixed.
-diagham_physics_test(knownbug.fci.checkerboard.manybody.3x3_n2_u0_band_energy_overwritten
+diagham_physics_test(openfinding.fci.checkerboard.manybody.3x3_n2_u0_band_energy_overwritten
     PROGRAM ${fci_cb}
     ARGS -p 2 -x 3 -y 3 --single-band --u-potential 0 --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_18_x_3_y_3_*_gx_*.dat"
     CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n2_u0.dat 2 1e-9
-    WILL_FAIL LABELS fci checkerboard manybody known-bug)
-diagham_physics_test(knownbug.fci.checkerboard.manybody.4x3_n2_u1_band_energy_overwritten
+    WILL_FAIL LABELS fci checkerboard manybody open-finding)
+diagham_physics_test(openfinding.fci.checkerboard.manybody.4x3_n2_u1_band_energy_overwritten
     PROGRAM ${fci_cb}
     ARGS -p 2 -x 4 -y 3 --single-band --t2 0.2 --tpp 0.1 --u-potential 1 --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_24_x_4_y_3_*_gx_*.dat"
     CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_4x3_n2_u1_t2_0.2_tpp_0.1.dat 2 1e-9
-    WILL_FAIL LABELS fci checkerboard manybody known-bug)
-diagham_physics_test(knownbug.fci.haldane.manybody.3x3_n1_band_energy_halved
+    WILL_FAIL LABELS fci checkerboard manybody open-finding)
+diagham_physics_test(openfinding.fci.haldane.manybody.3x3_n1_band_energy_halved
     PROGRAM FCI_FCIHaldaneModel
     ARGS -p 1 -x 3 -y 3 --single-band --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_haldane_n_1_x_3_y_3_*_gy_0.000000.dat"
     CHECK min-abs @OUTPUT@ 2 -4.5350243553983 1e-9
-    WILL_FAIL LABELS fci haldane manybody known-bug)
-diagham_physics_test(knownbug.fci.kagome.manybody.3x3_n1_band_energy_halved
+    WILL_FAIL LABELS fci haldane manybody open-finding)
+diagham_physics_test(openfinding.fci.kagome.manybody.3x3_n1_band_energy_halved
     PROGRAM FCI_FCIKagomeLatticeModel
     ARGS -p 1 -x 3 -y 3 --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_kagomelattice_n_1_x_3_y_3_*_gx_*.dat"
     CHECK min-abs @OUTPUT@ 2 -2.8 1e-9
-    WILL_FAIL LABELS fci kagome manybody known-bug)
+    WILL_FAIL LABELS fci kagome manybody open-finding)
 
 # --- 2b. spin models from explicit operator lists ------------------------------------------------
 # tests/oracles/spin_models.py: dense ED of a model given as operator terms, with Sz and momentum
@@ -606,7 +606,7 @@ diagham_spin_model_test(physics.spin.ed.tfim2d_2x3_periodic tfim2d_2x3_periodic
 diagham_spin_model_test(physics.spin.ed.tfim2d_3x3_periodic tfim2d_3x3_periodic
     PROGRAM Spin_TwoDimensionalTransverseFieldIsingModel ARGS -x 3 -y 3 --jz-value 1 --hx-value 0.7 --hz-value 0.2 --use-periodic --disable-momentum --disable-inversion OUTPUT "spin_1_2_ising_transversefield_closed_n_9_*.dat" LABELS lattice)
 # U35: without --use-periodic the program still adds the wrap-around Ising bonds (its "open" spectrum equals the periodic one)
-diagham_spin_model_test(knownbug.spin.tfim2d.open_boundaries_ignored tfim2d_2x3_open
+diagham_spin_model_test(openfinding.spin.tfim2d.open_boundaries_ignored tfim2d_2x3_open
     PROGRAM Spin_TwoDimensionalTransverseFieldIsingModel ARGS -x 2 -y 3 --jz-value 1 --hx-value 0.7 --hz-value 0.2 OUTPUT "spin_1_2_ising_transversefield_open_n_6_*.dat" WILL_FAIL LABELS lattice)
 diagham_spin_model_test(physics.spin.ed.obrienfendley_spin1_L4_sz0 obrienfendley_spin1_L4_sz0
     PROGRAM Spin_PeriodicSpinChainOBrienFendley ARGS -s 2 -p 4 --nbr-sz 1 --disable-szsymmetry --disable-inversionsymmetry --disable-momentum OUTPUT "spin_1_periodicobrienfendley_nomomentum_n_4.dat")

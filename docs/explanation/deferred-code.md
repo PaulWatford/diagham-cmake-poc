@@ -1,6 +1,6 @@
 # Deferred and excluded upstream code
 
-Source: `DEFERRED.md` (2026-09-22). Changed 2026-09-26: the summary table's dates come from the full history (the original's "2020-10-23 (import sweep)" entries were a shallow-clone artefact, as its own correction note explains); the build-time exclusion list is now in `docs/reference/build-system.md`; the physics bug it references is fixed on `main`, see `torus-su2-coulomb-defect.md`.
+Source: `DEFERRED.md` (2026-09-22). Changed 2026-09-26: the summary table's dates come from the full history (the original's "2020-10-23 (import sweep)" entries were a shallow-clone artefact, as its own correction note explains); the build-time exclusion list is now in `docs/reference/build-system.md`; the physics error it references is fixed on `main`, see `torus-su2-coulomb-finding.md`.
 
 Files excluded from the build (`DIAGHAM_UPSTREAM_EXCLUDED_PROGRAMS` in `CMakeLists.txt`) because
 they cannot be patched without input that doesn't currently exist in the
@@ -138,10 +138,10 @@ in 2007, after the broken file's 2002 vintage.
 replacement that already exists. **Excluded permanently.** This file
 is effectively dead code.
 
-**Caveat discovered during verification (see `torus-su2-coulomb-defect.md`):**
+**Caveat discovered during verification (see `torus-su2-coulomb-finding.md`):**
 the canonical replacement `FQHETorusFermionsWithSpin` compiles, runs, and
 produces the correct momentum structure, but its underlying spinful
-Coulomb path has a separate upstream physics bug: for N >= 3 the
+Coulomb path has a separate upstream physics error: for N >= 3 the
 fully-polarized ground-state energy does not match the spinless Coulomb
 result (it should, exactly). The fault is in the shared core operator
 `FermionOnTorusWithSpinNew::AduAduAuAu` and is independent of this
@@ -256,13 +256,13 @@ enumeration. See `patches/PATCHES.md` (Class G) for the full audit trail.
 2. **For canonical DiagHam:** consider removing
    `QHEFermionsTorusWithSpin.cc` from the source tree, since
    `FQHETorusFermionsWithSpin.cc` supersedes it cleanly.
-3. **For canonical DiagHam (physics bug):** the spinful torus Coulomb
+3. **For canonical DiagHam (physics error):** the spinful torus Coulomb
    path gives an incorrect, rank-deficient Hamiltonian for N >= 3
    (the fully-polarized ground state should equal the spinless Coulomb
    result and does not). The fault is in the shared core operator
    `FermionOnTorusWithSpinNew::AduAduAuAu`. A standalone reproducer,
    the ruled-out non-causes, and the localisation are in
-   `torus-su2-coulomb-defect.md`. This is independent of the migration but
+   `torus-su2-coulomb-finding.md`. This is independent of the migration but
    was surfaced by it.
 4. **For users:** `FQHETopInsulatorWannierConstruction` is now
    available out of the box (patch 10). Its inline `// FIXME` markers

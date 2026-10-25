@@ -54,7 +54,7 @@ Rules:
 - If a program's option set changed, regenerate the program reference so
   its page stays truthful.
 
-For a defect that is documented but not yet fixed, register a reproducer
-with `WILL_FAIL` under the `known-bug` label: it passes while the defect is
+For a finding that is documented but not yet fixed, register a reproducer
+with `WILL_FAIL` under the `open-finding` label: it passes while the finding is
 present and turns red the day someone fixes it, so the fix is not forgotten
 — then drop `WILL_FAIL` in the same change.

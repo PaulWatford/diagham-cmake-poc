@@ -1,7 +1,7 @@
-# Open defect U39: the one-body energy of the single-band many-body Hamiltonians is wrong
+# Open finding U39: the one-body energy of the single-band many-body Hamiltonians is wrong
 
-Purpose: reproducer for the DiagHam authors; no fix is carried here (`knownbug.fci.checkerboard.manybody.*`, `knownbug.fci.haldane.manybody.*` and `knownbug.fci.kagome.manybody.*` in ctest hold it).
-Source: `docs/reference/known-defects.md` (U39), found 2026-09-29 while writing the many-body goldens; r4493 sources, `default` preset, GCC 15.
+Purpose: reproducer for the DiagHam authors; no fix is carried here (`openfinding.fci.checkerboard.manybody.*`, `openfinding.fci.haldane.manybody.*` and `openfinding.fci.kagome.manybody.*` in ctest hold it).
+Source: `docs/reference/open-findings.md` (U39), found 2026-09-29 while writing the many-body goldens; r4493 sources, `default` preset, GCC 15.
 
 ## What happens
 

@@ -7,7 +7,7 @@ To send a fix upstream: `docs/upstream-reports/` holds one report and `patches/u
 
 Rules (from `CONTRIBUTING.md` and `AGENTS.md`): one fix per commit with its
 root cause and verification in the message; fixes that change computed
-physics are marked **for maintainer review** and go upstream as bug reports;
+physics are marked **for maintainer review** and go upstream as problem reports;
 fixes upstream has since made itself are not carried.
 
 | Class | Commit subject (abridged) | Files | Kind | Upstream status at r4493 |
@@ -19,13 +19,13 @@ fixes upstream has since made itself are not carried.
 | A | `HubbardSquareLatticeModelJ2S2` (05) | 1 | same | still needed |
 | C | `FCIDiceLatticeModel`: use the existing header, not `*New.h` (06) | 1 | include of a never-existing header | still needed; program was not in upstream's build list |
 | D | `FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition`: remove undeclared `SubsystemSize` (07) | 1 | copy-paste from the orbital-partition sibling | still needed; not in upstream's build list |
-| E | output precision made a build option: `precision(14)` → `precision(DIAGHAM_OUTPUT_PRECISION)`, 14 by default (identical output to upstream), 17 with `DIAGHAM_FULL_PRECISION_OUTPUT` (08, regenerated on r4493) | 545 | 980 sites; deliberate display widths untouched | design change, not a bug fix; the 17-digit form is proposed upstream |
+| E | output precision made a build option: `precision(14)` → `precision(DIAGHAM_OUTPUT_PRECISION)`, 14 by default (identical output to upstream), 17 with `DIAGHAM_FULL_PRECISION_OUTPUT` (08, regenerated on r4493) | 545 | 980 sites; deliberate display widths untouched | design change, not a fix; the 17-digit form is proposed upstream |
 | E | `FCIHofstadterCorrelation`: same (09; the file is CRLF upstream) | 1 | as 08 | as 08 |
 | F | `FermionOnSphere`, `FermionOnTorusWithMagneticTranslations`: public getters (10) | 2 | enables `FCIWannierConstruction` | still needed; not in upstream's build list |
 | G | `FCIDiceLatticeModel`: wire `t1/t2/l1/l2`, use the completed SU(2) boson class (11) | 1 | enables the program; physics defaults from the Kagome sibling | **for maintainer review** (defaults; `// IS IT CORRECT?` mapping) |
 | H | `ThreeDTwoParticles::PrintState`: chain the prints (12) | 1 | invalid C++11 that broke every QuantumDots program | still needed |
 | A | Spin programs: gate 21 `LapackDiagonalize` calls (13, regenerated) + one in `PairHoppingModelFSA` | 9 | same as class A | upstream guarded one file after 2020; the rest still needed |
-| I | spinful torus Coulomb: basis order vs `FindStateIndex`; missing up-down interaction (14) | 3 | **physics**: results wrong for N ≥ 3 and for every unpolarised case | **for maintainer review**; applies cleanly to r4493 (files unchanged since 2020) — see `torus-su2-coulomb-defect.md` |
+| I | spinful torus Coulomb: basis order vs `FindStateIndex`; missing up-down interaction (14) | 3 | **physics**: results wrong for N ≥ 3 and for every unpolarised case | **for maintainer review**; applies cleanly to r4493 (files unchanged since 2020) — see `torus-su2-coulomb-finding.md` |
 | J | plain Lanczos (`BasicLanczosAlgorithm`, `ComplexBasicLanczosAlgorithm`): detect the closure of the Krylov space and stop instead of iterating on round-off (16) | 4 | **physics**: `-n 1` returned energies below the ground state on degenerate spectra (U30) | still needed |
 | J | `ParticleOnCylinderCoulombHamiltonian`: fail clearly without GSL instead of undefined behaviour (17) | 1 | same as U28: a segfault in every no-GSL run of `FQHECylinderFermionsCoulomb` | still needed |
 | — | `SpinChainHamiltonianWithTranslations` uninitialised members (was 15) | — | dropped | **fixed upstream after 2020** (r4493 initialises them); not carried |
@@ -37,5 +37,5 @@ one `--help` smoke-test exclusion (`EvaluateBroadening`, U26).
 
 How each was found and verified, sibling comparisons and the numbers, are
 in `patches/PATCHES.md` (classes A–I), which is kept as the audit trail;
-the defect register with provenance is
-[../reference/known-defects.md](../reference/known-defects.md).
+the findings register with provenance is
+[../reference/open-findings.md](../reference/open-findings.md).

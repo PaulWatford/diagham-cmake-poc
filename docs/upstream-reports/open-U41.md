@@ -1,7 +1,7 @@
-# Open defect U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path
+# Open finding U41: 2DToricCodeEntanglementEntropy loses its spectrum when --kept-sites has a path
 
 Purpose: reproducer for the DiagHam authors; no fix is carried here.
-Source: `docs/reference/known-defects.md` (U41), found 2026-09-29 while writing the entanglement goldens; r4493 sources, GCC 15.
+Source: `docs/reference/open-findings.md` (U41), found 2026-09-29 while writing the entanglement goldens; r4493 sources, GCC 15.
 
 ## What happens
 

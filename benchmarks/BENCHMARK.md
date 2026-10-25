@@ -1,5 +1,7 @@
 # Physics verification of the CMake build (log)
 
+> Note (25 October 2026): the full-precision output ("patch 08" below) is now opt-in, `DIAGHAM_FULL_PRECISION_OUTPUT`, off by default. The default build writes upstream's 14 digits (`-5.6568542494924` for the 2x2 case), and the ctest golden checks it to 1e-12; the 17-digit figures below are what the option gives.
+
 Source: the proof-of-concept verification log (2026). Kept as the record of every check run; the walkthrough version for readers is `docs/tutorials/hubbard-walkthrough.md`. Corrected 2026-09-26: the LAPACK paragraph and the program count below (the LAPACK path builds and passes the same suite; 603 programs at r4493).
 
 This document records the numerical-correctness checks run against the

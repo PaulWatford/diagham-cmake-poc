@@ -28,7 +28,6 @@
 #include <cstring>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -39,7 +38,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHESphereFermionsTwoLandauLevels" , "0.01");

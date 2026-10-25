@@ -48,7 +48,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -59,7 +58,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHESphereFermionsCorrelation" , "0.01");
@@ -339,7 +338,7 @@ int main(int argc, char** argv)
    {
      cout<<"Evaluating all the coefficients <c_m1^+ c_m2^+ c_m3 c_{m1+m2-m3}>" << endl;
      ofstream File;
-     File.precision(std::numeric_limits<double>::max_digits10);
+     File.precision(DIAGHAM_OUTPUT_PRECISION);
      if (Manager.GetString("output-file") != 0)
        File.open(Manager.GetString("output-file"), ios::binary | ios::out);
      else
@@ -396,7 +395,7 @@ int main(int argc, char** argv)
      cout<<"S_L = <rho_{L,0}rho_{L,0}>, where rho_{L,M}=\\sum_m \\sqrt{2L+1}C_{m0m}^{SLS} c_m^+ c_m" << endl;
      cout<<"Normalization 1/N_{orb}, for L->infty S->nu-1/nu^2" << endl;
      ofstream File;
-     File.precision(std::numeric_limits<double>::max_digits10);
+     File.precision(DIAGHAM_OUTPUT_PRECISION);
      if (Manager.GetString("output-file") != 0)
        File.open(Manager.GetString("output-file"), ios::binary | ios::out);
      else
@@ -469,7 +468,7 @@ int main(int argc, char** argv)
      cout<<"Projected structure factor is evaluated for LLL; " << endl;
      cout<<"use normalization convention from He, Simon & Halperin." << endl;
      ofstream File;
-     File.precision(std::numeric_limits<double>::max_digits10);
+     File.precision(DIAGHAM_OUTPUT_PRECISION);
      if (Manager.GetString("output-file") != 0)
        File.open(Manager.GetString("output-file"), ios::binary | ios::out);
      else
@@ -538,7 +537,7 @@ int main(int argc, char** argv)
      cout<<"xi_{J,M}=\\sum_{m1,m2} C_{m2m1M}^{SSJ} c_m1 c_m2 "<<endl;
      cout<<"Total energy = \\sum_{J,M} V_J <xi_{J,M}^+ xi_{J,M}>"<<endl;
      ofstream File;
-     File.precision(std::numeric_limits<double>::max_digits10);
+     File.precision(DIAGHAM_OUTPUT_PRECISION);
      if (Manager.GetString("output-file") != 0)
        File.open(Manager.GetString("output-file"), ios::binary | ios::out);
      else
@@ -698,7 +697,7 @@ int main(int argc, char** argv)
     }
 
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   if (Manager.GetString("output-file") != 0)
     File.open(Manager.GetString("output-file"), ios::binary | ios::out);
   else

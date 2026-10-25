@@ -19,7 +19,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -76,7 +75,7 @@ bool LevelStatisticsParseSpectrumFile(double* spectrum, int spectrumSize,
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("SpinChainMultipleEntanglementSpectrumLevelStatistics" , "0.01");
@@ -197,7 +196,7 @@ int main(int argc, char** argv)
       delete[] SingleSpectrumExtension;
       ofstream File2;
       File2.open(SingleSpectrumOutputFileName, ios::binary | ios::out);
-      File2.precision(std::numeric_limits<double>::max_digits10);
+      File2.precision(DIAGHAM_OUTPUT_PRECISION);
       for (int j = 0; j < NbrSzASectors; ++j)
 	{
 	  int TmpSize = 0;
@@ -336,7 +335,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(DensityOfStateOutputFileName, ios::binary | ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       File << "# Min energy " << MinEnergy << endl;
       File << "# Max energy " << MaxEnergy << endl;
       File << "# Nbr of states = " << NbrLevels << endl;
@@ -429,7 +428,7 @@ int main(int argc, char** argv)
 	}
       ofstream File2;
       File2.open(ROutputFileName, ios::binary | ios::out);
-      File2.precision(std::numeric_limits<double>::max_digits10);
+      File2.precision(DIAGHAM_OUTPUT_PRECISION);
       File2 << "# state_index <r> D<r>" << endl;
       for (int i = 0 ; i < TotalNbrEntanglementSpectra; ++i)
 	{
@@ -549,7 +548,7 @@ int main(int argc, char** argv)
     {
       ofstream File2;
       File2.open(LevelStatisticOutputFileName, ios::binary | ios::out);
-      File2.precision(std::numeric_limits<double>::max_digits10);
+      File2.precision(DIAGHAM_OUTPUT_PRECISION);
       File2 << "# Min spacing " << MinAverageSpacing << endl;
       File2 << "# Max spacing " << MaxAverageSpacing << endl;
       File2 << "# Average spacing = " << AverageSpacing << endl;

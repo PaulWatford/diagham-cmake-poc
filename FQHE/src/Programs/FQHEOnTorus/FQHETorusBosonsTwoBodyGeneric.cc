@@ -42,7 +42,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -53,7 +52,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("FQHETorusBosonsTwoBodyGeneric" , "0.01");
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");
@@ -131,7 +130,7 @@ int main(int argc, char** argv)
   sprintf (OutputNameLz, "bosons_torus_kysym_%s_n_%d_2s_%d_ratio_%f.dat", Manager.GetString("interaction-name"), NbrParticles, MaxMomentum, XRatio);
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
 
   int Max = (MaxMomentum - 1);
   if (Momentum < 0)

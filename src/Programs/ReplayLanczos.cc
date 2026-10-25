@@ -17,7 +17,6 @@
 #include <fstream>
 
 #include <cstring>
-#include <limits>
 
 using std::ios;
 using std::cout;
@@ -28,7 +27,7 @@ using std::ifstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("ReplayLanczos" , "0.01");
   OptionGroup* LanczosGroup  = new OptionGroup ("Lanczos options");

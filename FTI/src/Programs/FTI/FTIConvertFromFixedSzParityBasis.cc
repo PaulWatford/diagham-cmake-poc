@@ -39,7 +39,6 @@
 #include <stdio.h>
 #include <fstream>
 #include <cstring> 
-#include <limits>
 
 using std::cout;
 using std::cin;
@@ -50,7 +49,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FTIConvertFromFixedSzParityBasis" , "0.01");

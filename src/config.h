@@ -48,6 +48,12 @@
 // machine precision
 #define MACHINE_PRECISION 1e-14
 
+// digits written for computed results: 14 as upstream; 17 (full double precision) with the CMake option
+// DIAGHAM_FULL_PRECISION_OUTPUT
+#ifndef DIAGHAM_OUTPUT_PRECISION
+#define DIAGHAM_OUTPUT_PRECISION 14
+#endif
+
 // SMP flag 
 #define __SMP__
 

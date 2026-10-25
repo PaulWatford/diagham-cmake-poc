@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -44,7 +43,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
   
   OptionManager Manager ("FQHESphereMPSEntanglementSpectrum" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
@@ -169,7 +168,7 @@ int main(int argc, char** argv)
     }
 
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   
   if (Manager.GetString("output-file") != 0)
     File.open(Manager.GetString("output-file"), ios::binary | ios::out);

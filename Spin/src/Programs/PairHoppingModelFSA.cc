@@ -34,7 +34,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -44,7 +43,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("PairHoppingModelFSA" , "0.01");
@@ -99,7 +98,7 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(FullOutputFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# periodic pair hopping model FSA with p=" << PValue << " in spin 1 language with " << NbrSpins << " sites" << endl;
   File << "# FSA_energy" << endl;
   AbstractSpinChain* Chain = 0;
@@ -208,7 +207,7 @@ int main(int argc, char** argv)
 #else
      TmpHamiltonian.Diagonalize(TmpDiag);
 #endif
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       for (int i = 0; i < NbrStates; ++i)
 	{
 	  File << TmpDiag[i] << endl;

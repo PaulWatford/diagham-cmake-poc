@@ -34,7 +34,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -70,7 +69,7 @@ int GetRadiusCoordinate (double radius, double* radiusArray, int nbrRadius);
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHEDiskDensityMC" , "0.01");
@@ -420,7 +419,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream RecordFile;
 	      RecordFile.open(RecordFileName, ios::out | ios::binary | ios::app);
-	      RecordFile.precision(std::numeric_limits<double>::max_digits10);
+	      RecordFile.precision(DIAGHAM_OUTPUT_PRECISION);
 	      RecordFile << i << " " << TotalProbability;
 	      if (RSymmetryFlag == false)
 		{
@@ -513,7 +512,7 @@ int main(int argc, char** argv)
        }
      
      ofstream DensityRecordFile;
-      DensityRecordFile.precision(std::numeric_limits<double>::max_digits10);
+      DensityRecordFile.precision(DIAGHAM_OUTPUT_PRECISION);
       DensityRecordFile.open(((SingleStringOption*) Manager["output"])->GetString(), ios::out);
 
       Manager.DisplayOption(DensityRecordFile, true, '#');

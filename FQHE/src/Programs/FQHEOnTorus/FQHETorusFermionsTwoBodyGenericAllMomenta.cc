@@ -34,7 +34,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -45,7 +44,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("FQHETorusFermionsTwoBodyGenericAllMomenta" , "0.01");
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");
@@ -203,7 +202,7 @@ int main(int argc, char** argv)
   sprintf (OutputNameLz, "%s.dat", OutputNamePrefix);
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
 
   cout << "----------------------------------------------------------------" << endl;
   cout << " Ratio = " << XRatio << endl;

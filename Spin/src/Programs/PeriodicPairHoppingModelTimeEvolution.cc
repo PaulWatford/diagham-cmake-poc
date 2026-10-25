@@ -41,7 +41,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -51,7 +50,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("PeriodicPairHoppingModelTimeEvolution" , "0.01");
@@ -167,7 +166,7 @@ int main(int argc, char** argv)
   sprintf (StateOutputFileName, "%s.eigenvec.mat", OutputFileName);  
   ofstream File;
   File.open(FullOutputFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# periodic pair hopping model with p=" << PValue << " in spin 1 language with " << NbrSpins << " sites K=" << Momentum << " InvSym=" << InversionSymmetrySector << endl;
   File << "# time fidelity S_A Tr(rho_A) nbr_iter state_norm computation_time" << endl;
   AbstractSpinChainWithTranslations* Chain = 0;

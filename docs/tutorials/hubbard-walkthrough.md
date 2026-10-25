@@ -1,4 +1,4 @@
-# Tutorial: the Hubbard model end to end, at machine precision
+# Tutorial: the Hubbard model end to end, against exact results
 
 Purpose: run DiagHam's Hubbard-model program on cases with known answers, read its output, and see how the results are checked against an independent calculation.
 Source: `HUBBARD_BENCHMARK.md` (proof-of-concept demonstration, 2026, corrected 22/09) and `benchmarks/BENCHMARK.md` (the verification log), merged; every number below is reproduced by the ctest goldens on the r4493 build. Changed: the two overlapping documents become one walkthrough; the log itself stays in `benchmarks/BENCHMARK.md`.
@@ -134,7 +134,8 @@ differences are 10⁻¹⁵–10⁻¹⁴.
 ## What this establishes, and what it does not
 
 It establishes that the CMake-built `HubbardSquareLatticeModel` reproduces
-exact and independently computed results to machine precision on 2×2, 2×4
+exact and independently computed results to all 14 printed digits (to machine precision with
+`DIAGHAM_FULL_PRECISION_OUTPUT`) on 2×2, 2×4
 and 3×3 cases, with the strong-coupling limit recovered. It does not
 establish the correctness of the other 602 programs, of larger lattices
 where Lanczos convergence parameters matter, or of FQHE programs — those

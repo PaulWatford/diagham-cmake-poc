@@ -35,7 +35,6 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 using std::ios;
 using std::cout;
@@ -63,7 +62,7 @@ bool FQHEDiskCorrelationGetHilbertSpace(char* inputState, int& nbrParticles, int
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHEDiskCorrelation" , "0.01");
@@ -169,7 +168,7 @@ int main(int argc, char** argv)
 	  PrecalculatedValues[m] = Operation.GetScalar();
 	}
       ofstream File;
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       if (OutputName == 0)
 	OutputName = ReplaceExtensionToFileName(Manager.GetString("state"), "vec", "rhorho.dat");
       File.open(OutputName, ios::binary | ios::out);
@@ -430,7 +429,7 @@ int main(int argc, char** argv)
 // 	    }
 // 	}
 //       ofstream File;
-//       File.precision(std::numeric_limits<double>::max_digits10);
+//       File.precision(DIAGHAM_OUTPUT_PRECISION);
 //       if (OutputName == 0)
 // 	OutputName = ReplaceExtensionToFileName(Manager.GetString("input-states"), "dat", "rhorho.dat");
 //       File.open(OutputName, ios::binary | ios::out);

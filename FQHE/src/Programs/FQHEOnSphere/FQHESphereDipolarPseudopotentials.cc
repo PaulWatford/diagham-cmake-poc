@@ -16,7 +16,6 @@
 #include <cstring>
 #include <stdlib.h>
 #include <math.h>
-#include <limits>
 
 using std::ofstream;
 using std::ios;
@@ -27,7 +26,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   OptionManager Manager ("FQHESphereDipolarPseudopotentials" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
@@ -76,14 +75,14 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(OutputFile, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "Pseudopotentials=";        
   for (int i = 0; i < NbrPseudopotentials; ++i)
     File << " " << Pseudopotentials[i];
   File << endl;      
   File.close();
   
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   
   delete[] OutputFile;
   delete[] Pseudopotentials;

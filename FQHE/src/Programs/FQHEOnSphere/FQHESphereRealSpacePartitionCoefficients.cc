@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 #ifdef __GSL__
 #include <gsl/gsl_sf_gamma.h>
 #endif
@@ -90,7 +89,7 @@ int main(int argc, char** argv)
     }
   ofstream File;
   File.open(OutputFile, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   if (Phi == 0.0)
     {
       File << "# real space coefficients for a cut at theta=" << Theta << " on a sphere with N_phi=" << NbrFluxQuanta << endl

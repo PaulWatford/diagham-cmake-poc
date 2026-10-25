@@ -48,7 +48,6 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
-#include <limits>
 
 #ifdef __MPI__
 #include <mpi.h>
@@ -100,7 +99,7 @@ static inline int ChannelIndex(int s1, int s2, int NbrFlavors)
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager("FQHESphereFermionsNFlavor", "0.01");
   ArchitectureManager Architecture;

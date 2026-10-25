@@ -134,7 +134,7 @@ the audit trail (root cause, what was compared, how it was verified) and
 | A | 5 + 9 | Missing `#ifdef __LAPACK__` gating around `LapackDiagonalize` (FQHE/FTI, then Spin) | fixed; one Spin file was fixed upstream after 2020 |
 | C | 1 | `#include` of a header that never existed | fixed |
 | D | 1 | Undeclared variable (copy-paste from a sibling) | fixed |
-| E | 1 | `precision(14)` at result-output sites, truncating output below double precision | fixed at the 14-digit sites only (978 sites, 544 files at r4493); deliberate display widths left alone |
+| E | 1 | `precision(14)` at result-output sites writes 14 of double's 17 significant digits | opt-in: the 980 sites (545 files) read `DIAGHAM_OUTPUT_PRECISION`, 14 by default as upstream, 17 with `DIAGHAM_FULL_PRECISION_OUTPUT`; deliberate display widths left alone |
 | F, G | 2 | `FCIWannierConstruction` and `FCIDiceLatticeModel` never compiled or linked upstream | enabled; the Dice-lattice defaults need a maintainer's sign-off |
 | H | 1 | Invalid C++ (`ostream << ostream&`) that broke every QuantumDots program | fixed |
 | I | 1 | **Physics defect**: spinful torus Coulomb wrong for N ≥ 3 and for every unpolarised case (basis order vs `FindStateIndex`; dropped same-orbital up-down terms) | fixed, verified against two independent programs to 1e-12; **pending maintainer review** |
@@ -145,10 +145,10 @@ distinction is recorded per file in `patches/PATCHES.md`. One earlier fix (an
 uninitialised member in `SpinChainHamiltonianWithTranslations`) was dropped
 because upstream fixed it after 2020.
 
-## Demonstration: Hubbard ED at machine precision
+## Demonstration: Hubbard ED against exact results
 
 `docs/tutorials/hubbard-walkthrough.md` walks through it; `benchmarks/BENCHMARK.md` is the verification log: the 2x2 Hubbard
-model at U=4 reproduces the analytic `-4√2` bit for bit; the 2x4 model
+model at U=4 reproduces the analytic `-4√2` to all 14 printed digits (bit for bit with `DIAGHAM_FULL_PRECISION_OUTPUT`); the 2x4 model
 (basis dimension 4,900) and the 3x3 model agree with a from-scratch
 100-line Python exact diagonalisation (`benchmarks/hubbard_ed.py`) on full
 spectra; and the strong-coupling limit E₀·U → −48 is recovered. The same

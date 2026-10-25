@@ -56,7 +56,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -444,7 +443,7 @@ int main(int argc, char** argv)
 		  sprintf (EntanglementEnergiesOutputFile, "%s_%s_singleparticle_nxa_%d_nya_%d.ent", FilePrefix, FileParameterString, NbrSitesXA, NbrSitesYA);
 		  ofstream File;
 		  File.open(EntanglementEnergiesOutputFile, ios::binary | ios::out);
-		  File.precision(std::numeric_limits<double>::max_digits10);
+		  File.precision(DIAGHAM_OUTPUT_PRECISION);
 		  File << "# nbr_sites_xa S_A" << endl;
 		  for (int TmpNbrSitesA = 2; TmpNbrSitesA <= NbrSitesXA; ++TmpNbrSitesA)
 		    {
@@ -484,7 +483,7 @@ int main(int argc, char** argv)
 		  sprintf (EntanglementEnergiesOutputFile, "%s_%s_singleparticle_es_nxa_%d_nya_%d.dat", FilePrefix, FileParameterString, NbrSitesXA, NbrSitesYA);
 		  ofstream File;
 		  File.open(EntanglementEnergiesOutputFile, ios::binary | ios::out);
-		  File.precision(std::numeric_limits<double>::max_digits10);
+		  File.precision(DIAGHAM_OUTPUT_PRECISION);
 		  for (int i = 0; i <  OneBodyEntanglementEnergies.GetNbrRow(); ++i)
 		    {
 		      File << OneBodyEntanglementEnergies[i] << endl;

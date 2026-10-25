@@ -29,7 +29,6 @@
 
 #include <fstream>
 #include <math.h>
-#include <limits>
 
 using std::ifstream;
 using std::ofstream;
@@ -242,7 +241,7 @@ bool AverageSpectra::WriteXY(char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out | ios::app);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   for (int i = 0; i < this->PointNumber; ++i)
     {
       File << (*AxeX)[i] << '\t';
@@ -265,7 +264,7 @@ bool AverageSpectra::WriteXYZ(char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out | ios::app);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   for (int i = 0; i < this->PointNumber; ++i)
     {
       File << (*AxeX)[i] << '\t';
@@ -289,7 +288,7 @@ bool AverageSpectra::WriteVarMean(char* fileName)
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out | ios::app);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   for (int i = 0; i < this->PointNumber; ++i)
     {
       File << (*AxeY)[i] << '\t';

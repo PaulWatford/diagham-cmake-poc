@@ -44,7 +44,6 @@
 #include <sys/time.h>
 #include <cstdio>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -65,7 +64,7 @@ void FQHPairHoppingComputeCharacteristicPolynomial(AbstractQHEHamiltonian* hamil
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHETorusFermionsPairHopping" , "0.01");

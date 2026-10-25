@@ -26,7 +26,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -51,7 +50,7 @@ int main(int argc, char** argv)
   spectra.WriteSpectra("Periodic50");
 */
 
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   BooleanOption HelpOption ('h', "help", "display this help");

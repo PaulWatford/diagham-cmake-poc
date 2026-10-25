@@ -55,7 +55,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -65,7 +64,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHESphereWithSpinLValue" , "0.01");
@@ -521,7 +520,7 @@ int main(int argc, char** argv)
   
   ofstream File;
   File.open(OutputFileName, ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   
   ParticleOnSphereWithSpinL2Hamiltonian Hamiltonian (Space, NbrParticles, LzMax, TotalLz, Architecture.GetArchitecture(), 1.0, 0);
   RealVector TmpState(Space->GetHilbertSpaceDimension());

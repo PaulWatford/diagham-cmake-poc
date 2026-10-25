@@ -41,7 +41,6 @@
 #include <fstream>
 #include <iostream>
 #include <sys/time.h>
-#include <limits>
 
 using std::ofstream;
 using std::endl;
@@ -325,7 +324,7 @@ bool Abstract2DTightBindingModel::WriteAsciiSpectrum(char* fileName)
 bool Abstract2DTightBindingModel::WriteAsciiSpectrumColumn(char* fileName)
 {
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File.open(fileName);
   this->WriteASCIIHeader(File, '#');
   File << "# kx    ky   E" << endl;
@@ -455,7 +454,7 @@ bool Abstract2DTightBindingModel::WriteBandStructureASCII(char* fileName)
 {
   ofstream File;
   File.open(fileName);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   this->WriteASCIIHeader(File, '#');
   File << "# kx    ky";
   for (int i = 0; i < this->NbrBands; ++i)

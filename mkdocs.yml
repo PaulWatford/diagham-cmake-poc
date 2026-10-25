@@ -66,7 +66,7 @@ nav:
   - Tutorials:
       - 'your first build, and how to know it is right': tutorials/first-build-and-verify.md
       - 'your first FQHE run — the Laughlin state on the sphere': tutorials/first-fqhe-run.md
-      - 'the Hubbard model end to end, at machine precision': tutorials/hubbard-walkthrough.md
+      - 'the Hubbard model end to end, against exact results': tutorials/hubbard-walkthrough.md
   - How-to guides:
       - 'Install DiagHam and use it as a library': how-to/install-and-use-as-library.md
       - 'Run DiagHam under MPI': how-to/run-mpi.md

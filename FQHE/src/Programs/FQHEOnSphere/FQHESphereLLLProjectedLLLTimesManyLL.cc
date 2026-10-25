@@ -53,7 +53,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -733,7 +732,7 @@ int main(int argc, char** argv)
 	      (*OutputVector).WriteVector(OutputFileName);
 	      ofstream File;
 	      File.open(LogFile, ios::binary | ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
 	      File << NbrComponents+MinComponent;
 	      File.close();
 	    }
@@ -871,7 +870,7 @@ int main(int argc, char** argv)
 	      (*OutputVector).WriteVector(OutputFileName);
 	      ofstream File;
 	      File.open(LogFile, ios::binary | ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
 	      File << NbrComponents+MinComponent;
 	      File.close();
 	    }

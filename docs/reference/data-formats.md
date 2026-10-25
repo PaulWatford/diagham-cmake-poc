@@ -86,8 +86,8 @@ numbers. The headers written by the `MainTask` classes at r4493:
 | `# kx ky sz E` | Hubbard / lattice models | momenta, Sz, energy |
 | `# E |E| arg(E)/pi` | non-Hermitian problems | complex eigenvalue as modulus and phase |
 
-Energies are written with 17 significant digits (`max_digits10`) since the
-precision fix on `main`; the wiki-era output had 14. A Lanczos run appends
+Energies are written with 14 significant digits, as upstream writes them; a build with
+`DIAGHAM_FULL_PRECISION_OUTPUT` writes 17 (full double precision). A Lanczos run appends
 `# Lanczos terminated at step N` when it stops.
 
 ## Interaction files

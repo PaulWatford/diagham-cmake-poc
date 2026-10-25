@@ -42,7 +42,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <cstring>
-#include <limits>
 
 double dsqrarg;
 #define DSQR(a) ((dsqrarg=(a)) == 0.0 ? 0.0 : dsqrarg*dsqrarg)
@@ -83,7 +82,7 @@ double MinDist (RealVector &Positions)
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("QHEFermionsOverlap" , "0.01");
@@ -670,7 +669,7 @@ int main(int argc, char** argv)
       RecordedOverlap[RecordIndex] = OverlapValue(ScalarProduct, NormExact);
       RecordedOverlapError[RecordIndex] = OverlapError(ScalarProduct, NormExact);
       ofstream OverlapRecordFile;
-      OverlapRecordFile.precision(std::numeric_limits<double>::max_digits10);
+      OverlapRecordFile.precision(DIAGHAM_OUTPUT_PRECISION);
       OverlapRecordFile.open(Manager.GetString("record-file"), ios::out | ios::binary);
       int NbrRecords = NbrIter / RecordStep;
       OverlapRecordFile << "# Monte Carlo overlap calculation" << endl

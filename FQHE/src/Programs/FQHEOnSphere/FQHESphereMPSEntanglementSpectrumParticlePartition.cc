@@ -45,7 +45,6 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -87,7 +86,7 @@ void ConvertWeightsToCoefficients(AbstractFQHEMPSMatrix* mPSMatrix, int nbrBMatr
   
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
   
   OptionManager Manager ("FQHESphereMPSEntanglementSpectrumParticlePartition" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
@@ -203,9 +202,9 @@ int main(int argc, char** argv)
   int PLevel = MPSMatrix->GetTruncationLevel();
   int NbrCFTSectors = MPSMatrix->GetNbrCFTSectors();
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   ofstream File2;
-  File2.precision(std::numeric_limits<double>::max_digits10);
+  File2.precision(DIAGHAM_OUTPUT_PRECISION);
   
   char* Extension = new char[256];  
   if (Manager.GetBoolean("orbital-es"))

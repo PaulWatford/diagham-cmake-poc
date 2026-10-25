@@ -11,7 +11,6 @@
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -21,7 +20,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   BooleanOption HelpOption ('h', "help", "display this help");
   SingleStringOption InputFileOption ('\0', "lz-file", "name of the file containing the lz sorted spectrum", 0);

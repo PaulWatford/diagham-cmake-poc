@@ -22,7 +22,6 @@
 #include <sys/time.h>
 #include <iostream>
 #include <limits.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -82,7 +81,7 @@ int GenerateCartanQuantumNumbers(int **cartanQuantumNumbers, int maxPos, int max
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("SpinOnLatticeWithSUN" , "0.01");

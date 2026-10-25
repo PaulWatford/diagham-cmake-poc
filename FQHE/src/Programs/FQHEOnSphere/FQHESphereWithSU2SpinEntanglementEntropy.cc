@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 
 
@@ -444,7 +443,7 @@ int main(int argc, char** argv)
 		{
 		  ofstream DensityMatrixFile;
 		  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+		  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 		  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 		    DensityMatrixFile << (0.5 * ((double) lzUp)) << " " << TmpDiag[i] << endl;
 		  DensityMatrixFile.close();
@@ -462,7 +461,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  DensityMatrixFile << (0.5 * ((double) lzUp)) << " " << PartialDensityMatrix(0,0) << endl;
 			  DensityMatrixFile.close();
 			}
@@ -510,8 +509,8 @@ int main(int argc, char** argv)
 	  File.open(TmpFileName, ios::binary | ios::out);
 	  delete[] TmpFileName;
 	}
-      File.precision(std::numeric_limits<double>::max_digits10);
-      cout.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
+      cout.precision(DIAGHAM_OUTPUT_PRECISION);
       int MeanSubsystemSize = LzMax >> 1;
       if ((LzMax & 1) != 0)
 	++MeanSubsystemSize;
@@ -654,7 +653,7 @@ int main(int argc, char** argv)
 					{
 					  ofstream DensityMatrixFile;
 					  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-					  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+					  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 					  for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 					    DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTrueTotalLz << " " << SubsystemTotalSz << " " << TmpDiag[i] << endl;
 					  DensityMatrixFile.close();
@@ -674,7 +673,7 @@ int main(int argc, char** argv)
 					    {
 					      ofstream DensityMatrixFile;
 					      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-					      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+					      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 					      DensityMatrixFile << SubsystemSize << " " << SubsystemNbrParticles << " " << SubsystemTrueTotalLz << " " << SubsystemTotalSz << " " << TmpValue << endl;
 					      DensityMatrixFile.close();
 					    }		  
@@ -779,7 +778,7 @@ int main(int argc, char** argv)
 				{
 				  ofstream DensityMatrixFile;
 				  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-				  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+				  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 				  if (SzSymmetry == 0)
 				    {
 				      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)

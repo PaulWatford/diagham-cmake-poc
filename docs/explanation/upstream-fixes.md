@@ -19,7 +19,7 @@ fixes upstream has since made itself are not carried.
 | A | `HubbardSquareLatticeModelJ2S2` (05) | 1 | same | still needed |
 | C | `FCIDiceLatticeModel`: use the existing header, not `*New.h` (06) | 1 | include of a never-existing header | still needed; program was not in upstream's build list |
 | D | `FQHESphereFermionsWithSpinEntanglementEntropyParticlePartition`: remove undeclared `SubsystemSize` (07) | 1 | copy-paste from the orbital-partition sibling | still needed; not in upstream's build list |
-| E | results written at full double precision: `precision(14)` → `max_digits10` (08, regenerated on r4493) | 544 | output precision; 978 sites; deliberate display widths untouched | design change, not a bug fix; proposed upstream |
+| E | output precision made a build option: `precision(14)` → `precision(DIAGHAM_OUTPUT_PRECISION)`, 14 by default (identical output to upstream), 17 with `DIAGHAM_FULL_PRECISION_OUTPUT` (08, regenerated on r4493) | 545 | 980 sites; deliberate display widths untouched | design change, not a bug fix; the 17-digit form is proposed upstream |
 | E | `FCIHofstadterCorrelation`: same (09; the file is CRLF upstream) | 1 | as 08 | as 08 |
 | F | `FermionOnSphere`, `FermionOnTorusWithMagneticTranslations`: public getters (10) | 2 | enables `FCIWannierConstruction` | still needed; not in upstream's build list |
 | G | `FCIDiceLatticeModel`: wire `t1/t2/l1/l2`, use the completed SU(2) boson class (11) | 1 | enables the program; physics defaults from the Kagome sibling | **for maintainer review** (defaults; `// IS IT CORRECT?` mapping) |

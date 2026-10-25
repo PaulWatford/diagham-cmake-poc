@@ -40,7 +40,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -432,8 +431,8 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(std::numeric_limits<double>::max_digits10);
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# Sz_A K_A S_A DensitySum  RemainingDensitySum "<< endl;
   int MaxSubsystemSz = ChainLength;
   
@@ -479,7 +478,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			    DensityMatrixFile << SubSystemSz << " " << TmpDiag[i] << endl;
 			  DensityMatrixFile.close();
@@ -502,7 +501,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      DensityMatrixFile << SubSystemSz << " " << TmpValue << endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -543,7 +542,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			    {
 			      TmpDiag[i]*=TmpDiag[i];
@@ -571,7 +570,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      DensityMatrixFile << SubSystemSz << " " << TmpValue << " "<<-log(TmpValue)<<endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -629,7 +628,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 				DensityMatrixFile << SubSystemSz << " " << SubSystemK<< " "<< TmpDiag[i] << " " <<-log(TmpDiag[i])<<endl;
 			      DensityMatrixFile.close();
@@ -652,7 +651,7 @@ int main(int argc, char** argv)
 				{
 				  ofstream DensityMatrixFile;
 				  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-				  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+				  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 				  DensityMatrixFile << SubSystemSz << " " << SubSystemK<< " "<<TmpValue <<" " <<-log(TmpValue)<< endl;
 				  DensityMatrixFile.close();
 				}		  
@@ -698,7 +697,7 @@ int main(int argc, char** argv)
 				    {
 				      ofstream DensityMatrixFile;
 				      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-				      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+				      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 				      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 					{
 					  TmpDiag[i]*=TmpDiag[i];
@@ -726,7 +725,7 @@ int main(int argc, char** argv)
 					{
 					  ofstream DensityMatrixFile;
 					  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-					  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+					  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 					  DensityMatrixFile << SubSystemSz << " " <<  SubSystemK<<" "<< TmpValue << " "<<-log(TmpValue)<<endl;
 					  DensityMatrixFile.close();
 					}		  
@@ -757,7 +756,7 @@ int main(int argc, char** argv)
 			      
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      char* TmpEigenstateName = new char[512];
 			      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 				{
@@ -854,7 +853,7 @@ int main(int argc, char** argv)
 					    {
 					      ofstream DensityMatrixFile;
 					      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-					      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+					      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 					      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 						{
 						  TmpDiag[i]*=TmpDiag[i];
@@ -882,7 +881,7 @@ int main(int argc, char** argv)
 						{
 						  ofstream DensityMatrixFile;
 						  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-						  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+						  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 						  DensityMatrixFile << SubSystemSz << " " <<  SubSystemK<<" "<< SublatticeQuantumNumberSector<< " " <<ComplementarySublatticeQuantumNumberSector<<" "<<  TmpValue << " "<<-log(TmpValue)<<endl;
 						  DensityMatrixFile.close();
 						}		  
@@ -913,7 +912,7 @@ int main(int argc, char** argv)
 				      
 				      ofstream DensityMatrixFile;
 				      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-				      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+				      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 				      char* TmpEigenstateName = new char[512];
 				      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 					{
@@ -982,7 +981,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			    DensityMatrixFile << TmpDiag[i] << endl;
 			  DensityMatrixFile.close();
@@ -1005,7 +1004,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      DensityMatrixFile << TmpValue << endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -1046,7 +1045,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			    {
 			      TmpDiag[i]*=TmpDiag[i];
@@ -1074,7 +1073,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      DensityMatrixFile << TmpValue << " "<<-log(TmpValue)<<endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -1127,7 +1126,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			    DensityMatrixFile << SubSystemK<< " "<< TmpDiag[i] << " " <<-log(TmpDiag[i])<<endl;
 			  DensityMatrixFile.close();
@@ -1150,7 +1149,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      DensityMatrixFile << SubSystemK<< " "<<TmpValue <<" " <<-log(TmpValue)<< endl;
 			      DensityMatrixFile.close();
 			    }		  
@@ -1192,7 +1191,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			    {
 			      TmpDiag[i]*=TmpDiag[i];
@@ -1220,7 +1219,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      DensityMatrixFile <<  SubSystemK<<" "<< TmpValue << " "<<-log(TmpValue)<<endl;
 			      DensityMatrixFile.close();
 			    }		  

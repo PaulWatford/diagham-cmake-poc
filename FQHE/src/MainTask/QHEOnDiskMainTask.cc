@@ -68,7 +68,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits>
 
 
 using std::ios;
@@ -320,8 +319,8 @@ int QHEOnDiskMainTask::ExecuteMainTask()
     {
       File.open(this->OutputFileName, ios::binary | ios::out | ios::app);
     }
-  File.precision(std::numeric_limits<double>::max_digits10);
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   cout << "----------------------------------------------------------------" << endl;
   cout << " L = " << this->LValue << endl;
   cout << " Hilbert space dimension = " << this->Space->GetHilbertSpaceDimension() << endl;

@@ -122,11 +122,18 @@ endfunction()
 # ----------------------------------------------------------------------------
 set(hubbard HubbardModels_HubbardSquareLatticeModel)
 
+# Results are written with upstream's 14 significant digits, so the default build is checked to 1e-12 (the team's
+# agreed precision); with DIAGHAM_FULL_PRECISION_OUTPUT (17 digits) the same value is checked to 4 ulp.
+if(DIAGHAM_FULL_PRECISION_OUTPUT)
+    set(hubbard_u4_check min @OUTPUT@ -1 -5.6568542494923806 4)
+else()
+    set(hubbard_u4_check min-abs @OUTPUT@ -1 -5.6568542494923806 1e-12)
+endif()
 diagham_physics_test(physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2
     PROGRAM ${hubbard}
     ARGS -p 4 -x 2 -y 2 --u-potential 4 --nn-t 1.0 --full-diag 1000
     OUTPUT "*_u_4.000000_sz_0.dat"
-    CHECK min @OUTPUT@ -1 -5.6568542494923806 4
+    CHECK ${hubbard_u4_check}
     LABELS fti hubbard
 )
 

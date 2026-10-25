@@ -45,7 +45,6 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -75,7 +74,7 @@ RealDiagonalMatrix FQHEMPSEvaluatePartialEntanglementSpectrum(AbstractFQHEMPSMat
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
   
   OptionManager Manager ("FQHETorusMPSEntanglementSpectrum" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
@@ -171,9 +170,9 @@ int main(int argc, char** argv)
   double AspectRatio = Manager.GetDouble("aspect-ratio");
 
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   ofstream File2;
-  File2.precision(std::numeric_limits<double>::max_digits10);
+  File2.precision(DIAGHAM_OUTPUT_PRECISION);
   
   char* Extension = new char[8];  
   if (Manager.GetBoolean("orbital-es"))

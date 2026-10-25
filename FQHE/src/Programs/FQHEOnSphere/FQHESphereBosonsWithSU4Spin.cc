@@ -32,7 +32,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -44,7 +43,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
     
   // some running options and help
   OptionManager Manager ("FQHESphereBosonsWithSU4Spin" , "0.01");
@@ -156,7 +155,7 @@ int main(int argc, char** argv)
   sprintf (OutputFileName, "bosons_sphere_su4_%s_n_%d_2s_%d_sz_%d_iz_%d_pz_%d.dat", Manager.GetString("interaction-name"), NbrBosons, LzMax, TotalSz, TotalIz, TotalPz);
   ofstream File;
   File.open(OutputFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
 
   int Max = LzMax * NbrBosons;
   cout << "maximum Lz value = " << Max << endl;

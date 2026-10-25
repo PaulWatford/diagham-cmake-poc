@@ -17,7 +17,6 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -139,7 +138,7 @@ int main(int argc, char** argv)
 		    }
 		  ofstream File;
 		  File.open(OutputFileName, ios::out);
-		  File.precision(std::numeric_limits<double>::max_digits10);
+		  File.precision(DIAGHAM_OUTPUT_PRECISION);
 		  File << "# la na lz shifted_lz lambda -log(lambda)" << endl;
 		  if (NbrParticlesInPartition == 0)
 		    {
@@ -239,7 +238,7 @@ int main(int argc, char** argv)
 		    }
 		  ofstream File;
 		  File.open(OutputFileName, ios::out);
-		  File.precision(std::numeric_limits<double>::max_digits10);
+		  File.precision(DIAGHAM_OUTPUT_PRECISION);
 		  File << "# la sza na lz shifted_lz lambda -log(lambda)" << endl;
 		  
 		  while ((Index < MaxIndex) && (NaValues[Index] != NbrParticlesInPartition))
@@ -358,7 +357,7 @@ int main(int argc, char** argv)
 		}
 	      ofstream File;
 	      File.open(OutputFileName, ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
 	      File << "# na lz lambda -log(lambda)";
 	      if (LValues != 0)
 		{
@@ -476,7 +475,7 @@ int main(int argc, char** argv)
 		}
 	      ofstream File;
 	      File.open(OutputFileName, ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
 	      if (Manager.GetBoolean("ls-sorted") == false)
 		{
 		  if (Manager.GetBoolean("discrete-symmetries") == false)

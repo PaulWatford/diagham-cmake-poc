@@ -35,7 +35,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -67,7 +66,7 @@ void ShastrySutherlandModelGet2DCoordinates(int index, int& xPosition, int& yPos
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("ShastrySutherlandModel" , "0.01");

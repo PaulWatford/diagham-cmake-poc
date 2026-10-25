@@ -43,7 +43,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -551,7 +550,7 @@ int main(int argc, char** argv)
 	    }
 	}
     }
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   
   if (MultipleDensityFlag)
   {
@@ -855,7 +854,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream DensityMatrixFile;
 	      DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
-	      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+	      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 	      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 		DensityMatrixFile << SubsystemNbrParticles << " " << TmpDiag[i] << endl;
 	      DensityMatrixFile.close();
@@ -881,7 +880,7 @@ int main(int argc, char** argv)
 		else
 		  File.open(TmpFileName[i], ios::binary | ios::out | ios::app);
 	      
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
           for (SubsystemNbrParticles = MinSubsystemNbrParticles; SubsystemNbrParticles <= MaxSubsystemNbrParticles; ++SubsystemNbrParticles)
 	        {
 	           File << SubsystemNbrParticles << " " << (-EntanglementEntropy[SubsystemNbrParticles - MinSubsystemNbrParticles]) << " " << DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles] << " " << (1.0 - DensitySum[SubsystemNbrParticles - MinSubsystemNbrParticles]) << endl;
@@ -1245,7 +1244,7 @@ int main(int argc, char** argv)
 		    {	
 		      ofstream OutputDensityMatrixFile;
 		      OutputDensityMatrixFile.open(Manager.GetString("save-matrix"), ios::binary | ios::out); 
-		      OutputDensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+		      OutputDensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 		      if (SVDFlag == false)
 			{
 			  OutputDensityMatrixFile << PartialDensityMatrix;
@@ -1355,7 +1354,7 @@ int main(int argc, char** argv)
 			    {
 			      ofstream DensityMatrixFile;
 			      DensityMatrixFile.open(DensityMatrixFileName[l], ios::binary | ios::out | ios::app); 
-			      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			      
 			      for (int i = 0; i < TmpDiag[l].GetNbrRow(); ++i)
 				DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[l][i] << endl;
@@ -1384,7 +1383,7 @@ int main(int argc, char** argv)
 		      ParticleOnSphereSquareTotalMomentumOperator OperMomentum (&TmpDestinationHilbertSpace, LzMax);
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+		      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 		      char* TmpEigenstateName = new char[512];
 		      for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
 			{
@@ -1433,7 +1432,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName[0], ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  if (ComputeLValueFlag == false)
 			    {
 			      DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
@@ -1479,7 +1478,7 @@ int main(int argc, char** argv)
 		else
 		  File.open(TmpFileName[i], ios::binary | ios::out | ios::app);
 	      
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
 	      File << SubsystemNbrParticles << " " << (-EntanglementEntropy[i]) << " " << DensitySum[i] << " " << (1.0 - DensitySum[i]) << endl;
 	      File.close();
 	      // 	cout << "trace = " << DensitySum[i] << endl;
@@ -1497,7 +1496,7 @@ int main(int argc, char** argv)
 	cout << "Total trace = " << TotalTrace[i] << endl;
 	if (Manager.GetString("output-file") == 0)
 	  File.open(TmpFileName[i], ios::binary | ios::out | ios::app);	  
-	File.precision(std::numeric_limits<double>::max_digits10);
+	File.precision(DIAGHAM_OUTPUT_PRECISION);
 	File << "# Entanglement entropy = " << TotalEntanglementEntropy[i] << endl;
 	File << "# Total trace = " << TotalTrace[i] << endl;
 	File.close();

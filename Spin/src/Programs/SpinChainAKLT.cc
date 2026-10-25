@@ -32,7 +32,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -51,7 +50,7 @@ long ComputeSpin1HilbertSpaceDimension(int totalSz, int sz, int nbrSites);
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("SpinChainAKLT" , "0.01");

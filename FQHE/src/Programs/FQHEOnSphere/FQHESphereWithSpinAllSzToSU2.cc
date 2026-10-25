@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -45,7 +44,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHESphereFermionsAllSzToSU2" , "0.01");

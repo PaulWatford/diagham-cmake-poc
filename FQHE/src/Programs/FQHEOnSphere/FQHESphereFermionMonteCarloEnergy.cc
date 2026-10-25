@@ -26,7 +26,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -37,7 +36,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHESphereFermionMonteCarloEnergy" , "0.01");
@@ -281,7 +280,7 @@ int main(int argc, char** argv)
     {
       RecordedEnergy[RecordIndex] = ((Energy / ((double) NbrIter))  - PositiveBackgroundEnergy) / ((double) NbrFermions);
       ofstream EnergyRecordFile;
-      EnergyRecordFile.precision(std::numeric_limits<double>::max_digits10);
+      EnergyRecordFile.precision(DIAGHAM_OUTPUT_PRECISION);
       EnergyRecordFile.open(((SingleStringOption*) Manager["record-file"])->GetString(), ios::out | ios::binary);
       int NbrRecords = NbrIter / RecordStep;
       for (int i = 0; i < NbrRecords; ++i)

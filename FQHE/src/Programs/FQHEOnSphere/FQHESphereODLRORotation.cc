@@ -26,7 +26,6 @@
 #include <math.h>
 #include <fstream>
 #include <string.h>
-#include <limits>
 
 
 using std::cout;
@@ -134,7 +133,7 @@ int main(int argc, char** argv)
 	    }
 	}
       
-      cout.precision(std::numeric_limits<double>::max_digits10);
+      cout.precision(DIAGHAM_OUTPUT_PRECISION);
       int NbrPoints = Manager.GetInteger("nbr-points");
       double Theta = 0.0;
       double ThetaInc = M_PI / ((double) NbrPoints);
@@ -285,7 +284,7 @@ int main(int argc, char** argv)
       delete[] TmpComponents;
       delete[] TmpVectors;
       
-      cout.precision(std::numeric_limits<double>::max_digits10);
+      cout.precision(DIAGHAM_OUTPUT_PRECISION);
       int NbrPoints = Manager.GetInteger("nbr-points");
       int NbrEigenstate = Manager.GetInteger("matrix-eigenstates");
       if (NbrEigenstate > NbrStates)

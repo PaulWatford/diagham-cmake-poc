@@ -11,7 +11,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <cstring>
-#include <limits>
 
 using std::ios;
 using std::cout;
@@ -21,7 +20,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("MatrixElement" , "0.01");

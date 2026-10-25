@@ -10,7 +10,6 @@
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -188,7 +187,7 @@ int main(int argc, char** argv)
   
   ofstream File;
   File.open(FileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# l <N_A>_c  <N_A^2>_c <N_A^3>_c <N_A^4>_c" << endl;
   for (int p = 0; p < NbrSampleSizes; ++p)
   {

@@ -49,7 +49,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <complex>
-#include <limits>
 
 
 using std::ios;
@@ -60,7 +59,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHESphereCP2CompareWaveFunctions" , "0.01");
@@ -196,7 +195,7 @@ int main(int argc, char** argv)
 	if (RecordWaveFunctions != 0)
 	  {
 	    ofstream RecordFile;
-	    RecordFile.precision(std::numeric_limits<double>::max_digits10);
+	    RecordFile.precision(DIAGHAM_OUTPUT_PRECISION);
 	    RecordFile.open(RecordWaveFunctions, ios::out | ios::binary | ios::app);
 	    for (int i = 0; i < NbrBosons; ++i)
 	      RecordFile << TmpPositions[4*i] << " " << TmpPositions[4*i + 1] << " " << TmpPositions[4*i + 2] << " " << TmpPositions[4*i + 1] << " | ";

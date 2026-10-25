@@ -32,7 +32,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -42,7 +41,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("Spin1_2ChainFullFloquet" , "0.01");
@@ -258,7 +257,7 @@ int main(int argc, char** argv)
 	  sprintf (HOutputFileName, "%s_runid_%ld.hvalues", TmpFileParameterString, Manager.GetInteger("run-id"));
 	  ofstream File;
 	  File.open(HOutputFileName, ios::binary | ios::out); 
-	  File.precision(std::numeric_limits<double>::max_digits10); 
+	  File.precision(DIAGHAM_OUTPUT_PRECISION); 
 	  for (int i = 0; i < NbrSpins; ++i)
 	    {
 	      File << HxValues[i] << " " << HyValues[i] << " " << HzValues[i] << endl;
@@ -318,7 +317,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(TauOutputFileNames[i], ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);  
+      File.precision(DIAGHAM_OUTPUT_PRECISION);  
       File << "# lambda norm(lambda) phase(lambda)" << endl;
       File.close();
     }
@@ -607,7 +606,7 @@ int main(int argc, char** argv)
 
       ofstream File;
       File.open(TauOutputFileNames[j], ios::out | ios::app);
-      File.precision(std::numeric_limits<double>::max_digits10);  
+      File.precision(DIAGHAM_OUTPUT_PRECISION);  
       for (int i = 0; i < Lim; ++i)
 	{
 	  File << i << " " << TmpDiagUnitaryEvolution[i] << " " << Norm(TmpDiagUnitaryEvolution[i]) << " " << TmpPhases[i] << endl;

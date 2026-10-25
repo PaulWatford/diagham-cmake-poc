@@ -20,7 +20,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -32,7 +31,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   BooleanOption LanczosOption ('l', "lanczos", "enable lanczos diagonalization algorithm", true);
@@ -140,7 +139,7 @@ int main(int argc, char** argv)
   char EigenvectorFileName[256];
   ofstream File0;
   File0.open(FileName, ios::out); 
-  File0.precision(std::numeric_limits<double>::max_digits10); 
+  File0.precision(DIAGHAM_OUTPUT_PRECISION); 
   for (int i = 0; i < HamiltonianRepresentation.GetNbrRow(); ++i)
     {
       File0 << DiagonalizedHamiltonian[i] << endl;
@@ -158,7 +157,7 @@ int main(int argc, char** argv)
   sprintf (FileName,"eigenvalues%f.dat", BField);
   ofstream File;
   File.open(FileName, ios::out); 
-  File.precision(std::numeric_limits<double>::max_digits10); 
+  File.precision(DIAGHAM_OUTPUT_PRECISION); 
   double Energy = 170.0;
   double EnergyMax = 200.0;
   int NbrEnergySteps = 2000;

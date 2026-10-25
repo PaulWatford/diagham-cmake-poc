@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 #ifdef __GSL__
 #include <gsl/gsl_sf_gamma.h>
 #endif
@@ -66,7 +65,7 @@ int main(int argc, char** argv)
     }
   ofstream File;
   File.open(OutputFile, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# real space coefficients for disk cut of radius " << Radius << " on a disk with N_phi=" << NbrFluxQuanta << endl
        << "OrbitalSquareWeights =";
   int NbrCoefficients = 0;

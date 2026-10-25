@@ -51,7 +51,6 @@
 #include <iostream>
 #include <fstream>
 #include <sys/time.h>
-#include <limits>
 
 
 using std::ofstream;
@@ -386,7 +385,7 @@ int FQHEMPSEMatrixMainTask::ExecuteMainTask()
       if (this->EigenstateFileHeader != 0)
 	File << "# "<< this->EigenstateFileHeader << endl;
       File << "# E |E| arg(E)/pi" << endl;
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       for (int i = 0; i < LocalNbrEigenvalues; ++i)
 	{
 	  File << TmpEigenvalues[i] << " " << Norm(TmpEigenvalues[i]) << " " << (Arg(TmpEigenvalues[i]) / M_PI) << endl;

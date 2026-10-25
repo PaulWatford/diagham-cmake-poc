@@ -36,7 +36,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -436,7 +435,7 @@ int main(int argc, char** argv)
     {
       ofstream File;
       File.open(OutputTxtFileName, ios::binary | ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       if ((SU2Flag == false) || (Manager.GetBoolean("txt-separatespin") == false))
 	{
 	  if (Error == 0.0)

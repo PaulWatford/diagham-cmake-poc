@@ -24,7 +24,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 #ifdef __MPI__
 #include <mpi.h>
 #endif
@@ -39,7 +38,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("QHEFermionsSphereWithSpin" , "0.01");
   OptionGroup* LanczosGroup  = new OptionGroup ("Lanczos options");

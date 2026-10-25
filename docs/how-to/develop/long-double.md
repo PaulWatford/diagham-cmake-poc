@@ -27,6 +27,6 @@ script rewrites the sources in place:
    were not archived. Writing one from the
    [binary vector format](../../reference/data-formats.md) is a few lines.
 
-Note that the precision fix on `main` writes results with
-`std::numeric_limits<double>::max_digits10`; in a long-double tree that
-expression should read `<long double>` to print the extra digits.
+Results are written with `precision(DIAGHAM_OUTPUT_PRECISION)` (14 digits by default, 17 with
+`DIAGHAM_FULL_PRECISION_OUTPUT`); in a long-double tree define it as
+`std::numeric_limits<long double>::max_digits10` to print the extra digits.

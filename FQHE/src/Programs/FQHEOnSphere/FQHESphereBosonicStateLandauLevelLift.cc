@@ -44,7 +44,6 @@
 #include <string.h>
 
 #include "Tools/FQHEFiles/FQHESqueezedBasisTools.h"
-#include <limits>
 
 
 using std::cout;
@@ -56,7 +55,7 @@ using std::ifstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   
  
   OptionManager Manager ("FQHESphereBosonicStateLandauLevelLift" , "0.01");
@@ -267,7 +266,7 @@ int main(int argc, char** argv)
 	{
 	  ofstream File;
 	  File.open(OutputTxtFileName, ios::binary | ios::out);
-	  File.precision(std::numeric_limits<double>::max_digits10);
+	  File.precision(DIAGHAM_OUTPUT_PRECISION);
 	  for (long i = 0; i < FinalSpace->GetLargeHilbertSpaceDimension(); ++i)
 	    {
 	      File << OutputVector[i] << " ";
@@ -673,7 +672,7 @@ int main(int argc, char** argv)
       if(OutputTxtFileName!=0)
 	{
 	  File.open(OutputTxtFileName, ios::binary | ios::out);
-	  File.precision(std::numeric_limits<double>::max_digits10);
+	  File.precision(DIAGHAM_OUTPUT_PRECISION);
 	  for (long i = 0; i < FiveHalvesSpace->GetLargeHilbertSpaceDimension(); ++i)
 	    {
 	      File << FiveHalvesOutputVector[i] << " ";
@@ -706,7 +705,7 @@ int main(int argc, char** argv)
       if(OutputTxtFileName!=0)
 	{
 	  File.open(OutputTxtFileName, ios::binary | ios::out);
-	  File.precision(std::numeric_limits<double>::max_digits10);
+	  File.precision(DIAGHAM_OUTPUT_PRECISION);
 	  for (long i = 0; i < FinalSpace->GetLargeHilbertSpaceDimension(); ++i)
 	    {
 	      File << OutputVector[i] << " ";

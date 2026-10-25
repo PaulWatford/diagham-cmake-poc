@@ -26,7 +26,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -43,7 +42,7 @@ double Weight_H[] = {3.70785e-08, 3.38324e-07, 2.70859e-06, 1.90038e-05, 0.00011
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   BooleanOption HelpOption ('h', "help", "display this help");

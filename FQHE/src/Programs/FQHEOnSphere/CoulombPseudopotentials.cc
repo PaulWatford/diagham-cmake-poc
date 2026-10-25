@@ -16,7 +16,6 @@
 #include <cstring>
 #include <stdlib.h>
 #include <math.h>
-#include <limits>
 
 using std::ofstream;
 using std::ios;
@@ -348,7 +347,7 @@ int main(int argc, char** argv)
 	{
 	  ofstream File;
 	  File.open(OutputFile, ios::binary | ios::out);
-	  File.precision(std::numeric_limits<double>::max_digits10);
+	  File.precision(DIAGHAM_OUTPUT_PRECISION);
 	  File << "# pseudopotentials on the sphere for coulomb interaction ";
 	  if (Manager.GetBoolean("relativistic-fermions") == true)
 	    File << " for relativistic fermions";
@@ -472,7 +471,7 @@ int main(int argc, char** argv)
 	}
       else
 	{
-	  cout.precision(std::numeric_limits<double>::max_digits10);
+	  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 	  cout << "# pseudopotentials on the sphere for coulomb interaction ";
 	  if (Manager.GetBoolean("relativistic-fermions") == true)
 	    cout << " for relativistic fermions";
@@ -562,7 +561,7 @@ int main(int argc, char** argv)
 	  ofstream File;
 	  char *TabFileName = ReplaceExtensionToFileName(OutputFile,"dat","tab");
 	  File.open(TabFileName, ios::binary | ios::out);
-	  File.precision(std::numeric_limits<double>::max_digits10);
+	  File.precision(DIAGHAM_OUTPUT_PRECISION);
 	  File << "# pseudopotentials on the sphere for coulomb interaction ";
 	  if (Manager.GetBoolean("relativistic-fermions") == true)
 	    File << " for relativistic fermions";
@@ -636,14 +635,14 @@ int main(int argc, char** argv)
 
       ofstream File;
       File.open(OutputFile, ios::binary | ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       File << "Pseudopotentials=";        
       for (int i = 0; i <= NbrPseudopotentials - 1; ++i)
 	File << " " << Pseudopotentials[i];
       File << endl;      
       File.close();
 
-      cout.precision(std::numeric_limits<double>::max_digits10);
+      cout.precision(DIAGHAM_OUTPUT_PRECISION);
   
       delete[] OutputFile;
       delete[] Pseudopotentials;

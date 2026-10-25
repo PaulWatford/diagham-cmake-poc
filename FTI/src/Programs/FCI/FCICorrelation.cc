@@ -33,7 +33,6 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 using std::ios;
 using std::cout;
@@ -42,7 +41,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FCICorrelation" , "0.01");
@@ -194,7 +193,7 @@ int main(int argc, char** argv)
     }  
   delete Space;
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   double XStep = ((double) NbrSiteX) / ((double) NbrSamplesX);
   double YStep = ((double) NbrSiteY) / ((double) NbrSamplesY);
   RealVector Position(2, true);

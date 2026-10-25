@@ -37,7 +37,6 @@
 #include "GeneralTools/ArrayTools.h"
 
 #include <iostream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -336,7 +335,7 @@ bool TightBindingModelSimpleC4QuadrupoleFullOBC::WriteAsciiSpectrum(char* fileNa
 {
   ofstream File;
   File.open(fileName);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   this->WriteASCIIHeader(File, '#');
   File << "# Energy";
   File << endl;

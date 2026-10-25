@@ -22,7 +22,6 @@
 #include <math.h>
 #include <fstream>
 #include <string.h>
-#include <limits>
 
 
 using std::cout;
@@ -332,7 +331,7 @@ int main(int argc, char** argv)
     }
   if (Manager.GetBoolean("north-south") == true)
     {
-      cout.precision(std::numeric_limits<double>::max_digits10); 
+      cout.precision(DIAGHAM_OUTPUT_PRECISION); 
       cout << "ODLRO=" << (SouthPoleTruncatedState * TruncatedState) << endl;  
       return 0;
     }
@@ -344,7 +343,7 @@ int main(int argc, char** argv)
       return -1;
     }
 
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
   cout << "ODLRO=" << fabs(OutputState * TruncatedState) << " " << NorthNorm << endl;
 
 

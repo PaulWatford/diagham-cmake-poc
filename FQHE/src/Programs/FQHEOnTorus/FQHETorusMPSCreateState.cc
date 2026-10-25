@@ -31,7 +31,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -407,7 +406,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream File;
 	      File.open(OutputTxtFileName, ios::binary | ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);	
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);	
 	      for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		{
 		  ComplexState.PrintComponent(File, i) << " ";
@@ -426,7 +425,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream File;
 	      File.open(OutputTxtFileName, ios::binary | ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);	
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);	
 	      for (long i = 0; i < Space->GetLargeHilbertSpaceDimension(); ++i)
 		{
 		  State.PrintComponent(File, i) << " ";

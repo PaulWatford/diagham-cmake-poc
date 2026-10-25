@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -935,7 +934,7 @@ void FQHESphereJackTxtExportPolynomial(char* outputTxtFileName, Vector& outputSt
 {
   ofstream File;
   File.open(outputTxtFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   if (manager.GetBoolean("fortran-header"))
     {
       File << initialSpace.GetLargeHilbertSpaceDimension() << " " << alphaNumerator << " " << alphaDenominator;

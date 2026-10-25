@@ -72,7 +72,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // this part of code takes care of the command line options
   OptionManager Manager ("FQHESphereMyCode" , "0.01");
@@ -124,4 +124,4 @@ Three habits worth copying from the existing programs: check `--help`
 `EvaluateBroadening` in the defect register); gate `LapackDiagonalize`
 behind `#ifdef __LAPACK__` with the built-in `Diagonalize` as the fallback
 (the most common upstream build failure); and print results with
-`max_digits10`, not `precision(14)`.
+`precision(DIAGHAM_OUTPUT_PRECISION)` (14 digits, or 17 with `DIAGHAM_FULL_PRECISION_OUTPUT`), not a literal.

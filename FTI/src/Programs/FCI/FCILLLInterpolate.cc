@@ -34,7 +34,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -46,7 +45,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-    cout.precision(std::numeric_limits<double>::max_digits10);
+    cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
     OptionManager Manager("FCIColorfulLLLBlochBasis" , "0.01");
     OptionGroup* ToolsGroup = new OptionGroup("tools options");

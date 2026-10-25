@@ -44,7 +44,6 @@
 #include <stdio.h>
 #include <fstream>
 #include <cstring> 
-#include <limits>
 
 using std::cout;
 using std::cin;
@@ -68,7 +67,7 @@ int InvertSU2KxKyStates(OptionManager* manager);
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHETorusComputeKx" , "0.01");
@@ -332,7 +331,7 @@ int main(int argc, char** argv)
   sprintf (OutputName, "%s_ky_%d.dat", OutputNamePrefix, YMomentum);
   ofstream File;
   File.open(OutputName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# eigenvalue Norm Arg (GCD(N,N_phi)*Arg/2pi) Kx round(Kx)" << endl;
 
   if (Manager.GetBoolean("compute-eigenstate") == false)

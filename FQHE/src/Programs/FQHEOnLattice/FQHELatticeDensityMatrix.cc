@@ -34,7 +34,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -63,7 +62,7 @@ void GetTranslationMatrix(ParticleOnLatticeTranslationOperator *Operator, int Nb
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("FQHELatticeDensityMatrix" , "0.01");  
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");
@@ -267,7 +266,7 @@ int main(int argc, char** argv)
 		      cout.precision(5);
 		      cout <<" :  "<<Vectors[v][i];
 		      cout <<" -- "<<Norm(Vectors[v][i])<<" "<<Arg(Vectors[v][i])/M_PI<<endl;
-		      cout.precision(std::numeric_limits<double>::max_digits10);
+		      cout.precision(DIAGHAM_OUTPUT_PRECISION);
 		    }
 		}
 	      }
@@ -283,7 +282,7 @@ int main(int argc, char** argv)
 		else
 		  cout << "-"<<-Vectors[v][i].Im<<"I";
 		cout <<" -- "<<Norm(Vectors[v][i])<<" "<<Arg(Vectors[v][i])/M_PI<<endl;
-		cout.precision(std::numeric_limits<double>::max_digits10);
+		cout.precision(DIAGHAM_OUTPUT_PRECISION);
 	      }
 	}
       exit(0);

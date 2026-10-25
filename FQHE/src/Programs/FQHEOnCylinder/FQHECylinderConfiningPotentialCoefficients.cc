@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 #ifdef __GSL__
 #include <gsl/gsl_sf_hyperg.h>
 #endif
@@ -268,7 +267,7 @@ int main(int argc, char** argv)
     }
   ofstream File;
   File.open(OutputFile, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   if (Manager.GetBoolean("confining-momentum") == true)
     {
       File << "# confining potential in momentum space defined by :" << endl;

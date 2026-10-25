@@ -31,7 +31,6 @@
 #include "Architecture/ArchitectureOperation/OperatorMatrixElementOperation.h"
 
 #include <iostream>
-#include <limits>
 #include <math.h>
 #include <stdio.h>
 #include <cstring>
@@ -48,7 +47,7 @@ using std::setw;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FCIHofstadterCorrelation" , "0.01");
@@ -271,7 +270,7 @@ int main(int argc, char** argv)
       
   delete Space;
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   double XStep = ((double) NbrCellX) / ((double) NbrSamplesX);
   double YStep = ((double) NbrCellY) / ((double) NbrSamplesY);
   RealVector Position(2, true);

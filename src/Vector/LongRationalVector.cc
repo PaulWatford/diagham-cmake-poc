@@ -36,7 +36,6 @@
 #include <fstream>
 #include <iostream>
 #include <cstdlib>
-#include <limits>
 
 using std::cout;
 using std::ofstream;
@@ -693,7 +692,7 @@ bool LongRationalVector::WriteAsciiVector (const char* fileName)
 {
   this->Localize();
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File.open(fileName, ios::binary | ios::out);
   if (this->Dimension == -1)
     {

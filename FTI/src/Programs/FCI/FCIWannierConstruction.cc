@@ -23,7 +23,6 @@
 #include "HilbertSpace/FermionOnSquareLatticeMomentumSpace.h"
 #include "HilbertSpace/FermionOnSquareLatticeMomentumSpaceLong.h"
 #include "Hamiltonian/ParticleOnLatticeHaldaneModelSingleBandHamiltonian.h"
-#include <limits>
 
 
 using std::cout;
@@ -462,7 +461,7 @@ void Construct(OptionManager& Manager, FermionOnTorusWithMagneticTranslations& t
                 exact.ReadVector(exactname);
                 double overlap = SqrNorm(exact * output);
                 int precision = cout.precision();
-                cout.precision(std::numeric_limits<double>::max_digits10);
+                cout.precision(DIAGHAM_OUTPUT_PRECISION);
                 cout << "Overlap with ED = " << overlap << endl;
                 cout.precision(precision);
             }
@@ -477,7 +476,7 @@ void Construct(OptionManager& Manager, FermionOnTorusWithMagneticTranslations& t
     cout << endl;
 
     int precision = cout.precision();
-    cout.precision(std::numeric_limits<double>::max_digits10);
+    cout.precision(DIAGHAM_OUTPUT_PRECISION);
     for (int s = 0; s < Qx; ++s)
     {
         int Kx = Kpx + s * Ne;

@@ -64,7 +64,6 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -797,8 +796,8 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(std::numeric_limits<double>::max_digits10);
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   File << FileHeader << endl;
 
   if (Manager.GetBoolean("off-diagonal") == false)
@@ -1563,8 +1562,8 @@ int main(int argc, char** argv)
 	  File2.open(TmpFileName, ios::binary | ios::out);
 	  delete[] TmpFileName;
 	}
-      File2.precision(std::numeric_limits<double>::max_digits10);
-      cout.precision(std::numeric_limits<double>::max_digits10);
+      File2.precision(DIAGHAM_OUTPUT_PRECISION);
+      cout.precision(DIAGHAM_OUTPUT_PRECISION);
       File2 << FileHeader << endl;
       
       if (Flag3d == false)

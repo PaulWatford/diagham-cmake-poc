@@ -36,7 +36,6 @@
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 using std::ios;
 using std::cout;
@@ -65,7 +64,7 @@ bool FCIDensityGetHilbertSpace(char* inputState, int& nbrParticles, int& nbrSite
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FCIDensity" , "0.01");
@@ -263,7 +262,7 @@ int main(int argc, char** argv)
       if (TmpOutputName == 0)
 	TmpOutputName = ReplaceExtensionToFileName(Manager.GetString("input-states"), "txt", "coefficients.dat");
       ofstream File;
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       File.open(TmpOutputName, ios::binary | ios::out);
       File << "# density coefficients for " << Manager.GetString("input-states") << endl;
       File << "#" << endl << "# state_index_left state_index_right m  n  <left|c^+_m c_n|right> " << endl;
@@ -347,7 +346,7 @@ int main(int argc, char** argv)
   if (OutputName == 0)
     OutputName = ReplaceExtensionToFileName(Manager.GetString("input-states"), "txt", "rho.dat");
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File.open(OutputName, ios::binary | ios::out);
   File << "# density coefficients for " << Manager.GetString("input-states") << endl;
   File << "#" << endl << "# m  n  <psi| c^+_m c_n |psi>" << endl;

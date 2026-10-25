@@ -71,7 +71,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
-#include <limits>
 
 
 using std::ios;
@@ -363,8 +362,8 @@ int QHEOnLatticeMainTask::ExecuteMainTask()
     {
       File.open(this->OutputFileName, ios::binary | ios::out | ios::app);
     }
-  File.precision(std::numeric_limits<double>::max_digits10);
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   cout << "----------------------------------------------------------------" << endl;
   if (this->ReducedHilbertSpaceDescription != 0)
     {

@@ -34,7 +34,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -248,8 +247,8 @@ int main(int argc, char** argv)
       File.open(TmpFileName, ios::binary | ios::out);
       delete[] TmpFileName;
     }
-  File.precision(std::numeric_limits<double>::max_digits10);
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   int MaxSubsystemNbrParticles = (NbrParticles >> 1) + (NbrParticles & 1);
   if (Manager.GetInteger("max-na") > 0)
@@ -370,7 +369,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+		      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 		      if (KxFlag == true)
 			{
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
@@ -401,7 +400,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  if (KxFlag == true)
 			    {
 			      double KxValue = 0.0;
@@ -532,7 +531,7 @@ int main(int argc, char** argv)
 		    {
 		      ofstream DensityMatrixFile;
 		      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-		      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+		      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 		      if (KxFlag == true)
 			{
 			  for (int i = 0; i < PartialDensityMatrix.GetNbrRow(); ++i)
@@ -564,7 +563,7 @@ int main(int argc, char** argv)
 			{
 			  ofstream DensityMatrixFile;
 			  DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-			  DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+			  DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 			  if (KxFlag == true)
 			    {
 			      double KxValue = 0.0;

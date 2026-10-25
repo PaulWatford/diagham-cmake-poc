@@ -17,7 +17,6 @@
 #include <cmath>
 #include <cstring>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -157,7 +156,7 @@ int main(int argc, char** argv)
 		}
 	      ofstream File;
 	      File.open(OutputFileName, ios::out);
-	      File.precision(std::numeric_limits<double>::max_digits10);
+	      File.precision(DIAGHAM_OUTPUT_PRECISION);
 	      File << "# la na ky shifted_ky lambda -log(lambda)" << endl;
 	      if (NbrParticlesInPartition == 0)
 		{
@@ -276,7 +275,7 @@ int main(int argc, char** argv)
 	    }
 	  ofstream File;
 	  File.open(OutputFileName, ios::out);
-	  File.precision(std::numeric_limits<double>::max_digits10);
+	  File.precision(DIAGHAM_OUTPUT_PRECISION);
 	  int* KyValues;
 	  double* Coefficients;
 	  int TmpIndex = Index;

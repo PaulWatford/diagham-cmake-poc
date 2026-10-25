@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -255,7 +254,7 @@ int main(int argc, char** argv)
       DensityMatrixFile.close();
     }
 
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   
   int SubsystemNbrParticles = (NbrParticles >> 1) + (NbrParticles & 1);
   if (Manager.GetInteger("na") > 0)
@@ -353,7 +352,7 @@ int main(int argc, char** argv)
 	    {
 	      ofstream DensityMatrixFile;
 	      DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-	      DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+	      DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 	      for (int i = 0; i < TmpDiag.GetNbrRow(); ++i)
 		{
 		  DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpDiag[i] << endl;
@@ -374,7 +373,7 @@ int main(int argc, char** argv)
 // 	      {
 // 		ofstream DensityMatrixFile;
 // 		DensityMatrixFile.open(DensityMatrixFileName, ios::binary | ios::out | ios::app); 
-// 		DensityMatrixFile.precision(std::numeric_limits<double>::max_digits10);
+// 		DensityMatrixFile.precision(DIAGHAM_OUTPUT_PRECISION);
 // 		DensityMatrixFile << SubsystemNbrParticles << " " << SubsystemTotalLz << " " << TmpValue << endl;
 // 		DensityMatrixFile.close();
 // 	      }		  

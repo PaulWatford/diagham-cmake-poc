@@ -50,7 +50,6 @@
 #include <math.h>
 #include <fstream>
 #include <sys/time.h>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -131,7 +130,7 @@ double* EvaluateEtaPairingContribution(int nbrRenyiEntropies, int nbrSites, int 
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   OptionManager Manager ("HubbardSquareLatticeEtaPairingEntanglementEntropyRealSpacePartition" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
   OptionGroup* SystemGroup = new OptionGroup ("system options");
@@ -781,11 +780,11 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(EntropyFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
 
   ofstream OneBodyFile;
   OneBodyFile.open(OneBodyEntropyFileName, ios::binary | ios::out);
-  OneBodyFile.precision(std::numeric_limits<double>::max_digits10);
+  OneBodyFile.precision(DIAGHAM_OUTPUT_PRECISION);
 
   if (Manager.GetBoolean("use-nonvacuum") == false)
     {
@@ -841,7 +840,7 @@ int main(int argc, char** argv)
 	}
       ofstream NonVacuumFile;
       NonVacuumFile.open(NonVacuumFileName, ios::binary | ios::out);
-      NonVacuumFile.precision(std::numeric_limits<double>::max_digits10);
+      NonVacuumFile.precision(DIAGHAM_OUTPUT_PRECISION);
       NonVacuumFile << "# Non-vacuum state total momentum along x = " << VacuumXMomentum << endl;
       NonVacuumFile << "# Non-vacuum state total momentum along y = " << VacuumYMomentum << endl;
       NonVacuumFile << "# Non-vacuum state total energy = " << VacuumTotalEnergy << endl;

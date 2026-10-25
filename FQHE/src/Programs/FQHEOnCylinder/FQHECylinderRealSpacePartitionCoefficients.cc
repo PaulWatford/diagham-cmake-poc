@@ -9,7 +9,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -146,7 +145,7 @@ int main(int argc, char** argv)
 
       ofstream File;
       File.open(OutputFile, ios::binary | ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       if (Manager.GetBoolean("finite-patch") == false)
 	{
 	  File << "# real space coefficients for a sharp cut at x=" << CutPosition << " on ";
@@ -281,7 +280,7 @@ int main(int argc, char** argv)
 
       ofstream File;
       File.open(OutputFile, ios::binary | ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       File << "# real space coefficients for a sharp cut centered at x=" << CutPosition << " and of length=" << CutLength << " and width=" << CutWidth << " on ";
       if (NbrFluxQuanta == 0)
 	{
@@ -311,7 +310,7 @@ int main(int argc, char** argv)
 	    }
 	  if (Manager.GetBoolean("show-overlap") == true)
 	    {
-	      cout.precision(std::numeric_limits<double>::max_digits10);
+	      cout.precision(DIAGHAM_OUTPUT_PRECISION);
 	      cout << TmpOverlapMatrix << endl;
 	    }
 	  RealMatrix TmpTransformationMatrix1 (NbrFluxQuanta + 1, NbrFluxQuanta + 1);

@@ -59,7 +59,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -405,14 +404,14 @@ int main(int argc, char** argv)
 	sprintf (EnergyNameFile, "%s_%s_energy.resume.dat", OutputNamePrefix,ParameterString);
 
       FileEnergy.open(EnergyNameFile, ios::out);
-      FileEnergy.precision(std::numeric_limits<double>::max_digits10);
+      FileEnergy.precision(DIAGHAM_OUTPUT_PRECISION);
       FileEnergy << "# t E "<< endl;
     }
  
     EnergyNameFile0 = new char[512];
     sprintf (EnergyNameFile0, "%s_%s_H0_energy.dat", OutputNamePrefix, ParameterString);
     FileEnergy0.open(EnergyNameFile0, ios::out);
-    FileEnergy0.precision(std::numeric_limits<double>::max_digits10);
+    FileEnergy0.precision(DIAGHAM_OUTPUT_PRECISION);
     FileEnergy0 << "# t E "<< endl;
     
     NormFileName = new char[512];
@@ -421,7 +420,7 @@ int main(int argc, char** argv)
     else
       sprintf (NormFileName, "%s_%s_overlap.dat", OutputNamePrefix,ParameterString);
     FileNorm.open(NormFileName, ios::out);
-    FileNorm.precision(std::numeric_limits<double>::max_digits10);
+    FileNorm.precision(DIAGHAM_OUTPUT_PRECISION);
     FileNorm << "# t Norm " << endl;
   
   

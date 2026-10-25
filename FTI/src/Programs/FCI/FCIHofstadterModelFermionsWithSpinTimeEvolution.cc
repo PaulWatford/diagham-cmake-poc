@@ -66,7 +66,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <fstream>
-#include <limits>
 
 using std::cout;
 using std::endl;
@@ -444,7 +443,7 @@ int main(int argc, char** argv)
 	sprintf (EnergyNameFile, "%s_%s_energy.resume.dat", OutputNamePrefix,ParameterString);
 
       FileEnergy.open(EnergyNameFile, ios::out);
-      FileEnergy.precision(std::numeric_limits<double>::max_digits10);
+      FileEnergy.precision(DIAGHAM_OUTPUT_PRECISION);
       FileEnergy << "# t E "<< endl;
     }
   if (TruncationIndex > 0)
@@ -452,7 +451,7 @@ int main(int argc, char** argv)
     NormFileName = new char[512];
     sprintf (NormFileName, "%s_truncatedbasis_%d_%s_norm.dat", OutputNamePrefix, TruncationIndex, ParameterString);
     FileNorm.open(NormFileName, ios::out);
-    FileNorm.precision(std::numeric_limits<double>::max_digits10);
+    FileNorm.precision(DIAGHAM_OUTPUT_PRECISION);
     FileNorm << "# t Norm "<< endl;
   }
   

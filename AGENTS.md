@@ -22,8 +22,8 @@ them:
   `selftest.manifest`). `cmake/verify_build.sh`, the autotools-parity script,
   reports 79 passes in the default configuration (FQHE and FTI on) and is a
   separate, nightly check.
-- **The Hubbard ED demo matches the analytic ground state to machine
-  precision** (see `docs/tutorials/hubbard-walkthrough.md` and the log `benchmarks/BENCHMARK.md`).
+- **The Hubbard ED demo matches the analytic ground state** to 1e-12 with
+  upstream's 14 printed digits, and to 4 ulp with `DIAGHAM_FULL_PRECISION_OUTPUT` (17 digits) (see `docs/tutorials/hubbard-walkthrough.md` and the log `benchmarks/BENCHMARK.md`).
 
 If a change affects either number, that is Damage (see below) even if
 every check still reports green.
@@ -98,7 +98,7 @@ until a named maintainer replies.
    - `cmake -S . -B build` (out-of-source)
    - `cmake --build build`
    - `ctest --test-dir build --output-on-failure`
-   - Hubbard ED demo vs. the locked analytic golden, machine precision
+   - Hubbard ED demo vs. the locked analytic golden (1e-12; 4 ulp with `DIAGHAM_FULL_PRECISION_OUTPUT`)
    - Manifest check: the set of test names must match the locked
      list exactly, even if ctest still reports green
 3. **Damage scan (blocking for the mail class, never an auto-fix).**

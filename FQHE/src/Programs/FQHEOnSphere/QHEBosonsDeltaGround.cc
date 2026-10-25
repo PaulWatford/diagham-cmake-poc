@@ -33,7 +33,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -52,7 +51,7 @@ RGB RGBValue (double x, bool grayScale = false);
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   BooleanOption HelpOption ('h', "help", "display this help");
   BooleanOption SMPOption ('S', "SMP", "enable SMP mode");
@@ -116,7 +115,7 @@ int main(int argc, char** argv)
   const char* OutputNameL = "bosons_l.dat";
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   int Max = (LzMax * NbrBosons);
   int TotalSize = 0;
   double** Eigenvalues = new double* [2 * Max + 1];
@@ -302,7 +301,7 @@ int main(int argc, char** argv)
 	  char* OutputNameCorr = new char [256];
 	  sprintf (OutputNameCorr, "bosons_delta_corr_n_%d_2s_%d.dat", NbrBosons, LzMax);
 	  File2.open(OutputNameCorr, ios::binary | ios::out);
-	  File2.precision(std::numeric_limits<double>::max_digits10);
+	  File2.precision(DIAGHAM_OUTPUT_PRECISION);
 	  for (int x = 0; x < PicSize; ++x)
 	    {
 	      Value[0] = X;

@@ -17,7 +17,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -28,7 +27,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 /*  int J1 = 4;
   int J2 = 4;
   int j;
@@ -62,7 +61,7 @@ int main(int argc, char** argv)
     OutputName = argv[4];*/
   ofstream File;
   File.open(OutputNameLz, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   LzMax = InvNu * (NbrBosons - 1);
   int Max = (LzMax * NbrBosons);
   int TotalSize = 0;

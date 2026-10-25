@@ -46,7 +46,6 @@
 #include <iostream>
 #include <math.h>
 #include <stdlib.h>
-#include <limits>
 
 
 using std::cout;
@@ -415,7 +414,7 @@ bool ParticleOnTorusGenericHamiltonian::SaveManyBodyMatrixElements (char* fileNa
 {
   ofstream File;
   File.open(fileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# ky1 ky2 ky3 ky4 M_{ky1,ky2;ky3,ky4}" << endl;
   if (this->Particles->GetParticleStatistic() == ParticleOnTorus::FermionicStatistic)
     {

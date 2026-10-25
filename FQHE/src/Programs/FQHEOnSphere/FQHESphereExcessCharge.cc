@@ -15,7 +15,6 @@
 #include <unistd.h>
 #include <math.h>
 #include <stdlib.h>
-#include <limits>
 
 using std::cout;
 using std::ifstream;
@@ -26,7 +25,7 @@ using std::endl;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);  
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);  
 
   OptionManager Manager ("FQHESphereExcessCharge" , "0.01");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

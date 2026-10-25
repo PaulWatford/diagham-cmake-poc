@@ -28,7 +28,6 @@
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -40,7 +39,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("QHEFermionsCorrelation" , "0.01");
@@ -225,7 +224,7 @@ int main(int argc, char** argv)
   double Factor1 = (16.0 * M_PI * M_PI) / ((double) (NbrParticles * NbrParticles));
   double Factor2;
   ofstream File;
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   if (((SingleStringOption*) Manager["output-file"])->GetString() != 0)
     File.open(((SingleStringOption*) Manager["output-file"])->GetString(), ios::binary | ios::out);
   else

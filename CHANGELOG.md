@@ -59,6 +59,9 @@ all present on the `upstream` branch: `git log upstream`).
   Hamiltonian (`FQHEDiskBosonsTwoBodyGeneric`) gives wrong energies for
   N ≥ 3 while its zero modes are right; the tests carry the exact spectra.
 
+### Changed
+- Full-precision output is now opt-in, as the team decided on 20 October 2026: the 980 result-output sites (545 files) that `main` had changed from upstream's `precision(14)` to `max_digits10` now read `precision(DIAGHAM_OUTPUT_PRECISION)`, with upstream's original spacing, and the 543 `#include <limits>` lines that change added are removed. `src/config.h` defines `DIAGHAM_OUTPUT_PRECISION` as 14, so the default build (and an autotools build) writes exactly what upstream writes; the new CMake option `DIAGHAM_FULL_PRECISION_OUTPUT` sets it to 17. 528 of the 545 files now differ from upstream only by that name. The Hubbard golden `physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2` checks the 14 printed digits to 1e-12 by default (4 ulp with the option); AGENTS.md, the README, the tutorial and the reference pages are reworded to match.
+
 ### Fixed
 - CI red at `d28738d95` (run of 30 September) although no physics test failed:
   - `selftest.manifest` failed in the LAPACK builds (full, hpc, container), because three `known-bug` tests that exist only without LAPACK (U40, U42) were not in `tests/manifest-optional.txt`. They are now.

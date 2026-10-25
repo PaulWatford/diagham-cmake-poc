@@ -31,7 +31,6 @@
 #include <sys/time.h>
 #include <stdio.h>
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -43,7 +42,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
     
   // some running options and help
   OptionManager Manager ("FQHETorusWithSU2SpinComputeSx" , "0.01");
@@ -140,7 +139,7 @@ int main(int argc, char** argv)
   Complex Tmp = OutputState * InputState;
   ofstream File;
   File.open(OutputFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << " # kx ky Re(<2S_x>) <2S_x>" << endl;
   File << KxMomentum << " " << KyMomentum << " " << Tmp.Re << " " << Tmp << endl;
   File.close();

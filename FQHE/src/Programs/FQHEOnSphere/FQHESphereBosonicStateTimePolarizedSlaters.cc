@@ -41,7 +41,6 @@
 #include <string.h>
 
 #include "Tools/FQHEFiles/FQHESqueezedBasisTools.h"
-#include <limits>
 
 
 using std::cout;
@@ -53,7 +52,7 @@ using std::ifstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   
   OptionManager Manager ("FQHESphere2LLBosonicStateTimePolarizedSlaters" , "0.01");
   OptionGroup* SystemGroup = new OptionGroup ("system options");

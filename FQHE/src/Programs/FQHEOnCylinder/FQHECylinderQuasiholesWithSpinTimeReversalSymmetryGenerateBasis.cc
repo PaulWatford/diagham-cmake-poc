@@ -20,7 +20,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -43,7 +42,7 @@ bool FQHECylinderQuasiholesWithSpinTimeReversalSymmetryExtractSpectrum(char* spe
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis" , "0.01");
@@ -287,7 +286,7 @@ int main(int argc, char** argv)
       char* OutputFileName = ReplaceString(TmpOutputFileName, ".dat", "_fullspectrum.dat");
       ofstream File;  
       File.open(OutputFileName, ios::binary | ios::out); 
-      File.precision(std::numeric_limits<double>::max_digits10); 
+      File.precision(DIAGHAM_OUTPUT_PRECISION); 
       File << "# N Sz Lz N_u N_d Lz_u Lz_d E" << endl;
       for (int i = 0; i < TotalNbrLevels; ++i)
 	{
@@ -378,7 +377,7 @@ int main(int argc, char** argv)
   char* OutputFileName = ReplaceString(TmpOutputFileName, ".dat", OutputFileNameExtension);
   ofstream File;  
   File.open(OutputFileName, ios::binary | ios::out); 
-  File.precision(std::numeric_limits<double>::max_digits10); 
+  File.precision(DIAGHAM_OUTPUT_PRECISION); 
   File << "# N Sz Lz N_u N_d Lz_u Lz_d E E-E_c file_index_up file_index_down" << endl;
   for (int i = 0; i < EffectiveSubspaceDimension; ++i)
     {
@@ -395,7 +394,7 @@ int main(int argc, char** argv)
 
   char* OutputFileNameVectorList = ReplaceExtensionToFileName(OutputFileName, "basis", "vectors");
   File.open(OutputFileNameVectorList, ios::binary | ios::out); 
-  File.precision(std::numeric_limits<double>::max_digits10); 
+  File.precision(DIAGHAM_OUTPUT_PRECISION); 
   char* TmpExtension = new char[128];
   char** UsedEigenstateFileName = new char* [NbrGlobalIndices];
   NbrGlobalIndices = 0; 

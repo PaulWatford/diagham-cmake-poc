@@ -10,7 +10,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -21,7 +20,7 @@ using std::ofstream;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("FQHES2xS2LzKzToLK" , "0.01");
   OptionGroup* MiscGroup = new OptionGroup ("misc options");
@@ -81,7 +80,7 @@ int main(int argc, char** argv)
     }  
   ofstream File;
   File.open(OutputFileName, ios::binary | ios::out); 
-  File.precision(std::numeric_limits<double>::max_digits10); 
+  File.precision(DIAGHAM_OUTPUT_PRECISION); 
   File << "# 2L 2K E" << endl;
   int TotalSize = Spectrum.GetNbrLines();
   int* FullLzValues = Spectrum.GetAsIntegerArray(0);

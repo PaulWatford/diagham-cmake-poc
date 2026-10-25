@@ -51,7 +51,6 @@
 #include <cstdlib>
 #include <iomanip>
 #include <cassert>
-#include <limits>
 
 using std::ios;
 using std::cout;
@@ -86,7 +85,7 @@ ParticleOnTorus* GetHilbertSpace(bool Statistics,int NbrParticles, int NbrFluxQu
 
 int main ( int argc, char** argv )
 {
-    cout.precision(std::numeric_limits<double>::max_digits10);
+    cout.precision ( DIAGHAM_OUTPUT_PRECISION );
 
     // some running options and help
     OptionManager Manager ( "FQHETorusSpectralResponse" , "0.01" );

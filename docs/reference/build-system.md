@@ -57,6 +57,7 @@ Optional libraries (each defines `HAVE_<X>` in the config header; the old flag i
 | `DIAGHAM_USE_FFTW` (`--enable-fftw`) | OFF | from MKL when `DIAGHAM_USE_MKL`, else `find_package(FFTW3)` |
 | `DIAGHAM_USE_BZ2` (`--enable-bz2`) | OFF | `find_package(BZip2)` |
 | `DIAGHAM_USE_PROFILE` (`--enable-profile`) | OFF | `-g -pg` on compile and link |
+| `DIAGHAM_FULL_PRECISION_OUTPUT` (no configure equivalent) | OFF | computed results written with 17 significant digits instead of upstream's 14 (`DIAGHAM_OUTPUT_PRECISION=17`; `src/config.h` defaults it to 14) |
 | `DIAGHAM_COMMAND_LOG` (`--with-cmd-log=FILE`) | "" | path; defines `HAVE_GLOBAL_COMMAND_LOG` and `GLOBAL_COMMAND_LOG` |
 
 Link-line overrides (the `--with-<pkg>-libs` equivalents; a `;`-list or a space-separated string): `DIAGHAM_LAPACK_LIBS`, `DIAGHAM_GSL_LIBS`, `DIAGHAM_GMP_LIBS`, `DIAGHAM_MPACK_LIBS`, `DIAGHAM_SCALAPACK_LIBS`, `DIAGHAM_FORTRAN2C_LIBS`. The complete flag-by-flag map is [configure-flag-map.md](configure-flag-map.md).

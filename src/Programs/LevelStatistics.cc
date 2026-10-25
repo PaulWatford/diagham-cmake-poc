@@ -14,7 +14,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::cout;
@@ -68,7 +67,7 @@ void LevelStatisticsPerformLevelStatistics(double** spectrum, int* spectrumSize,
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10); 
+  cout.precision(DIAGHAM_OUTPUT_PRECISION); 
 
   // some running options and help
   OptionManager Manager ("LevelStatistics" , "0.01");
@@ -303,7 +302,7 @@ int main(int argc, char** argv)
       char* OutputRFileName = ReplaceExtensionToFileName(OutputFileName, "levelstat", "rvalue");
       ofstream File;
       File.open(OutputRFileName, ios::binary | ios::out);
-      File.precision(std::numeric_limits<double>::max_digits10);
+      File.precision(DIAGHAM_OUTPUT_PRECISION);
       File << "# Average r = " << (AverageR / SpectraFile.GetNbrLines()) << " " 
 	   << sqrt (((VarianceAverageR / SpectraFile.GetNbrLines()) - ((AverageR / SpectraFile.GetNbrLines()) * (AverageR / SpectraFile.GetNbrLines()))) / (SpectraFile.GetNbrLines() - 1)) << endl;
       File << "# file name <r>" << endl;
@@ -339,7 +338,7 @@ int main(int argc, char** argv)
 
   ofstream File;
   File.open(OutputFileName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# Min spacing " << MinAverageSpacing << endl;
   File << "# Max spacing " << MaxAverageSpacing << endl;
   File << "# Average spacing = " << AverageSpacing << endl;

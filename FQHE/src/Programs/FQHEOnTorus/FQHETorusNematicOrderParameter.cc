@@ -39,7 +39,6 @@
 #include <stdio.h>
 #include <fstream>
 #include <cstring> 
-#include <limits>
 
 using std::cout;
 using std::cin;
@@ -50,7 +49,7 @@ using std::ios;
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   // some running options and help
   OptionManager Manager ("FQHETorusNematicOrderParameter" , "0.01");
@@ -225,7 +224,7 @@ int main(int argc, char** argv)
     }
   ofstream File;
   File.open(OutputName, ios::binary | ios::out);
-  File.precision(std::numeric_limits<double>::max_digits10);
+  File.precision(DIAGHAM_OUTPUT_PRECISION);
   File << "# eigenvalue Norm Arg (2 * Arg/pi) round(C4)" << endl;
 
   RealDiagonalMatrix Eigenvalues(NematicParameterRep.GetNbrColumn(), true);

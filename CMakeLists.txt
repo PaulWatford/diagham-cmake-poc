@@ -112,6 +112,7 @@ option(DIAGHAM_USE_MPACK      "Enable MPACK arbitrary-precision LAPACK (--enable
 option(DIAGHAM_USE_FFTW       "Enable FFTW3 support (--enable-fftw)" OFF)
 option(DIAGHAM_USE_SCALAPACK  "Enable ScaLAPACK support (--enable-scalapack; requires MPI and LAPACK)" OFF)
 option(DIAGHAM_USE_PROFILE    "Build with gprof instrumentation, -g -pg (--enable-profile)" OFF)
+option(DIAGHAM_FULL_PRECISION_OUTPUT "Write computed results with 17 significant digits (full double precision) instead of upstream's 14" OFF)
 set(DIAGHAM_COMMAND_LOG "" CACHE STRING
     "Global logfile where DiagHam commands are stored (--with-cmd-log); empty disables it")
 
@@ -209,6 +210,12 @@ endif()
 
 # Machine precision constant, matches autotools' MACHINE_PRECISION
 list(APPEND DIAGHAM_COMPILE_DEFS "MACHINE_PRECISION=1e-14")
+
+# Output digits of computed results (precision(DIAGHAM_OUTPUT_PRECISION) at every upstream precision(14)
+# site); src/config.h defaults it to 14, so the default build writes exactly what upstream writes.
+if(DIAGHAM_FULL_PRECISION_OUTPUT)
+    list(APPEND DIAGHAM_COMPILE_DEFS "DIAGHAM_OUTPUT_PRECISION=17")
+endif()
 
 # Cluster architecture and Hilbert space "feature" macros, these come
 # from src/config.h via the HAVE_CONFIG_H -> config.h -> config_ac.h chain.

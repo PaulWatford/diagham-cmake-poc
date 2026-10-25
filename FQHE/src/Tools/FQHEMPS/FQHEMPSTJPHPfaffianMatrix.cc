@@ -42,7 +42,6 @@
 #include "GeneralTools/Endian.h"
 
 #include <fstream>
-#include <limits>
 
 
 using std::cout;
@@ -1923,7 +1922,7 @@ SparseRealMatrix** FQHEMPSTJPHPfaffianMatrix::GetSphereSiteDependentMatrices(int
 	}
     }
 
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
   double** TmpProjectorCoefficients = new double*[nbrFluxQuanta + 1];
   if (true)
     {

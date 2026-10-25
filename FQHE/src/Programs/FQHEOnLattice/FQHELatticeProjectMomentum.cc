@@ -28,7 +28,6 @@
 #include <math.h>
 #include <sys/time.h>
 #include <stdio.h>
-#include <limits>
 
 
 using std::ios;
@@ -86,7 +85,7 @@ void TranslateVectors(ParticleOnLatticeTranslationOperator *Operator, int NbrVec
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("FQHELatticeProjectMomentum" , "0.01");  
   OptionGroup* OutputGroup = new OptionGroup ("output options");

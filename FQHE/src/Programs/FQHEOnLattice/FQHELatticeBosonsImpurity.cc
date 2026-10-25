@@ -36,14 +36,13 @@ using std::ofstream;
 
 
 #include "Matrix/ComplexMatrix.h"
-#include <limits>
 
 
 
 
 int main(int argc, char** argv)
 {
-  cout.precision(std::numeric_limits<double>::max_digits10);
+  cout.precision(DIAGHAM_OUTPUT_PRECISION);
 
   OptionManager Manager ("FQHELatticeBosonsImpurity" , "0.01");  
   OptionGroup* ToolsGroup  = new OptionGroup ("tools options");

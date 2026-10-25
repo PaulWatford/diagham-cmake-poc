@@ -2,7 +2,7 @@
 # Test coverage by program
 
 Purpose: say plainly which of the programs have their physics checked, and how; the `--help` smoke test is not a physics check and is not counted as one.
-Source: `ctest --show-only=json-v1` of the build; 905 tests, 603 programs. Regenerate with `python3 tests/coverage.py <build-dir> --write docs/reference/test-coverage.md`.
+Source: `ctest --show-only=json-v1` of the build; 907 tests, 603 programs. Regenerate with `python3 tests/coverage.py <build-dir> --write docs/reference/test-coverage.md`.
 
 | Programs with… | Count | Of |
 |---|---:|---:|
@@ -13,7 +13,7 @@ Source: `ctest --show-only=json-v1` of the build; 905 tests, 603 programs. Regen
 | only a `smoke` test (`--help`) — physics untested | 520 | 603 |
 | no test at all | 4 | 603 |
 
-Tests by label: `FCI` 2, `FQHEOnLattice` 1, `FQHEOnSphere` 1, `FQHEOnTorus` 1, `FTI` 1, `HubbardModels` 2, `QuantumDots` 1, `Spin` 2, `atomiclimit` 4, `bands` 31, `checkerboard` 11, `crosscheck` 3, `cylinder` 10, `dimension` 27, `disk` 11, `ed` 86, `entanglement` 32, `fci` 45, `fqhe` 135, `fti` 20, `haah_code` 10, `haldane` 1, `hubbard` 17, `install` 1, `kagome` 1, `lanczos` 1, `lattice` 5, `manybody` 11, `nbody` 8, `open-finding` 17, `physics` 250, `python` 17, `regression` 11, `selftest` 24, `smoke` 599, `sphere` 56, `spin` 85, `toric_code` 7, `torus` 37, `xcube` 9.
+Tests by label: `FCI` 2, `FQHEOnLattice` 1, `FQHEOnSphere` 1, `FQHEOnTorus` 1, `FTI` 1, `HubbardModels` 2, `QuantumDots` 1, `Spin` 2, `atomiclimit` 4, `bands` 31, `checkerboard` 11, `crosscheck` 3, `cylinder` 10, `dimension` 27, `disk` 11, `ed` 86, `entanglement` 32, `fci` 45, `fqhe` 135, `fti` 20, `haah_code` 10, `haldane` 1, `hubbard` 17, `install` 1, `kagome` 1, `lanczos` 1, `lattice` 5, `manybody` 11, `nbody` 8, `open-finding` 17, `physics` 250, `python` 17, `regression` 11, `selftest` 26, `smoke` 599, `sphere` 56, `spin` 85, `toric_code` 7, `torus` 37, `xcube` 9.
 
 ## Programs with a physics, crosscheck or regression test
 

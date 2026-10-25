@@ -75,7 +75,7 @@ foreach(two_s 6 10 15)
         PROGRAM FQHEOnSphere_CoulombPseudopotentials
         ARGS -s ${two_s}
         OUTPUT "pseudopotential_coulomb_l_0_2s_${two_s}.dat"
-        CHECK line @OUTPUT@ Pseudopotentials ${sphere_data}/coulomb_2s${two_s}.txt 1e-13
+        CHECK line @OUTPUT@ Pseudopotentials ${sphere_data}/coulomb_2s${two_s}.txt ${DIAGHAM_TEST_TOLERANCE}
         LABELS fqhe sphere)
 endforeach()
 # higher Landau levels: l = S + n orbitals, the monopole-harmonic form of the same closed form
@@ -87,7 +87,7 @@ foreach(case "8|1" "6|2" "10|1")
         PROGRAM FQHEOnSphere_CoulombPseudopotentials
         ARGS -s ${two_s} -l ${ll}
         OUTPUT "pseudopotential_coulomb_l_${ll}_2s_${two_s}.dat"
-        CHECK line @OUTPUT@ Pseudopotentials ${sphere_data}/coulomb_2s${two_s}_ll${ll}.txt 1e-13
+        CHECK line @OUTPUT@ Pseudopotentials ${sphere_data}/coulomb_2s${two_s}_ll${ll}.txt ${DIAGHAM_TEST_TOLERANCE}
         LABELS fqhe sphere)
 endforeach()
 

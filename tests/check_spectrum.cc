@@ -13,8 +13,12 @@
 //       lowest value in COLUMN equals EXPECTED to within MAX_ULP units in
 //       the last place (0 means bit-identical)
 //
+// Every TOL below is either a number (absolute: |a - b| <= TOL) or "rel:X" (relative:
+// |a - b| <= X * max(|a|, |b|, 1)). Every check prints the largest absolute and relative difference
+// it found, whichever form its tolerance takes.
+//
 //   check_spectrum min-abs  FILE COLUMN EXPECTED TOL
-//       lowest value in COLUMN equals EXPECTED to within |TOL|
+//       lowest value in COLUMN equals EXPECTED to within TOL
 //
 //   check_spectrum spectrum FILE COLUMN REFERENCE REF_COLUMN TOL
 //       the sorted COLUMN of FILE matches the sorted REF_COLUMN of
@@ -131,6 +135,73 @@ double ParseDouble(const char* text, const char* what)
       std::exit(2);
     }
   return value;
+}
+
+// A tolerance: "1e-9" is absolute (|a - b| <= 1e-9); "rel:1e-12" is relative to the size of the numbers,
+// |a - b| <= 1e-12 * max(|a|, |b|, 1), so values of order one or less are held to 1e-12 absolutely and a
+// zero mode stays well defined.
+struct Tolerance
+{
+  double value;
+  bool relative;
+};
+
+Tolerance ParseTolerance(const char* text)
+{
+  Tolerance t;
+  t.relative = std::strncmp(text, "rel:", 4) == 0;
+  t.value = std::fabs(ParseDouble(t.relative ? text + 4 : text, "TOL"));
+  return t;
+}
+
+double Scale(double a, double b)
+{
+  return std::max(1.0, std::max(std::fabs(a), std::fabs(b)));
+}
+
+// the measure the tolerance is compared with: |a - b|, or |a - b| / max(|a|, |b|, 1)
+double Deviation(double a, double b, const Tolerance& t)
+{
+  double d = std::fabs(a - b);
+  return t.relative ? d / Scale(a, b) : d;
+}
+
+std::ostream& operator<<(std::ostream& out, const Tolerance& t)
+{
+  return out << (t.relative ? "relative " : "absolute ") << t.value;
+}
+
+// element-by-element comparison of the first n values; reports the worst absolute and relative differences
+struct Worst
+{
+  double deviation, absolute, relative;
+  size_t index;
+};
+
+Worst Compare(const std::vector<double>& values, const std::vector<double>& reference, size_t n, const Tolerance& t)
+{
+  Worst w = {0.0, 0.0, 0.0, 0};
+  for (size_t i = 0; i < n; ++i)
+    {
+      double d = std::fabs(values[i] - reference[i]);
+      double dev = Deviation(values[i], reference[i], t);
+      w.absolute = std::max(w.absolute, d);
+      w.relative = std::max(w.relative, d / Scale(values[i], reference[i]));
+      if (dev > w.deviation)
+        {
+          w.deviation = dev;
+          w.index = i;
+        }
+    }
+  return w;
+}
+
+void Report(const Worst& w, const std::vector<double>& values, const std::vector<double>& reference,
+            const Tolerance& t)
+{
+  std::cout << "max |diff| = " << w.absolute << ", max relative diff = " << w.relative << ", worst at index "
+            << w.index << " (" << values[w.index] << " vs " << reference[w.index] << "), tolerance " << t
+            << std::endl;
 }
 
 int Usage()
@@ -258,12 +329,13 @@ int main(int argc, char** argv)
       int64_t ulp = UlpDistance(lowest, expected);
       std::cout << "lowest   = " << lowest << "\nexpected = " << expected
                 << "\ndiff     = " << (lowest - expected) << " (" << ulp << " ulp)"
-                << std::endl;
+                << "\nmax |diff| = " << std::fabs(lowest - expected) << ", max relative diff = "
+                << std::fabs(lowest - expected) / Scale(lowest, expected) << std::endl;
       bool pass;
       if (mode == "min")
         pass = ulp <= std::atoll(argv[5]);
       else
-        pass = std::fabs(lowest - expected) <= std::fabs(ParseDouble(argv[5], "TOL"));
+        pass = Deviation(lowest, expected, ParseTolerance(argv[5])) <= ParseTolerance(argv[5]).value;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;
     }
@@ -273,7 +345,7 @@ int main(int argc, char** argv)
       std::vector<double> reference;
       if (!ReadColumn(file, column, values) || !ReadColumn(argv[4], std::atoi(argv[5]), reference))
         return 2;
-      double tolerance = std::fabs(ParseDouble(argv[6], "TOL"));
+      Tolerance tolerance = ParseTolerance(argv[6]);
       if (values.size() != reference.size())
         {
           std::cout << "FAIL: " << values.size() << " values, reference has "
@@ -282,22 +354,10 @@ int main(int argc, char** argv)
         }
       std::sort(values.begin(), values.end());
       std::sort(reference.begin(), reference.end());
-      double worst = 0.0;
-      size_t worstIndex = 0;
-      for (size_t i = 0; i < values.size(); ++i)
-        {
-          double diff = std::fabs(values[i] - reference[i]);
-          if (diff > worst)
-            {
-              worst = diff;
-              worstIndex = i;
-            }
-        }
-      std::cout << values.size() << " eigenvalues, max |diff| = " << worst
-                << " at sorted index " << worstIndex << " (" << values[worstIndex]
-                << " vs " << reference[worstIndex] << "), tolerance " << tolerance
-                << std::endl;
-      bool pass = worst <= tolerance;
+      Worst w = Compare(values, reference, values.size(), tolerance);
+      std::cout << values.size() << " eigenvalues (sorted), ";
+      Report(w, values, reference, tolerance);
+      bool pass = w.deviation <= tolerance.value;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;
     }
@@ -307,11 +367,11 @@ int main(int argc, char** argv)
       if (!ReadColumn(file, column, values))
         return 2;
       double target = ParseDouble(argv[4], "VALUE");
-      double tolerance = std::fabs(ParseDouble(argv[5], "TOL"));
+      Tolerance tolerance = ParseTolerance(argv[5]);
       long expectedCount = std::atol(argv[6]);
       long count = 0;
       for (size_t i = 0; i < values.size(); ++i)
-        if (std::fabs(values[i] - target) <= tolerance)
+        if (Deviation(values[i], target, tolerance) <= tolerance.value)
           ++count;
       std::cout << count << " of " << values.size() << " values within " << tolerance
                 << " of " << target << ", expected " << expectedCount << std::endl;
@@ -326,7 +386,7 @@ int main(int argc, char** argv)
       if (!ReadColumn(file, column, values) || !ReadColumn(argv[4], std::atoi(argv[5]), reference))
         return 2;
       size_t k = std::atol(argv[6]);
-      double tolerance = std::fabs(ParseDouble(argv[7], "TOL"));
+      Tolerance tolerance = ParseTolerance(argv[7]);
       if (values.size() < k || reference.size() < k)
         {
           std::cout << "FAIL: need " << k << " values, have " << values.size() << " and " << reference.size() << std::endl;
@@ -334,20 +394,10 @@ int main(int argc, char** argv)
         }
       std::sort(values.begin(), values.end());
       std::sort(reference.begin(), reference.end());
-      double worst = 0.0;
-      size_t worstIndex = 0;
-      for (size_t i = 0; i < k; ++i)
-        {
-          double diff = std::fabs(values[i] - reference[i]);
-          if (diff > worst)
-            {
-              worst = diff;
-              worstIndex = i;
-            }
-        }
-      std::cout << k << " lowest eigenvalues, max |diff| = " << worst << " at index " << worstIndex
-                << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance " << tolerance << std::endl;
-      bool pass = worst <= tolerance;
+      Worst w = Compare(values, reference, k, tolerance);
+      std::cout << k << " lowest eigenvalues, ";
+      Report(w, values, reference, tolerance);
+      bool pass = w.deviation <= tolerance.value;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;
     }
@@ -358,28 +408,17 @@ int main(int argc, char** argv)
       size_t n1 = 0, n2 = 0;
       if (!ReadNumericLines(file, values, n1) || !ReadNumericLines(argv[3], reference, n2))
         return 2;
-      double tolerance = std::fabs(ParseDouble(argv[4], "TOL"));
+      Tolerance tolerance = ParseTolerance(argv[4]);
       if (values.size() != reference.size() || n1 != n2)
         {
           std::cout << "FAIL: " << n1 << " numeric lines / " << values.size() << " numbers, reference has "
                     << n2 << " / " << reference.size() << std::endl;
           return 1;
         }
-      double worst = 0.0;
-      size_t worstIndex = 0;
-      for (size_t i = 0; i < values.size(); ++i)
-        {
-          double diff = std::fabs(values[i] - reference[i]);
-          if (diff > worst)
-            {
-              worst = diff;
-              worstIndex = i;
-            }
-        }
-      std::cout << n1 << " numeric lines, " << values.size() << " numbers, max |diff| = " << worst << " at index "
-                << worstIndex << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance "
-                << tolerance << std::endl;
-      bool pass = worst <= tolerance;
+      Worst w = Compare(values, reference, values.size(), tolerance);
+      std::cout << n1 << " numeric lines, " << values.size() << " numbers, ";
+      Report(w, values, reference, tolerance);
+      bool pass = w.deviation <= tolerance.value;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;
     }
@@ -389,28 +428,17 @@ int main(int argc, char** argv)
       std::vector<double> reference;
       if (!ReadKeyedLine(file, argv[3], values) || !ReadKeyedLine(argv[4], argv[3], reference))
         return 2;
-      double tolerance = std::fabs(ParseDouble(argv[5], "TOL"));
+      Tolerance tolerance = ParseTolerance(argv[5]);
       if (values.size() != reference.size())
         {
           std::cout << "FAIL: " << values.size() << " numbers after '" << argv[3] << " =', reference has "
                     << reference.size() << std::endl;
           return 1;
         }
-      double worst = 0.0;
-      size_t worstIndex = 0;
-      for (size_t i = 0; i < values.size(); ++i)
-        {
-          double diff = std::fabs(values[i] - reference[i]);
-          if (diff > worst)
-            {
-              worst = diff;
-              worstIndex = i;
-            }
-        }
-      std::cout << values.size() << " numbers, max |diff| = " << worst << " at index " << worstIndex
-                << " (" << values[worstIndex] << " vs " << reference[worstIndex] << "), tolerance "
-                << tolerance << std::endl;
-      bool pass = worst <= tolerance;
+      Worst w = Compare(values, reference, values.size(), tolerance);
+      std::cout << values.size() << " numbers, ";
+      Report(w, values, reference, tolerance);
+      bool pass = w.deviation <= tolerance.value;
       std::cout << (pass ? "PASS" : "FAIL") << std::endl;
       return pass ? 0 : 1;
     }

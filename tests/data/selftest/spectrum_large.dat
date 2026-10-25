@@ -1,0 +1,3 @@
+# large values, for the relative-tolerance self-tests of check_spectrum
+0 -1234567.8901234
+1 -1234567.0

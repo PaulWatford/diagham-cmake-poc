@@ -61,7 +61,7 @@ foreach(case
         PROGRAM ${prog}
         ARGS -p ${n} -l ${two_s} --interaction-file ${ed_data}/${name}_pp.dat --interaction-name ed --initial-lz ${two_lz} --nbr-lz 1 --full-diag 100000
         OUTPUT "${stat}_ed_n_${n}_2s_${two_s}_lz.dat"
-        CHECK spectrum @OUTPUT@ -1 ${ed_data}/${name}_spectrum.dat -1 1e-9
+        CHECK spectrum @OUTPUT@ -1 ${ed_data}/${name}_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
         LABELS fqhe sphere ed)
 endforeach()
 
@@ -80,7 +80,7 @@ function(diagham_spin_sphere_ed_test name case)
         PROGRAM ${ARG_PROGRAM}
         ARGS ${ARG_ARGS} --interaction-file ${ed_data}/${case}_pp.dat --interaction-name ed --full-diag 100000
         OUTPUT "${ARG_OUTPUT}"
-        CHECK spectrum @OUTPUT@ -1 ${ed_data}/${case}_spectrum.dat -1 1e-9
+        CHECK spectrum @OUTPUT@ -1 ${ed_data}/${case}_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
         LABELS fqhe sphere ed spin)
 endfunction()
 diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su2.fermions_n4_2s6_coulomb_sz0 fermions_su2_n4_2s6_coulomb_sz0
@@ -117,7 +117,7 @@ diagham_physics_test(physics.fqhe.sphere.ed.su2.legacy_fermions_n4_2s6_v1_w0.5
     PROGRAM FQHEOnSphere_QHEFermionsSphereWithSpin
     ARGS -p 4 -l 6 -s 0 -v 1 -w 0.5 --initial-lz 0 --nbr-lz 1 --full-diag 100000
     OUTPUT "fermions_sphere_spin_n_4_2S_6_Sz_0_V_*_lz*.dat"
-    CHECK spectrum @OUTPUT@ -1 ${ed_data}/fermions_su2_n4_2s6_legacy_v1_w0.5_spectrum.dat -1 1e-9
+    CHECK spectrum @OUTPUT@ -1 ${ed_data}/fermions_su2_n4_2s6_legacy_v1_w0.5_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fqhe sphere ed spin)
 # SU(3) and SU(4)
 diagham_spin_sphere_ed_test(physics.fqhe.sphere.ed.su3.fermions_n3_2s4_coulomb fermions_su3_n3_2s4_coulomb
@@ -145,7 +145,7 @@ function(diagham_nbody_test name case)
         PROGRAM ${ARG_PROGRAM}
         ARGS ${ARG_ARGS} --initial-lz 0 --nbr-lz 1 --full-diag 100000
         OUTPUT "${ARG_OUTPUT}"
-        CHECK spectrum @OUTPUT@ -1 ${nbody_data}/${case}_spectrum.dat -1 1e-9
+        CHECK spectrum @OUTPUT@ -1 ${nbody_data}/${case}_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
         LABELS fqhe sphere ed nbody)
 endfunction()
 diagham_nbody_test(physics.fqhe.sphere.ed.nbody.bosons_n5_2s6_hardcore3 bosons_n5_2s6_hardcore3
@@ -290,7 +290,7 @@ set(geo_data ${DIAGHAM_TEST_DATA}/geometry_ed)
 function(diagham_geometry_test name case)
     cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT;TOL" "ARGS;LABELS" ${ARGN})
     if(NOT ARG_TOL)
-        set(ARG_TOL 1e-9)
+        set(ARG_TOL ${DIAGHAM_TEST_TOLERANCE})
     endif()
     diagham_physics_test(${name}
         PROGRAM ${ARG_PROGRAM}
@@ -324,7 +324,7 @@ diagham_physics_test(physics.fqhe.disk.coulomb_pseudopotentials.2s8
     PROGRAM FQHEOnDisk_FQHEDiskCoulombPseudopotentials
     ARGS -s 8
     OUTPUT "pseudopotential_disk_coulomb_l_0_2s_8.dat"
-    CHECK line @OUTPUT@ Pseudopotentials ${geo_data}/disk_coulomb_2s8.txt 1e-13
+    CHECK line @OUTPUT@ Pseudopotentials ${geo_data}/disk_coulomb_2s8.txt ${DIAGHAM_TEST_TOLERANCE}
     LABELS fqhe disk)
 # U34: the disk pseudopotential Hamiltonian is wrong for N >= 3 (zero modes right, nonzero energies off);
 # the exact spectra are in the reference files (two independent routes agree). WILL_FAIL until fixed.
@@ -368,7 +368,7 @@ foreach(case
             PROGRAM ${fci_cb}
             ARGS -p 2 -x ${nx} -y ${ny} --singleparticle-spectrum --export-onebodytext ${extra}
             OUTPUT "fermions_checkerboardlattice_n_2_ns_*_x_${nx}_y_${ny}_tightbinding.dat"
-            CHECK spectrum @OUTPUT@ ${col} ${fci_bands_data}/${name}.dat ${col} 1e-12
+            CHECK spectrum @OUTPUT@ ${col} ${fci_bands_data}/${name}.dat ${col} ${DIAGHAM_TEST_TOLERANCE}
             LABELS fci checkerboard bands)
     endforeach()
 endforeach()
@@ -391,7 +391,7 @@ function(diagham_band_case name program nx ny nz glob col0 bands)
 endfunction()
 
 set(fci_export --singleparticle-spectrum --export-onebodytext)
-set(fci_band_tol 1e-10)
+set(fci_band_tol ${DIAGHAM_TEST_TOLERANCE})
 diagham_band_case(haldane_3x3 FCI_FCIHaldaneModel 3 3 0
     "fermions_singleband_haldane_n_2_x_3_y_3_*_tightbinding.dat" 2 "0;1" --single-band ${fci_export})
 diagham_band_case(haldane_4x3_t2_0.4_phi_0.9_mus_0.3 FCI_FCIHaldaneModel 4 3 0
@@ -492,19 +492,19 @@ diagham_physics_test(physics.fci.checkerboard.manybody.3x3_n2_flat
     PROGRAM ${fci_cb}
     ARGS -p 2 -x 3 -y 3 --single-band --flat-band --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_18_x_3_y_3_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n2_flat.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n2_flat.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci checkerboard manybody)
 diagham_physics_test(physics.fci.checkerboard.manybody.3x3_n3_flat
     PROGRAM ${fci_cb}
     ARGS -p 3 -x 3 -y 3 --single-band --flat-band --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_checkerboardlattice_n_3_ns_18_x_3_y_3_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n3_flat.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n3_flat.dat 2 rel:1e-11
     LABELS fci checkerboard manybody)
 diagham_physics_test(physics.fci.checkerboard.manybody.4x3_n2_flat_t2_0.2_tpp_0.1
     PROGRAM ${fci_cb}
     ARGS -p 2 -x 4 -y 3 --single-band --flat-band --t2 0.2 --tpp 0.1 --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_checkerboardlattice_n_2_ns_24_x_4_y_3_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_4x3_n2_flat_t2_0.2_tpp_0.1.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_4x3_n2_flat_t2_0.2_tpp_0.1.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci checkerboard manybody)
 
 # atomic limit: bosons pay 4 U per same-cell pair (the convention of the program), fermions are inert
@@ -512,25 +512,25 @@ diagham_physics_test(physics.fci.atomiclimit.bosons_3x3_n2_u1.5
     PROGRAM ${fci_al}
     ARGS -p 2 -x 3 -y 3 --boson --single-band --u-potential 1.5 --full-diag 5000
     OUTPUT "bosons_singleband_atomiclimit_band_0_n_2_x_3_y_3_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_3x3_n2_u1.5.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_3x3_n2_u1.5.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci atomiclimit manybody)
 diagham_physics_test(physics.fci.atomiclimit.bosons_3x3_n3_u1
     PROGRAM ${fci_al}
     ARGS -p 3 -x 3 -y 3 --boson --single-band --u-potential 1 --full-diag 5000
     OUTPUT "bosons_singleband_atomiclimit_band_0_n_3_x_3_y_3_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_3x3_n3_u1.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_3x3_n3_u1.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci atomiclimit manybody)
 diagham_physics_test(physics.fci.atomiclimit.bosons_4x2_n2_u1
     PROGRAM ${fci_al}
     ARGS -p 2 -x 4 -y 2 --boson --single-band --u-potential 1 --full-diag 5000
     OUTPUT "bosons_singleband_atomiclimit_band_0_n_2_x_4_y_2_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_4x2_n2_u1.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_boson_4x2_n2_u1.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci atomiclimit manybody)
 diagham_physics_test(physics.fci.atomiclimit.fermions_3x3_n2_inert
     PROGRAM ${fci_al}
     ARGS -p 2 -x 3 -y 3 --single-band --u-potential 1 --v-potential 1 --full-diag 5000
     OUTPUT "fermions_singleband_atomiclimit_band_0_n_2_x_3_y_3_*_gx_*.dat"
-    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_fermion_3x3_n2.dat 2 1e-9
+    CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/atomic_fermion_3x3_n2.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci atomiclimit manybody)
 
 # U39: the one-body energy of the single-band many-body Hamiltonian is wrong. Non-flat checkerboard: the
@@ -656,7 +656,7 @@ diagham_physics_test(crosscheck.fqhe.sphere.lanczos_vs_full_diagonalisation
     REF_PROGRAM ${fer2}
     REF_ARGS -p 6 -l 15 --interaction-file ${ed_data}/fermions_n5_2s12_coulomb_pp.dat --interaction-name c15 --nbr-lz 1 --full-diag 100000
     REF_OUTPUT "fermions_c15_n_6_2s_15_lz.dat"
-    CHECK lowest @OUTPUT@ -1 @REFERENCE@ -1 4 1e-10
+    CHECK lowest @OUTPUT@ -1 @REFERENCE@ -1 4 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fqhe sphere)
 # (the 2S=12 pseudopotential file has 13 entries, enough for the 2S=15 run's odd m up to 11;
 #  this is a consensus check, the interaction only needs to be the same on both sides)
@@ -685,12 +685,19 @@ add_test(NAME selftest.checker.rejects_nan
     COMMAND check_spectrum min-abs ${selftest_data}/spectrum_nan.dat -1 -1.5 1e-12)
 add_test(NAME selftest.checker.rejects_short_spectrum
     COMMAND check_spectrum spectrum ${selftest_data}/spectrum.dat -1 ${selftest_data}/spectrum_short.dat -1 1e-12)
+# relative tolerance: 1e-7 off a value of 1.2e6 is 8e-14 relative (passes rel:1e-12, would fail an absolute
+# 1e-12); 1e-5 off is 8e-12 relative (fails rel:1e-12)
+add_test(NAME selftest.checker.relative_tolerance_scales
+    COMMAND check_spectrum min-abs ${selftest_data}/spectrum_large.dat -1 -1234567.8901233 rel:1e-12)
+add_test(NAME selftest.checker.relative_tolerance_rejects
+    COMMAND check_spectrum min-abs ${selftest_data}/spectrum_large.dat -1 -1234567.89011 rel:1e-12)
 set_tests_properties(selftest.checker.rejects_wrong_value selftest.checker.rejects_wrong_count
     selftest.checker.rejects_missing_file selftest.checker.rejects_nan selftest.checker.rejects_short_spectrum
-    PROPERTIES WILL_FAIL TRUE)
+    selftest.checker.relative_tolerance_rejects PROPERTIES WILL_FAIL TRUE)
 set_tests_properties(selftest.checker.accepts_correct_value selftest.checker.rejects_wrong_value
     selftest.checker.rejects_wrong_count selftest.checker.rejects_missing_file selftest.checker.rejects_nan
-    selftest.checker.rejects_short_spectrum PROPERTIES LABELS "selftest" TIMEOUT 30)
+    selftest.checker.rejects_short_spectrum selftest.checker.relative_tolerance_scales
+    selftest.checker.relative_tolerance_rejects PROPERTIES LABELS "selftest" TIMEOUT 30)
 # the runner: a program that writes no spectrum file must fail the test (stale output can never pass)
 diagham_physics_test(selftest.runner.rejects_missing_output
     PROGRAM ${fer2} ARGS --help OUTPUT "no_such_output_*.dat"

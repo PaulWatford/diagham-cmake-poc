@@ -38,9 +38,9 @@ foreach(line ${regression_cases})
     endif()
     string(REGEX MATCH "^[A-Za-z0-9]+" module "${target}")
     if(glob STREQUAL "program.log")
-        set(check numbers @OUTPUT@ ${regression_data}/${name}.dat 1e-9)
+        set(check numbers @OUTPUT@ ${regression_data}/${name}.dat ${DIAGHAM_TEST_TOLERANCE})
     else()
-        set(check spectrum @OUTPUT@ -1 ${regression_data}/${name}.dat -1 1e-9)
+        set(check spectrum @OUTPUT@ -1 ${regression_data}/${name}.dat -1 rel:1e-11)
     endif()
     diagham_physics_test(regression.${name}
         PROGRAM ${target} ARGS ${args} OUTPUT "${glob}"

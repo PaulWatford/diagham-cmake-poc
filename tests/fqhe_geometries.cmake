@@ -25,7 +25,7 @@ function(diagham_geometry_test name)
     cmake_parse_arguments(ARG "" "CASE;GEOMETRY;PROGRAM;OUTPUT;TIMEOUT" "ARGS" ${ARGN})
     diagham_geometry_count(${ARG_CASE} count)
     if(NOT ARG_TIMEOUT)
-        set(ARG_TIMEOUT 300)
+        set(ARG_TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endif()
     diagham_physics_test(${name}
         PROGRAM ${ARG_PROGRAM}

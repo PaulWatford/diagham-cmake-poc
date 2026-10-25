@@ -447,12 +447,45 @@ segfaults after `start` for every size tried; the regression case uses
 | `crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsWithSpinAndTranslations` | full 324-state Sz=1 spectra agree to 1e-8 | two independent implementations; regression for patch 14 (fails by 0.43 without it) |
 | `physics.spin.heisenberg_ring_L4` | `GenericPeriodicSpinChain` | lowest eigenvalue = -2 ± 1e-12 | S=1/2 Heisenberg ring, exact |
 | `physics.spin.heisenberg_ring_L6` | `GenericPeriodicSpinChain` | lowest eigenvalue = -(2+√13)/2 ± 1e-12 | exact (closed form), cross-checked with numpy |
-| `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.5154463544920365 ± 1e-10 | independent numpy ED (Lanczos path; dimension 252) |
+| `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.5154463544920365 to relative 1e-12 | independent numpy ED (Lanczos path; dimension 252) |
 
-Tolerances are chosen so that compiler and FMA differences pass and a real
-change in the physics (which moves the 12th digit or earlier) fails.
 `tests/check_spectrum.cc` does the comparison; it needs no Python and no
 DiagHam library, so the goldens run anywhere the programs do.
+
+### Tolerances and time budget
+
+The team agreed on 20 October 2026 that numbers are compared to a relative tolerance of about 10⁻¹² to
+10⁻¹³, configurable per test, and that each test runs in about 30 seconds.
+
+**Tolerance.** A tolerance is either a plain number, which is absolute, or `rel:X`, meaning
+|a − b| ≤ X · max(|a|, |b|, 1). Values of order one or less are therefore held to X absolutely, and a zero
+mode stays well defined. Every check prints the largest absolute and relative difference it found.
+
+The default, used by every value comparison that reaches it, is the CMake cache variable
+`DIAGHAM_TEST_TOLERANCE` = `rel:1e-12`. Change it with `-DDIAGHAM_TEST_TOLERANCE=rel:1e-13`, for example.
+
+Measured on 25 October 2026 in the default, LAPACK and full builds:
+- **At `rel:1e-12`:** the comparisons that achieve it everywhere, 84 tests from 23 definitions plus the
+  Heisenberg L = 10 ring.
+- **At `rel:1e-11`:** two definitions measured at 2.5·10⁻¹² and 3.7·10⁻¹², the flat-band checkerboard
+  N = 3 spectrum and the regression spectra.
+- **Keeping their own tolerance:**
+
+| Tests | Tolerance | Measured | Why it cannot be 10⁻¹² |
+|---|---|---|---|
+| Already stricter (`min-abs` checks of exact values: Hubbard 2×2, Heisenberg L = 4 and 6, Jack against ED) | absolute 1e-12 | | already at or beyond the standard |
+| Zero-mode, degeneracy and level counts (`count`, `nonzero`) | 1e-10 | | a threshold that decides whether a level is zero, not a comparison; the gap to the next level is about 0.1 |
+| FTI3DSimpleTI band files | 1e-5 | 3·10⁻⁶ | the program writes these bands with six significant digits |
+| Haldane Chern numbers | 0.02 | 7·10⁻³ | a discretised Berry-curvature estimate converging as 1/N² |
+| Hubbard-Haldane, SSH, AKLT p3p4, Kitaev-Heisenberg ED | 1e-7 | up to 2·10⁻⁸ | the programs converge to about 10⁻⁸ |
+| Torus ED groups and the spinful torus cross-check | 1e-8 | up to 10⁻⁹ | DiagHam truncates its momentum sums at about 10⁻¹⁰; most cases of each group reach 10⁻¹² |
+| `open-finding` reproducers | various | | they record a wrong result; the tolerance identifies the wrong value |
+
+**Time budget.** Every DiagHam program test is designed to finish in about 30 seconds when run on its own.
+Measured one at a time on 25 October 2026, all 280 such tests take 13.4 s in total, and the slowest takes
+3.7 s. The ctest `TIMEOUT` of each is the cache variable `DIAGHAM_TEST_TIMEOUT`, 120 s, larger than the
+budget so that a run in parallel on a loaded machine does not time out. The Python oracle self-tests check
+the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 

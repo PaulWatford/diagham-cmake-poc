@@ -83,7 +83,7 @@ diagham_physics_test(physics.hubbard.2x4.U0.plain_lanczos_krylov_closure
     PROGRAM ${hubbard}
     ARGS -p 8 -x 2 -y 4 --u-potential 0 -n 1 --full-diag 100
     OUTPUT "fermions_hubbard_square_x_2_y_4_n_8_ns_8_t_1.000000_tp_0.000000_sz_0.dat"
-    CHECK spectrum @OUTPUT@ -1 ${sh_data}/hubbard_2x4_N8_U0_sectors.dat -1 1e-8
+    CHECK spectrum @OUTPUT@ -1 ${sh_data}/hubbard_2x4_N8_U0_sectors.dat -1 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fti hubbard lanczos)
 
 if(Python3_Interpreter_FOUND AND numpy_missing EQUAL 0)

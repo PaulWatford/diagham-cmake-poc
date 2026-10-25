@@ -35,6 +35,15 @@ add_executable(check_spectrum check_spectrum.cc)
 set(DIAGHAM_TEST_DATA ${CMAKE_CURRENT_SOURCE_DIR}/data)
 set(DIAGHAM_TEST_WORK ${CMAKE_CURRENT_BINARY_DIR}/work)
 
+# Numerical tolerance of the value comparisons (team decision of 20 October 2026: relative, about 1e-12 to
+# 1e-13, configurable). "rel:X" means |a - b| <= X * max(|a|, |b|, 1) (tests/check_spectrum.cc). Tests that
+# cannot reach it keep their own tolerance with the reason beside it; see docs/reference/tests.md.
+set(DIAGHAM_TEST_TOLERANCE "rel:1e-12" CACHE STRING
+    "Tolerance of the physics value comparisons: rel:X (relative) or X (absolute); default rel:1e-12")
+# Time budget: every DiagHam test is designed to finish in about 30 s run on its own (measured: see
+# docs/reference/tests.md). The ctest TIMEOUT below is larger, for parallel runs on a loaded machine.
+set(DIAGHAM_TEST_TIMEOUT 120 CACHE STRING "ctest TIMEOUT (seconds) of each DiagHam program test")
+
 # diagham_physics_test(<name>
 #     PROGRAM <program target>
 #     ARGS <program arguments...>
@@ -80,7 +89,7 @@ function(diagham_physics_test name)
             -DREF_OUTPUT_GLOB=${ARG_REF_OUTPUT})
     endif()
     if(NOT ARG_TIMEOUT)
-        set(ARG_TIMEOUT 300)
+        set(ARG_TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endif()
     # "|" rather than ";" separates list items so they survive -D intact.
     string(REPLACE ";" "|" program_args "${ARG_ARGS}")
@@ -155,7 +164,7 @@ diagham_physics_test(physics.hubbard.2x2.U4.full_spectrum
     OUTPUT "*_u_4.000000_sz_0.dat"
     CHECK spectrum @OUTPUT@ -1
           ${CMAKE_SOURCE_DIR}/benchmarks/fermions_hubbard_square_x_2_y_2_n_4_ns_4_t_1.000000_tp_0.000000_u_4.000000_sz_0.dat.txt
-          -1 1e-11
+          -1 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fti hubbard
 )
 
@@ -167,7 +176,7 @@ diagham_physics_test(physics.hubbard.2x4.U4.sector_ground_states
     OUTPUT "*_u_4.000000_sz_0.dat"
     CHECK spectrum @OUTPUT@ -1
           ${CMAKE_SOURCE_DIR}/benchmarks/fermions_hubbard_square_x_2_y_4_n_8_ns_8_t_1.000000_tp_0.000000_u_4.000000_sz_0.dat.txt
-          -1 1e-10
+          -1 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fti hubbard
 )
 
@@ -234,7 +243,7 @@ diagham_physics_test(physics.spin.heisenberg_ring_L10
     PROGRAM Spin_GenericPeriodicSpinChain
     ARGS -p 10 --nbr-sz 1
     OUTPUT "spin_1_2_periodicchain_n_10.dat"
-    CHECK min-abs @OUTPUT@ -1 -4.5154463544920365 1e-10
+    CHECK min-abs @OUTPUT@ -1 -4.5154463544920365 ${DIAGHAM_TEST_TOLERANCE}
     LABELS spin
 )
 
@@ -260,7 +269,7 @@ diagham_physics_test(crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spin
     REF_PROGRAM FQHEOnTorus_FQHETorusFermionsCoulomb
     REF_ARGS --nbr-particles 3 --max-momentum 9 --ratio 1.0 --full-diag 9000
     REF_OUTPUT "fermions_torus_kysym_coulomb_n_3_2s_9_ratio_1.000000.dat"
-    CHECK spectrum @OUTPUT@ -1 @REFERENCE@ -1 1e-10
+    CHECK spectrum @OUTPUT@ -1 @REFERENCE@ -1 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fqhe
 )
 diagham_physics_test(crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations

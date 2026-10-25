@@ -14,6 +14,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Test tolerances to the team's standard (20 October 2026):
+  - `tests/check_spectrum.cc` accepts relative tolerances, `rel:X` meaning |a − b| ≤ X · max(|a|, |b|, 1), and every check prints the largest absolute and relative difference it found.
+  - The new cache variable `DIAGHAM_TEST_TOLERANCE` (default `rel:1e-12`) is the tolerance of every value comparison that reaches it, measured in the default, LAPACK and full builds: 23 test definitions (84 tests) and the Heisenberg L = 10 ring, tightened from absolute 1e-9 or 1e-10.
+  - Two definitions measured at 2.5 to 3.7·10⁻¹² use `rel:1e-11`. The rest keep their own tolerance, with the measured value and the reason in `docs/reference/tests.md`.
+  - Two self-tests check the relative form (907 tests).
+  - `DIAGHAM_TEST_TIMEOUT` (120 s) replaces the 300 s timeout of the DiagHam program tests: run one at a time, all 280 take 13.4 s and the slowest 3.7 s, inside the 30 s budget.
 - `scripts_cmake/byte_compare_with_autotools.py`: the byte-identity gate against DiagHam's own autotools build of the same revision. It replays every physics, cross-check, regression and open-finding test invocation through both builds and compares every output file. Measured on 25 October 2026 against r4493 built by upstream's autotools (GCC 15), all four modules:
   - default build: 356 files identical;
   - LAPACK build (OpenBLAS on both sides): 390 files identical;

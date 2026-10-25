@@ -18,7 +18,7 @@ function(diagham_toric_test name case)
         PROGRAM ${toric}
         ARGS ${ARG_ARGS} --export-entspectrum
         OUTPUT "2dtoriccode_entspectrum_*.dat"
-        CHECK line @OUTPUT@ "# Entangement entropy" ${ent_data}/toric_${case}.txt 1e-9
+        CHECK line @OUTPUT@ "# Entangement entropy" ${ent_data}/toric_${case}.txt ${DIAGHAM_TEST_TOLERANCE}
         LABELS entanglement spin toric_code)
 endfunction()
 diagham_toric_test(3x3_region_2x2 3x3_A2x2 ARGS -x 3 -y 3 --nbra-sitex 2 --nbra-sitey 2)
@@ -46,7 +46,7 @@ function(diagham_torus_pes_test name)
         ARGS --degenerated-groundstate ${ent_data}/torus_laughlin_n4_2s12_ground_states.txt -p 4 -l 12 --max-na 2 --density-matrix pes.dat
         OUTPUT "pes.dat"
         CHECK nonzero @OUTPUT@ 2 1e-10 ${ARG_COUNT} ${filters}
-        TIMEOUT 300
+        TIMEOUT ${DIAGHAM_TEST_TIMEOUT}
         LABELS fqhe torus entanglement)
 endfunction()
 function(diagham_torus_pes_count na ky out)

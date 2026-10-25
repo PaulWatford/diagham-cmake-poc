@@ -12,7 +12,7 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 24 self-tests of the harness (the manifest, sixteen oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output), 17 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 26 self-tests of the harness (the manifest, sixteen oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 17 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
 
 ## Programs, by module
 

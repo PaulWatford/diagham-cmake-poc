@@ -14,6 +14,17 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- One official citation and Zenodo archiving, after the team's decisions of
+  20 October 2026: `CITATION.cff` has a `preferred-citation` (DiagHam, by
+  the DiagHam authors) and no per-program citation rules; `.zenodo.json`
+  describes a Zenodo record with the DiagHam authors as creators; the
+  release checklist archives stable releases on Zenodo, and `RELEASING.md`
+  at the root is its short version. `check_version.py` now also checks that
+  the preferred citation and `.zenodo.json` carry the same authors and
+  licence as `CITATION.cff`. This reverses the September removal of the
+  Zenodo deposit, which was made because an archive was for the DiagHam
+  authors to decide: they have now decided. The licence identifier is
+  unchanged until the team settles GPL-2.0-only against GPL-2.0-or-later.
 - Build by program selection:
   - `DIAGHAM_PROGRAM_SET` (`all`, the default and unchanged; `core`; `custom`) and `DIAGHAM_PROGRAMS` choose which programs are built. A misspelt name stops the configure step.
   - `cmake/core-programs.txt` holds the provisional core list, the 42 programs of 19 October 2026, to be settled by wiki development.

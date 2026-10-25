@@ -1,7 +1,7 @@
 # Make a release
 
 Purpose: the checklist that turns the state of `main` into a numbered, citable release.
-Source: new (2026-09-28); `scripts_cmake/check_version.py`, `CITATION.cff`, `codemeta.json`, `CHANGELOG.md`. The first release made with it is 2026.9.0.
+Source: new (2026-09-28); `scripts_cmake/check_version.py`, `CITATION.cff`, `codemeta.json`, `.zenodo.json`, `CHANGELOG.md`. The first release made with it is 2026.9.0. Zenodo archiving added after the team's decision of 20 October 2026; `RELEASING.md` at the root is the short version of this page.
 
 ## Versioning
 
@@ -16,8 +16,9 @@ Calendar versions, `YEAR.MONTH.PATCH` (e.g. `2026.9.0`, `2026.9.1`, `2027.1.0`),
 5. Write `docs/history/release-notes/x.y.z.md` (the text of the GitHub Release: what it is, numbers, what changed, open findings, how to cite); regenerate the nav.
 6. Commit as "Release x.y.z", tag: `git tag -a vx.y.z -m "DiagHam (CMake migration) x.y.z, DiagHam r<rev>"`, push `main` and the tag.
 7. GitHub → Releases → *Draft a new release* → choose the tag, paste the release notes, publish.
-8. Announce where the users are (the DiagHam authors, the group).
+8. **Stable releases only** (a version 1.0, or a version described in a paper): archive it on Zenodo. On GitHub, switch the repository on in Zenodo's GitHub integration *before* publishing the release; publishing it then creates the record from `.zenodo.json`. On GitLab, upload the tagged source archive to Zenodo by hand with the same metadata. After the first archived release, add the concept DOI to `CITATION.cff` (`identifiers:`) and to the README, and commit.
+9. Announce where the users are (the DiagHam authors, the group).
 
 ## What a release is not
 
-A release is **not archived with a DOI**: DiagHam is the DiagHam authors' work, and a citable record of it — if one should exist — is theirs to create; this repository's releases are snapshots of the build, tests and documentation around their code, nothing more. A release does not change `upstream`, and it is not a promise that every program is correct: `docs/reference/test-coverage.md` says which programs have their physics checked, and `docs/reference/open-findings.md` lists what is known to be wrong.
+A release is **not a new author list**: the creators of a Zenodo record are the DiagHam authors as listed in `CITATION.cff` (`check_version.py` checks `.zenodo.json` against it). Not every release is archived, only stable ones, and each paper links the version it describes. A release does not change `upstream`, and it is not a promise that every program is correct: `docs/reference/test-coverage.md` says which programs have their physics checked, and `docs/reference/open-findings.md` lists what is known to be wrong.

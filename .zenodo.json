@@ -1,0 +1,64 @@
+{
+  "upload_type": "software",
+  "title": "DiagHam",
+  "description": "<p>DiagHam is an exact-diagonalization toolkit for strongly correlated quantum systems: the fractional quantum Hall effect, fractional Chern and topological insulators, Hubbard models, spin chains and quantum dots. This archive is a stable release of DiagHam with its CMake build, its ctest suite and its documentation. The DiagHam Subversion revision it carries is given in the release notes.</p>",
+  "creators": [
+    {
+      "name": "Regnault, Nicolas"
+    },
+    {
+      "name": "Möller, Gunnar"
+    },
+    {
+      "name": "Repellin, Cécile"
+    },
+    {
+      "name": "Sterdyniak, Antoine"
+    },
+    {
+      "name": "Papić, Zlatko"
+    },
+    {
+      "name": "Nguyen, Duc Phuong"
+    },
+    {
+      "name": "Moran, Niall"
+    },
+    {
+      "name": "Wu, Yang-Le"
+    }
+  ],
+  "contributors": [
+    {
+      "name": "Watford, Paul",
+      "type": "ProjectMember"
+    }
+  ],
+  "access_right": "open",
+  "license": "GPL-2.0-or-later",
+  "keywords": [
+    "exact diagonalization",
+    "fractional quantum Hall effect",
+    "fractional Chern insulators",
+    "Hubbard model",
+    "spin chains",
+    "condensed matter physics"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://www.nick-ux.org/diagham/",
+      "relation": "isDocumentedBy",
+      "resource_type": "other"
+    },
+    {
+      "identifier": "https://paulwatford.github.io/diagham-cmake-poc/",
+      "relation": "isDocumentedBy",
+      "resource_type": "other"
+    },
+    {
+      "identifier": "https://www.nick-ux.org/diagham/index.php/Articles",
+      "relation": "isReferencedBy",
+      "resource_type": "other"
+    }
+  ]
+}

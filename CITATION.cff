@@ -1,11 +1,11 @@
 cff-version: 1.2.0
 message: >-
-  If DiagHam contributes to your work, cite the DiagHam authors: the papers
-  relevant to the methods you used from the DiagHam publication list
-  (https://www.nick-ux.org/diagham/index.php/Articles; DiagHam has no single
-  reference paper) and, as software, DiagHam itself at https://www.nick-ux.org/diagham/.
-  This repository only adds a build system, a test suite and documentation
-  to their code; do not cite it in place of DiagHam.
+  If DiagHam contributes to your work, please cite it as given under
+  preferred-citation. This is the one official DiagHam citation; there are
+  no program- or module-specific citation rules. When the DiagHam package
+  paper is published it becomes the preferred citation. Stable releases are
+  archived on Zenodo (RELEASING.md); where the version you used has a
+  Zenodo DOI, cite that version.
 title: DiagHam
 type: software
 abstract: >-
@@ -35,10 +35,37 @@ url: https://www.nick-ux.org/diagham/
 version: 2026.9.0
 date-released: "2026-09-28"
 # DiagHam Subversion revision carried: r4493 (scripts_cmake/upstream-revision.txt).
-# No DOI is minted for this repository: DiagHam is the DiagHam authors' work, and any citable archive of it is theirs to create.
+# Zenodo: stable releases are archived there (team decision of 20 October 2026). After the first archived release the
+# release maintainer adds its concept DOI under `identifiers:` (RELEASING.md). The licence identifier stays as it is until
+# the team decides whether the metadata should say GPL-2.0-only or GPL-2.0-or-later.
 keywords:
   - exact diagonalization
   - fractional quantum Hall effect
   - fractional Chern insulators
   - Hubbard model
   - spin chains
+preferred-citation:
+  type: software
+  title: DiagHam
+  abstract: >-
+    Exact-diagonalization toolkit for strongly correlated quantum systems.
+  authors:
+    - family-names: Regnault
+      given-names: Nicolas
+    - family-names: Möller
+      given-names: Gunnar
+    - family-names: Repellin
+      given-names: Cécile
+    - family-names: Sterdyniak
+      given-names: Antoine
+    - family-names: Papić
+      given-names: Zlatko
+    - family-names: Nguyen
+      given-names: Duc Phuong
+    - family-names: Moran
+      given-names: Niall
+    - family-names: Wu
+      given-names: Yang-Le
+  url: https://www.nick-ux.org/diagham/
+  repository-code: https://github.com/PaulWatford/diagham-cmake-poc
+  license: GPL-2.0-or-later

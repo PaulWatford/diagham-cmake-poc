@@ -35,7 +35,7 @@ Source: the JOSS review checklist, the FAIR4RS-based checklist (TU Delft / Nethe
 | Dependencies recorded | done | `codemeta.json`, presets, `environment.sh` records what was built with |
 | Linters / formatters | not done | deliberately: upstream sources are not reformatted (`AGENTS.md`); no linter on the CMake/Python layer yet |
 | Versioning, tagged releases, changelog | partial | calendar versioning, `CHANGELOG.md`, release checklist and metadata ready; first tag after the push (`docs/how-to/develop/release.md`) |
-| DOI for releases | not done, by decision | DiagHam is the DiagHam authors' work; a DOI on this repository would present it as the maintainer's. Theirs to mint, if ever |
+| DOI for releases | planned | Stable releases are archived on Zenodo, with the DiagHam authors as creators (team decision, 20 October 2026); metadata in `.zenodo.json`; the first DOI comes with the first archived release (`RELEASING.md`) |
 | Registry upload (PyPI/conda) | n/a | C++ programs; containers instead (`container/`) |
 
 ## The Turing Way — testing checklist

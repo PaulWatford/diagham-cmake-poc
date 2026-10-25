@@ -17,7 +17,7 @@ variables:
 build-and-test:
   parallel:
     matrix:
-      - PRESET: [default, full, hpc, core]
+      - PRESET: [default, full, hpc, core, core-programs]
   script:
     - scripts_cmake/ci.sh "$PRESET"
   artifacts:

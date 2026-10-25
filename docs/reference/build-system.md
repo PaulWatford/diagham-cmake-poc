@@ -57,6 +57,8 @@ Optional libraries (each defines `HAVE_<X>` in the config header; the old flag i
 | `DIAGHAM_USE_FFTW` (`--enable-fftw`) | OFF | from MKL when `DIAGHAM_USE_MKL`, else `find_package(FFTW3)` |
 | `DIAGHAM_USE_BZ2` (`--enable-bz2`) | OFF | `find_package(BZip2)` |
 | `DIAGHAM_USE_PROFILE` (`--enable-profile`) | OFF | `-g -pg` on compile and link |
+| `DIAGHAM_PROGRAM_SET` | `all` | which programs to build: `all`, `core` (`cmake/core-programs.txt`) or `custom` (`DIAGHAM_PROGRAMS`); see `docs/how-to/build/presets.md` |
+| `DIAGHAM_PROGRAMS` | empty | program names (`;` or `,` separated): the whole set with `custom`, added to the core set with `core`; an unknown name stops the configure step |
 | `DIAGHAM_TEST_TOLERANCE` | `rel:1e-12` | tolerance of the physics value comparisons: `rel:X` (relative) or `X` (absolute); see `docs/reference/tests.md` |
 | `DIAGHAM_TEST_TIMEOUT` | 120 | ctest `TIMEOUT` in seconds of each DiagHam program test (the design budget is 30 s run alone) |
 | `DIAGHAM_FULL_PRECISION_OUTPUT` (no configure equivalent) | OFF | computed results written with 17 significant digits instead of upstream's 14 (`DIAGHAM_OUTPUT_PRECISION=17`; `src/config.h` defaults it to 14) |

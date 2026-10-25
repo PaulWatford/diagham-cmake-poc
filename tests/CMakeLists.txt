@@ -361,11 +361,21 @@ set_tests_properties(install.find_package_consumer PROPERTIES
 # silently lost tests must not pass). The manifest describes the full build;
 # it is checked only when every module is built.
 # ----------------------------------------------------------------------------
-if(DIAGHAM_BUILD_FQHE AND DIAGHAM_BUILD_FTI AND DIAGHAM_BUILD_SPIN AND DIAGHAM_BUILD_QUANTUMDOTS)
+# Which locked list applies: every program and every module -> manifest.txt, exactly; the core set alone
+# (FQHE, FTI and Spin on; QuantumDots has no core program) -> manifest-core-programs.txt, exactly; any other
+# selection (custom, or core plus extra programs) -> SUBSET: every registered test must be in manifest.txt, so a
+# renamed or stray test still fails, but tests of programs not built may be absent.
+set(_manifest_mode "")
+if(NOT DIAGHAM_PROGRAM_SELECTION AND DIAGHAM_BUILD_FQHE AND DIAGHAM_BUILD_FTI AND DIAGHAM_BUILD_SPIN AND DIAGHAM_BUILD_QUANTUMDOTS)
+    set(_manifest_mode -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt)
+elseif(DIAGHAM_PROGRAM_SET STREQUAL "core" AND NOT DIAGHAM_PROGRAMS AND DIAGHAM_BUILD_FQHE AND DIAGHAM_BUILD_FTI AND DIAGHAM_BUILD_SPIN)
+    set(_manifest_mode -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/manifest-core-programs.txt)
+elseif(DIAGHAM_PROGRAM_SELECTION)
+    set(_manifest_mode -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt -DSUBSET=ON)
+endif()
+if(_manifest_mode)
     add_test(NAME selftest.manifest
-        COMMAND ${CMAKE_COMMAND}
-            -DBUILD_DIR=${CMAKE_BINARY_DIR}
-            -DMANIFEST=${CMAKE_CURRENT_SOURCE_DIR}/manifest.txt
+        COMMAND ${CMAKE_COMMAND} -DBUILD_DIR=${CMAKE_BINARY_DIR} ${_manifest_mode}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/CheckManifest.cmake)
     set_tests_properties(selftest.manifest PROPERTIES LABELS "selftest" TIMEOUT 120)
 endif()

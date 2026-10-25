@@ -115,6 +115,23 @@ function(_diagham_program_excluded prog_name out_var)
 endfunction()
 
 
+# Whether a program is in the selected set (DIAGHAM_PROGRAM_SET / DIAGHAM_PROGRAMS, top-level CMakeLists.txt).
+# Every selected name that is found is recorded, so the configure step can report names that match nothing.
+function(_diagham_program_selected prog_name out_var)
+    if(NOT DIAGHAM_PROGRAM_SELECTION)
+        set(${out_var} TRUE PARENT_SCOPE)
+        return()
+    endif()
+    list(FIND DIAGHAM_SELECTED_PROGRAMS "${prog_name}" idx)
+    if(idx EQUAL -1)
+        set(${out_var} FALSE PARENT_SCOPE)
+    else()
+        set_property(GLOBAL APPEND PROPERTY DIAGHAM_SELECTED_FOUND "${prog_name}")
+        set(${out_var} TRUE PARENT_SCOPE)
+    endif()
+endfunction()
+
+
 # Explicit program list, emitted by extract_autotools.py from a Makefile.am
 # bin_PROGRAMS line (used for Spin and QuantumDots, whose Programs/
 # directories hold sources upstream deliberately does not build):
@@ -141,7 +158,8 @@ function(diagham_add_programs)
     while(ARG_PROGRAMS)
         list(POP_FRONT ARG_PROGRAMS prog_name src)
         _diagham_program_excluded(${prog_name} excluded)
-        if(excluded)
+        _diagham_program_selected(${prog_name} selected)
+        if(excluded OR NOT selected)
             continue()
         endif()
         set(target_name "${ARG_PREFIX}_${prog_name}")
@@ -177,7 +195,8 @@ function(diagham_add_programs_in_directory)
         # Skip files known to be broken upstream where patching is deferred
         # (see patches/PATCHES.md for the rationale on each excluded file).
         _diagham_program_excluded(${prog_name} excluded)
-        if(excluded)
+        _diagham_program_selected(${prog_name} selected)
+        if(excluded OR NOT selected)
             continue()
         endif()
 

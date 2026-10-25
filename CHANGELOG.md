@@ -14,6 +14,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Build by program selection:
+  - `DIAGHAM_PROGRAM_SET` (`all`, the default and unchanged; `core`; `custom`) and `DIAGHAM_PROGRAMS` choose which programs are built. A misspelt name stops the configure step.
+  - `cmake/core-programs.txt` holds the provisional core list, the 42 programs of 19 October 2026, to be settled by wiki development.
+  - New presets `core-programs` (LAPACK, GSL, GMP) and `core-programs-portable` (no libraries), with a CI job on GitHub and GitLab.
+  - Tests follow the build: the core set is checked against its own locked list `tests/manifest-core-programs.txt` (260 tests); any other selection must be a subset of `tests/manifest.txt`.
+  - Measured: `core-programs` 48 s and 266/266 tests; `core-programs-portable` 50 s and 260/260; a custom two-program build 45 s and 50/50; every program 60 s and 923/923 (32 cores). The libraries dominate the build time.
 - Physics tests for five core-list programs that had only a start-up check (`tests/core_programs.cmake`; 16 tests). Programs with a physics test: 76 → 81.
   - `VectorAscii2Binary` and `VectorBinary2Ascii`: against the documented binary layout (`tests/oracles/vector_io.py`), bit-exact one way and 14 printed digits the other.
   - `LevelStatistics`: spacing ratio of two exact synthetic spectra.

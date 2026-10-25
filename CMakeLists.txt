@@ -516,6 +516,47 @@ configure_file(
 include(${CMAKE_SOURCE_DIR}/cmake/DiagHamHelpers.cmake)
 
 # ----------------------------------------------------------------------------
+# Which programs to build. The libraries of every enabled module are always built; this chooses executables.
+#   DIAGHAM_PROGRAM_SET=all     every program (the default; nothing changes for existing builds)
+#   DIAGHAM_PROGRAM_SET=core    the core programs listed in cmake/core-programs.txt
+#   DIAGHAM_PROGRAM_SET=custom  only the programs named in DIAGHAM_PROGRAMS
+# DIAGHAM_PROGRAMS (upstream binary names, separated by ";" or ",") adds programs to the core set, or is the
+# whole set with custom. A name that matches no program stops the configure step.
+# ----------------------------------------------------------------------------
+set(DIAGHAM_PROGRAM_SET "all" CACHE STRING "Programs to build: all, core (cmake/core-programs.txt) or custom (DIAGHAM_PROGRAMS)")
+set_property(CACHE DIAGHAM_PROGRAM_SET PROPERTY STRINGS all core custom)
+set(DIAGHAM_PROGRAMS "" CACHE STRING "Programs to build with DIAGHAM_PROGRAM_SET=custom, or to add to the core set: binary names separated by ; or ,")
+string(REPLACE "," ";" _diagham_extra_programs "${DIAGHAM_PROGRAMS}")
+list(TRANSFORM _diagham_extra_programs STRIP)
+list(REMOVE_ITEM _diagham_extra_programs "")
+set(DIAGHAM_SELECTED_PROGRAMS "")
+if(DIAGHAM_PROGRAM_SET STREQUAL "all")
+    set(DIAGHAM_PROGRAM_SELECTION OFF)
+    if(_diagham_extra_programs)
+        message(WARNING "DiagHam: DIAGHAM_PROGRAMS is ignored with DIAGHAM_PROGRAM_SET=all (every program is built)")
+    endif()
+elseif(DIAGHAM_PROGRAM_SET STREQUAL "core" OR DIAGHAM_PROGRAM_SET STREQUAL "custom")
+    set(DIAGHAM_PROGRAM_SELECTION ON)
+    if(DIAGHAM_PROGRAM_SET STREQUAL "core")
+        file(STRINGS ${CMAKE_SOURCE_DIR}/cmake/core-programs.txt _diagham_core_lines)
+        foreach(_line ${_diagham_core_lines})
+            string(REGEX REPLACE "#.*" "" _line "${_line}")
+            string(STRIP "${_line}" _line)
+            if(_line)
+                list(APPEND DIAGHAM_SELECTED_PROGRAMS ${_line})
+            endif()
+        endforeach()
+    elseif(NOT _diagham_extra_programs)
+        message(FATAL_ERROR "DiagHam: DIAGHAM_PROGRAM_SET=custom needs DIAGHAM_PROGRAMS, e.g. -DDIAGHAM_PROGRAMS=\"FQHESphereFermionsTwoBodyGeneric;CoulombPseudopotentials\"")
+    endif()
+    list(APPEND DIAGHAM_SELECTED_PROGRAMS ${_diagham_extra_programs})
+    list(REMOVE_DUPLICATES DIAGHAM_SELECTED_PROGRAMS)
+else()
+    message(FATAL_ERROR "DiagHam: DIAGHAM_PROGRAM_SET must be all, core or custom (got '${DIAGHAM_PROGRAM_SET}')")
+endif()
+set_property(GLOBAL PROPERTY DIAGHAM_SELECTED_FOUND "")
+
+# ----------------------------------------------------------------------------
 # Apply upstream-bug patches and set the exclusion list. See patches/PATCHES.md
 # for what each patch does and why each excluded file was excluded.
 # ----------------------------------------------------------------------------
@@ -546,6 +587,20 @@ endif()
 
 if(DIAGHAM_BUILD_FTI)
     add_subdirectory(FTI/src)
+endif()
+
+if(DIAGHAM_PROGRAM_SELECTION AND DIAGHAM_BUILD_PROGRAMS)
+    get_property(_diagham_found GLOBAL PROPERTY DIAGHAM_SELECTED_FOUND)
+    set(_diagham_missing ${DIAGHAM_SELECTED_PROGRAMS})
+    if(_diagham_found)
+        list(REMOVE_ITEM _diagham_missing ${_diagham_found})
+    endif()
+    if(_diagham_missing)
+        message(FATAL_ERROR "DiagHam: no such program in the enabled modules: ${_diagham_missing}. "
+            "Check the name (the upstream binary name) and that its module is on (DIAGHAM_BUILD_FQHE, _FTI, _SPIN, _QUANTUMDOTS).")
+    endif()
+    list(LENGTH _diagham_found _diagham_n)
+    message(STATUS "DiagHam: building ${_diagham_n} selected programs (DIAGHAM_PROGRAM_SET=${DIAGHAM_PROGRAM_SET})")
 endif()
 
 # ----------------------------------------------------------------------------

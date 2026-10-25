@@ -37,6 +37,9 @@ jobs:
           # Core-only scope, with clang, to catch GCC-only assumptions.
           - preset: core
             compiler: clang
+          # Only the core programs (cmake/core-programs.txt), with LAPACK, GSL and GMP: the recommended build.
+          - preset: core-programs
+            compiler: gcc
     env:
       CMAKE_GENERATOR: Ninja
       CCACHE_DIR: ${{ github.workspace }}/.ccache

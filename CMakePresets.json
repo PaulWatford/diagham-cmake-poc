@@ -75,6 +75,29 @@
       }
     },
     {
+      "name": "core-programs",
+      "inherits": "base",
+      "displayName": "Core programs, recommended libraries",
+      "description": "Only the core programs (cmake/core-programs.txt), with the libraries they use: LAPACK (OpenBLAS where installed), GSL, GMP. QuantumDots, which has no core program, is off",
+      "cacheVariables": {
+        "DIAGHAM_PROGRAM_SET": "core",
+        "DIAGHAM_BUILD_QUANTUMDOTS": "OFF",
+        "DIAGHAM_USE_LAPACK": "ON",
+        "DIAGHAM_USE_GSL": "ON",
+        "DIAGHAM_USE_GMP": "ON"
+      }
+    },
+    {
+      "name": "core-programs-portable",
+      "inherits": "base",
+      "displayName": "Core programs, no external libraries",
+      "description": "Only the core programs (cmake/core-programs.txt), no optional library: builds where nothing can be installed. QuantumDots is off",
+      "cacheVariables": {
+        "DIAGHAM_PROGRAM_SET": "core",
+        "DIAGHAM_BUILD_QUANTUMDOTS": "OFF"
+      }
+    },
+    {
       "name": "debug",
       "inherits": "base",
       "displayName": "Debug",
@@ -91,6 +114,8 @@
     { "name": "full",    "configurePreset": "full" },
     { "name": "hpc",     "configurePreset": "hpc" },
     { "name": "mkl",     "configurePreset": "mkl" },
+    { "name": "core-programs",          "configurePreset": "core-programs" },
+    { "name": "core-programs-portable", "configurePreset": "core-programs-portable" },
     { "name": "debug",   "configurePreset": "debug" }
   ],
   "testPresets": [
@@ -106,6 +131,8 @@
     { "name": "full",    "inherits": "base", "configurePreset": "full" },
     { "name": "hpc",     "inherits": "base", "configurePreset": "hpc" },
     { "name": "mkl",     "inherits": "base", "configurePreset": "mkl" },
+    { "name": "core-programs",          "inherits": "base", "configurePreset": "core-programs" },
+    { "name": "core-programs-portable", "inherits": "base", "configurePreset": "core-programs-portable" },
     { "name": "debug",   "inherits": "base", "configurePreset": "debug" },
     {
       "name": "physics",

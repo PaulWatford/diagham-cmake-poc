@@ -179,7 +179,9 @@ No AI agent is on that list, now or ever.
 ## Locked artefacts
 
 - The manifest of test names (`ctest -N`, committed as `tests/manifest.txt`
-  and enforced by `selftest.manifest`).
+  and enforced by `selftest.manifest`), and the core-program set's own list,
+  `tests/manifest-core-programs.txt`, enforced the same way in a
+  `DIAGHAM_PROGRAM_SET=core` build.
 - Hubbard ED demo golden (analytic ground state, machine-precision
   tolerance).
 - The regression references in `tests/data/regression/` (regenerated only

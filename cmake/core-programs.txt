@@ -1,0 +1,56 @@
+# DiagHam core programs: the build set of DIAGHAM_PROGRAM_SET=core and of the core presets.
+# PROVISIONAL: the 42 programs of DiagHam_essential_programs_v2_2026-10-19.xlsx. The team decides the final
+# list by how developed each program's wiki page is (Nicolas Regnault, 20 October 2026) and a vote; edit
+# this file when it is agreed, then regenerate tests/manifest-core.txt (docs/how-to/build/presets.md).
+# One upstream binary name per line; '#' starts a comment.
+
+# Core tools
+GenericOverlap
+LevelStatistics
+VectorBinary2Ascii
+VectorAscii2Binary
+# FQHE sphere
+FQHESphereFermionsTwoBodyGeneric
+FQHESphereBosonsTwoBodyGeneric
+FQHESphereFermionsThreeBodyGeneric
+FQHESphereBosonsNBodyHardCore
+FQHESphereFermionsWithSpin
+FQHESphereBosonsWithSpin
+CoulombPseudopotentials
+FQHESphereJackGenerator
+FQHESphereConvertHaldaneBasis
+FQHESphereGetDimension
+FQHESphereFermionEntanglementEntropyParticlePartition
+FQHESphereL2Diagonalize
+# FQHE torus
+FQHETorusFermionsTwoBodyGeneric
+FQHETorusBosonsTwoBodyGeneric
+FQHETorusFermionsWithTranslations
+FQHETorusBosonsWithTranslations
+FQHETorusBosonsWithTranslationsNBodyHardCore
+FQHETorusGetDimension
+FQHETorusEntanglementEntropyParticlePartition
+# Cylinder and disk
+FQHECylinderBosonsDeltaInteraction
+FQHECylinderFermionsTwoBodyGeneric
+FQHEDiskBosonsTwoBodyGeneric
+# Chern / topological insulators
+FCIHaldaneModel
+FCICheckerboardLatticeModel
+FCIKagomeLatticeModel
+FCIZhangQiLatticeModel
+FCIHofstadterModel
+FQSH2DBHZModel
+# Hubbard
+HubbardSquareLatticeModel
+HubbardHaldaneLatticeModel
+HubbardGetDimension
+# Spin systems
+GenericOpenSpinChain
+GenericPeriodicSpinChain
+SpinChainXYZ
+PeriodicSpinChainJ1J2
+TwoDimensionalHeisenbergModel
+# FQHE torus
+FQHETorusFermionsWithSpin
+FQHETorusFermionsCoulomb

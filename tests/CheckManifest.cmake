@@ -1,4 +1,6 @@
-# CheckManifest.cmake: the list of registered tests must equal tests/manifest.txt.
+# CheckManifest.cmake: the list of registered tests must equal tests/manifest.txt (or the locked list of the
+# core program set, tests/manifest-core-programs.txt). With -DSUBSET=ON (a build of selected programs only) the
+# registered tests must be a subset of the list instead.
 #
 # A green ctest run that has silently lost tests is the failure mode this
 # guards against (AGENTS.md "Locked artefacts"). Invoked by ctest as
@@ -44,6 +46,11 @@ endif()
 
 set(missing ${expected})
 list(REMOVE_ITEM missing ${actual})
+# SUBSET (a build of selected programs only): tests of programs not built may be absent; only tests that are
+# not in the locked list at all fail
+if(SUBSET)
+    set(missing "")
+endif()
 set(extra ${actual})
 list(REMOVE_ITEM extra ${expected})
 if(optional)

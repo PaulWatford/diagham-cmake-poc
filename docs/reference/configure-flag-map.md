@@ -18,7 +18,7 @@ distribution package to test against (MPACK) or no hardware/licence here
 | `--enable-fqhe` | `DIAGHAM_BUILD_FQHE` | ON | |
 | `--enable-fti` | `DIAGHAM_BUILD_FTI` | ON | needs FQHE (enforced at configure time) |
 | `--enable-spin` | `DIAGHAM_BUILD_SPIN` | ON | upstream has the flag (configure.ac at r4493), off by default there; built by default here |
-| `--enable-quantumdots` | `DIAGHAM_BUILD_QUANTUMDOTS` | ON | upstream has the flag (configure.ac at r4493), off by default there; built by default here. Upstream's QuantumDots library does not compile with GCC 15 (fixed here, report 12) |
+| `--enable-quantumdots` | `DIAGHAM_BUILD_QUANTUMDOTS` | ON | upstream has the flag (configure.ac at r4493), off by default there; built by default here. Upstream's QuantumDots library does not compile with GCC 15 (fixed here, report 11) |
 | `--enable-anyons` | — | — | `Anyons/` has no sources in the upstream tree and its `AC_CONFIG_FILES` line is commented out, so the autotools flag does nothing either |
 
 autotools builds none of the modules unless asked; the CMake default builds

@@ -72,6 +72,28 @@ What they do **not** establish: Coulomb energies on the cylinder (the matrix ele
 
 The full register (36 entries, most of them build-level) is `docs/reference/open-findings.md`.
 
+## Same output as upstream's own build
+
+The migration's gate is that DiagHam built with CMake writes exactly what DiagHam built with its own autotools writes. `scripts_cmake/byte_compare_with_autotools.py` checks it. It replays every physics, cross-check, regression and open-finding test invocation through both builds of the same revision, and compares every file produced byte for byte.
+
+Measured on 25 October 2026 against upstream's tree at r4493, built by its own autotools with GCC 15:
+
+| Build pair | Test invocations | Output files identical | Different |
+|---|---:|---:|---|
+| `build/default` against autotools, all four modules, no optional libraries | 280 | 356 | 5 |
+| `build/lapack` against autotools with `--enable-lapack`, OpenBLAS on both sides | 283 | 390 | 5 |
+
+In both pairs the 5 differing files come from two fixes this repository carries on purpose:
+- the spinful torus Coulomb fix (`FQHETorusFermionsWithSpin`, report 12);
+- the Lanczos Krylov-space closure fix (the Hubbard 2×4 plain-Lanczos case, report 16).
+
+Console logs differ only in run timings, apart from those two programs.
+
+Not comparable:
+- **Monte Carlo and random programs:** need a fixed seed before they can be compared.
+- **Programs not in upstream's build lists:** 7, which upstream never builds.
+- **QuantumDots:** upstream's library does not compile with GCC 15 (report 11 fixes it here), so there is no autotools reference.
+
 ## How to read a failure
 
 A red `physics` test after a change means the change altered a number that is known independently — read the failure before touching anything; a golden is never edited to make a test pass. A red `regression` test means the output changed — which may be a fix (regenerate the reference and say why in the commit) or a break. A red `selftest` means the harness itself is broken. An `open-finding` test turning red is good news: the finding is gone; promote it.

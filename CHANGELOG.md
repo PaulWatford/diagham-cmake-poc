@@ -14,6 +14,9 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `FQHESphereCP2GenericInteraction`: first independent tests (4), with the SU(3)
+  Clebsch-Gordan files it needs written by `tests/oracles/cp2.py` from the two-particle
+  Casimir, against an exact diagonalisation of the pseudopotential Hamiltonian.
 - `FQHESphereQuasiholeMatrixElements` and
   `FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing`: first independent tests
   (`tests/oracles/quasiholes_trs.py`, Laughlin 1/3 quasihole spaces as V1 zero modes;

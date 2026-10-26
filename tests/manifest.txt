@@ -130,6 +130,10 @@ physics.fci.hofstadter.one_particle_lowest_band.x3_y2_X1_Y4_q1
 physics.fci.hofstadter.one_particle_lowest_band.x4_y2_X1_Y3_q1
 physics.fci.hofstadter.realspace_hardcore_bosons.n2_x4_y2_X3_Y1_q1
 physics.fci.hofstadter.realspace_hardcore_bosons.n3_x3_y2_X4_Y1_q1
+physics.fqhe.cp2.generic_interaction.bosons_n3_nphi3
+physics.fqhe.cp2.generic_interaction.bosons_n4_nphi2
+physics.fqhe.cp2.generic_interaction.fermions_n3_nphi2
+physics.fqhe.cp2.generic_interaction.fermions_n3_nphi3
 physics.fqhe.cylinder.bosons_laughlin_1_2.one_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.two_quasihole_count
 physics.fqhe.cylinder.bosons_laughlin_1_2.unique_zero_mode

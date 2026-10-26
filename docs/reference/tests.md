@@ -448,6 +448,7 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
 
   One finding, the same on a pristine autotools build:
   - **U49:** with the default `--memory` the pairing program dies with SIGFPE after its first sector that uses fast multiplication (the wiki's example included): the base Hamiltonian's destructor divides by a step this Hamiltonian leaves at 0. The physics tests use `--memory 0`.
+- **`FQHESphereCP2GenericInteraction`** (4 tests). The program needs SU(3) Clebsch-Gordan files, which the wiki says to download; `tests/oracles/cp2.py` writes them instead, from the eigenvectors of the two-particle Casimir on the (p, 0) monomials (any orthonormal basis of each representation gives the same projector), indexed in the program's Gelfand-Tsetlin order. It then diagonalises H = sum_k V_k sum_pairs P_k, the k-th pseudopotential on (2p - 2k, k), in every (tz, y) sector the program writes (tz >= 0): fermions and bosons, N_phi = 2 and 3, 3 and 4 particles, about 1e-14.
 
 ### Regression spectra (`-L regression`)
 

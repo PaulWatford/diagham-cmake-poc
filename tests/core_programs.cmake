@@ -348,3 +348,16 @@ if(Python3_Interpreter_FOUND AND TARGET ${qh_prog})
         set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endif()
 endif()
+
+# Overnight run, program 4: FQHESphereCP2GenericInteraction (core). tests/oracles/cp2.py writes the SU(3) Clebsch-Gordan
+# files the program needs (from the two-particle Casimir; the wiki points to a download instead) and diagonalises
+# H = sum_k V_k sum_pairs P_k in every sector the program writes. Fermions and bosons, N_phi = 2 and 3.
+if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereCP2GenericInteraction)
+    foreach(case fermions_n3_nphi2 fermions_n3_nphi3 bosons_n3_nphi3 bosons_n4_nphi2)
+        set(tname physics.fqhe.cp2.generic_interaction.${case})
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/cp2.py run
+                $<TARGET_FILE:FQHEOnSphere_FQHESphereCP2GenericInteraction> ${case} ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cp2" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()

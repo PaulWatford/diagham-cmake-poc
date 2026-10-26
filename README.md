@@ -68,7 +68,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **993 of 993 ctest tests pass** — but read that number plainly: 314 are
+- **998 of 998 ctest tests pass** — but read that number plainly: 319 are
   physics goldens with independently known answers (Hilbert-space dimensions
   against exact counting; Laughlin, Moore–Read and Read–Rezayi zero modes
   and quasihole counts; Coulomb pseudopotentials against the closed form;
@@ -79,7 +79,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 32 are self-tests (manifest, twenty-two oracles, the checker and runner), 33 are open-finding reproducers, and **599 are `--help` smoke tests**,
   which prove that a program links and parses options and nothing about its
   physics. `docs/reference/test-coverage.md` gives the per-program truth:
-  98 of 603 programs have a physics or cross-check test today (98 with an independently known answer) and 3 more a regression test (101 with any test beyond --help). Expanding that is the
+  99 of 603 programs have a physics or cross-check test today (99 with an independently known answer) and 3 more a regression test (102 with any test beyond --help). Expanding that is the
   current work. See `docs/reference/tests.md` and, for what a green run does
   and does not prove, `docs/explanation/verification.md`.
 - The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical

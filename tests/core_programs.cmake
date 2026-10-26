@@ -592,3 +592,21 @@ if(Python3_Interpreter_FOUND AND TARGET FQHEOnCylinder_FQHECylinderConfiningPote
         endif()
     endforeach()
 endif()
+
+# Overnight run, program 11: FQHECylinderDensity (review tier). Generic fermion states written in FQHESphereShowBasis
+# order (n-body or Haldane basis); orbital occupations, the density along the axis and the integrated charge against
+# Gaussian orbital densities (tests/oracles/cylinder_density.py).
+if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereShowBasis AND TARGET FQHEOnCylinder_FQHECylinderDensity)
+    foreach(case "n4_2s9_lz2_perimeter7.5|4;9;2;7.5;1" "n5_2s12_lz0_perimeter9|5;12;0;9;1" "three_states.n4_2s9_lz0_perimeter8|4;9;0;8;3"
+                 "haldane.laughlin_n4_2s9_perimeter9|4;9;0;9;1;1001001001" "haldane.two_states.laughlin_n5_2s12_perimeter10|5;12;0;10;2;1001001001001")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 args)
+        set(tname physics.fqhe.cylinder.density.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/cylinder_density.py run
+            $<TARGET_FILE:FQHEOnSphere_FQHESphereShowBasis> $<TARGET_FILE:FQHEOnCylinder_FQHECylinderDensity>
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()

@@ -154,6 +154,11 @@ physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode
 physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode_n6
 physics.fqhe.cylinder.confining_potential_coefficients.step.right_2s15_r1.5_v3_x-0.7_spinful
 physics.fqhe.cylinder.confining_potential_coefficients.step.right_2s24_perimeter10_x1.3
+physics.fqhe.cylinder.density.haldane.laughlin_n4_2s9_perimeter9
+physics.fqhe.cylinder.density.haldane.two_states.laughlin_n5_2s12_perimeter10
+physics.fqhe.cylinder.density.n4_2s9_lz2_perimeter7.5
+physics.fqhe.cylinder.density.n5_2s12_lz0_perimeter9
+physics.fqhe.cylinder.density.three_states.n4_2s9_lz0_perimeter8
 physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r1_ky0
 physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r2_ky1
 physics.fqhe.cylinder.ed.fermions_n4_norb9_laplacian_delta_r1_ky0

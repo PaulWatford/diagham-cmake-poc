@@ -475,6 +475,7 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   - **U50**, the same pattern: without GSL every power >= 1 gives zeros and exit status 0.
   - **U55:** for orbitals centred before the offset the polynomial potential gets a sign wrong; the wiki's own example is affected.
   - **U56:** the left confining potential is put on the right.
+- **`FQHECylinderDensity`** (5 tests), against `tests/oracles/cylinder_density.py`: generic fermion states written in `FQHESphereShowBasis` order, in the n-body basis and in the Haldane basis of a Laughlin root, one state or several (`--degenerate-states`, orthonormalised). Every orbital occupation <i|n_k|j>, and for one state the density along the axis and the integrated charge from Gaussian orbital densities (orbital 0 at the left end, the program's orientation) at every printed point, and the cylinder length: about 6e-14.
 
 ### Regression spectra (`-L regression`)
 

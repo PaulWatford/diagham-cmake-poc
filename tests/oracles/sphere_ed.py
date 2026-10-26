@@ -46,6 +46,13 @@ def cg(j1, m1, j2, m2, J, M):
 
 def spectrum(n, two_s, pp, fermion, two_lz=0, scale=2.0):
     import numpy as np
+    H, _ = hamiltonian(n, two_s, pp, fermion, two_lz, scale)
+    return np.linalg.eigvalsh(H)
+
+
+def hamiltonian(n, two_s, pp, fermion, two_lz=0, scale=2.0):
+    """The dense Hamiltonian of one Lz sector and its Fock basis (sorted orbital tuples, orbital j has Lz = j - S)."""
+    import numpy as np
     norb = two_s + 1
     gen = itertools.combinations if fermion else itertools.combinations_with_replacement
     states = [c for c in gen(range(norb), n) if sum(2 * j - two_s for j in c) == two_lz]
@@ -116,7 +123,7 @@ def spectrum(n, two_s, pp, fermion, two_lz=0, scale=2.0):
                         cc[j1] += 1
                         key = tuple(sorted(cc.elements()))
                     H[idx[key], idx[s]] += 0.5 * scale * amp
-    return np.linalg.eigvalsh(H)
+    return H, states
 
 
 def _remove(block, j, fermion):

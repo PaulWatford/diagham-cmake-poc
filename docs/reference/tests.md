@@ -418,6 +418,15 @@ These are physics tests for five programs of the provisional core list that had 
 
 `FQHECylinderFermionsTwoBodyGeneric`, the sixth gap, needs GSL for its matrix elements. It has four physics tests in builds with GSL, and the core preset will include GSL.
 
+On 26 October 2026 three more programs, core under every weighting of the core-program assessment, got their first independent tests (`tests/oracles/core_tools.py`):
+
+- **`GenericHamiltonianDiagonalization`** (3 tests). Matrices given by closed formulas and written with 17 digits, so that the program and numpy diagonalise the same doubles: a real 40 x 40 and a complex Hermitian 30 x 30 matrix by full diagonalisation, and the lowest 10 eigenvalues of a 600 x 600 banded matrix by Lanczos (a chain in a linear potential, so that those eigenvalues are well separated). They agree to about 3e-14.
+- **`FTIShowBasis`** (5 tests). The n-body basis of a momentum sector, state by state, against an exact enumeration of the sets (fermions) or multisets (bosons) of orbitals whose momenta add up to the sector's: one and two bands, fermions and bosons. No tolerance; a dropped or altered state fails the test (checked by planting both).
+- **`FQHESphereBosonEntanglementEntropy`** (2 tests and 1 `open-finding` test). The entropy and every reduced density matrix eigenvalue of each orbital cut of a unique sphere ground state, against a Schmidt decomposition of the ground state of the same Hamiltonian built from scratch by `tests/oracles/sphere_ed.py`. The ground state is computed by `FQHESphereBosonsTwoBodyGeneric`. Two-body pseudopotentials V0 = 1, V2 = 0.5 (N = 5) and Coulomb (N = 4) agree to about 3e-14.
+
+  One finding, the same on a pristine autotools build:
+  - **U46:** the built-in full diagonalisation drops Householder remainders below 1e-7 in norm, so a saved eigenvector can be wrong at about 1e-8. For the bosonic Laughlin state the entropies are off by 3e-10; with `--use-lapack` they agree to 14 digits.
+
 ### Regression spectra (`-L regression`)
 
 12 tests, `regression.*`, one per module directory that has no physics
@@ -506,7 +515,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Fourteen `open-finding` tests exist (U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Twenty-one `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: one case; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

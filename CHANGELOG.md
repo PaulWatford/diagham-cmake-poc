@@ -14,6 +14,17 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- First independent tests for three programs that are core under every weighting of
+  the core-program assessment (`tests/oracles/core_tools.py`, 10 physics tests and a
+  self-test): `GenericHamiltonianDiagonalization` against numpy on real, complex and
+  Lanczos-sized matrices; `FTIShowBasis` against an exact enumeration of the basis,
+  state by state; `FQHESphereBosonEntanglementEntropy` against a Schmidt decomposition
+  of the same ground state built from scratch. `tests/oracles/sphere_ed.py` now exposes
+  its Hamiltonian builder (`hamiltonian()`), with its stored data unchanged.
+- Open finding U46 (`docs/upstream-reports/open-U46.md`) and its `open-finding` test:
+  the built-in full diagonalisation drops Householder remainders below 1e-7 in norm,
+  so saved eigenvectors can be wrong at about 1e-8 (eigenvalues are not affected at
+  the agreed precision). The same on a pristine autotools build.
 - GitLab readiness: `.gitlab-ci.yml` brought level with the GitHub workflows
   (the core preset with clang, ccache, the environment record and test log
   kept for 90 days, an opt-in container job, a scheduled upstream-drift job,

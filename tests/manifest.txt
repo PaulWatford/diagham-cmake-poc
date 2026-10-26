@@ -16,6 +16,7 @@ openfinding.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
 openfinding.fti.hopf3d.segfault_after_band_file
 openfinding.fti.simple_ti3d.export_onebodytext_kz0_slice_only
+openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector
 openfinding.haah_code.ground_state_array_2_pow_nterms.4x4x4_region_2x2x2
 openfinding.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
 openfinding.spin.tfim2d.open_boundaries_ignored
@@ -44,6 +45,9 @@ physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x2x3_m2.5.band0
 physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x2x3_m2.5.band3
 physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x3x2_m1.5.band0
 physics.FTI_FTI3DSimpleTI.bands.simple_ti3d_3x3x2_m1.5.band3
+physics.core.generic_hamiltonian_diagonalization.complex_dense_30
+physics.core.generic_hamiltonian_diagonalization.lanczos_sparse_600_lowest_10
+physics.core.generic_hamiltonian_diagonalization.real_dense_40
 physics.core.level_statistics.alternating_spacings_r_half
 physics.core.level_statistics.uniform_spacings_r_one
 physics.core.vector_ascii2binary.bit_exact
@@ -141,6 +145,8 @@ physics.fqhe.disk.bosons_laughlin_1_2.n4_lz16
 physics.fqhe.disk.bosons_laughlin_1_2.n5_lz20
 physics.fqhe.disk.bosons_laughlin_1_2.n5_lz22
 physics.fqhe.disk.coulomb_pseudopotentials.2s8
+physics.fqhe.sphere.boson_entanglement.bosons_coulomb_n4_2s6
+physics.fqhe.sphere.boson_entanglement.bosons_v0_v2_n5_2s6
 physics.fqhe.sphere.bosons_laughlin_1_2.jack_equals_ed
 physics.fqhe.sphere.bosons_laughlin_1_2.one_quasihole_half_integer_lz
 physics.fqhe.sphere.bosons_laughlin_1_2.two_quasihole_count
@@ -235,6 +241,11 @@ physics.fqhe.torus.fermions_mooreread.sixfold_degeneracy
 physics.fqhe.torus.laughlin_1_3.one_quasihole_count
 physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
 physics.fqhe.torus.laughlin_1_3.two_quasihole_count
+physics.fti.show_basis.bosons_n3_x3_y2_k1_0
+physics.fti.show_basis.bosons_n4_x4_y2_k2_1
+physics.fti.show_basis.fermions_n4_x3_y3_k1_2
+physics.fti.show_basis.two_bands_bosons_n3_x3_y2_k2_1
+physics.fti.show_basis.two_bands_fermions_n3_x2_y2_k0_1
 physics.hubbard.2x2.U0.ground_state_is_minus_8
 physics.hubbard.2x2.U4.full_spectrum
 physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2
@@ -304,6 +315,7 @@ selftest.checker.rejects_wrong_count
 selftest.checker.rejects_wrong_value
 selftest.checker.relative_tolerance_rejects
 selftest.checker.relative_tolerance_scales
+selftest.core_tools_oracle
 selftest.dimension_oracle
 selftest.entanglement_oracle
 selftest.fci_bands_oracle

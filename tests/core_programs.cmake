@@ -125,3 +125,79 @@ if(Python3_Interpreter_FOUND)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/sphere_l2.py --check ${core_data}/sphere_l2)
     set_tests_properties(selftest.hofstadter_oracle selftest.sphere_l2_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
 endif()
+
+# ----------------------------------------------------------------------------
+# Core programs without an independent test (session S9, 26 October 2026): programs that came out core under every
+# weighting of the core-program assessment, taken two to four per session. Answers from tests/oracles/core_tools.py:
+#  - GenericHamiltonianDiagonalization: matrices given by closed formulas, written with 17 digits, against
+#    numpy.linalg.eigvalsh (full diagonalisation real and complex; Lanczos on a 600 x 600 banded matrix whose lowest
+#    eigenvalues are well separated);
+#  - FTIShowBasis: the n-body basis of a momentum sector against an exact enumeration, state by state, no tolerance;
+#  - FQHESphereBosonEntanglementEntropy: entropies and reduced density matrix eigenvalues of every orbital cut of a
+#    unique sphere ground state, against a Schmidt decomposition of the ground state of the same Hamiltonian built
+#    from scratch (tests/oracles/sphere_ed.py). The ground state is computed by FQHESphereBosonsTwoBodyGeneric.
+# Open finding U46, met on the way: DiagHam's built-in full diagonalisation skips Householder steps whose remainder
+# is below 1e-7 in norm, so a saved eigenvector can be wrong at about 1e-8 (the bosonic Laughlin state below);
+# eigenvalues are affected only at second order. --use-lapack avoids it. The same on a pristine autotools build.
+# ----------------------------------------------------------------------------
+set(ct_data ${DIAGHAM_TEST_DATA}/core_tools)
+set(ghd Programs_GenericHamiltonianDiagonalization)
+diagham_physics_test(physics.core.generic_hamiltonian_diagonalization.real_dense_40
+    PROGRAM ${ghd}
+    ARGS --hamiltonian ${ct_data}/real_dense_40.txt -o real_dense_40.dat
+    OUTPUT "real_dense_40.dat"
+    CHECK spectrum @OUTPUT@ -1 ${ct_data}/real_dense_40_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+    LABELS core)
+diagham_physics_test(physics.core.generic_hamiltonian_diagonalization.complex_dense_30
+    PROGRAM ${ghd}
+    ARGS --hamiltonian ${ct_data}/complex_dense_30.txt -c -o complex_dense_30.dat
+    OUTPUT "complex_dense_30.dat"
+    CHECK spectrum @OUTPUT@ -1 ${ct_data}/complex_dense_30_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+    LABELS core)
+diagham_physics_test(physics.core.generic_hamiltonian_diagonalization.lanczos_sparse_600_lowest_10
+    PROGRAM ${ghd}
+    ARGS --hamiltonian ${ct_data}/real_sparse_600.txt -n 10 -o real_sparse_600.dat
+    OUTPUT "real_sparse_600.dat"
+    CHECK lowest @OUTPUT@ -1 ${ct_data}/real_sparse_600_spectrum.dat -1 10 ${DIAGHAM_TEST_TOLERANCE}
+    LABELS core)
+
+if(Python3_Interpreter_FOUND AND TARGET FTI_FTIShowBasis)
+    foreach(case "fermions_n4_x3_y3_k1_2|-p;4;-x;3;-y;3;--kx;1;--ky;2"
+                 "bosons_n3_x3_y2_k1_0|-p;3;-x;3;-y;2;--kx;1;--ky;0;--boson"
+                 "bosons_n4_x4_y2_k2_1|-p;4;-x;4;-y;2;--kx;2;--ky;1;--boson"
+                 "two_bands_fermions_n3_x2_y2_k0_1|-p;3;-x;2;-y;2;-s;2;--kx;0;--ky;1"
+                 "two_bands_bosons_n3_x3_y2_k2_1|-p;3;-x;3;-y;2;-s;2;--kx;2;--ky;1;--boson")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 args)
+        add_test(NAME physics.fti.show_basis.${name}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py showbasis $<TARGET_FILE:FTI_FTIShowBasis> ${args})
+        set_tests_properties(physics.fti.show_basis.${name} PROPERTIES LABELS "physics;python;fti" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()
+
+if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereBosonEntanglementEntropy AND TARGET FQHEOnSphere_FQHESphereBosonsTwoBodyGeneric)
+    foreach(case bosons_v0_v2_n5_2s6 bosons_coulomb_n4_2s6)
+        add_test(NAME physics.fqhe.sphere.boson_entanglement.${case}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py entanglement
+                $<TARGET_FILE:FQHEOnSphere_FQHESphereBosonsTwoBodyGeneric> $<TARGET_FILE:FQHEOnSphere_FQHESphereBosonEntanglementEntropy>
+                ${ct_data} ${case} ${DIAGHAM_TEST_WORK}/physics.fqhe.sphere.boson_entanglement.${case} ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(physics.fqhe.sphere.boson_entanglement.${case} PROPERTIES LABELS "physics;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+    # U46: the bosonic Laughlin state (V0 only, N = 4, 2S = 6) saved by the built-in full diagonalisation is off by
+    # 1.2e-8 (|Hv - Ev|), so its entropies are off by 3e-10 (the exact l_a = 1 eigenvalues are 3/7 and 4/7). WILL_FAIL until fixed.
+    add_test(NAME openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py entanglement
+            $<TARGET_FILE:FQHEOnSphere_FQHESphereBosonsTwoBodyGeneric> $<TARGET_FILE:FQHEOnSphere_FQHESphereBosonEntanglementEntropy>
+            ${ct_data} bosons_laughlin_n4_2s6 ${DIAGHAM_TEST_WORK}/openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector
+            ${DIAGHAM_TEST_TOLERANCE})
+    set_tests_properties(openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector PROPERTIES
+        WILL_FAIL TRUE LABELS "open-finding;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+endif()
+
+if(Python3_Interpreter_FOUND)
+    add_test(NAME selftest.core_tools_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py --check ${ct_data})
+    set_tests_properties(selftest.core_tools_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
+endif()

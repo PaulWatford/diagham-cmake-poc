@@ -198,6 +198,7 @@ selftest.checker.rejects_wrong_count
 selftest.checker.rejects_wrong_value
 selftest.checker.relative_tolerance_rejects
 selftest.checker.relative_tolerance_scales
+selftest.core_tools_oracle
 selftest.dimension_oracle
 selftest.entanglement_oracle
 selftest.fci_bands_oracle

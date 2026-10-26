@@ -42,5 +42,6 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U45: FCIHofstadterModel --real-space accepts -Y other than 1 and gives a wrong spectrum](open-U45.md)
 - [Open finding U46: the built-in full diagonalisation skips Householder steps below 1e-7, so eigenvectors (and degenerate eigenvalues) can be wrong at about 1e-8](open-U46.md)
 - [Open finding U47: HubbardKitaevHeisenbergModel's J1 and J2 multiply Pauli matrices, four times the S.S of its wiki page](open-U47.md)
+- [Open finding U48: FTIGenericInteractionFromFileTwoBands applies the interaction file's band labels to the opposite bands unless --3band-convention is given](open-U48.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

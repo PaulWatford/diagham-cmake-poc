@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `FTIGenericInteractionFromFileTwoBands`: first independent tests
+  (`tests/oracles/fti_generic.py`, 4 physics tests and a self-test), a generic
+  two-band interaction against an exact diagonalisation, sector by sector. New
+  finding U48: without `--3band-convention` the interaction file's band labels act
+  on the opposite bands of the one-body file.
 - First independent tests for three more programs that are core under every weighting:
   `FQHESphereUnnormalizeState` (the Laughlin polynomial's exact integer coefficients,
   both directions, checked as an exact zero mode of V0), `FQHESphereWithSU2SpinRotation`

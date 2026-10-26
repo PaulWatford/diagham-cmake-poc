@@ -437,6 +437,13 @@ Later the same day, three more:
   - **U46** also moves eigenvalues inside a degenerate level, by up to 3.5e-9 here, so these cases are physics tests only with LAPACK.
   - **U47:** `--j1` and `--j2` multiply Pauli matrices, four times the S.S written on the wiki page.
 
+In the overnight run of 26 October 2026, programs core under every weighting first:
+
+- **`FTIGenericInteractionFromFileTwoBands`** (4 tests). Generic one-body energies and a generic momentum-conserving interaction, written to the program's input files, against an exact diagonalisation of the same Hamiltonian, every momentum sector (`tests/oracles/fti_generic.py`). The program applies V c+_1 c+_2 c_3 c_4; that order is the one convention taken from it, fixed on two particles, and the three-particle spectra then agree with nothing left to adjust (about 4e-14). Three tests use `--3band-convention`; one pins the default.
+
+  One finding, the same on a pristine autotools build:
+  - **U48:** without `--3band-convention` the interaction file's band labels act on the opposite bands of the one-body file (the default Hilbert space uses bit 2k + 1 - m for two-body operators and 2k + m for one-body ones).
+
 ### Regression spectra (`-L regression`)
 
 12 tests, `regression.*`, one per module directory that has no physics

@@ -249,6 +249,10 @@ physics.fqhe.torus.fermions_mooreread.sixfold_degeneracy
 physics.fqhe.torus.laughlin_1_3.one_quasihole_count
 physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
 physics.fqhe.torus.laughlin_1_3.two_quasihole_count
+physics.fti.generic_interaction_two_bands.fermions_x2_y2_n3_3band_convention
+physics.fti.generic_interaction_two_bands.fermions_x3_y2_n2_3band_convention
+physics.fti.generic_interaction_two_bands.fermions_x3_y2_n2_default_convention
+physics.fti.generic_interaction_two_bands.fermions_x3_y2_n3_3band_convention
 physics.fti.show_basis.bosons_n3_x3_y2_k1_0
 physics.fti.show_basis.bosons_n4_x4_y2_k2_1
 physics.fti.show_basis.fermions_n4_x3_y3_k1_2
@@ -330,6 +334,7 @@ selftest.fci_bands_oracle
 selftest.fci_manybody_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
+selftest.fti_generic_oracle
 selftest.geometry_ed_oracle
 selftest.haah_oracle
 selftest.hofstadter_oracle

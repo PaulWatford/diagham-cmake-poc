@@ -271,3 +271,30 @@ foreach(case "hubbard_ring_n4_u2|hex|-p;4;--isotropic-t;1;--anisotropic-t;0;--j1
             WILL_FAIL LABELS fti hubbard open-finding)
     endif()
 endforeach()
+
+# ----------------------------------------------------------------------------
+# Overnight run (26 October 2026): FTIGenericInteractionFromFileTwoBands, core under every weighting. Generic one-body
+# energies and a generic momentum-conserving interaction written to its input files, against an exact diagonalisation
+# of the same Hamiltonian, sector by sector (tests/oracles/fti_generic.py). With --3band-convention the band labels
+# mean the same in both files; in the default convention the interaction's band labels act on the opposite bands
+# (U48), and the default test pins that behaviour.
+# ----------------------------------------------------------------------------
+set(fg_data ${DIAGHAM_TEST_DATA}/fti_generic)
+if(Python3_Interpreter_FOUND AND TARGET FTI_FTIGenericInteractionFromFileTwoBands)
+    foreach(case "fermions_x3_y2_n2|3band" "fermions_x3_y2_n3|3band" "fermions_x2_y2_n3|3band" "fermions_x3_y2_n2|default")
+        string(REPLACE "|" ";" c "${case}")
+        list(GET c 0 name)
+        list(GET c 1 conv)
+        set(tname physics.fti.generic_interaction_two_bands.${name}_${conv}_convention)
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fti_generic.py run
+                $<TARGET_FILE:FTI_FTIGenericInteractionFromFileTwoBands> ${name} ${conv} ${fg_data} ${DIAGHAM_TEST_WORK}/${tname}
+                ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fti" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()
+if(Python3_Interpreter_FOUND)
+    add_test(NAME selftest.fti_generic_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fti_generic.py --check ${fg_data})
+    set_tests_properties(selftest.fti_generic_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
+endif()

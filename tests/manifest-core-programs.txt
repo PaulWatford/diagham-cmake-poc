@@ -205,6 +205,7 @@ selftest.fci_bands_oracle
 selftest.fci_manybody_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
+selftest.fti_generic_oracle
 selftest.geometry_ed_oracle
 selftest.haah_oracle
 selftest.hofstadter_oracle

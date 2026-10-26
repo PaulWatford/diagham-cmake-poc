@@ -55,5 +55,6 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U58: the Josephson-pairing program segfaults with a fixed particle number and off-diagonal terms](open-U58.md)
 - [Open finding U59: HubbardSuperconductorOrderParameter -o writes to a file with an uninitialised name](open-U59.md)
 - [Open finding U60: FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis tests degeneracies on unsorted energies](open-U60.md)
+- [Open finding U61: FQHETorusMPSCreateState --topological-sector selects a different state for each P truncation mod m](open-U61.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

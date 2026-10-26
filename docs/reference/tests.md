@@ -491,6 +491,10 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
 
   One finding:
   - **U60:** the cut that should keep degenerate levels whole compares unsorted energies, so the basis can split a level.
+- **`FQHETorusMPSCreateState`** (6 tests and 1 `open-finding` test), against `tests/oracles/torus_mps.py`: every Laughlin MPS state on the torus (fermions m = 3 and 5, bosons m = 2 with `--boson-truncation N`, 2 to 5 particles, aspect ratios 1 to 2) is the pseudopotential zero mode of the Ky sector in its file name, built by `tests/oracles/torus_ed.py`, coefficient by coefficient up to its sign, about 6e-15. The truncation is chosen large enough to be exact (smaller ones are off by about 7e-12).
+
+  One finding:
+  - **U61:** the topological sector selected moves with the P truncation modulo m.
 
 ### Regression spectra (`-L regression`)
 
@@ -580,7 +584,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty-eight `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty-nine `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

@@ -64,7 +64,8 @@ def pseudopotential_kernel(pp, scale=4 * math.pi):
     return kernel
 
 
-def spectrum(n, nphi, kernel, fermion=True, r=1.0, ky=0, keep_q0=False, smax=40, kmax=6):
+def spectrum(n, nphi, kernel, fermion=True, r=1.0, ky=0, keep_q0=False, smax=40, kmax=6, matrix=False):
+    """Every eigenvalue of the Ky sector; with matrix=True the Hamiltonian and its configurations instead."""
     import numpy as np
     lxly = 2 * math.pi * nphi
     lx, ly = math.sqrt(lxly * r), math.sqrt(lxly / r)
@@ -126,6 +127,8 @@ def spectrum(n, nphi, kernel, fermion=True, r=1.0, ky=0, keep_q0=False, smax=40,
                         amp *= math.sqrt(cc[j1] + 1); cc[j1] += 1
                         key = tuple(sorted(cc.elements()))
                     H[idx[key], idx[s]] += 0.5 * amp
+    if matrix:
+        return H, states
     return np.linalg.eigvalsh(H)
 
 

@@ -42,6 +42,8 @@ all present on the `upstream` branch: `git log upstream`).
 - `FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis`: first independent tests
   (`tests/oracles/trs_generate_basis.py`). New finding U60 (the degeneracy-preserving cut compares
   unsorted energies).
+- `FQHETorusMPSCreateState`: first independent tests (`tests/oracles/torus_mps.py`; `tests/oracles/torus_ed.py`
+  can now return its Hamiltonian). New finding U61 (the topological sector moves with the truncation).
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

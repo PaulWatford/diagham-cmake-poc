@@ -163,6 +163,7 @@ nav:
       - 'Open finding U58: the Josephson-pairing program segfaults with a fixed particle number and off-diagonal terms': upstream-reports/open-U58.md
       - 'Open finding U59: HubbardSuperconductorOrderParameter -o writes to a file with an uninitialised name': upstream-reports/open-U59.md
       - 'Open finding U60: FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis tests degeneracies on unsorted energies': upstream-reports/open-U60.md
+      - 'Open finding U61: FQHETorusMPSCreateState --topological-sector selects a different state for each P truncation mod m': upstream-reports/open-U61.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

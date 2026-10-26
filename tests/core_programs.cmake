@@ -764,3 +764,27 @@ if(Python3_Interpreter_FOUND AND TARGET ${gbp})
         endif()
     endforeach()
 endif()
+
+# Overnight run, program 17: FQHETorusMPSCreateState (optional tier). Each Laughlin MPS state on the torus must be the
+# pseudopotential zero mode of its Ky sector, built by tests/oracles/torus_ed.py (tests/oracles/torus_mps.py). Fermions
+# m = 3 and 5, bosons m = 2 (with --boson-truncation N), the truncation large enough to be exact. U61: the topological
+# sector selected moves with P mod m.
+set(tmps FQHEOnTorus_FQHETorusMPSCreateState)
+if(Python3_Interpreter_FOUND AND TARGET ${tmps})
+    foreach(case "laughlin3.n2_nphi6_r2_sector0_p3|6;2.0;0;3" "laughlin3.n3_nphi9_r1.5_sector2_p8|9;1.5;2;8"
+                 "laughlin3.n4_nphi12_r1_sector0_p8|12;1.0;0;8" "laughlin5.n2_nphi10_r1_sector0_p6|10;1.0;0;6;5"
+                 "bosons_laughlin2.n4_nphi8_r1_sector0_p10|8;1.0;0;10;2" "bosons_laughlin2.n5_nphi10_r1.3_sector1_p8|10;1.3;1;8;2")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 args)
+        set(tname physics.fqhe.torus.mps_create_state.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_mps.py run $<TARGET_FILE:${tmps}>
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;torus;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+    set(tname openfinding.fqhe.torus.mps_create_state.topological_sector_moves_with_truncation.nphi6_r2_p3_p4)
+    add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/torus_mps.py sectors $<TARGET_FILE:${tmps}>
+        ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} 6 2.0 3 4)
+    set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;torus;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+endif()

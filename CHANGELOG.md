@@ -14,6 +14,9 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- The three real-space partition coefficient programs (cylinder, sphere, disk): first
+  independent tests against closed forms (`tests/oracles/realspace.py`). New finding
+  U50: without GSL the sphere and disk programs write all-zero weights and exit 0.
 - `FQHESphereCP2GenericInteraction`: first independent tests (4), with the SU(3)
   Clebsch-Gordan files it needs written by `tests/oracles/cp2.py` from the two-particle
   Casimir, against an exact diagonalisation of the pseudopotential Hamiltonian.

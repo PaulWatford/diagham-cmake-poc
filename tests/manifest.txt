@@ -13,8 +13,10 @@ openfinding.fci.kagome.manybody.3x3_n1_band_energy_halved
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
+openfinding.fqhe.disk.realspace_partition_coefficients_zero_without_gsl.disk_2s10_radius2.5
 openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
 openfinding.fqhe.sphere.quasiholes_time_reversal_pairing.default_memory_crash
+openfinding.fqhe.sphere.realspace_partition_coefficients_zero_without_gsl.sphere_2s15_hemisphere
 openfinding.fti.hopf3d.segfault_after_band_file
 openfinding.fti.simple_ti3d.export_onebodytext_kz0_slice_only
 openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_hubbard_ring_n4_u2
@@ -144,6 +146,8 @@ physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode_n6
 physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r1_ky0
 physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r2_ky1
 physics.fqhe.cylinder.ed.fermions_n4_norb9_laplacian_delta_r1_ky0
+physics.fqhe.cylinder.realspace_partition_coefficients.cylinder_2s12_perimeter8
+physics.fqhe.cylinder.realspace_partition_coefficients.cylinder_2s17_perimeter10
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz12
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz13
 physics.fqhe.disk.bosons_laughlin_1_2.n4_lz14

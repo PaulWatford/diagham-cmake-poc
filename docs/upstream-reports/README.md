@@ -44,5 +44,6 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U47: HubbardKitaevHeisenbergModel's J1 and J2 multiply Pauli matrices, four times the S.S of its wiki page](open-U47.md)
 - [Open finding U48: FTIGenericInteractionFromFileTwoBands applies the interaction file's band labels to the opposite bands unless --3band-convention is given](open-U48.md)
 - [Open finding U49: FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing crashes (SIGFPE) after its first sector that uses fast multiplication](open-U49.md)
+- [Open finding U50: without GSL, the sphere and disk real-space partition programs write all-zero weights and exit 0](open-U50.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

@@ -449,6 +449,10 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   One finding, the same on a pristine autotools build:
   - **U49:** with the default `--memory` the pairing program dies with SIGFPE after its first sector that uses fast multiplication (the wiki's example included): the base Hamiltonian's destructor divides by a step this Hamiltonian leaves at 0. The physics tests use `--memory 0`.
 - **`FQHESphereCP2GenericInteraction`** (4 tests). The program needs SU(3) Clebsch-Gordan files, which the wiki says to download; `tests/oracles/cp2.py` writes them instead, from the eigenvectors of the two-particle Casimir on the (p, 0) monomials (any orthonormal basis of each representation gives the same projector), indexed in the program's Gelfand-Tsetlin order. It then diagonalises H = sum_k V_k sum_pairs P_k, the k-th pseudopotential on (2p - 2k, k), in every (tz, y) sector the program writes (tz >= 0): fermions and bosons, N_phi = 2 and 3, 3 and 4 particles, about 1e-14.
+- **`FQHECylinderRealSpacePartitionCoefficients`**, **`FQHESphereRealSpacePartitionCoefficients`**, **`FQHEDiskRealSpacePartitionCoefficients`** (2 tests; 5 more with GSL). The orbital weights of a region against closed forms (`tests/oracles/realspace.py`): erfc for a cylinder cut, the incomplete beta function for a sphere cap, the incomplete gamma function for a disk; better than 1e-14. The sphere and disk programs need GSL.
+
+  One finding, the same on a pristine autotools build:
+  - **U50:** without GSL the sphere and disk programs print `gsl is required`, then write all-zero weights and exit 0. Two `open-finding` tests in builds without GSL.
 
 ### Regression spectra (`-L regression`)
 
@@ -538,7 +542,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Twenty-four `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Twenty-six `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

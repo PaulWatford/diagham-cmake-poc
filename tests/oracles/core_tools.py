@@ -648,7 +648,10 @@ def main():
             for f, text in render_entanglement(name).items():
                 stored = (d / f).read_text()
                 if f.endswith("_pp.dat"):
-                    if stored != text:
+                    # the header records the ground energy, round-off around 0 that differs between numpy versions;
+                    # the pseudopotential line is what the tests read
+                    body = lambda t: [l for l in t.splitlines() if not l.startswith("#")]
+                    if body(stored) != body(text):
                         print(f"{f} differs from the oracle's"); bad += 1
                     continue
                 vals = lambda t: [float(l.split()[1]) for l in t.splitlines() if l and not l.startswith("#")]

@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `DIAGHAM_TEST_BLAS_THREADS` (default 1, or `OMP_NUM_THREADS` at configure time) and
+  `DIAGHAM_TEST_BLAS_THREADS_HEAVY` (4): the BLAS threads of every Python oracle test. Without a
+  limit each parallel ctest job started a thread pool sized for the whole machine, which caused
+  timeouts under `ctest --parallel 32`. `selftest.hofstadter_oracle` and `selftest.spin_ed_oracle`,
+  which gain from threads (2.7 s to 0.9 s and 4.4 s to 1.5 s), get 4 and reserve 4 ctest slots.
 - `MatrixExtractColumns`, `SpinChainComputeS2` and `SpinChainMultipleEntanglementSpectra`:
   first independent tests (`tests/oracles/core_tools.py`, `tests/oracles/spin_tools.py`).
   New findings U51 (the entanglement-spectra program crashes without LAPACK) and U52

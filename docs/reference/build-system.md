@@ -61,6 +61,8 @@ Optional libraries (each defines `HAVE_<X>` in the config header; the old flag i
 | `DIAGHAM_PROGRAMS` | empty | program names (`;` or `,` separated): the whole set with `custom`, added to the core set with `core`; an unknown name stops the configure step |
 | `DIAGHAM_TEST_TOLERANCE` | `rel:1e-12` | tolerance of the physics value comparisons: `rel:X` (relative) or `X` (absolute); see `docs/reference/tests.md` |
 | `DIAGHAM_TEST_TIMEOUT` | 120 | ctest `TIMEOUT` in seconds of each DiagHam program test (the design budget is 30 s run alone) |
+| `DIAGHAM_TEST_BLAS_THREADS` | 1 (or `OMP_NUM_THREADS` at configure time) | BLAS threads (`OMP_NUM_THREADS`, `OPENBLAS_NUM_THREADS`, `MKL_NUM_THREADS`) of every Python oracle test, so that parallel ctest jobs do not oversubscribe the machine |
+| `DIAGHAM_TEST_BLAS_THREADS_HEAVY` | 4 | BLAS threads, and ctest `PROCESSORS`, of `selftest.hofstadter_oracle` and `selftest.spin_ed_oracle`, which gain from threads |
 | `DIAGHAM_FULL_PRECISION_OUTPUT` (no configure equivalent) | OFF | computed results written with 17 significant digits instead of upstream's 14 (`DIAGHAM_OUTPUT_PRECISION=17`; `src/config.h` defaults it to 14) |
 | `DIAGHAM_COMMAND_LOG` (`--with-cmd-log=FILE`) | "" | path; defines `HAVE_GLOBAL_COMMAND_LOG` and `GLOBAL_COMMAND_LOG` |
 

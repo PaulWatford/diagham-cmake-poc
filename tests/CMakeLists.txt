@@ -43,6 +43,18 @@ set(DIAGHAM_TEST_TOLERANCE "rel:1e-12" CACHE STRING
 # Time budget: every DiagHam test is designed to finish in about 30 s run on its own (measured: see
 # docs/reference/tests.md). The ctest TIMEOUT below is larger, for parallel runs on a loaded machine.
 set(DIAGHAM_TEST_TIMEOUT 120 CACHE STRING "ctest TIMEOUT (seconds) of each DiagHam program test")
+# BLAS threads of the Python oracles (numpy). Without a limit each parallel ctest job starts a thread pool sized for
+# the whole machine, which oversubscribes it; the matrices are small, so one thread is as fast. A value already in
+# the environment at configure time is kept. The two self-tests that do gain from threads get
+# DIAGHAM_TEST_BLAS_THREADS_HEAVY threads and reserve as many ctest slots (PROCESSORS). Applied at the end of this file.
+if(DEFINED ENV{OMP_NUM_THREADS})
+    set(_blas_threads_default "$ENV{OMP_NUM_THREADS}")
+else()
+    set(_blas_threads_default 1)
+endif()
+set(DIAGHAM_TEST_BLAS_THREADS ${_blas_threads_default} CACHE STRING "BLAS threads of each Python oracle test")
+set(DIAGHAM_TEST_BLAS_THREADS_HEAVY 4 CACHE STRING
+    "BLAS threads (and ctest PROCESSORS) of selftest.hofstadter_oracle and selftest.spin_ed_oracle")
 
 # diagham_physics_test(<name>
 #     PROGRAM <program target>
@@ -379,3 +391,17 @@ if(_manifest_mode)
             -P ${CMAKE_CURRENT_SOURCE_DIR}/CheckManifest.cmake)
     set_tests_properties(selftest.manifest PROPERTIES LABELS "selftest" TIMEOUT 120)
 endif()
+
+# Thread limit of every Python oracle test (label "python"; see DIAGHAM_TEST_BLAS_THREADS above).
+get_property(_all_tests DIRECTORY PROPERTY TESTS)
+foreach(_t IN LISTS _all_tests)
+    get_test_property(${_t} LABELS _labels)
+    if(_labels AND "python" IN_LIST _labels)
+        set(_n ${DIAGHAM_TEST_BLAS_THREADS})
+        if(_t MATCHES "^selftest\\.(hofstadter|spin_ed)_oracle$")
+            set(_n ${DIAGHAM_TEST_BLAS_THREADS_HEAVY})
+            set_tests_properties(${_t} PROPERTIES PROCESSORS ${_n})
+        endif()
+        set_tests_properties(${_t} PROPERTIES ENVIRONMENT "OMP_NUM_THREADS=${_n};OPENBLAS_NUM_THREADS=${_n};MKL_NUM_THREADS=${_n}")
+    endif()
+endforeach()

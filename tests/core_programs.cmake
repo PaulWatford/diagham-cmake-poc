@@ -201,3 +201,73 @@ if(Python3_Interpreter_FOUND)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py --check ${ct_data})
     set_tests_properties(selftest.core_tools_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
 endif()
+
+# ----------------------------------------------------------------------------
+# Session S9, second part (26 October 2026): three more programs core under every weighting.
+#  - FQHESphereUnnormalizeState: the bosonic Laughlin state prod (z_i - z_j)^2, whose monomial coefficients are
+#    exact integers: normalised by the program it must be an exact zero mode of V0 (tests/oracles/sphere_ed.py),
+#    and the numpy zero mode, unnormalised by the program, must be proportional to the integers;
+#  - FQHESphereWithSU2SpinRotation: a fully polarised state rotated about y against its exact image (the program
+#    rotates by exp(+i t S_y); that sense is the only convention taken from it);
+#  - HubbardKitaevHeisenbergModel on the wiki's single hexagon: the Hubbard ring (t, U) and the half-filled
+#    Gutzwiller spin model (J1, J2, which multiply Pauli matrices, U47). The built-in full diagonalisation moves
+#    degenerate eigenvalues of these spectra by up to 3.5e-9 (U46), so the physics tests run with --use-lapack in
+#    builds with LAPACK and are open-finding tests without it.
+# The first two run on vectors written by tests/oracles/core_tools.py in DiagHam's basis order.
+# ----------------------------------------------------------------------------
+set(fsb FQHEOnSphere_FQHESphereShowBasis)
+if(Python3_Interpreter_FOUND AND TARGET ${fsb} AND TARGET FQHEOnSphere_FQHESphereUnnormalizeState)
+    foreach(n 3 4 5)
+        add_test(NAME physics.fqhe.sphere.unnormalize_state.laughlin_bosons_n${n}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py unnormalize
+                $<TARGET_FILE:${fsb}> $<TARGET_FILE:FQHEOnSphere_FQHESphereUnnormalizeState> ${n}
+                ${DIAGHAM_TEST_WORK}/physics.fqhe.sphere.unnormalize_state.laughlin_bosons_n${n} ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(physics.fqhe.sphere.unnormalize_state.laughlin_bosons_n${n} PROPERTIES
+            LABELS "physics;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()
+if(Python3_Interpreter_FOUND AND TARGET ${fsb} AND TARGET FQHEOnSphere_FQHESphereWithSU2SpinRotation)
+    foreach(case "n3_2s4_angle0.5|3|4|0.5" "n3_2s4_angle0.3|3|4|0.3" "n4_2s6_angle0.25|4|6|0.25")
+        string(REPLACE "|" ";" c "${case}")
+        list(GET c 0 name)
+        list(GET c 1 n)
+        list(GET c 2 two_s)
+        list(GET c 3 angle)
+        add_test(NAME physics.fqhe.sphere.su2_spin_rotation.polarized_bosons_${name}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py su2rotation
+                $<TARGET_FILE:${fsb}> $<TARGET_FILE:FQHEOnSphere_FQHESphereWithSU2SpinRotation> ${n} ${two_s} ${angle}
+                ${DIAGHAM_TEST_WORK}/physics.fqhe.sphere.su2_spin_rotation.polarized_bosons_${name} ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(physics.fqhe.sphere.su2_spin_rotation.polarized_bosons_${name} PROPERTIES
+            LABELS "physics;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()
+
+set(kh HubbardModels_HubbardKitaevHeisenbergModel)
+foreach(case "hubbard_ring_n4_u2|hex|-p;4;--isotropic-t;1;--anisotropic-t;0;--j1;0;--j2;0;--u-potential;2|fermions_kitaev_heisenberg_hex_n_4_*.dat"
+             "spin_j1_0.3_j2_0.5|hexg|-p;6;--gutzwiller;--isotropic-t;0;--anisotropic-t;0;--j1;0.3;--j2;0.5|fermions_kitaev_heisenberg_gutzwiller_hexg_n_6_*.dat")
+    string(REPLACE "|" ";" c "${case}")
+    list(GET c 0 name)
+    list(GET c 1 geo)
+    list(LENGTH c len)
+    math(EXPR last "${len} - 1")
+    list(GET c ${last} output)
+    list(SUBLIST c 2 -1 args)
+    list(REMOVE_AT args -1)
+    set(common ${args} --geometry-file ${ct_data}/kh_hexagon.dat --geometry-name ${geo} --full-diag 5000)
+    if(DIAGHAM_USE_LAPACK)
+        diagham_physics_test(physics.hubbard.kitaev_heisenberg.hexagon_${name}
+            PROGRAM ${kh}
+            ARGS ${common} --use-lapack
+            OUTPUT "${output}"
+            CHECK spectrum @OUTPUT@ -1 ${ct_data}/kh_${name}_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+            LABELS fti hubbard)
+    else()
+        # U46: the built-in full diagonalisation moves degenerate eigenvalues of this spectrum by up to 3.5e-9
+        diagham_physics_test(openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_${name}
+            PROGRAM ${kh}
+            ARGS ${common}
+            OUTPUT "${output}"
+            CHECK spectrum @OUTPUT@ -1 ${ct_data}/kh_${name}_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+            WILL_FAIL LABELS fti hubbard open-finding)
+    endif()
+endforeach()

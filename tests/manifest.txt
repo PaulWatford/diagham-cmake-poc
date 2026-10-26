@@ -16,6 +16,8 @@ openfinding.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
 openfinding.fti.hopf3d.segfault_after_band_file
 openfinding.fti.simple_ti3d.export_onebodytext_kz0_slice_only
+openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_hubbard_ring_n4_u2
+openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_spin_j1_0.3_j2_0.5
 openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector
 openfinding.haah_code.ground_state_array_2_pow_nterms.4x4x4_region_2x2x2
 openfinding.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
@@ -207,6 +209,12 @@ physics.fqhe.sphere.laughlin_1_3.pes_laughlin_n6_2s15_na3_all
 physics.fqhe.sphere.laughlin_1_3.three_quasihole_count
 physics.fqhe.sphere.laughlin_1_3.two_quasihole_count
 physics.fqhe.sphere.laughlin_1_3.unique_zero_mode
+physics.fqhe.sphere.su2_spin_rotation.polarized_bosons_n3_2s4_angle0.3
+physics.fqhe.sphere.su2_spin_rotation.polarized_bosons_n3_2s4_angle0.5
+physics.fqhe.sphere.su2_spin_rotation.polarized_bosons_n4_2s6_angle0.25
+physics.fqhe.sphere.unnormalize_state.laughlin_bosons_n3
+physics.fqhe.sphere.unnormalize_state.laughlin_bosons_n4
+physics.fqhe.sphere.unnormalize_state.laughlin_bosons_n5
 physics.fqhe.torus.bosons_laughlin_1_2.one_quasihole_count
 physics.fqhe.torus.bosons_laughlin_1_2.twofold_degeneracy
 physics.fqhe.torus.bosons_laughlin_1_2.twofold_degeneracy_n5

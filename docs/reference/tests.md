@@ -427,6 +427,16 @@ On 26 October 2026 three more programs, core under every weighting of the core-p
   One finding, the same on a pristine autotools build:
   - **U46:** the built-in full diagonalisation drops Householder remainders below 1e-7 in norm, so a saved eigenvector can be wrong at about 1e-8. For the bosonic Laughlin state the entropies are off by 3e-10; with `--use-lapack` they agree to 14 digits.
 
+Later the same day, three more:
+
+- **`FQHESphereUnnormalizeState`** (3 tests, N = 3, 4, 5). The bosonic Laughlin state is the polynomial prod (z_i - z_j)^2, whose monomial coefficients are exact integers. Normalised by the program, they must give an exact zero mode of the V0 Hamiltonian built by `tests/oracles/sphere_ed.py` (|H v| about 1e-15); and the numpy zero mode, unnormalised by the program, must be proportional to the integers (to about 1e-15). Neither check assumes the program's normalisation conventions.
+- **`FQHESphereWithSU2SpinRotation`** (3 tests). A fully polarised state rotated about y, against its exact image: each boson's spin turns independently. Agreement 6e-17. The program rotates by exp(+i t S_y), the active rotation by -t; that sense is the one convention taken from it (the help text does not state it).
+- **`HubbardKitaevHeisenbergModel`** (2 tests in builds with LAPACK, 2 `open-finding` tests without). On the single hexagon of its wiki page: the Hubbard ring (t, U, no projection) against `tests/oracles/lattice_fermions.py`, and the half-filled Gutzwiller spin model (J1, J2) against `tests/oracles/spin_models.py`. With `--use-lapack` both agree to about 1e-13. The anisotropic hopping t' is not covered.
+
+  Two findings, both the same on a pristine autotools build:
+  - **U46** also moves eigenvalues inside a degenerate level, by up to 3.5e-9 here, so these cases are physics tests only with LAPACK.
+  - **U47:** `--j1` and `--j2` multiply Pauli matrices, four times the S.S written on the wiki page.
+
 ### Regression spectra (`-L regression`)
 
 12 tests, `regression.*`, one per module directory that has no physics
@@ -515,7 +525,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Twenty-one `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: one case; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Twenty-three `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

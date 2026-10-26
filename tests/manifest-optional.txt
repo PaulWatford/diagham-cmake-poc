@@ -11,7 +11,11 @@ physics.entanglement.spin_chain.bell_pair_two_levels_one_half
 physics.entanglement.spin_chain.product_state_entropy_zero
 physics.entanglement.spin_chain.product_state_one_level
 physics.entanglement.haah_code.2x2x2_region_1x1x1
-# registered only WITHOUT LAPACK (open findings U40 and U42 that the LAPACK build does not reach)
+physics.hubbard.kitaev_heisenberg.hexagon_hubbard_ring_n4_u2
+physics.hubbard.kitaev_heisenberg.hexagon_spin_j1_0.3_j2_0.5
+# registered only WITHOUT LAPACK (open findings U40, U42 and U46 that the LAPACK build does not reach)
+openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_hubbard_ring_n4_u2
+openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_spin_j1_0.3_j2_0.5
 openfinding.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
 openfinding.spin_chain_entanglement.use_svd_ungated.bell_pair_entropy_ln2
 openfinding.spin_chain_entanglement.use_svd_ungated.product_state_entropy_zero

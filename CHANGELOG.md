@@ -14,6 +14,14 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- First independent tests for three more programs that are core under every weighting:
+  `FQHESphereUnnormalizeState` (the Laughlin polynomial's exact integer coefficients,
+  both directions, checked as an exact zero mode of V0), `FQHESphereWithSU2SpinRotation`
+  (a polarised state against its exact rotated image) and `HubbardKitaevHeisenbergModel`
+  (the wiki's hexagon: Hubbard ring and half-filled spin model; physics tests with
+  LAPACK, `open-finding` tests without). U46 extended: degenerate eigenvalues move too
+  (3.5e-9 here). New documentation finding U47: the program's J1 and J2 multiply Pauli
+  matrices, four times the S.S of its wiki page.
 - First independent tests for three programs that are core under every weighting of
   the core-program assessment (`tests/oracles/core_tools.py`, 10 physics tests and a
   self-test): `GenericHamiltonianDiagonalization` against numpy on real, complex and

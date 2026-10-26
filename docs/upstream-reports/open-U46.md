@@ -1,4 +1,4 @@
-# Open finding U46: the built-in full diagonalisation skips Householder steps below 1e-7, so saved eigenvectors can be wrong at about 1e-8
+# Open finding U46: the built-in full diagonalisation skips Householder steps below 1e-7, so eigenvectors (and degenerate eigenvalues) can be wrong at about 1e-8
 
 Purpose: reproducer for the DiagHam authors; no fix is carried here.
 Source: `docs/reference/open-findings.md` (U46), found 2026-10-26 while writing the entanglement tests; r4493 sources, GCC 15. The program's output files are byte-identical on a pristine autotools build of r4493.
@@ -18,6 +18,8 @@ The Lz = 0 ground state is the bosonic Laughlin state, unique (gap 1.59) at ener
 
 The error is visible downstream. In an L = 0 state of 4 bosons in 7 orbitals, the pole orbital is occupied with probability exactly 4/7, so the reduced density matrix of the first orbital has eigenvalues 3/7 and 4/7. `FQHESphereBosonEntanglementEntropy` on the saved vector gives 0.42857142857601 instead of 0.428571428571429, and its entropies are off by up to 3e-10. On the vector from `--use-lapack` it agrees to the 14 printed digits.
 
+Eigenvalues inside a degenerate level are affected too, at first order. `HubbardKitaevHeisenbergModel` on a single hexagon (the Hubbard ring, t = 1, U = 2, 4 electrons, 495 states, `--full-diag 5000`) has six eigenvalues of the level at E = 2 off by up to 3.5e-9 against an independent exact diagonalisation; with `--use-lapack` the largest difference is 8.7e-14, and with the floor lowered 6.4e-14. Its half-filled Gutzwiller spin model is off by 2.3e-9 in the same way. Both outputs are byte-identical on a pristine autotools build.
+
 How often it happens depends on the matrix. Of five small sphere cases checked, two were affected: the Laughlin case above (1.2e-8), and two-body pseudopotentials V0 = 1, V2 = 0.5 with N = 4, 2S = 6 (1.6e-13). The other three were at 1e-14.
 
 ## Fix direction
@@ -26,4 +28,4 @@ In `Householder` (both overloads), compare the squared norm with `err * err` flo
 
 ## Consequence for the tests
 
-`openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector` (WILL_FAIL) computes the Laughlin state with the built-in full diagonalisation and compares its entanglement with the exact answer at the agreed tolerance. It fails today by 3e-10. When the finding is fixed it passes, and becomes a physics test. The physics tests of `FQHESphereBosonEntanglementEntropy` use states whose saved vectors are accurate (residuals of 1e-14).
+Three `open-finding` tests (WILL_FAIL), all registered in builds without LAPACK or in every build: `openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector` computes the Laughlin state with the built-in full diagonalisation and compares its entanglement with the exact answer at the agreed tolerance. It fails today by 3e-10. `openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_*` compare the two hexagon spectra above with the exact ones at the agreed tolerance; in builds with LAPACK the same cases are physics tests run with `--use-lapack`. When the finding is fixed they pass, and become physics tests. The physics tests of `FQHESphereBosonEntanglementEntropy` use states whose saved vectors are accurate (residuals of 1e-14).

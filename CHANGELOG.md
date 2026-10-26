@@ -14,6 +14,9 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `FTIEntanglementEntropyParticlePartition`: first independent tests (4), against the
+  particle-partition reduced density matrix of oracle-written complex states, including
+  a three-state degenerate ground state.
 - `FTIGenericInteractionFromFileTwoBands`: first independent tests
   (`tests/oracles/fti_generic.py`, 4 physics tests and a self-test), a generic
   two-band interaction against an exact diagonalisation, sector by sector. New

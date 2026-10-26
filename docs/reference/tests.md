@@ -443,6 +443,7 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
 
   One finding, the same on a pristine autotools build:
   - **U48:** without `--3band-convention` the interaction file's band labels act on the opposite bands of the one-body file (the default Hilbert space uses bit 2k + 1 - m for two-body operators and 2k + m for one-body ones).
+- **`FTIEntanglementEntropyParticlePartition`** (4 tests). Fermion states with generic complex amplitudes, written in `FTIShowBasis` order, against the particle-partition reduced density matrix built from scratch, block by block in N_A and the momentum of A (`tests/oracles/core_tools.py`): entropies and every eigenvalue, about 2e-14. One case is a three-state `--degenerated-groundstate` mixture. The program always reads complex vectors; a real vector file is read without complaint as half as many complex numbers, so the oracle writes complex ones.
 
 ### Regression spectra (`-L regression`)
 

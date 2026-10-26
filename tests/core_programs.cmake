@@ -298,3 +298,21 @@ if(Python3_Interpreter_FOUND)
         COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fti_generic.py --check ${fg_data})
     set_tests_properties(selftest.fti_generic_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
 endif()
+
+# Overnight run, program 2: FTIEntanglementEntropyParticlePartition (core under every weighting). Complex states with
+# generic amplitudes, written in FTIShowBasis order, against the particle-partition reduced density matrix built
+# from scratch (tests/oracles/core_tools.py); one case is a three-state --degenerated-groundstate mixture.
+if(Python3_Interpreter_FOUND AND TARGET FTI_FTIShowBasis AND TARGET FTI_FTIEntanglementEntropyParticlePartition)
+    foreach(case "n3_x3_y3_k1_2|3;3;3;1,2" "n4_x3_y3_k0_1|4;3;3;0,1" "n4_x4_y2_k1_1|4;4;2;1,1" "n3_x3_y3_three_sector_mixture|3;3;3;1,2;2,1;0,0")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 args)
+        set(tname physics.fti.particle_entanglement.fermions_${name})
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/core_tools.py ftientanglement
+                $<TARGET_FILE:FTI_FTIShowBasis> $<TARGET_FILE:FTI_FTIEntanglementEntropyParticlePartition>
+                ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fti;entanglement" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()

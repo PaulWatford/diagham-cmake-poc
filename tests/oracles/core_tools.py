@@ -45,6 +45,13 @@ test time, so no DiagHam diagonalisation enters: core_tools.py unnormalize|su2ro
   bond of type a, built by tests/oracles/spin_models.py. The couplings multiply Pauli matrices (4 S.S), not the
   S.S of the wiki's formula (U47); that factor is taken from the program, everything else is independent. The
   anisotropic hopping t' is not covered.
+- FTIEntanglementEntropyParticlePartition: the particle-partition entanglement of momentum-space fermion states
+  (one band). The input states are written here, with generic complex amplitudes, in DiagHam's basis order read
+  from FTIShowBasis at test time (the program always reads complex vectors). For N_A particles the reduced density
+  matrix is rho_A = Tr_B |psi><psi| / C(N, N_A), block by block in (N_A, total momentum of A), with the fermion sign
+  of splitting the occupied set; with --degenerated-groundstate it is the equal-weight average over the states.
+  Entropies (natural logarithm) and every eigenvalue are compared. Run as: core_tools.py ftientanglement
+  SHOWBASIS PROGRAM WORK_DIR TOLERANCE N NX NY KX,KY [KX,KY ...]  (several sectors = a degenerate ground state).
 """
 import argparse, math, sys
 from pathlib import Path
@@ -447,7 +454,113 @@ def run_su2rotation(argv):
     return 0
 
 
+def write_cvec(path, values):
+    """DiagHam's binary complex vector: a 4-byte dimension, then (real, imaginary) little-endian doubles."""
+    import struct
+    with open(path, "wb") as f:
+        f.write(struct.pack("<i", len(values)))
+        for z in values:
+            f.write(struct.pack("<dd", z.real, z.imag))
+
+
+def particle_partition(states_amps, n, nx, ny):
+    """{N_A: {K_A: sorted eigenvalues}} of the averaged particle-partition reduced density matrix."""
+    import itertools
+    import numpy as np
+    order = {(x, y): x * ny + y for x in range(nx) for y in range(ny)}
+    res = {}
+    for na in range(1, n):
+        rho = {}
+        for states, amp in states_amps:
+            blocks = {}
+            for s, a in zip(states, amp):
+                for A in itertools.combinations(s, na):
+                    Bp = tuple(m for m in s if m not in A)
+                    sign = (-1) ** sum(1 for x in A for y in Bp if order[y] < order[x])
+                    kA = (sum(m[0] for m in A) % nx, sum(m[1] for m in A) % ny)
+                    blocks.setdefault(kA, {}).setdefault(Bp, {})[A] = sign * a
+            for kA, byB in blocks.items():
+                r = rho.setdefault(kA, {})
+                for d in byB.values():
+                    for A1, v1 in d.items():
+                        for A2, v2 in d.items():
+                            r[(A1, A2)] = r.get((A1, A2), 0) + v1 * np.conj(v2) / (math.comb(n, na) * len(states_amps))
+        lam = {}
+        for kA, r in rho.items():
+            rows = sorted({A for A, _ in r})
+            idx = {A: i for i, A in enumerate(rows)}
+            m = np.zeros((len(rows), len(rows)), dtype=complex)
+            for (A1, A2), v in r.items():
+                m[idx[A1], idx[A2]] += v
+            lam[kA] = sorted(float(x) for x in np.linalg.eigvalsh(m) if x > 1e-14)
+        res[na] = lam
+    return res
+
+
+def run_ftientanglement(argv):
+    import os, glob, subprocess
+    import numpy as np
+    showbasis, prog, work, tol = os.path.abspath(argv[0]), os.path.abspath(argv[1]), os.path.abspath(argv[2]), argv[3]
+    n, nx, ny = int(argv[4]), int(argv[5]), int(argv[6])
+    sectors = [tuple(int(v) for v in s.split(",")) for s in argv[7:]]
+    rel = float(tol.split(":", 1)[1]) if tol.startswith("rel:") else float(tol)
+    os.makedirs(work, exist_ok=True)
+    for f in glob.glob(os.path.join(work, "*")):
+        os.remove(f)
+    states_amps, names = [], []
+    for j, (kx, ky) in enumerate(sectors):
+        out = subprocess.run([showbasis, "-p", str(n), "-x", str(nx), "-y", str(ny), "--kx", str(kx), "--ky", str(ky)],
+                             capture_output=True, text=True, timeout=120).stdout
+        states = [tuple(sorted((o[0], o[1]) for o in s)) for s in parse_ftishowbasis(out)]
+        amp = np.array([complex(math.cos(0.9 * i + 0.3 + j), 0.6 * math.sin(1.7 * i + 0.2 - j)) for i in range(len(states))])
+        amp /= np.linalg.norm(amp)
+        name = f"fermions_singleband_oracle_n_{n}_x_{nx}_y_{ny}_kx_{kx}_ky_{ky}.0.vec"
+        write_cvec(Path(work) / name, list(amp))
+        states_amps.append((states, amp))
+        names.append(name)
+    if len(names) == 1:
+        cmd = [prog, names[0], "--density-matrix", "dm.full.parent"]
+    else:
+        Path(work, "ground.dat").write_text("\n".join(names) + "\n")
+        cmd = [prog, "--degenerated-groundstate", "ground.dat", "--density-matrix", "dm.full.parent"]
+    r = subprocess.run(cmd, cwd=work, capture_output=True, text=True, timeout=600)
+    ents = glob.glob(os.path.join(work, "*.partent"))
+    if r.returncode != 0 or len(ents) != 1 or not os.path.exists(os.path.join(work, "dm.full.parent")):
+        print(r.stdout[-1500:], r.stderr[-1500:]); print(f"program exit {r.returncode}, {ents}"); return 1
+    ent = {int(l.split()[0]): float(l.split()[1]) for l in open(ents[0]) if l.strip() and not l.startswith("#")}
+    got = {}
+    for l in open(os.path.join(work, "dm.full.parent")):
+        w = l.split()
+        if w and not l.startswith("#") and float(w[3]) > 1e-12:
+            got.setdefault(int(w[0]), {}).setdefault((int(w[1]), int(w[2])), []).append(float(w[3]))
+    ref = particle_partition(states_amps, n, nx, ny)
+    problems, worst = [], 0.0
+    if not ent:
+        problems.append("no entropy written")
+    for na in ent:
+        S = -sum(x * math.log(x) for v in ref[na].values() for x in v)
+        d = abs(S - ent[na]) / max(abs(S), 1.0)
+        worst = max(worst, d)
+        if d > rel:
+            problems.append(f"N_A = {na}: entropy {ent[na]!r}, expected {S!r}")
+        for kA in set(ref[na]) | set(got.get(na, {})):
+            g, w = sorted(got.get(na, {}).get(kA, [])), [x for x in ref[na].get(kA, []) if x > 1e-12]
+            if len(g) != len(w):
+                problems.append(f"N_A = {na}, K_A = {kA}: {len(g)} non-zero eigenvalues, expected {len(w)}")
+                continue
+            for x, y in zip(g, w):
+                worst = max(worst, abs(x - y))
+                if abs(x - y) > rel:
+                    problems.append(f"N_A = {na}, K_A = {kA}: eigenvalue {x!r}, expected {y!r}")
+    print(f"N = {n}, {nx} x {ny}, sectors {sectors}: N_A = {sorted(ent)}, largest deviation {worst:.1e} (allowed {rel:g})")
+    for p_ in problems[:10]:
+        print("  " + p_)
+    return 1 if problems else 0
+
+
 def main():
+    if len(sys.argv) > 2 and sys.argv[1] == "ftientanglement":
+        sys.exit(run_ftientanglement(sys.argv[2:]))
     if len(sys.argv) > 2 and sys.argv[1] == "unnormalize":
         sys.exit(run_unnormalize(sys.argv[2:]))
     if len(sys.argv) > 2 and sys.argv[1] == "su2rotation":

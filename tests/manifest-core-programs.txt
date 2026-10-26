@@ -211,6 +211,7 @@ selftest.haah_oracle
 selftest.hofstadter_oracle
 selftest.lattice_fermions_oracle
 selftest.manifest
+selftest.mps_laughlin_oracle
 selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle
 selftest.sphere_l2_oracle

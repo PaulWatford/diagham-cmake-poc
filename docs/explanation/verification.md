@@ -7,12 +7,12 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 
 | Level | Tests | What a pass means | What it does not mean |
 |---|---:|---|---|
-| **Physics golden** (`physics`) | 303 (+10 with GSL, +10 with LAPACK) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
+| **Physics golden** (`physics`) | 309 (+10 with GSL, +10 with LAPACK) | the program reproduced a number known *without* DiagHam: exact counting, a closed form, or an independent solver in this repository | nothing about options or regimes the golden does not exercise |
 | **Cross-check** (`crosscheck`) | 3 (+1 with LAPACK) | two DiagHam implementations, or two algorithms (Lanczos vs full diagonalisation, LAPACK vs internal), agree | both could be wrong the same way |
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 30 self-tests of the harness (the manifest, twenty oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 28 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 31 self-tests of the harness (the manifest, twenty-one oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 29 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
 
 ## Programs, by module
 

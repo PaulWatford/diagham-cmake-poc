@@ -455,3 +455,31 @@ if(Python3_Interpreter_FOUND AND TARGET Spin_GenericSpinChainShowBasis AND TARGE
         set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;spin" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endif()
 endif()
+
+# Overnight run, program 7: FQHESphereMPSCreateState (review tier) with the Laughlin MPS, against the exact integer
+# expansion of prod (z_i - z_j)^m (tests/oracles/mps_laughlin.py), in the monomial basis and, with -n, in the
+# normalised sphere basis. Bosons need --boson-truncation N and a P truncation that reaches the whole squeezed space.
+# U53: with fermions (no --boson) the Laughlin matrix constructor calls ComputeSiteDependentMatrices, which exits 0
+# for the fermionic convention, so no state is written.
+set(ml ${CMAKE_CURRENT_SOURCE_DIR}/oracles/mps_laughlin.py)
+if(Python3_Interpreter_FOUND)
+    add_test(NAME selftest.mps_laughlin_oracle COMMAND ${Python3_EXECUTABLE} ${ml} --check)
+    set_tests_properties(selftest.mps_laughlin_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
+endif()
+if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereMPSCreateState)
+    foreach(case "boson_laughlin_m2_n5|5;2;6" "boson_laughlin_m2_n6|6;2;9" "boson_laughlin_m4_n4|4;4;8" "boson_laughlin_m6_n3|3;6;8"
+                 "normalized_sphere.boson_laughlin_m2_n5|5;2;6;sphere" "normalized_sphere.boson_laughlin_m4_n4|4;4;8;sphere")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 args)
+        set(tname physics.fqhe.sphere.mps_create_state.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${ml} run $<TARGET_FILE:FQHEOnSphere_FQHESphereMPSCreateState>
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;sphere;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+    set(tname openfinding.fqhe.sphere.mps_create_state.fermion_laughlin_exits_without_state.m3_n4)
+    add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${ml} run $<TARGET_FILE:FQHEOnSphere_FQHESphereMPSCreateState>
+        ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} 4 3 8 fermion)
+    set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;sphere;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+endif()

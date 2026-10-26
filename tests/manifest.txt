@@ -15,6 +15,7 @@ openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 openfinding.fqhe.disk.realspace_partition_coefficients_zero_without_gsl.disk_2s10_radius2.5
 openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
+openfinding.fqhe.sphere.mps_create_state.fermion_laughlin_exits_without_state.m3_n4
 openfinding.fqhe.sphere.quasiholes_time_reversal_pairing.default_memory_crash
 openfinding.fqhe.sphere.realspace_partition_coefficients_zero_without_gsl.sphere_2s15_hemisphere
 openfinding.fti.hopf3d.segfault_after_band_file
@@ -222,6 +223,12 @@ physics.fqhe.sphere.laughlin_1_3.pes_laughlin_n6_2s15_na3_all
 physics.fqhe.sphere.laughlin_1_3.three_quasihole_count
 physics.fqhe.sphere.laughlin_1_3.two_quasihole_count
 physics.fqhe.sphere.laughlin_1_3.unique_zero_mode
+physics.fqhe.sphere.mps_create_state.boson_laughlin_m2_n5
+physics.fqhe.sphere.mps_create_state.boson_laughlin_m2_n6
+physics.fqhe.sphere.mps_create_state.boson_laughlin_m4_n4
+physics.fqhe.sphere.mps_create_state.boson_laughlin_m6_n3
+physics.fqhe.sphere.mps_create_state.normalized_sphere.boson_laughlin_m2_n5
+physics.fqhe.sphere.mps_create_state.normalized_sphere.boson_laughlin_m4_n4
 physics.fqhe.sphere.quasihole_matrix_elements.laughlin_1_3_nphi_6
 physics.fqhe.sphere.quasihole_matrix_elements.laughlin_1_3_nphi_8
 physics.fqhe.sphere.quasiholes_time_reversal_pairing.fixed_n2_2s6_sz0
@@ -365,6 +372,7 @@ selftest.haah_oracle
 selftest.hofstadter_oracle
 selftest.lattice_fermions_oracle
 selftest.manifest
+selftest.mps_laughlin_oracle
 selftest.runner.rejects_missing_output
 selftest.sphere_ed_oracle
 selftest.sphere_l2_oracle

@@ -459,6 +459,10 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   Two findings:
   - **U51:** without LAPACK `SpinChainMultipleEntanglementSpectra` segfaults on every input (the SVD returns a null pointer). The same on a pristine autotools build.
   - **U52:** `SpinChainComputeS2 --degenerate-states` uses only the first state when the file name carries no momentum.
+- **`FQHESphereMPSCreateState`** with the Laughlin MPS (6 tests and 1 `open-finding` test), against the exact integer expansion of prod (z_i - z_j)^m in `tests/oracles/mps_laughlin.py` (its self-test `selftest.mps_laughlin_oracle` evaluates the expansion against the product at random points). Bosonic Laughlin states m = 2, 4 and 6, 3 to 6 particles: every coefficient of the monomial basis matches exactly (largest deviation 1e-13, on a coefficient that should be 0), and with `-n` the normalised sphere state matches to 5e-15. The runs need `--boson-truncation N` (the default 1 keeps only partitions with distinct parts) and a P truncation that reaches the whole squeezed space; a smaller one leaves coefficients out and the test fails.
+
+  One finding:
+  - **U53:** with fermions (no `--boson`) the Laughlin MPS constructor exits 0 before computing anything, in every MPS program that builds it. The same on a pristine autotools build.
 
 ### Regression spectra (`-L regression`)
 
@@ -548,7 +552,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Twenty-eight `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Twenty-nine `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

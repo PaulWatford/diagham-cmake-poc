@@ -68,10 +68,10 @@ LC_ALL=C python3 tests/coverage.py build/core-programs-portable --manifest tests
 
 | Build | Time | Programs | Tests |
 |---|---|---|---|
-| `core-programs-portable` | 50 s | 42 | 266 |
-| `core-programs` | 48 s | 42 | 272 |
+| `core-programs-portable` | 50 s | 42 | 268 |
+| `core-programs` | 48 s | 42 | 277 |
 | custom, two programs | 45 s | 2 | 50 |
-| `default`, every program | 60 s | 603 | 1013 |
+| `default`, every program | 60 s | 603 | 1018 |
 
 The shared libraries take most of the build time, so the gain is mainly a smaller install and a shorter test
 run.

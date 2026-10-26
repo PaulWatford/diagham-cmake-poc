@@ -13,6 +13,7 @@ openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
+openfinding.full_diagonalisation.householder_cutoff.hubbard_square_n3_3x3_sz1_u1.7_tp-0.45
 physics.FCI_FCIHaldaneModel.bands.haldane_3x3.band0
 physics.FCI_FCIHaldaneModel.bands.haldane_3x3.band1
 physics.FCI_FCIHaldaneModel.bands.haldane_4x3_t2_0.4_phi_0.9_mus_0.3.band0
@@ -163,6 +164,7 @@ physics.hubbard.ed.haldane_3x3_n2_u0
 physics.hubbard.ed.haldane_3x3_n2_u2
 physics.hubbard.ed.haldane_3x3_n2_u2_mus0.1
 physics.hubbard.ed.square_2x3_n6_u2
+physics.hubbard.square_lattice.free.n3_3x3_sz1_t0.9_tp-0.45
 physics.spin.ed.heisenberg2d_3x3_jz0.7
 physics.spin.ed.j1j2_L8_sz0_k0
 physics.spin.ed.j1j2_L8_sz0_k1

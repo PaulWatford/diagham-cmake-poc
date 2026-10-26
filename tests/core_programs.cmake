@@ -683,3 +683,56 @@ if(Python3_Interpreter_FOUND AND TARGET HubbardModels_HubbardShowBasis AND TARGE
         endif()
     endforeach()
 endif()
+
+# Overnight run, program 14: HubbardSquareLatticeModel (optional tier), against real-space exact diagonalisation on
+# the torus projected on every momentum sector (tests/oracles/hubbard_square.py). The interacting cases run with
+# --use-lapack in the LAPACK builds: the built-in full diagonalisation is off by up to 4e-8 inside degenerate levels
+# (U46, here through HermitianMatrix::Diagonalize); without LAPACK one such case is an open-finding test. The free case
+# (U = 0) agrees in every build.
+set(hsq ${CMAKE_CURRENT_SOURCE_DIR}/oracles/hubbard_square.py)
+if(Python3_Interpreter_FOUND AND TARGET HubbardModels_HubbardSquareLatticeModel)
+    set(hsq_cases "physics|free.n3_3x3_sz1_t0.9_tp-0.45|3,3,3,1,0,0.9,-0.45")
+    if(DIAGHAM_USE_LAPACK)
+        list(APPEND hsq_cases
+            "physics|n4_3x2_sz0_u2.5_t1.1_tp0.35|3,2,4,0,2.5,1.1,0.35,none,--use-lapack"
+            "physics|n4_2x3_sz0_u1.7_t0.9_tp-0.45|2,3,4,0,1.7,0.9,-0.45,none,--use-lapack"
+            "physics|n3_3x4_sz1_u1.7_t0.9_tp-0.45|3,4,3,1,1.7,0.9,-0.45,none,--use-lapack"
+            "physics|gutzwiller.n4_3x3_sz0_t1_tp0.3|3,3,4,0,0,1.0,0.3,gutzwiller,--use-lapack")
+    else()
+        list(APPEND hsq_cases "openfinding|householder_cutoff.hubbard_square_n3_3x3_sz1_u1.7_tp-0.45|3,3,3,1,1.7,0,-0.45")
+    endif()
+    foreach(case ${hsq_cases})
+        string(REPLACE "|" ";" e "${case}")
+        list(GET e 0 kind)
+        list(GET e 1 name)
+        list(GET e 2 args)
+        string(REPLACE "," ";" args "${args}")
+        if(kind STREQUAL "openfinding")
+            set(tname openfinding.full_diagonalisation.${name})
+            set(lab "open-finding;python;hubbard")
+            set(wf TRUE)
+        else()
+            set(tname physics.hubbard.square_lattice.${name})
+            set(lab "physics;python;hubbard")
+            set(wf FALSE)
+        endif()
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${hsq} run $<TARGET_FILE:HubbardModels_HubbardSquareLatticeModel>
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        set_tests_properties(${tname} PROPERTIES WILL_FAIL ${wf} LABELS "${lab}" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+    # FTIMinNbrSingletProjection (review tier) on the program's own eigenstates (2D-translation basis): the weight on the
+    # configurations with at least MIN on-site singlets does not depend on the basis.
+    if(TARGET FTI_FTIMinNbrSingletProjection)
+        foreach(case "hubbard_3x2_n4_kx1_ky0_min1|1;0;4;1" "hubbard_3x2_n4_kx0_ky0_min2|0;0;4;2" "hubbard_3x2_n4_kx0_ky1_min1|0;1;4;1")
+            string(FIND "${case}" "|" bar)
+            string(SUBSTRING "${case}" 0 ${bar} name)
+            math(EXPR bar "${bar} + 1")
+            string(SUBSTRING "${case}" ${bar} -1 args)
+            set(tname physics.fti.min_nbr_singlet_projection.${name})
+            add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${hsq} singlets $<TARGET_FILE:HubbardModels_HubbardSquareLatticeModel>
+                $<TARGET_FILE:FTI_FTIMinNbrSingletProjection> ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE}
+                3 2 4 0 2.5 1.1 0.35 ${args})
+            set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fti;hubbard" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        endforeach()
+    endif()
+endif()

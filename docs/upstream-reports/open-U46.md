@@ -22,6 +22,8 @@ Eigenvalues inside a degenerate level are affected too, at first order. `Hubbard
 
 How often it happens depends on the matrix. Of five small sphere cases checked, two were affected: the Laughlin case above (1.2e-8), and two-body pseudopotentials V0 = 1, V2 = 0.5 with N = 4, 2S = 6 (1.6e-13). The other three were at 1e-14.
 
+A further caller, found 2026-10-26 while writing its first independent tests: `HubbardSquareLatticeModel`, whose momentum sectors are complex. `GenericComplexMainTask` uses `HermitianMatrix::Diagonalize` without `--use-lapack`, and that converts the matrix to a real symmetric one of twice the size and calls `RealSymmetricMatrix::Diagonalize`, so the same floor applies. On a 3 x 3 lattice (3 fermions, 2Sz = 1, U = 1.7, t' = -0.45, t = 0) one level of the zero-energy cluster in the (1, 2) sector comes out at -4.35e-8; across 3 x 3, 2 x 3, 3 x 4 and Gutzwiller cases the largest differences are 2e-8 to 4e-8, all inside degenerate levels. With `--use-lapack` every case agrees to 4e-14 (`tests/oracles/hubbard_square.py`). `openfinding.full_diagonalisation.householder_cutoff.hubbard_square_n3_3x3_sz1_u1.7_tp-0.45` (WILL_FAIL, builds without LAPACK) documents it; in builds with LAPACK the interacting cases are physics tests run with `--use-lapack`.
+
 ## Fix direction
 
 In `Householder` (both overloads), compare the squared norm with `err * err` floored at the square of a machine-precision value, not at `MACHINE_PRECISION` itself, and pass a much smaller `err` from `GenericRealMainTask` (and from any other caller that keeps eigenvectors). Alternatively, use LAPACK for full diagonalisation whenever it is available.

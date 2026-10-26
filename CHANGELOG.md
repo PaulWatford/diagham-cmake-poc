@@ -14,6 +14,11 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `FQHESphereQuasiholeMatrixElements` and
+  `FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing`: first independent tests
+  (`tests/oracles/quasiholes_trs.py`, Laughlin 1/3 quasihole spaces as V1 zero modes;
+  5 physics tests). New finding U49: the pairing program crashes (SIGFPE) after its
+  first sector with fast multiplication; `--memory 0` avoids it.
 - `FTIEntanglementEntropyParticlePartition`: first independent tests (4), against the
   particle-partition reduced density matrix of oracle-written complex states, including
   a three-state degenerate ground state.

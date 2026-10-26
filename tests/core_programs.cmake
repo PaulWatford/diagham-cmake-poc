@@ -316,3 +316,35 @@ if(Python3_Interpreter_FOUND AND TARGET FTI_FTIShowBasis AND TARGET FTI_FTIEntan
         set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fti;entanglement" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endforeach()
 endif()
+
+# Overnight run, program 3: FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing (core under every weighting),
+# and FQHESphereQuasiholeMatrixElements, whose output it reads. tests/oracles/quasiholes_trs.py builds the Laughlin 1/3
+# quasihole spaces as V1 zero modes and compares basis-free invariants of the matrix elements, then every Lz sector of
+# the two-layer problem (potentials, pairing, charging energy). U49: with the default --memory the pairing program
+# crashes after the first sector that uses fast multiplication, so the physics tests run with --memory 0.
+set(qh_prog FQHEOnSphere_FQHESphereQuasiholeMatrixElements)
+set(qh_pair FQHEOnSphere_FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing)
+if(Python3_Interpreter_FOUND AND TARGET ${qh_prog})
+    foreach(nphi 6 8)
+        set(tname physics.fqhe.sphere.quasihole_matrix_elements.laughlin_1_3_nphi_${nphi})
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/quasiholes_trs.py matrixelements
+                $<TARGET_FILE:${qh_prog}> ${nphi} ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+    if(TARGET ${qh_pair})
+        foreach(case pairing_2s6_sz0 pairing_2s5_sz1 fixed_n2_2s6_sz0)
+            set(tname physics.fqhe.sphere.quasiholes_time_reversal_pairing.${case})
+            add_test(NAME ${tname}
+                COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/quasiholes_trs.py pairing
+                    $<TARGET_FILE:${qh_prog}> $<TARGET_FILE:${qh_pair}> ${case} ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE})
+            set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        endforeach()
+        set(tname openfinding.fqhe.sphere.quasiholes_time_reversal_pairing.default_memory_crash)
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/quasiholes_trs.py pairing
+                $<TARGET_FILE:${qh_prog}> $<TARGET_FILE:${qh_pair}> pairing_2s6_sz0_default_memory ${DIAGHAM_TEST_WORK}/${tname}
+                ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;sphere" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endif()
+endif()

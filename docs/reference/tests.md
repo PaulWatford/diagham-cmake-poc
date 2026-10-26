@@ -444,6 +444,10 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   One finding, the same on a pristine autotools build:
   - **U48:** without `--3band-convention` the interaction file's band labels act on the opposite bands of the one-body file (the default Hilbert space uses bit 2k + 1 - m for two-body operators and 2k + m for one-body ones).
 - **`FTIEntanglementEntropyParticlePartition`** (4 tests). Fermion states with generic complex amplitudes, written in `FTIShowBasis` order, against the particle-partition reduced density matrix built from scratch, block by block in N_A and the momentum of A (`tests/oracles/core_tools.py`): entropies and every eigenvalue, about 2e-14. One case is a three-state `--degenerated-groundstate` mixture. The program always reads complex vectors; a real vector file is read without complaint as half as many complex numbers, so the oracle writes complex ones.
+- **`FQHESphereQuasiholeMatrixElements`** (2 tests, 2S = 6 and 8) and **`FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing`** (3 tests and 1 `open-finding` test), against `tests/oracles/quasiholes_trs.py`, which builds the Laughlin 1/3 quasihole spaces as V1 zero modes with `sphere_ed.py`. For the matrix elements, what does not depend on the basis: every sector dimension, the eigenvalues of every projected density, the singular values of every projected c_m, and sum_m c+_m c_m = N (true only in an orthonormal basis); about 2e-14. For the two-layer program, every Lz sector of H = sum V n + sum Delta (c+ c+ + h.c.) + Ec (N - N0)^2 in the product of the two quasihole spaces, with pairing, with 2Sz = 1, and at fixed N; about 4e-14. Its convention (Delta_m pairs up-orbital m with down-orbital m; sectors labelled by Lz_up - Lz_down) was fixed by these spectra.
+
+  One finding, the same on a pristine autotools build:
+  - **U49:** with the default `--memory` the pairing program dies with SIGFPE after its first sector that uses fast multiplication (the wiki's example included): the base Hamiltonian's destructor divides by a step this Hamiltonian leaves at 0. The physics tests use `--memory 0`.
 
 ### Regression spectra (`-L regression`)
 
@@ -533,7 +537,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Twenty-three `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Twenty-four `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

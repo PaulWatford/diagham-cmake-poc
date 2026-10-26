@@ -45,5 +45,7 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U48: FTIGenericInteractionFromFileTwoBands applies the interaction file's band labels to the opposite bands unless --3band-convention is given](open-U48.md)
 - [Open finding U49: FQHESphereQuasiholesWithSpinTimeReversalSymmetryAndPairing crashes (SIGFPE) after its first sector that uses fast multiplication](open-U49.md)
 - [Open finding U50: without GSL, the sphere and disk real-space partition programs write all-zero weights and exit 0](open-U50.md)
+- [Open finding U51: SpinChainMultipleEntanglementSpectra crashes in a build without LAPACK](open-U51.md)
+- [Open finding U52: SpinChainComputeS2 --degenerate-states uses only the first state when the file name has no momentum](open-U52.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

@@ -14,6 +14,10 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `MatrixExtractColumns`, `SpinChainComputeS2` and `SpinChainMultipleEntanglementSpectra`:
+  first independent tests (`tests/oracles/core_tools.py`, `tests/oracles/spin_tools.py`).
+  New findings U51 (the entanglement-spectra program crashes without LAPACK) and U52
+  (`--degenerate-states` uses only the first state without momentum).
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

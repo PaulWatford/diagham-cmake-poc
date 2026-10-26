@@ -24,6 +24,8 @@ openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_sp
 openfinding.full_diagonalisation.householder_cutoff.laughlin_eigenvector
 openfinding.haah_code.ground_state_array_2_pow_nterms.4x4x4_region_2x2x2
 openfinding.haah_code.householder_1x1_crash.2x2x2_region_1x1x1
+openfinding.spin.compute_s2.degenerate_states_without_momentum_first_only
+openfinding.spin.multiple_entanglement_spectra.svd_null_without_lapack.spin_1_2_n8_sz0
 openfinding.spin.tfim2d.open_boundaries_ignored
 openfinding.spin_chain_entanglement.use_svd_ungated.bell_pair_entropy_ln2
 openfinding.spin_chain_entanglement.use_svd_ungated.product_state_entropy_zero
@@ -55,6 +57,8 @@ physics.core.generic_hamiltonian_diagonalization.lanczos_sparse_600_lowest_10
 physics.core.generic_hamiltonian_diagonalization.real_dense_40
 physics.core.level_statistics.alternating_spacings_r_half
 physics.core.level_statistics.uniform_spacings_r_one
+physics.core.matrix_extract_columns.complex_6x4_all_columns
+physics.core.matrix_extract_columns.real_7x5_columns_1_to_3
 physics.core.vector_ascii2binary.bit_exact
 physics.core.vector_binary2ascii.printed_digits
 physics.dimension.disk.bosons_n3_lz6
@@ -292,6 +296,9 @@ physics.hubbard.ed.ssh_4cells_n4_delta0.3
 physics.spin.aklt_open_chain_L6.edge_state_count
 physics.spin.aklt_ring_L6
 physics.spin.aklt_ring_L8
+physics.spin.compute_s2.spin_1_2_n7_sz1
+physics.spin.compute_s2.spin_1_2_n8_sz0
+physics.spin.compute_s2.spin_1_n6_sz2
 physics.spin.ed.aklt_p3p4_spin2_L4_sz0_k0
 physics.spin.ed.aklt_p3p4_spin2_L4_sz0_k2
 physics.spin.ed.doubletriangle_L8_sz0

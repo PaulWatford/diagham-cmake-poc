@@ -18,7 +18,11 @@ physics.fqhe.sphere.realspace_partition_coefficients.sphere_2s10_theta0.3
 physics.fqhe.sphere.realspace_partition_coefficients.sphere_2s7_theta0.8
 physics.fqhe.disk.realspace_partition_coefficients.disk_2s27_radius5
 physics.fqhe.disk.realspace_partition_coefficients.disk_2s10_radius2.5
-# registered only WITHOUT LAPACK (open findings U40, U42 and U46 that the LAPACK build does not reach)
+physics.spin.multiple_entanglement_spectra.spin_1_2_n8_sz0
+physics.spin.multiple_entanglement_spectra.spin_1_2_n10_sz2
+physics.spin.multiple_entanglement_spectra.spin_1_2_n9_sz1
+# registered only WITHOUT LAPACK (open findings U40, U42, U46 and U51 that the LAPACK build does not reach)
+openfinding.spin.multiple_entanglement_spectra.svd_null_without_lapack.spin_1_2_n8_sz0
 openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_hubbard_ring_n4_u2
 openfinding.full_diagonalisation.householder_cutoff.kitaev_heisenberg_hexagon_spin_j1_0.3_j2_0.5
 openfinding.haah_code.householder_1x1_crash.2x2x2_region_1x1x1

@@ -52,6 +52,11 @@ test time, so no DiagHam diagonalisation enters: core_tools.py unnormalize|su2ro
   of splitting the occupied set; with --degenerated-groundstate it is the equal-weight average over the states.
   Entropies (natural logarithm) and every eigenvalue are compared. Run as: core_tools.py ftientanglement
   SHOWBASIS PROGRAM WORK_DIR TOLERANCE N NX NY KX,KY [KX,KY ...]  (several sectors = a degenerate ground state).
+- MatrixExtractColumns: a binary matrix (DiagHam's layout: a 4-byte type, 1 real or 2 complex, the numbers of rows and
+  columns, then the elements row by row, little-endian doubles) written here with values that need every bit; the
+  extracted columns must come back bit-exact as binary vectors (a 4-byte dimension, then the doubles, real and
+  imaginary parts interleaved for a complex vector). Run as: core_tools.py matrixcolumns PROGRAM WORK_DIR real|complex
+  NROW NCOL FIRST NBR.
 """
 import argparse, math, sys
 from pathlib import Path
@@ -558,7 +563,45 @@ def run_ftientanglement(argv):
     return 1 if problems else 0
 
 
+def run_matrixcolumns(argv):
+    import os, shutil, struct, subprocess
+    prog, work, kind = os.path.abspath(argv[0]), os.path.abspath(argv[1]), argv[2]
+    nrow, ncol, first, nbr = (int(x) for x in argv[3:7])
+    shutil.rmtree(work, ignore_errors=True)
+    os.makedirs(work)
+    special = [1 / 3, -1e-300, 2.0 ** 53 + 2, -0.1, math.pi, 5e-324, 1 - 2 ** -53, -7.25]
+    val = lambda i, j, part: special[(3 * i + 5 * j + part) % len(special)] * (1 + i) - (j + 0.5) * 2 ** -40 * part
+    with open(os.path.join(work, "m.mat"), "wb") as f:
+        f.write(struct.pack("<iii", 1 if kind == "real" else 2, nrow, ncol))
+        for i in range(nrow):
+            for j in range(ncol):
+                f.write(struct.pack("<d", val(i, j, 0)))
+                if kind == "complex":
+                    f.write(struct.pack("<d", val(i, j, 1)))
+    cmd = [prog, "-i", "m.mat", "-o", "col", "--first-column", str(first), "--nbr-columns", str(nbr)] + (["-c"] if kind == "complex" else [])
+    r = subprocess.run(cmd, cwd=work, capture_output=True, text=True, timeout=120)
+    if r.returncode != 0:
+        print(r.stdout[-1500:], r.stderr[-1500:]); print(f"program exit {r.returncode}"); return 1
+    problems = []
+    for j in range(first, first + nbr):
+        path = os.path.join(work, f"col.{j}.vec")
+        if not os.path.exists(path):
+            problems.append(f"col.{j}.vec not written ({sorted(os.listdir(work))})")
+            continue
+        data = open(path, "rb").read()
+        want = struct.pack("<i", nrow) + b"".join(
+            struct.pack("<d", val(i, j, 0)) + (struct.pack("<d", val(i, j, 1)) if kind == "complex" else b"") for i in range(nrow))
+        if data != want:
+            problems.append(f"col.{j}.vec differs from column {j} ({len(data)} bytes, expected {len(want)})")
+    print(f"{kind} {nrow} x {ncol}, columns {first}..{first + nbr - 1}: {'bit-exact' if not problems else 'DIFFERENT'}")
+    for p_ in problems:
+        print("  " + p_)
+    return 1 if problems else 0
+
+
 def main():
+    if len(sys.argv) > 2 and sys.argv[1] == "matrixcolumns":
+        sys.exit(run_matrixcolumns(sys.argv[2:]))
     if len(sys.argv) > 2 and sys.argv[1] == "ftientanglement":
         sys.exit(run_ftientanglement(sys.argv[2:]))
     if len(sys.argv) > 2 and sys.argv[1] == "unnormalize":

@@ -476,6 +476,11 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   - **U55:** for orbitals centred before the offset the polynomial potential gets a sign wrong; the wiki's own example is affected.
   - **U56:** the left confining potential is put on the right.
 - **`FQHECylinderDensity`** (5 tests), against `tests/oracles/cylinder_density.py`: generic fermion states written in `FQHESphereShowBasis` order, in the n-body basis and in the Haldane basis of a Laughlin root, one state or several (`--degenerate-states`, orthonormalised). Every orbital occupation <i|n_k|j>, and for one state the density along the axis and the integrated charge from Gaussian orbital densities (orbital 0 at the left end, the program's orientation) at every printed point, and the cylinder length: about 6e-14.
+- **`FQHECylinderQuasiholeMatrixElements`** (3 tests) and **`FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing`** (3 tests and 2 `open-finding` tests), against `tests/oracles/cylinder_quasiholes.py`: the sphere's V1 zero modes carried to normalised cylinder orbitals. The matrix elements' dimensions, density spectra and the singular values of every c+_m c_n (|m - n| <= 2) and c_m, about 1e-14 (a wrong perimeter is 0.2 off). Then every spectrum of the two-layer problem: diagonal one-body terms with pairing (Lz sectors), and off-diagonal terms with phases and a complex pairing (one spectrum), about 4e-14. The labels are those of the sphere pairing program; the confining file's phase enters as e^{-i pi phi} (the columns are not on the wiki page; the sign is fixed by the spectrum).
+
+  Findings:
+  - **U57:** a confining-file line with m > n couples orbitals m and 2m - n.
+  - **U58:** a fixed particle number with off-diagonal terms segfaults (the fixed-N space is commented out).
 
 ### Regression spectra (`-L regression`)
 
@@ -565,7 +570,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty-three `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty-five `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

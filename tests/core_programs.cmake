@@ -610,3 +610,47 @@ if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereShowBasis AND TAR
         set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endforeach()
 endif()
+
+# Overnight run, program 12: FQHECylinderQuasiholeMatrixElements and
+# FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing (review tier), against the V1 zero modes carried
+# to cylinder orbitals (tests/oracles/cylinder_quasiholes.py): basis-free invariants of the matrix elements, then the
+# spectrum of the two-layer problem with one-body terms (diagonal and off-diagonal, with phases), pairing and charging
+# energy. U57: a confining-file line with m > n couples orbitals m and 2m - n. U58: a fixed particle number with
+# off-diagonal terms dereferences a null Hilbert space.
+set(cqh ${CMAKE_CURRENT_SOURCE_DIR}/oracles/cylinder_quasiholes.py)
+set(cqh_prog FQHEOnCylinder_FQHECylinderQuasiholeMatrixElements)
+set(cqh_jj FQHEOnCylinder_FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing)
+if(Python3_Interpreter_FOUND AND TARGET ${cqh_prog})
+    foreach(case "nphi5_perimeter8|5;8" "nphi6_perimeter6|6;6" "nphi7_perimeter5.5|7;5.5")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 args)
+        list(GET args 0 nphi)
+        list(GET args 1 per)
+        set(tname physics.fqhe.cylinder.quasihole_matrix_elements.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${cqh} matrixelements $<TARGET_FILE:${cqh_prog}> ${nphi} ${per}
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+    if(TARGET ${cqh_jj})
+        foreach(entry "physics|diagonal_2s6_perimeter6_sz0|diagonal_2s6_perimeter6_sz0"
+                      "physics|diagonal_2s5_perimeter5.5_sz1|diagonal_2s5_perimeter5.5_sz1"
+                      "physics|offdiagonal_phases_2s6_perimeter6_sz0|offdiagonal_phases_2s6_perimeter6_sz0"
+                      "openfinding|lower_triangle_line.both_triangles_2s6_perimeter6_sz0|both_triangles_2s6_perimeter6_sz0"
+                      "openfinding|fixed_n_offdiagonal_crash.offdiagonal_fixed_n4_2s6_perimeter6_sz0|offdiagonal_fixed_n4_2s6_perimeter6_sz0")
+            string(REPLACE "|" ";" e "${entry}")
+            list(GET e 0 kind)
+            list(GET e 1 name)
+            list(GET e 2 case)
+            set(tname ${kind}.fqhe.cylinder.quasiholes_time_reversal_josephson.${name})
+            add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${cqh} josephson $<TARGET_FILE:${cqh_prog}> $<TARGET_FILE:${cqh_jj}>
+                ${case} ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE})
+            if(kind STREQUAL "openfinding")
+                set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+            else()
+                set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+            endif()
+        endforeach()
+    endif()
+endif()

@@ -159,6 +159,8 @@ nav:
       - 'Open finding U54: FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity counts the central orbital in Q_R': upstream-reports/open-U54.md
       - 'Open finding U55: FQHECylinderConfiningPotentialCoefficients gets a sign wrong for orbitals before the offset': upstream-reports/open-U55.md
       - 'Open finding U56: FQHECylinderConfiningPotentialCoefficients puts the left confining potential on the right': upstream-reports/open-U56.md
+      - 'Open finding U57: the Josephson-pairing program reads a confining-file line with m > n as the wrong coupling': upstream-reports/open-U57.md
+      - 'Open finding U58: the Josephson-pairing program segfaults with a fixed particle number and off-diagonal terms': upstream-reports/open-U58.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

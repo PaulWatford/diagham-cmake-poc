@@ -51,5 +51,7 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U54: FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity counts the central orbital in Q_R](open-U54.md)
 - [Open finding U55: FQHECylinderConfiningPotentialCoefficients gets a sign wrong for orbitals before the offset](open-U55.md)
 - [Open finding U56: FQHECylinderConfiningPotentialCoefficients puts the left confining potential on the right](open-U56.md)
+- [Open finding U57: the Josephson-pairing program reads a confining-file line with m > n as the wrong coupling](open-U57.md)
+- [Open finding U58: the Josephson-pairing program segfaults with a fixed particle number and off-diagonal terms](open-U58.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

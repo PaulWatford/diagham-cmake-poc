@@ -487,6 +487,10 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   - **U59:** `-o` writes the output to a file with an uninitialised name.
 - **`HubbardSquareLatticeModel`** (1 test in every build; 4 more with LAPACK, or 1 `open-finding` test without), against `tests/oracles/hubbard_square.py`: real-space exact diagonalisation on the torus, with the one-body part from the dispersion (so 2-site directions are right), projected on every momentum sector. Every (kx, ky) spectrum, with nearest and next-nearest hopping and U, and with the Gutzwiller projection, about 4e-14 with `--use-lapack`. The free case (U = 0) agrees in every build. The signs of the dispersion are the program's. Without `--use-lapack` levels inside degenerate clusters are off by up to 4e-8: U46, through `HermitianMatrix::Diagonalize`.
 - **`FTIMinNbrSingletProjection`** (3 tests), with the same oracle (`singlets` mode): the program's own eigenstates of one momentum sector (in its 2D-translation basis) are projected on the configurations with at least 1 or 2 on-site singlets; the weight of every non-degenerate eigenstate matches the exact eigenstate's to 3e-15 (a weight does not depend on the basis). The projected states are saved normalised.
+- **`FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis`** (3 tests and 1 `open-finding` test), against `tests/oracles/trs_generate_basis.py`, which writes made-up single-layer spectra (with exact degeneracies) for N = 0 to 3 particles: the full spectrum of the two decoupled layers with the charging energy (`--write-fullspectrum`), and the effective basis: at most `--nbr-states` states, the lowest levels, each with E - Ec and single-layer indices whose energies add up. Exact to 7e-16.
+
+  One finding:
+  - **U60:** the cut that should keep degenerate levels whole compares unsorted energies, so the basis can split a level.
 
 ### Regression spectra (`-L regression`)
 
@@ -576,7 +580,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty-seven `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty-eight `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

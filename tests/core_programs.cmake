@@ -736,3 +736,31 @@ if(Python3_Interpreter_FOUND AND TARGET HubbardModels_HubbardSquareLatticeModel)
         endforeach()
     endif()
 endif()
+
+# Overnight run, program 15: FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis (optional tier), on
+# single-layer spectra written by tests/oracles/trs_generate_basis.py: the full two-layer spectrum and the effective
+# basis (the lowest levels, with their energies and single-layer indices). U60: the cut that should keep degenerate
+# levels whole compares unsorted energies.
+set(gbp FQHEOnCylinder_FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis)
+if(Python3_Interpreter_FOUND AND TARGET ${gbp})
+    foreach(entry "physics|2s6_n3_ec0.3_n0_3_keep20|2s6_n3_ec0.3_n0_3_keep20" "physics|2s6_n3_ec0.05_n0_4_keep35|2s6_n3_ec0.05_n0_4_keep35"
+                  "physics|2s8_n3_ec0.2_n0_4_keep50|2s8_n3_ec0.2_n0_4_keep50"
+                  "openfinding|degeneracy_cut.2s6_n3_ec0.3_n0_3_keep20|2s6_n3_ec0.3_n0_3_keep20;degeneracies")
+        string(FIND "${entry}" "|" bar)
+        string(SUBSTRING "${entry}" 0 ${bar} kind)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${entry}" ${bar} -1 rest)
+        string(FIND "${rest}" "|" bar)
+        string(SUBSTRING "${rest}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${rest}" ${bar} -1 args)
+        set(tname ${kind}.fqhe.cylinder.quasiholes_time_reversal_generate_basis.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/trs_generate_basis.py run
+            $<TARGET_FILE:${gbp}> ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        if(kind STREQUAL "openfinding")
+            set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        else()
+            set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        endif()
+    endforeach()
+endif()

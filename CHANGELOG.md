@@ -39,6 +39,9 @@ all present on the `upstream` branch: `git log upstream`).
 - `HubbardSquareLatticeModel` and `FTIMinNbrSingletProjection`: first independent tests
   (`tests/oracles/hubbard_square.py`). A further caller of U46 (the built-in full diagonalisation,
   here through `HermitianMatrix::Diagonalize`).
+- `FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis`: first independent tests
+  (`tests/oracles/trs_generate_basis.py`). New finding U60 (the degeneracy-preserving cut compares
+  unsorted energies).
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

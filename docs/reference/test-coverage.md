@@ -2,7 +2,7 @@
 # Test coverage by program
 
 Purpose: say plainly which of the programs have their physics checked, and how; the `--help` smoke test is not a physics check and is not counted as one.
-Source: `ctest --show-only=json-v1` of the build; 983 tests, 603 programs. Regenerate with `python3 tests/coverage.py <build-dir> --write docs/reference/test-coverage.md`.
+Source: `ctest --show-only=json-v1` of the build; 984 tests, 603 programs. Regenerate with `python3 tests/coverage.py <build-dir> --write docs/reference/test-coverage.md`.
 
 | Programs with… | Count | Of |
 |---|---:|---:|
@@ -13,7 +13,7 @@ Source: `ctest --show-only=json-v1` of the build; 983 tests, 603 programs. Regen
 | only a `smoke` test (`--help`) — physics untested | 501 | 603 |
 | no test at all | 4 | 603 |
 
-Tests by label: `FCI` 2, `FQHEOnLattice` 1, `FQHEOnSphere` 1, `FQHEOnTorus` 1, `FTI` 1, `HubbardModels` 2, `QuantumDots` 1, `Spin` 2, `atomiclimit` 4, `bands` 31, `checkerboard` 11, `core` 9, `cp2` 4, `crosscheck` 3, `cylinder` 12, `dimension` 27, `disk` 12, `ed` 86, `entanglement` 36, `fci` 53, `fqhe` 169, `fti` 35, `haah_code` 10, `haldane` 1, `hofstadter` 8, `hubbard` 19, `install` 1, `kagome` 1, `lanczos` 1, `lattice` 5, `manybody` 11, `mps` 7, `nbody` 8, `open-finding` 29, `physics` 309, `python` 74, `regression` 11, `selftest` 31, `smoke` 599, `sphere` 83, `spin` 90, `toric_code` 7, `torus` 37, `xcube` 9.
+Tests by label: `FCI` 2, `FQHEOnLattice` 1, `FQHEOnSphere` 1, `FQHEOnTorus` 1, `FTI` 1, `HubbardModels` 2, `QuantumDots` 1, `Spin` 2, `atomiclimit` 4, `bands` 31, `checkerboard` 11, `core` 9, `cp2` 4, `crosscheck` 3, `cylinder` 13, `dimension` 27, `disk` 12, `ed` 86, `entanglement` 36, `fci` 53, `fqhe` 170, `fti` 35, `haah_code` 10, `haldane` 1, `hofstadter` 8, `hubbard` 19, `install` 1, `kagome` 1, `lanczos` 1, `lattice` 5, `manybody` 11, `mps` 8, `nbody` 8, `open-finding` 30, `physics` 309, `python` 75, `regression` 11, `selftest` 31, `smoke` 599, `sphere` 83, `spin` 90, `toric_code` 7, `torus` 37, `xcube` 9.
 
 ## Programs with a physics, crosscheck or regression test
 

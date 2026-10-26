@@ -463,6 +463,7 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
 
   One finding:
   - **U53:** with fermions (no `--boson`) the Laughlin MPS constructor exits 0 before computing anything, in every MPS program that builds it. The same on a pristine autotools build.
+- **`FQHESphereMPSEntanglementSpectrumParticlePartition`** `--orbital-es` (4 tests with LAPACK, 1 `open-finding` test without), against `tests/oracles/mps_oes.py`: the bosonic Laughlin state (m = 2, 4 and 6) on a finite cylinder, from its exact expansion carried to normalised cylinder orbitals, cut after (N_phi + 1) / 2 orbitals and Schmidt-decomposed block by block in (N_A, Lz_A). Every eigenvalue matches to 5e-15 and the entropy to 1.4e-14. Without LAPACK the program crashes in the built-in diagonalisation of a 1x1 overlap matrix (U42, a second caller); fermionic runs stop at U53.
 
 ### Regression spectra (`-L regression`)
 
@@ -552,7 +553,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Twenty-nine `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

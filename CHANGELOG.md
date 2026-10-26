@@ -21,6 +21,9 @@ all present on the `upstream` branch: `git log upstream`).
 - `FQHESphereMPSCreateState`: first independent tests, bosonic Laughlin states against
   their exact expansion (`tests/oracles/mps_laughlin.py`). New finding U53 (every
   fermionic Laughlin MPS run exits 0 without computing anything).
+- `FQHESphereMPSEntanglementSpectrumParticlePartition`: first independent tests of the orbital
+  entanglement spectrum (`tests/oracles/mps_oes.py`, with LAPACK). Without LAPACK it is a second
+  caller of U42 (the built-in diagonalisation of a 1x1 matrix).
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

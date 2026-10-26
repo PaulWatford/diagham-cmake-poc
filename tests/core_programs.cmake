@@ -483,3 +483,29 @@ if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereMPSCreateState)
         ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} 4 3 8 fermion)
     set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;sphere;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
 endif()
+
+# Overnight run, program 8: FQHESphereMPSEntanglementSpectrumParticlePartition --orbital-es (review tier), the bosonic
+# Laughlin MPS on a finite cylinder against the Schmidt decomposition of the exact state (tests/oracles/mps_oes.py).
+# Without LAPACK the program diagonalises 1x1 overlap matrices with the built-in Householder and crashes (U42).
+set(tname_base fqhe.cylinder.mps_orbital_entanglement_spectrum)
+if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereMPSEntanglementSpectrumParticlePartition)
+    set(oes_target $<TARGET_FILE:FQHEOnSphere_FQHESphereMPSEntanglementSpectrumParticlePartition>)
+    if(DIAGHAM_USE_LAPACK)
+        foreach(case "boson_laughlin_m2_n5_perimeter8|5;2;6;8" "boson_laughlin_m2_n6_perimeter10|6;2;9;10"
+                     "boson_laughlin_m4_n4_perimeter9|4;4;8;9" "boson_laughlin_m6_n3_perimeter8|3;6;8;8")
+            string(FIND "${case}" "|" bar)
+            string(SUBSTRING "${case}" 0 ${bar} name)
+            math(EXPR bar "${bar} + 1")
+            string(SUBSTRING "${case}" ${bar} -1 args)
+            set(tname physics.${tname_base}.${name})
+            add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/mps_oes.py run ${oes_target}
+                ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+            set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder;mps;entanglement" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        endforeach()
+    else()
+        set(tname openfinding.${tname_base}.householder_1x1_crash.boson_laughlin_m2_n5_perimeter8)
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/mps_oes.py run ${oes_target}
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} 5 2 6 8)
+        set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;cylinder;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endif()
+endif()

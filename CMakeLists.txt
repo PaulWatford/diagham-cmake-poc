@@ -410,6 +410,11 @@ if(DIAGHAM_USE_SCALAPACK)
     if(DIAGHAM_SCALAPACK_LIBS)
         separate_arguments(_scalapack_libs UNIX_COMMAND "${DIAGHAM_SCALAPACK_LIBS}")
     else()
+        # Some distributions' ScaLAPACK package config (Debian and Ubuntu 2.2.2) links MPI::MPI_C, which the
+        # CXX-only MPI search above does not create; configure then fails in scalapack-targets.cmake.
+        if(NOT TARGET MPI::MPI_C)
+            find_package(MPI REQUIRED COMPONENTS C)
+        endif()
         find_package(scalapack CONFIG QUIET)
         if(TARGET scalapack)
             set(_scalapack_libs scalapack)

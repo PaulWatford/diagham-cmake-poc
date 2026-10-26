@@ -190,6 +190,15 @@ all present on the `upstream` branch: `git log upstream`).
 - Full-precision output is now opt-in, as the team decided on 20 October 2026: the 980 result-output sites (545 files) that `main` had changed from upstream's `precision(14)` to `max_digits10` now read `precision(DIAGHAM_OUTPUT_PRECISION)`, with upstream's original spacing, and the 543 `#include <limits>` lines that change added are removed. `src/config.h` defines `DIAGHAM_OUTPUT_PRECISION` as 14, so the default build (and an autotools build) writes exactly what upstream writes; the new CMake option `DIAGHAM_FULL_PRECISION_OUTPUT` sets it to 17. 528 of the 545 files now differ from upstream only by that name. The Hubbard golden `physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2` checks the 14 printed digits to 1e-12 by default (4 ulp with the option); AGENTS.md, the README, the tutorial and the reference pages are reworded to match.
 
 ### Fixed
+- The `hpc` preset (MPI + ScaLAPACK) did not configure with newer ScaLAPACK packages: Debian and
+  Ubuntu 2.2.2 (Ubuntu 26.04) ship a package config that links `MPI::MPI_C`, which the C++-only MPI
+  search did not create. The ScaLAPACK branch now also finds MPI's C component, and the installed
+  `DiagHamConfig.cmake` does the same for a consumer with C enabled, or forwards `MPI::MPI_C` to
+  `MPI::MPI_CXX` for a C++-only one. `ci.sh hpc` on Ubuntu 26.04 (OpenMPI 5.0.10, ScaLAPACK 2.2.2):
+  1053/1053, `install.find_package_consumer` included.
+- `selftest.core_tools_oracle` compared the `_pp.dat` files as whole strings, and their header records a
+  ground energy that is round-off around 0 and differs between NumPy versions (CI failed on every job with
+  Ubuntu 24.04's 1.26.4). It now compares the non-comment lines.
 - CI red at `d28738d95` (run of 30 September) although no physics test failed:
   - `selftest.manifest` failed in the LAPACK builds (full, hpc, container), because three `open-finding` tests that exist only without LAPACK (U40, U42) were not in `tests/manifest-optional.txt`. They are now.
   - `selftest.fci_manybody_oracle` failed with the NumPy of Ubuntu 24.04 (1.26.4), not with 2.5. Reproduced with 1.26.4: every momentum sector agrees to 1e-14, but rows are sorted by energy only, so degenerate levels of different sectors came out in a different order. The check now compares each sector's sorted energies (same 1e-9 tolerance); it still fails on a changed energy. All 16 other Python self-tests pass with 1.26.4. Reference data unchanged.

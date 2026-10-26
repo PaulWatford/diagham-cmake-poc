@@ -38,6 +38,17 @@ if(DiagHam_HAS_BZ2)
     find_dependency(BZip2)
 endif()
 if(DiagHam_HAS_SCALAPACK)
+    # Some distributions' ScaLAPACK package config (Debian and Ubuntu 2.2.2) links MPI::MPI_C. A consumer with C
+    # enabled gets it from FindMPI; for a C++-only consumer it forwards to MPI::MPI_CXX, which carries the MPI library.
+    if(NOT TARGET MPI::MPI_C)
+        get_property(_diagham_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+        if("C" IN_LIST _diagham_languages)
+            find_dependency(MPI COMPONENTS C)
+        elseif(TARGET MPI::MPI_CXX)
+            add_library(MPI::MPI_C INTERFACE IMPORTED)
+            set_target_properties(MPI::MPI_C PROPERTIES INTERFACE_LINK_LIBRARIES MPI::MPI_CXX)
+        endif()
+    endif()
     find_package(scalapack CONFIG QUIET)
 endif()
 

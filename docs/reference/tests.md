@@ -469,6 +469,12 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   Findings:
   - **U42**, a third caller: without LAPACK, a single input state crashes in the built-in diagonaliser that patch 03 falls back to (upstream the program needs LAPACK).
   - **U54:** with an odd number of orbitals the charge imbalance counts the central orbital in Q_R, unlike the wiki's definition.
+- **`FQHECylinderConfiningPotentialCoefficients`** (2 tests in every build; with GSL 3 more and 2 `open-finding` tests, without GSL 1 `open-finding` test), against `tests/oracles/confining.py` (its self-test `selftest.confining_oracle` checks the recursion against direct integration): each orbital's coefficient is the potential integrated against the orbital's Gaussian density, K_alpha by recursion from erfc. The step potential (power 0) matches to 4e-15 and the polynomial right potential, with every orbital centre beyond the offset, to 5e-14.
+
+  Findings:
+  - **U50**, the same pattern: without GSL every power >= 1 gives zeros and exit status 0.
+  - **U55:** for orbitals centred before the offset the polynomial potential gets a sign wrong; the wiki's own example is affected.
+  - **U56:** the left confining potential is put on the right.
 
 ### Regression spectra (`-L regression`)
 
@@ -558,7 +564,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty-two `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty-three `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

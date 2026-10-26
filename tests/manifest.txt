@@ -10,6 +10,7 @@ openfinding.fci.hofstadter.realspace_fermions_segfault
 openfinding.fci.hofstadter.realspace_unit_cell_y_not_1_accepted.n2_x4_y2
 openfinding.fci.hofstadter.realspace_unit_cell_y_not_1_accepted.n3_x3_y2
 openfinding.fci.kagome.manybody.3x3_n1_band_energy_halved
+openfinding.fqhe.cylinder.confining_potential_coefficients.zero_without_gsl.power2_right_2s24_perimeter10_x-9
 openfinding.fqhe.cylinder.mps_orbital_entanglement_spectrum.householder_1x1_crash.boson_laughlin_m2_n5_perimeter8
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
@@ -151,6 +152,8 @@ physics.fqhe.cylinder.bosons_laughlin_1_2.unique_zero_mode_n5
 physics.fqhe.cylinder.bosons_mooreread.two_quasihole_count
 physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode
 physics.fqhe.cylinder.bosons_mooreread.unique_zero_mode_n6
+physics.fqhe.cylinder.confining_potential_coefficients.step.right_2s15_r1.5_v3_x-0.7_spinful
+physics.fqhe.cylinder.confining_potential_coefficients.step.right_2s24_perimeter10_x1.3
 physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r1_ky0
 physics.fqhe.cylinder.ed.bosons_n4_norb7_delta_r2_ky1
 physics.fqhe.cylinder.ed.fermions_n4_norb9_laplacian_delta_r1_ky0
@@ -365,6 +368,7 @@ selftest.checker.rejects_wrong_count
 selftest.checker.rejects_wrong_value
 selftest.checker.relative_tolerance_rejects
 selftest.checker.relative_tolerance_scales
+selftest.confining_oracle
 selftest.core_tools_oracle
 selftest.dimension_oracle
 selftest.entanglement_oracle

@@ -49,5 +49,7 @@ Source: generated from the commits on `main` that carry an `Upstream-Patch:` tra
 - [Open finding U52: SpinChainComputeS2 --degenerate-states uses only the first state when the file name has no momentum](open-U52.md)
 - [Open finding U53: every fermionic Laughlin MPS on the sphere or cylinder exits 0 without computing anything](open-U53.md)
 - [Open finding U54: FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity counts the central orbital in Q_R](open-U54.md)
+- [Open finding U55: FQHECylinderConfiningPotentialCoefficients gets a sign wrong for orbitals before the offset](open-U55.md)
+- [Open finding U56: FQHECylinderConfiningPotentialCoefficients puts the left confining potential on the right](open-U56.md)
 
 Generated from 17 fix commits; regenerate with `python3 scripts_cmake/upstream_pack.py`.

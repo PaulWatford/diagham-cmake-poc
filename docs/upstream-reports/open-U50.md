@@ -21,3 +21,5 @@ Stop with an error (and a non-zero exit status) when GSL is not available, or co
 ## Consequence for the tests
 
 In builds without GSL, `openfinding.fqhe.sphere.realspace_partition_coefficients_zero_without_gsl.sphere_2s15_hemisphere` and `openfinding.fqhe.disk.realspace_partition_coefficients_zero_without_gsl.disk_2s10_radius2.5` (WILL_FAIL) fail while the zeros are written. In builds with GSL the same cases, and three more, are physics tests.
+
+Found later, the same pattern in `FQHECylinderConfiningPotentialCoefficients`: without GSL every power >= 1 prints "error, GSL library is needed" once per term and writes all-zero coefficients, exit status 0 (the pristine autotools build of r4493, configured without GSL, does the same). The step potential (power 0) uses `erf` and is unaffected. `openfinding.fqhe.cylinder.confining_potential_coefficients.zero_without_gsl.power2_right_2s24_perimeter10_x-9` (WILL_FAIL, builds without GSL) documents it. With GSL the program has two further findings, U55 and U56.

@@ -18,6 +18,11 @@ physics.fqhe.sphere.realspace_partition_coefficients.sphere_2s10_theta0.3
 physics.fqhe.sphere.realspace_partition_coefficients.sphere_2s7_theta0.8
 physics.fqhe.disk.realspace_partition_coefficients.disk_2s27_radius5
 physics.fqhe.disk.realspace_partition_coefficients.disk_2s10_radius2.5
+physics.fqhe.cylinder.confining_potential_coefficients.power2.right_2s24_perimeter10_x-9
+physics.fqhe.cylinder.confining_potential_coefficients.power3.right_2s17_r0.8_v0.4_x-8
+physics.fqhe.cylinder.confining_potential_coefficients.power1.right_2s20_perimeter12_v2.5_x-7_spinful
+openfinding.fqhe.cylinder.confining_potential_coefficients.sign_before_offset.wiki_example
+openfinding.fqhe.cylinder.confining_potential_coefficients.left_potential_on_the_right.power2_2s24_perimeter10_x-4.5
 physics.spin.multiple_entanglement_spectra.spin_1_2_n8_sz0
 physics.spin.multiple_entanglement_spectra.spin_1_2_n10_sz2
 physics.spin.multiple_entanglement_spectra.spin_1_2_n9_sz1
@@ -38,3 +43,4 @@ openfinding.spin_chain_entanglement.use_svd_ungated.product_state_entropy_zero
 # registered only WITHOUT GSL (open finding U50)
 openfinding.fqhe.sphere.realspace_partition_coefficients_zero_without_gsl.sphere_2s15_hemisphere
 openfinding.fqhe.disk.realspace_partition_coefficients_zero_without_gsl.disk_2s10_radius2.5
+openfinding.fqhe.cylinder.confining_potential_coefficients.zero_without_gsl.power2_right_2s24_perimeter10_x-9

@@ -27,6 +27,9 @@ all present on the `upstream` branch: `git log upstream`).
 - `FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity` and `...ConvertStates`: first
   independent tests (`tests/oracles/quasiholes_trs.py`). New finding U54 (the charge imbalance
   counts the central orbital in Q_R); a third caller of U42 with a single state without LAPACK.
+- `FQHECylinderConfiningPotentialCoefficients`: first independent tests (`tests/oracles/confining.py`).
+  New findings U55 (a sign error for orbitals centred before the offset, the wiki's example
+  included) and U56 (the left potential acts on the right); without GSL the U50 pattern.
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

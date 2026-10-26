@@ -546,3 +546,49 @@ if(Python3_Interpreter_FOUND AND TARGET ${qh_prog} AND TARGET ${qh_pair} AND TAR
         set_tests_properties(${tname} PROPERTIES WILL_FAIL ${wf} LABELS "${lab}" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endforeach()
 endif()
+
+# Overnight run, program 10: FQHECylinderConfiningPotentialCoefficients (review tier), against the integral of the
+# potential with each orbital's Gaussian density (tests/oracles/confining.py, closed form by recursion). The step
+# potential (power 0) needs no GSL. Powers >= 1 need GSL: without it the program writes zeros and exits 0 (U50); with it
+# the orbitals centred before the offset get a sign wrong (U55) and the left potential is put on the right (U56), so the
+# physics tests keep every orbital centre beyond a right offset.
+set(cf ${CMAKE_CURRENT_SOURCE_DIR}/oracles/confining.py)
+if(Python3_Interpreter_FOUND)
+    add_test(NAME selftest.confining_oracle COMMAND ${Python3_EXECUTABLE} ${cf} --check)
+    set_tests_properties(selftest.confining_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
+endif()
+if(Python3_Interpreter_FOUND AND TARGET FQHEOnCylinder_FQHECylinderConfiningPotentialCoefficients)
+    set(cf_cases
+        "physics|step.right_2s24_perimeter10_x1.3|-s,24,--cylinder-perimeter,10.0,--confining-rightpower,0,--confining-rightoffset,1.3"
+        "physics|step.right_2s15_r1.5_v3_x-0.7_spinful|-s,15,-r,1.5,--confining-rightpower,0,--confining-rightstrength,3,--confining-rightoffset,-0.7,--spinful")
+    if(DIAGHAM_USE_GSL)
+        list(APPEND cf_cases
+            "physics|power2.right_2s24_perimeter10_x-9|-s,24,--cylinder-perimeter,10.0,--confining-rightpower,2,--confining-rightoffset,-9"
+            "physics|power3.right_2s17_r0.8_v0.4_x-8|-s,17,-r,0.8,--confining-rightpower,3,--confining-rightstrength,0.4,--confining-rightoffset,-8"
+            "physics|power1.right_2s20_perimeter12_v2.5_x-7_spinful|-s,20,--cylinder-perimeter,12,--confining-rightpower,1,--confining-rightstrength,2.5,--confining-rightoffset,-7,--spinful"
+            "openfinding|sign_before_offset.wiki_example|-s,24,--cylinder-perimeter,10.0,--confining-rightpower,2,--spinful,--confining-rightoffset,4.5"
+            "openfinding|left_potential_on_the_right.power2_2s24_perimeter10_x-4.5|-s,24,--cylinder-perimeter,10.0,--confining-rightstrength,0,--confining-leftstrength,1,--confining-leftpower,2,--confining-leftoffset,-4.5")
+    else()
+        list(APPEND cf_cases
+            "openfinding|zero_without_gsl.power2_right_2s24_perimeter10_x-9|-s,24,--cylinder-perimeter,10.0,--confining-rightpower,2,--confining-rightoffset,-9")
+    endif()
+    foreach(case ${cf_cases})
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} kind)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 rest)
+        string(FIND "${rest}" "|" bar)
+        string(SUBSTRING "${rest}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${rest}" ${bar} -1 args)
+        string(REPLACE "," ";" args "${args}")
+        set(tname ${kind}.fqhe.cylinder.confining_potential_coefficients.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${cf} run $<TARGET_FILE:FQHEOnCylinder_FQHECylinderConfiningPotentialCoefficients>
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        if(kind STREQUAL "openfinding")
+            set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        else()
+            set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fqhe;cylinder" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        endif()
+    endforeach()
+endif()

@@ -157,6 +157,8 @@ nav:
       - 'Open finding U52: SpinChainComputeS2 --degenerate-states uses only the first state when the file name has no momentum': upstream-reports/open-U52.md
       - 'Open finding U53: every fermionic Laughlin MPS on the sphere or cylinder exits 0 without computing anything': upstream-reports/open-U53.md
       - 'Open finding U54: FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity counts the central orbital in Q_R': upstream-reports/open-U54.md
+      - 'Open finding U55: FQHECylinderConfiningPotentialCoefficients gets a sign wrong for orbitals before the offset': upstream-reports/open-U55.md
+      - 'Open finding U56: FQHECylinderConfiningPotentialCoefficients puts the left confining potential on the right': upstream-reports/open-U56.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md

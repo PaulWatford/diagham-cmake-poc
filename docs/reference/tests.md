@@ -464,6 +464,11 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   One finding:
   - **U53:** with fermions (no `--boson`) the Laughlin MPS constructor exits 0 before computing anything, in every MPS program that builds it. The same on a pristine autotools build.
 - **`FQHESphereMPSEntanglementSpectrumParticlePartition`** `--orbital-es` (4 tests with LAPACK, 1 `open-finding` test without), against `tests/oracles/mps_oes.py`: the bosonic Laughlin state (m = 2, 4 and 6) on a finite cylinder, from its exact expansion carried to normalised cylinder orbitals, cut after (N_phi + 1) / 2 orbitals and Schmidt-decomposed block by block in (N_A, Lz_A). Every eigenvalue matches to 5e-15 and the entropy to 1.4e-14. Without LAPACK the program crashes in the built-in diagonalisation of a 1x1 overlap matrix (U42, a second caller); fermionic runs stop at U53.
+- **`FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity`** (3 tests and 1 `open-finding` test, plus 1 with LAPACK or 1 `open-finding` test without) and **`FQHESphereQuasiholesWithSpinTimeReversalSymmetryConvertStates`** (1 test), with `tests/oracles/quasiholes_trs.py`: the lowest eigenstates of one sector from the pairing program (tested above), then every <i|n_{m,sigma}|j> (each state's sign free off the diagonal), the integrated charges of each layer and of both, and the charge imbalance, against the same states built by the oracle; for ConvertStates, fixed-N states converted to the space of all N and then measured. About 5e-14. The lower layer's integrated charge runs from orbital 2S down, as its labels are the time-reversed orbitals.
+
+  Findings:
+  - **U42**, a third caller: without LAPACK, a single input state crashes in the built-in diagonaliser that patch 03 falls back to (upstream the program needs LAPACK).
+  - **U54:** with an odd number of orbitals the charge imbalance counts the central orbital in Q_R, unlike the wiki's definition.
 
 ### Regression spectra (`-L regression`)
 
@@ -553,7 +558,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty-two `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

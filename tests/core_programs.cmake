@@ -509,3 +509,40 @@ if(Python3_Interpreter_FOUND AND TARGET FQHEOnSphere_FQHESphereMPSEntanglementSp
         set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;fqhe;cylinder;mps" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
     endif()
 endif()
+
+# Overnight run, program 9: FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity and ...ConvertStates (review tier).
+# The pairing program's lowest eigenstates of one sector (its spectrum is tested above), then every <i|n_{m,sigma}|j>,
+# the integrated charges and the charge imbalance against the same states built by tests/oracles/quasiholes_trs.py;
+# for ConvertStates, fixed-N states converted to the space of all N and then measured. U42: without LAPACK the
+# built-in diagonaliser that patch 03 falls back to crashes on the 1x1 matrices of a single input state. U54: with an
+# odd number of orbitals the charge imbalance counts the central orbital in Q_R, unlike the wiki's definition.
+set(qh_dens FQHEOnSphere_FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity)
+set(qh_conv FQHEOnSphere_FQHESphereQuasiholesWithSpinTimeReversalSymmetryConvertStates)
+if(Python3_Interpreter_FOUND AND TARGET ${qh_prog} AND TARGET ${qh_pair} AND TARGET ${qh_dens} AND TARGET ${qh_conv})
+    set(qhd_cases
+        "physics.fqhe.sphere.quasiholes_time_reversal_density.pairing_2s6_sz0_lz0_three_states|pairing_2s6_sz0_lz0_three_states|FALSE"
+        "physics.fqhe.sphere.quasiholes_time_reversal_density.pairing_2s5_sz1_lz1_two_states|pairing_2s5_sz1_lz1_two_states|FALSE"
+        "openfinding.fqhe.sphere.quasiholes_time_reversal_density.imbalance_central_orbital.pairing_2s6_sz0_lz0|pairing_2s6_sz0_lz0_imbalance_central_orbital|TRUE"
+        "physics.fqhe.sphere.quasiholes_time_reversal_convert_states.fixed_n4_2s6_sz0_lz0_three_states|convert_fixed_n4_2s6_sz0_lz0_three_states|FALSE")
+    if(DIAGHAM_USE_LAPACK)
+        list(APPEND qhd_cases "physics.fqhe.sphere.quasiholes_time_reversal_density.pairing_2s5_sz1_lz1_single_state|pairing_2s5_sz1_lz1_single_state|FALSE")
+    else()
+        list(APPEND qhd_cases "openfinding.fqhe.sphere.quasiholes_time_reversal_density.householder_1x1_crash.pairing_2s5_sz1_lz1_single_state|pairing_2s5_sz1_lz1_single_state|TRUE")
+    endif()
+    foreach(entry ${qhd_cases})
+        string(REPLACE "|" ";" e "${entry}")
+        list(GET e 0 tname)
+        list(GET e 1 case)
+        list(GET e 2 wf)
+        if(wf)
+            set(lab "open-finding;python;fqhe;sphere")
+        else()
+            set(lab "physics;python;fqhe;sphere")
+        endif()
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/quasiholes_trs.py density
+                $<TARGET_FILE:${qh_prog}> $<TARGET_FILE:${qh_pair}> $<TARGET_FILE:${qh_dens}> ${case} ${DIAGHAM_TEST_WORK}/${tname}
+                ${DIAGHAM_TEST_TOLERANCE} $<TARGET_FILE:${qh_conv}>)
+        set_tests_properties(${tname} PROPERTIES WILL_FAIL ${wf} LABELS "${lab}" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()

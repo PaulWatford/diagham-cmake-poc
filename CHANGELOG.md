@@ -24,6 +24,9 @@ all present on the `upstream` branch: `git log upstream`).
 - `FQHESphereMPSEntanglementSpectrumParticlePartition`: first independent tests of the orbital
   entanglement spectrum (`tests/oracles/mps_oes.py`, with LAPACK). Without LAPACK it is a second
   caller of U42 (the built-in diagonalisation of a 1x1 matrix).
+- `FQHESphereQuasiholesWithSpinTimeReversalSymmetryDensity` and `...ConvertStates`: first
+  independent tests (`tests/oracles/quasiholes_trs.py`). New finding U54 (the charge imbalance
+  counts the central orbital in Q_R); a third caller of U42 with a single state without LAPACK.
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

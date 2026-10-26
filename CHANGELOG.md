@@ -34,6 +34,8 @@ all present on the `upstream` branch: `git log upstream`).
 - `FQHECylinderQuasiholeMatrixElements` and `FQHECylinderQuasiholesWithSpinTimeReversalSymmetryAndJosephsonPairing`:
   first independent tests (`tests/oracles/cylinder_quasiholes.py`). New findings U57 (a confining line
   with m > n couples the wrong orbitals) and U58 (a fixed particle number with off-diagonal terms crashes).
+- `HubbardSuperconductorOrderParameter`: first independent tests (`tests/oracles/hubbard_order_parameter.py`).
+  New finding U59 (`-o` writes to a file with an uninitialised name).
 - The three real-space partition coefficient programs (cylinder, sphere, disk): first
   independent tests against closed forms (`tests/oracles/realspace.py`). New finding
   U50: without GSL the sphere and disk programs write all-zero weights and exit 0.

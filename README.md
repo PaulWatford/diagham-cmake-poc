@@ -68,7 +68,7 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   tools). Five sources are deliberately not built: one
   legacy duplicate (`QHEFermionsTorusWithSpin`, see `docs/explanation/deferred-code.md`) and four
   that upstream itself never lists in `bin_PROGRAMS`.
-- **1006 of 1006 ctest tests pass** — but read that number plainly: 325 are
+- **1013 of 1013 ctest tests pass** — but read that number plainly: 331 are
   physics goldens with independently known answers (Hilbert-space dimensions
   against exact counting; Laughlin, Moore–Read and Read–Rezayi zero modes
   and quasihole counts; Coulomb pseudopotentials against the closed form;
@@ -76,10 +76,10 @@ Current outcome with the `default` preset on DiagHam r4493 (Ubuntu, GCC 15):
   counting; Hubbard tight binding; Haah cubic-code, X-cube and toric-code entanglement entropies against GF(2) rank formulas; Heisenberg, XX, AKLT, Haldane–Shastry and transverse-Ising chains) plus independent Python exact
   diagonalisations (Hubbard, sphere and torus Coulomb and pseudopotential Hamiltonians with and without SU(2), SU(3) and SU(4) spin, spin chains) and the band structures of seven lattice models with the Haldane Chern number, checkerboard many-body spectra in the flat-band limit against a band-projected exact diagonalisation and the exactly solvable atomic limit, 4 are cross-checks between DiagHam
   programs or algorithms (spinful torus Coulomb; Lanczos vs full diagonalisation; LAPACK vs internal), 1 is a `find_package(DiagHam)` consumer
-  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 32 are self-tests (manifest, twenty-two oracles, the checker and runner), 35 are open-finding reproducers, and **599 are `--help` smoke tests**,
+  build, 12 reproduce a spectrum saved from this build (regression: change detection, not correctness), 32 are self-tests (manifest, twenty-two oracles, the checker and runner), 36 are open-finding reproducers, and **599 are `--help` smoke tests**,
   which prove that a program links and parses options and nothing about its
   physics. `docs/reference/test-coverage.md` gives the per-program truth:
-  101 of 603 programs have a physics or cross-check test today (101 with an independently known answer) and 3 more a regression test (104 with any test beyond --help). Expanding that is the
+  103 of 603 programs have a physics or cross-check test today (103 with an independently known answer) and 3 more a regression test (106 with any test beyond --help). Expanding that is the
   current work. See `docs/reference/tests.md` and, for what a green run does
   and does not prove, `docs/explanation/verification.md`.
 - The Hubbard 2x2 U=4 ground state is `-5.6568542494923806`, a bit-identical

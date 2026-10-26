@@ -481,6 +481,10 @@ In the overnight run of 26 October 2026, programs core under every weighting fir
   Findings:
   - **U57:** a confining-file line with m > n couples orbitals m and 2m - n.
   - **U58:** a fixed particle number with off-diagonal terms segfaults (the fixed-N space is commented out).
+- **`HubbardSuperconductorOrderParameter`** (6 tests and 1 `open-finding` test), against `tests/oracles/hubbard_order_parameter.py`: generic complex states of N and N + 2 spin-1/2 fermions in `HubbardShowBasis` order (every Sz, with and without the Gutzwiller projection). For one state on each side, |<L|O|R>|^2, |<L|O|R>| and the argument of the four pair operators on every pair of sites; with several states, the eigenvalues of (1 / (n_L n_R)) M M+. About 1e-14. The fermion mode order (site by site, down first) and the overall sign of <L|O|R> are taken from the program.
+
+  One finding:
+  - **U59:** `-o` writes the output to a file with an uninitialised name.
 
 ### Regression spectra (`-L regression`)
 
@@ -570,7 +574,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty-five `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Thirty-six `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

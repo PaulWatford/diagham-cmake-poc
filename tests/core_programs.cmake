@@ -654,3 +654,32 @@ if(Python3_Interpreter_FOUND AND TARGET ${cqh_prog})
         endforeach()
     endif()
 endif()
+
+# Overnight run, program 13: HubbardSuperconductorOrderParameter (optional tier). Generic complex states of N and N + 2
+# spin-1/2 fermions written in HubbardShowBasis order (tests/oracles/hubbard_order_parameter.py); the four pair
+# operators for every pair of sites, as |<L|O|R>|^2, |<L|O|R>| and its argument, or with several states the eigenvalues of
+# the order parameter matrix. U59: -o writes to a file with an uninitialised name.
+if(Python3_Interpreter_FOUND AND TARGET HubbardModels_HubbardShowBasis AND TARGET HubbardModels_HubbardSuperconductorOrderParameter)
+    foreach(case "physics|ns4_n2_to_n4|4;2;1;1" "physics|ns5_n3_to_n5|5;3;1;1" "physics|degenerate.ns4_n2_to_n4_2_left_3_right|4;2;2;3"
+                 "physics|degenerate.ns5_n2_to_n4_3_left_2_right|5;2;3;2" "physics|gutzwiller.ns5_n2_to_n4|5;2;1;1;gutzwiller"
+                 "physics|gutzwiller.degenerate.ns6_n2_to_n4_2_left_2_right|6;2;2;2;gutzwiller"
+                 "openfinding|output_option_unnamed_file.ns4_n2_to_n4|4;2;1;1;output-option")
+        string(FIND "${case}" "|" bar)
+        string(SUBSTRING "${case}" 0 ${bar} kind)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${case}" ${bar} -1 rest)
+        string(FIND "${rest}" "|" bar)
+        string(SUBSTRING "${rest}" 0 ${bar} name)
+        math(EXPR bar "${bar} + 1")
+        string(SUBSTRING "${rest}" ${bar} -1 args)
+        set(tname ${kind}.hubbard.superconductor_order_parameter.${name})
+        add_test(NAME ${tname} COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/hubbard_order_parameter.py run
+            $<TARGET_FILE:HubbardModels_HubbardShowBasis> $<TARGET_FILE:HubbardModels_HubbardSuperconductorOrderParameter>
+            ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${args})
+        if(kind STREQUAL "openfinding")
+            set_tests_properties(${tname} PROPERTIES WILL_FAIL TRUE LABELS "open-finding;python;hubbard" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        else()
+            set_tests_properties(${tname} PROPERTIES LABELS "physics;python;hubbard" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+        endif()
+    endforeach()
+endif()

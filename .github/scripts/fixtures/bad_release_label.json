@@ -2,17 +2,58 @@
   "repo": "PaulWatford/diagham-cmake-poc",
   "pr": {
     "number": 104,
-    "user": {"login": "new-contributor", "type": "User"},
+    "user": {
+      "login": "new-contributor",
+      "type": "User"
+    },
     "body": "## What this changes and why\n\nSomething.\n\n## Checklist\n",
-    "labels": [{"name": "approved-by-maintainer"}],
-    "head": {"sha": "3333333333333333"}
+    "labels": [
+      {
+        "name": "approved-by-maintainer"
+      }
+    ],
+    "head": {
+      "sha": "3333333333333333"
+    }
   },
   "commits": [
-    {"sha": "3333333333333333", "commit": {"message": "change", "author": {"email": "n@example.org"}, "committer": {"email": "n@example.org"}}, "author": {"login": "new-contributor", "type": "User"}, "committer": {"login": "new-contributor", "type": "User"}}
+    {
+      "sha": "3333333333333333",
+      "commit": {
+        "message": "change",
+        "author": {
+          "email": "n@example.org"
+        },
+        "committer": {
+          "email": "n@example.org"
+        }
+      },
+      "author": {
+        "login": "new-contributor",
+        "type": "User"
+      },
+      "committer": {
+        "login": "new-contributor",
+        "type": "User"
+      }
+    }
   ],
-  "files": [{"filename": "README.md"}],
+  "files": [
+    {
+      "filename": "README.md"
+    }
+  ],
   "reviews": [],
   "label_events": [
-    {"event": "labeled", "label": {"name": "approved-by-maintainer"}, "actor": {"login": "new-contributor"}}
-  ]
+    {
+      "event": "labeled",
+      "label": {
+        "name": "approved-by-maintainer"
+      },
+      "actor": {
+        "login": "new-contributor"
+      }
+    }
+  ],
+  "event_action": "opened"
 }

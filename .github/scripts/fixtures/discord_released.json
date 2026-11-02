@@ -1,0 +1,17 @@
+{
+  "pr": {
+    "number": 105,
+    "title": "Fix @everyone <@&1> thing",
+    "user": {
+      "login": "outside-contributor"
+    },
+    "html_url": "https://github.com/PaulWatford/diagham-cmake-poc/pull/105"
+  },
+  "hold": "none",
+  "ai": "generated",
+  "physics": "yes",
+  "damage": "none",
+  "event_action": "labeled",
+  "label": "approved-by-maintainer",
+  "label_actor": "PaulWatford"
+}

@@ -20,6 +20,7 @@ from pathlib import Path
 
 APPROVED_FILE = ".github/approved-developers.txt"
 REVIEWERS_FILE = ".github/guard-reviewers.txt"
+VOLUNTEERS_FILE = ".github/volunteers.txt"
 LABEL_HOLD = "held-for-approval"
 LABEL_EXTERNAL = "external-contribution"
 LABEL_AI = "ai-assisted"

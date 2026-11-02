@@ -11,11 +11,18 @@ Decides, for one pull request, whether it is held for a named maintainer and who
 
 A held pull request shows this check red (HELD_FOR_APPROVAL) until a login from .github/guard-reviewers.txt
 adds the label `approved-by-maintainer` or approves the current head commit. Silence is not approval.
-Pull requests by approved developers with no AI involvement pass without labels, comments or requests.
+Pull requests by approved developers with no AI involvement pass without labels or comments.
 
-Environment (set by the workflow): GH_TOKEN, GITHUB_REPOSITORY, PR_NUMBER; optional GUARD_SENDER.
+Every new pull request (event actions opened, reopened, ready_for_review) also requests review from every
+login in .github/guard-reviewers.txt and .github/approved-developers.txt, the author and bots excepted, at
+most 15 (GitHub's limit per request). Comments whose body starts with "Volunteer check:" from a login in
+.github/volunteers.txt are counted in the report; the count releases nothing.
+
+Environment (set by the workflow): GH_TOKEN, GITHUB_REPOSITORY, PR_NUMBER; optional GUARD_SENDER,
+GUARD_EVENT_ACTION.
 Offline test:  python3 author_gate.py --dry-run FIXTURE.json   (a JSON object with keys pr, commits, files,
-reviews, label_events; nothing is sent to GitHub and the decided actions are printed).
+reviews, label_events and optionally event_action, comments, and the lists approved, reviewers, volunteers,
+which replace the files for the test; nothing is sent to GitHub and the decided actions are printed).
 """
 import argparse
 import json
@@ -27,9 +34,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import guardlib as g  # noqa: E402
 
 MARKER = "<!-- diagham-guard:author-gate -->"
+NOTIFY_ACTIONS = ("opened", "reopened", "ready_for_review")
+MAX_REVIEWERS = 15
+VOLUNTEER_PREFIX = "Volunteer check:"
 
 
-def decide(pr, commits, files, approved, reviewers):
+def decide(pr, commits, files, approved, reviewers, event_action=None):
     author = (pr.get("user") or {}).get("login") or ""
     is_bot = author.endswith("[bot]") or (pr.get("user") or {}).get("type") == "Bot"
     is_approved = g.norm(author) in {g.norm(a) for a in approved} and not is_bot
@@ -47,12 +57,39 @@ def decide(pr, commits, files, approved, reviewers):
     if ai:
         labels.append(g.LABEL_AI)
     ask = [r for r in reviewers if g.norm(r) != g.norm(author)] if hold else []
+    notify = []
+    if event_action in NOTIFY_ACTIONS:
+        seen = {g.norm(author)}
+        for login in list(reviewers) + list(approved):
+            if g.norm(login) in seen or login.endswith("[bot]"):
+                continue
+            seen.add(g.norm(login))
+            notify.append(login)
+        notify = notify[:MAX_REVIEWERS]
     return {"author": author, "is_bot": is_bot, "is_approved": is_approved, "disclosure": decl,
             "markers": markers, "ai": ai, "physics": physics, "disclosure_missing": disclosure_missing,
-            "hold": hold, "labels": labels, "ask": ask}
+            "hold": hold, "labels": labels, "ask": ask, "notify": notify, "event_action": event_action}
 
 
-def report(d, released, release_note, reviewers):
+def volunteer_checks(comments, volunteers):
+    """Comments whose body starts with "Volunteer check:", by a login in .github/volunteers.txt."""
+    listed = {g.norm(v) for v in volunteers}
+    return sum(1 for c in comments or []
+               if (c.get("body") or "").lstrip().startswith(VOLUNTEER_PREFIX)
+               and g.norm((c.get("user") or {}).get("login")) in listed)
+
+
+def ai_output(d):
+    """The ai output of the job: none, assisted, generated, or undeclared (no box ticked, or AI detected
+    while "No AI tools" was ticked)."""
+    if d["disclosure"] in ("assisted", "generated"):
+        return d["disclosure"]
+    if d["disclosure"] == "none" and not d["markers"]:
+        return "none"
+    return "undeclared"
+
+
+def report(d, released, release_note, reviewers, n_volunteer):
     who = ("bot" if d["is_bot"] else "approved developer" if d["is_approved"]
            else f"not on `{g.APPROVED_FILE}`")
     if d["disclosure_missing"]:
@@ -75,6 +112,11 @@ def report(d, released, release_note, reviewers):
         names = ", ".join(f"@{r}" for r in d["ask"]) or "(nobody listed in " + g.REVIEWERS_FILE + ")"
         hold = (f"**HELD_FOR_APPROVAL** until {names} adds the label `{g.LABEL_RELEASE}` or approves this head "
                 "commit. Silence is not approval (GOVERNANCE.md; AGENTS.md).")
+    if d["event_action"] in NOTIFY_ACTIONS:
+        asked = (", ".join(f"@{r}" for r in d["notify"]) if d["notify"]
+                 else "none: the author is the only listed login")
+    else:
+        asked = f"none on this event (`{d['event_action'] or 'unknown'}`); new pull requests ask the listed logins"
     lines = ["## Guard: author gate", "", "| Field | Value |", "|---|---|",
              f"| Author | @{d['author']} ({who}) |",
              f"| AI assistance | {ai_line} |",
@@ -82,7 +124,9 @@ def report(d, released, release_note, reviewers):
              f"| Hold | {hold} |"]
     if release_note and not released:
         lines.append(f"| Note | {release_note} |")
-    lines += ["", "The build and the tests decide pass or fail; this gate only decides who must look. "
+    lines += ["", f"Review requested from: {asked}",
+              f"Volunteer checks: {n_volunteer}",
+              "", "The build and the tests decide pass or fail; this gate only decides who must look. "
               "It never merges, never edits a file and never approves."]
     return "\n".join(lines)
 
@@ -95,19 +139,27 @@ def main(argv=None):
     root = Path(a.repo_root)
     approved = g.read_logins(root / g.APPROVED_FILE)
     reviewers = g.read_logins(root / g.REVIEWERS_FILE)
+    volunteers = g.read_logins(root / g.VOLUNTEERS_FILE)
 
     if a.dry_run:
         fx = json.loads(Path(a.dry_run).read_text(encoding="utf-8"))
         pr, commits, files = fx["pr"], fx.get("commits", []), fx.get("files", [])
         gh = g.GitHub(fx.get("repo", "owner/repo"), pr["number"], dry_run=True)
         label_events, reviews = fx.get("label_events", []), fx.get("reviews", [])
+        comments = fx.get("comments", [])
+        event_action = fx.get("event_action")
+        approved = fx.get("approved", approved)
+        reviewers = fx.get("reviewers", reviewers)
+        volunteers = fx.get("volunteers", volunteers)
     else:
         repo, number = os.environ["GITHUB_REPOSITORY"], os.environ["PR_NUMBER"]
         gh = g.GitHub(repo, number)
         pr, commits, files = gh.pull(), gh.commits(), gh.files()
         label_events, reviews = None, None
+        comments = gh.comments() or []
+        event_action = os.environ.get("GUARD_EVENT_ACTION") or None
 
-    d = decide(pr, commits, files, approved, reviewers)
+    d = decide(pr, commits, files, approved, reviewers, event_action)
     current = {l["name"] for l in pr.get("labels") or []}
     released, note, bad_actor = (False, "", None)
     if d["hold"]:
@@ -121,16 +173,21 @@ def main(argv=None):
     if bad_actor:
         stale.append(g.LABEL_RELEASE)
     gh.remove_labels(stale, current)
+    if d["notify"]:
+        gh.request_reviews(d["notify"])
     if d["hold"] and not released:
-        gh.request_reviews(d["ask"])
-    body = report(d, released, note, reviewers)
+        extra = [r for r in d["ask"] if g.norm(r) not in {g.norm(n) for n in d["notify"]}]
+        gh.request_reviews(extra)
+    n_volunteer = volunteer_checks(comments, volunteers)
+    body = report(d, released, note, reviewers, n_volunteer)
     # one comment per gate, kept up to date; written when something is held or was held before
     if d["hold"] or d["disclosure_missing"] or current & {g.LABEL_HOLD, g.LABEL_EXTERNAL, g.LABEL_AI}:
         gh.upsert_comment(MARKER, body)
 
     g.step_summary(body)
-    g.set_output("hold", "true" if (d["hold"] and not released) else "false")
-    g.set_output("ai", "true" if d["ai"] else "false")
+    g.set_output("hold", "held" if (d["hold"] and not released) else "none")
+    g.set_output("ai", ai_output(d))
+    g.set_output("physics", "yes" if g.physics_files(files) else "no")   # any author, for the notice
     print(body)
     if a.dry_run:
         print("\nactions:", *gh.actions, sep="\n  ")

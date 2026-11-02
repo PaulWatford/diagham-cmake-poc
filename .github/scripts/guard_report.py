@@ -71,8 +71,8 @@ def main(argv=None):
     if damage or current & {g.LABEL_DAMAGE}:
         gh.upsert_comment(MARKER, body)
     g.step_summary(body)
-    g.set_output("damage", "true" if damage else "false")
-    g.set_output("hold", "true" if (damage and not released) else "false")
+    g.set_output("damage", ",".join(result.get("classes") or []) if damage else "none")
+    g.set_output("hold", "held" if (damage and not released) else "none")
     if a.dry_run:
         print(body)
         print("actions:", *gh.actions, sep="\n  ")

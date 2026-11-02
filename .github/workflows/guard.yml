@@ -30,19 +30,27 @@ jobs:
     name: guard / author gate
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:   # read by the notify job; written by author_gate.py before it exits, held or not
+      hold: ${{ steps.gate.outputs.hold }}
+      ai: ${{ steps.gate.outputs.ai }}
+      physics: ${{ steps.gate.outputs.physics }}
     steps:
       - uses: actions/checkout@v4   # the base branch: the lists and the scripts come from main, never from the PR
       - name: Author gate
+        id: gate
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
           GUARD_SENDER: ${{ github.event.sender.login }}
+          GUARD_EVENT_ACTION: ${{ github.event.action }}
         run: python3 .github/scripts/author_gate.py
 
   damage-scan:
     name: guard / damage scan
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    outputs:
+      damage: ${{ steps.report.outputs.damage }}
     steps:
       - uses: actions/checkout@v4   # the base branch
         with:
@@ -60,7 +68,40 @@ jobs:
           set -e
           if [ "$rc" -eq 1 ]; then echo "the scan could not run"; exit 1; fi
       - name: Report and hold
+        id: report
         env:
           GH_TOKEN: ${{ github.token }}
           PR_NUMBER: ${{ github.event.pull_request.number }}
         run: python3 .github/scripts/guard_report.py damage.md damage.json
+
+  # The volunteers' channel (docs/how-to/develop/guard.md). Not a required check: a Discord outage or a missing
+  # secret never holds or fails a pull request. Without the secret DISCORD_WEBHOOK_URL the post step is skipped.
+  # Only the number, title, author and link of the pull request are posted, as environment values (never
+  # interpolated into a shell command); its body is untrusted and is not read.
+  notify:
+    name: guard / notify volunteers
+    needs: [author-gate, damage-scan]
+    if: >-
+      always() && (contains(fromJSON('["opened","reopened","ready_for_review"]'), github.event.action) ||
+      (github.event.action == 'labeled' && github.event.label.name == 'approved-by-maintainer'))
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    env:
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+    steps:
+      - uses: actions/checkout@v4   # the base branch
+      - name: Post to the volunteers' channel
+        if: env.DISCORD_WEBHOOK_URL != ''
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GUARD_HOLD: ${{ needs.author-gate.outputs.hold }}
+          GUARD_AI: ${{ needs.author-gate.outputs.ai }}
+          GUARD_PHYSICS: ${{ needs.author-gate.outputs.physics }}
+          GUARD_DAMAGE: ${{ needs.damage-scan.outputs.damage }}
+          GUARD_EVENT_ACTION: ${{ github.event.action }}
+          GUARD_LABEL: ${{ github.event.label.name }}
+          GUARD_LABEL_ACTOR: ${{ github.event.sender.login }}
+        run: python3 .github/scripts/discord_post.py

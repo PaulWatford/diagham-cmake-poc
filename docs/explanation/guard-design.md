@@ -72,6 +72,9 @@ gate fails for everyone. No AI agent is on either list, now or ever.
 | Description (model) | not built; the system prompt is in `AGENTS.md`. The damage scan's report already carries the deterministic parts of the mail (Damage, test-name add/remove list, diffstat) |
 | Hold / approval | built 2026-11-02 as labels and required checks: `held-for-approval` until a login in `.github/guard-reviewers.txt` adds `approved-by-maintainer` or approves the head commit; `.github/rulesets/main.json` requires the two Guard checks, the five CI presets, the container job and one code-owner review on `main`. A release through a label is the `approve` reply of the specification; `reject` is closing the pull request; `restore-tests` is a review comment asking for the names and goldens back, after which the scan re-runs on the next push |
 | Mail | not built; the comment on the pull request and the notification GitHub sends for the review request stand in for it |
+| Gates for AI work (`CLAUDE.md`) | written 2026-11-02: gates G1 to G7, the stop-and-ask list and the vocabulary (`docs/how-to/develop/ai-gates.md`). G1 to G3, G6 and G7 exist; G4 (`selftest.claims`) and the claim index of G5 (`tests/claims.py`) are not built yet and are reported NOT RUN; the numbers page of G5 (`tests/numbers_of_record.py`) is built |
+| Review requests on every new pull request | built 2026-11-02: on `opened`, `reopened` and `ready_for_review` the author gate asks every login in `.github/guard-reviewers.txt` and `.github/approved-developers.txt`, the author and bots excepted |
+| Volunteers' channel | built 2026-11-02: the job `notify` posts new pull requests (and releases) to Discord when the secret `DISCORD_WEBHOOK_URL` exists; `Volunteer check:` comments from `.github/volunteers.txt` are counted and release nothing |
 
 The earlier wording "79 checks" referred to `cmake/verify_build.sh`, the
 autotools-parity script, which reports 79 passes in the default

@@ -1,0 +1,68 @@
+{
+  "repo": "PaulWatford/diagham-cmake-poc",
+  "pr": {
+    "number": 104,
+    "user": {
+      "login": "outside-contributor",
+      "type": "User"
+    },
+    "body": "## What this changes and why\n\nDocs typo.\n\n## AI assistance\n\n- [x] No AI tools were used for this change.\n- [ ] AI-assisted\n- [ ] AI-generated\n",
+    "labels": [],
+    "head": {
+      "sha": "2222222222222222"
+    }
+  },
+  "commits": [
+    {
+      "sha": "2222222222222222",
+      "commit": {
+        "message": "docs: clarify a sentence",
+        "author": {
+          "email": "outside@example.org"
+        },
+        "committer": {
+          "email": "outside@example.org"
+        }
+      },
+      "author": {
+        "login": "outside-contributor",
+        "type": "User"
+      },
+      "committer": {
+        "login": "outside-contributor",
+        "type": "User"
+      }
+    }
+  ],
+  "files": [
+    {
+      "filename": "docs/README.md"
+    }
+  ],
+  "reviews": [],
+  "label_events": [],
+  "event_action": "opened",
+  "volunteers": [
+    "listed-volunteer"
+  ],
+  "comments": [
+    {
+      "user": {
+        "login": "listed-volunteer"
+      },
+      "body": "Volunteer check: description and G block present."
+    },
+    {
+      "user": {
+        "login": "someone-else"
+      },
+      "body": "Volunteer check: looks fine to me."
+    },
+    {
+      "user": {
+        "login": "listed-volunteer"
+      },
+      "body": "A question, not a check."
+    }
+  ]
+}

@@ -26,6 +26,8 @@ AI-assisted changes are in `AGENTS.md`; they apply on top of this.
    and commit the result; do not edit generated `CMakeLists.txt` by hand.
 4. Do not edit a golden value or a test tolerance to make a test pass. A
    changed golden is a physics change and needs a maintainer's review.
+5. If an AI tool wrote any of the change, `CLAUDE.md` applies: run its gates
+   and paste the block into the pull request; tick the AI assistance box.
 
 ## Fixes to DiagHam code
 

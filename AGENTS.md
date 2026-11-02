@@ -9,6 +9,9 @@ automated Guard pipeline itself (self-hosted runner, mailer, GitHub
 status check) is not yet built — see "Build order" below for what
 exists today versus what's planned.
 
+The gates that turn these rules into pass/fail, with the commands, are in
+`CLAUDE.md`; every AI tool working here runs them before reporting done.
+
 ## Locked facts
 
 These are the two claims this repository stands on. **No agent may

@@ -29,6 +29,10 @@ A pull request is **held** when its author is not an approved developer (or is a
 
 The "AI assistance" section of the pull request template must have exactly one box ticked. With none ticked the gate fails for every author, approved or not, and says so; tick a box (editing the pull request text re-runs the gate). A pull request by an approved developer with "No AI tools" ticked passes with no label and no comment.
 
+### Who is asked to look
+
+Every new pull request (the events `opened`, `reopened` and `ready_for_review`) requests review from every login in `.github/guard-reviewers.txt` and `.github/approved-developers.txt`, the author and bots excepted, at most 15 (GitHub's limit per request); GitHub then notifies them. Later events (`synchronize`, `edited`, label changes) ask no one for this reason. Held pull requests additionally carry the hold and its own review request to the guard reviewers. The gate's comment says `Review requested from:` with the logins asked, and `Volunteer checks:` with the count of volunteer checks (see below).
+
 ## The damage scan
 
 `scripts_cmake/damage_scan.py BASE HEAD` compares the merge base with the pull request head and reports the classes `AGENTS.md` lists under "Damage scan":
@@ -62,6 +66,18 @@ A login in `.github/guard-reviewers.txt` releases a hold in either way:
 2. approve the pull request through a review of its current head commit, then re-run the workflow (a new push also re-runs it, and a push after the approval needs a new approval).
 
 The release label added by anyone not on the list is removed again and named in the comment. Silence, a comment, or a thumbs-up is not a release. The second approval mechanism, GitHub's own, is also what the branch ruleset requires: one approving review from a code owner.
+
+## The volunteers' channel
+
+A third job, `guard / notify volunteers`, posts one message to a Discord channel when a pull request is opened, reopened or marked ready for review, and when a guard reviewer releases a hold with the label `approved-by-maintainer`. Nothing is posted for new pushes, edits or other labels. The message carries the pull request's number, title (mentions neutralised), author and link, and five fields from the two Guard jobs: Author, Hold, AI assistance, DiagHam physics sources touched, Damage, with a three-line checklist for volunteers. The pull request's text is untrusted and is never posted. A release message says who released it and carries no checklist.
+
+The job is not a required check (it is not in `.github/rulesets/main.json`): a Discord outage is printed and ignored, and without the repository secret `DISCORD_WEBHOOK_URL` the job does nothing.
+
+A volunteer records a check on GitHub, not on Discord: a pull request comment whose body starts with `Volunteer check:`. The author gate counts such comments from logins in `.github/volunteers.txt` and reports the count; comments by anyone else are not counted and not mentioned. A Discord reaction is not read by anything, and a volunteer check releases nothing: only a guard reviewer does.
+
+What the maintainer sets up: the channel; a webhook for it (Discord: channel settings, Integrations, Webhooks); the repository secret `DISCORD_WEBHOOK_URL` (Settings, Secrets and variables, Actions); the volunteers' logins in `.github/volunteers.txt`, by pull request. Until the secret exists, a stopgap is Discord's GitHub-compatible webhook: append `/github` to the webhook URL and add it as a repository webhook for pull request events. That gives a bare notice without the Guard's fields, and is replaced by this job once the secret is set.
+
+Test it offline: `python3 .github/scripts/discord_post.py --dry-run .github/scripts/fixtures/discord_opened.json` prints the message it would send.
 
 ## Rulesets
 

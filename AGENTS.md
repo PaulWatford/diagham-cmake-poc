@@ -203,7 +203,12 @@ built.
    runner. *(exists — this is what `verify_build.sh` already checks
    locally; running it on a self-hosted runner with an isolated
    worktree is the remaining piece.)*
-2. Damage scan and email template with an empty advice line.
+2. Damage scan and email template with an empty advice line. *(scan and hold
+   built 2 November 2026: `scripts_cmake/damage_scan.py` and
+   `.github/workflows/guard.yml`, which also gates authors not on
+   `.github/approved-developers.txt` and AI-assisted changes; see
+   `docs/how-to/develop/guard.md`. The e-mail is not built; the pull-request
+   comment and GitHub's review-request notification stand in for it.)*
 3. A local LLM fills in the Change description and Usefulness advice.
 4. Hold label + required GitHub status check.
 5. Maintainer reply releases the hold.

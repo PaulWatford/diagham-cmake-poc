@@ -1,0 +1,20 @@
+{
+  "repo": "PaulWatford/diagham-cmake-poc",
+  "pr": {
+    "number": 101,
+    "user": {"login": "someone-else", "type": "User"},
+    "body": "## What this changes and why\n\nSpeeds up the torus Hamiltonian.\n\n## AI assistance\n\n- [ ] No AI tools were used for this change.\n- [x] AI-assisted: a tool helped (Claude Code drafted the loop rewrite; I tested on 2x2)\n- [ ] AI-generated\n\n## Checklist\n",
+    "labels": [],
+    "head": {"sha": "abcdef1234567890"}
+  },
+  "commits": [
+    {"sha": "abcdef1234567890", "commit": {"message": "Torus: faster loop\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>", "author": {"email": "s@example.org"}, "committer": {"email": "s@example.org"}}, "author": {"login": "someone-else", "type": "User"}, "committer": {"login": "someone-else", "type": "User"}}
+  ],
+  "files": [
+    {"filename": "FQHE/src/Hamiltonian/ParticleOnTorusCoulombHamiltonian.cc"},
+    {"filename": "FQHE/src/Hamiltonian/CMakeLists.txt"},
+    {"filename": "docs/reference/programs/x.md"}
+  ],
+  "reviews": [],
+  "label_events": []
+}

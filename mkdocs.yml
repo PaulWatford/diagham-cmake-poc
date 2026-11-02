@@ -84,6 +84,7 @@ nav:
           - 'Add a physics golden test': how-to/develop/add-a-golden-test.md
           - 'Add a new program to DiagHam': how-to/develop/create-a-program.md
           - 'Preview and publish the documentation site': how-to/develop/docs-site.md
+          - 'Run, read and release the Guard (author gate and damage scan)': how-to/develop/guard.md
           - 'Build DiagHam with long-double precision': how-to/develop/long-double.md
           - 'Move the repository to GitLab': how-to/develop/move-to-gitlab.md
           - 'Write a spin Hilbert space with a discrete symmetry': how-to/develop/new-spin-hilbert-space-with-symmetry.md

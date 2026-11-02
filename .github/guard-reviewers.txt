@@ -1,0 +1,4 @@
+# Guard reviewers: the named maintainers who are asked to review a held pull request and who alone can
+# release the hold, by adding the label approved-by-maintainer or approving the head commit.
+# One login per line; "#" starts a comment. No AI agent is on this list, now or ever (AGENTS.md).
+PaulWatford

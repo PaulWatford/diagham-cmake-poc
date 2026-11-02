@@ -2,16 +2,15 @@
 # Claim index: what each physics test establishes and where its answer is known from
 
 Source: `ctest --show-only=json-v1` of the `default` build, the test property `KNOWN_FROM` of every `physics` and `crosscheck` test; 347 tests. Regenerate with `python3 tests/claims.py <build-dir> --write docs/reference/claims.md`; `scripts_cmake/ci.sh default` fails when it is stale.
-Purpose: one row per test that claims an independently known answer, saying what it checks and why the expected answer is known; `selftest.claims` (`tests/check_claims.py`) reports a row with no source, and fails the suite on a source of no recognised kind or an oracle that is not the one the test runs.
+Purpose: one row per test that claims an independently known answer, saying what it checks and why the expected answer is known; `selftest.claims` (`tests/check_claims.py`) fails the suite on a row with no source, a source of no recognised kind, or an oracle that is not the one the test runs.
 
 | Known from (kind) | Tests |
 |---|---:|
-| oracle | 328 |
+| oracle | 329 |
 | analytic | 9 |
 | exact count | 4 |
 | independent program | 3 |
 | saved reference | 2 |
-| no source | 1 |
 
 | Test | Program | Checks | Known from | Cited by |
 |---|---|---|---|---|
@@ -352,7 +351,7 @@ Purpose: one row per test that claims an independently known answer, saying what
 | `physics.spin.haldane_shastry_L10` | HaldaneShastrySpinChain | `min-abs` column -1 | oracle tests/oracles/spin_hubbard.py |  |
 | `physics.spin.haldane_shastry_L6` | HaldaneShastrySpinChain | `min-abs` column -1 | oracle tests/oracles/spin_hubbard.py |  |
 | `physics.spin.haldane_shastry_L8` | HaldaneShastrySpinChain | `min-abs` column -1 | oracle tests/oracles/spin_hubbard.py |  |
-| `physics.spin.heisenberg_ring_L10` | GenericPeriodicSpinChain | `min-abs` column -1 | **no source** | docs/explanation/guard-design.md, docs/reference/tests.md |
+| `physics.spin.heisenberg_ring_L10` | GenericPeriodicSpinChain | `min-abs` column -1 | oracle tests/oracles/spin_hubbard.py | CHANGELOG.md, docs/reference/tests.md |
 | `physics.spin.heisenberg_ring_L4` | GenericPeriodicSpinChain | `min-abs` column -1 | analytic: the 4-site spin-1/2 Heisenberg ring has E0 = -2J | docs/explanation/alps-cross-benchmarks.md, docs/reference/tests.md |
 | `physics.spin.heisenberg_ring_L6` | GenericPeriodicSpinChain | `min-abs` column -1 | analytic: the 6-site spin-1/2 Heisenberg ring has E0 = -(2 + sqrt(13))/2 | docs/reference/tests.md |
 | `physics.spin.heisenberg_ring_L8` | GenericPeriodicSpinChain | `min-abs` column -1 | oracle tests/oracles/spin_hubbard.py |  |

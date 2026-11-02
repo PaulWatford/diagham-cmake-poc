@@ -34,6 +34,11 @@ endfunction()
 set(gps Spin_GenericPeriodicSpinChain)
 diagham_ground_energy_test(physics.spin.heisenberg_ring_L8 CASE heisenberg_ring_L8
     PROGRAM ${gps} ARGS -p 8 --nbr-sz 1 --full-diag 5000 OUTPUT "spin_1_2_periodicchain_n_8.dat" LABELS spin)
+# L = 10 runs the Lanczos path (no --full-diag; 252 states at Sz = 0); until 2 November 2026 its value was
+# written inline (-4.5154463544920365, rel:1e-12), from a numpy ED outside the tree; the oracle gives the same
+# value to 8e-15
+diagham_ground_energy_test(physics.spin.heisenberg_ring_L10 CASE heisenberg_ring_L10
+    PROGRAM ${gps} ARGS -p 10 --nbr-sz 1 OUTPUT "spin_1_2_periodicchain_n_10.dat" LABELS spin)
 diagham_ground_energy_test(physics.spin.spin1_heisenberg_ring_L6 CASE spin1_heisenberg_ring_L6
     PROGRAM ${gps} ARGS -s 2 -p 6 --nbr-sz 1 --full-diag 5000 OUTPUT "spin_1_periodicchain_n_6.dat" LABELS spin)
 # --nn-coupling -1 removes the Sz Sz term (the ZZ coupling is j + nn-coupling): the XX chain

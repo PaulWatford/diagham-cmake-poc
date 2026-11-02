@@ -119,8 +119,8 @@ def render(build_dir, recs=None):
         f"`physics` and `crosscheck` test; {len(claims)} tests. Regenerate with "
         f"`python3 tests/claims.py <build-dir> --write {PAGE}`; `scripts_cmake/ci.sh default` fails when it is stale.",
         "Purpose: one row per test that claims an independently known answer, saying what it checks and why the "
-        "expected answer is known; `selftest.claims` (`tests/check_claims.py`) reports a row with no source, and fails "
-        "the suite on a source of no recognised kind or an oracle that is not the one the test runs.",
+        "expected answer is known; `selftest.claims` (`tests/check_claims.py`) fails the suite on a row with no source, "
+        "a source of no recognised kind, or an oracle that is not the one the test runs.",
         "",
         "| Known from (kind) | Tests |",
         "|---|---:|",

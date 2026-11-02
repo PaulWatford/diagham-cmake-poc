@@ -6,9 +6,9 @@ Usage: tests/check_claims.py <build-dir> [--known-from-required] [--source-dir D
 Reads `ctest --show-only=json-v1` (through tests/claims.py) and checks:
 
   1. known-from   every physics or crosscheck test has KNOWN_FROM, of a recognised kind; an "oracle <file>" source
-                  exists in the tree and, for a Python test, is the script the test runs. A missing KNOWN_FROM is
-                  reported but does not fail unless --known-from-required (or KNOWN_FROM_REQUIRED=1 in the
-                  environment) is given; a wrong one always fails.
+                  exists in the tree and, for a Python test, is the script the test runs. A missing KNOWN_FROM
+                  fails with --known-from-required (or KNOWN_FROM_REQUIRED=1 in the environment), which
+                  selftest.claims passes; without it a missing one is only reported. A wrong one always fails.
   2. tolerance    every check_spectrum comparison of a physics or crosscheck test is within the policy (relative
                   rel:1e-12 or tighter, at most 4 ulp for `min`, absolute at most 1e-9) or has TOLERANCE_REASON.
   3. labels       every label of every test is in tests/labels.txt.
@@ -114,7 +114,7 @@ def main():
     for f in fails:
         print("FAIL", f)
     for x in notes:
-        print("NOTE", x, "(report-only until every test has one)")
+        print("NOTE", x, "(fails with --known-from-required, as selftest.claims runs)")
     print(f"selftest.claims: {len(recs)} tests, {n_claims} physics or crosscheck; {len(fails)} failure(s)")
     return 1 if fails else 0
 

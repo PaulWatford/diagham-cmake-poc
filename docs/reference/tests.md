@@ -543,7 +543,7 @@ segfaults after `start` for every size tried; the regression case uses
 | `crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsWithSpinAndTranslations` | full 324-state Sz=1 spectra agree to 1e-8 | two independent implementations; regression for patch 14 (fails by 0.43 without it) |
 | `physics.spin.heisenberg_ring_L4` | `GenericPeriodicSpinChain` | lowest eigenvalue = -2 ± 1e-12 | S=1/2 Heisenberg ring, exact |
 | `physics.spin.heisenberg_ring_L6` | `GenericPeriodicSpinChain` | lowest eigenvalue = -(2+√13)/2 ± 1e-12 | exact (closed form), cross-checked with numpy |
-| `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.5154463544920365 to relative 1e-12 | independent numpy ED (Lanczos path; dimension 252) |
+| `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.515446354492044 ± 1e-12 | independent numpy ED, `tests/oracles/spin_hubbard.py` (Lanczos path; dimension 252) |
 
 `tests/check_spectrum.cc` does the comparison; it needs no Python and no
 DiagHam library, so the goldens run anywhere the programs do.

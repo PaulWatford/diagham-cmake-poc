@@ -266,8 +266,8 @@ diagham_physics_test(physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
 # S = 1/2 Heisenberg ring H = J sum_i S_i . S_{i+1}, J = 1, Sz = 0 sector,
 # all momenta (GenericPeriodicSpinChain). L = 4: E0 = -2 exactly. L = 6:
 # E0 = -(2 + sqrt(13))/2 = -2.8027756377319946 in closed form; both are
-# also reproduced by an independent numpy ED to 1e-15. L = 10 checks the Lanczos
-# path against the numpy ED value -4.5154463544920365.
+# also reproduced by an independent numpy ED to 1e-15. L = 10 (the Lanczos path) is in
+# tests/spin_hubbard.cmake, against tests/oracles/spin_hubbard.py.
 diagham_physics_test(physics.spin.heisenberg_ring_L4
     KNOWN_FROM "analytic: the 4-site spin-1/2 Heisenberg ring has E0 = -2J"
     PROGRAM Spin_GenericPeriodicSpinChain
@@ -282,13 +282,6 @@ diagham_physics_test(physics.spin.heisenberg_ring_L6
     ARGS -p 6 --nbr-sz 1
     OUTPUT "spin_1_2_periodicchain_n_6.dat"
     CHECK min-abs @OUTPUT@ -1 -2.8027756377319946 1e-12
-    LABELS spin
-)
-diagham_physics_test(physics.spin.heisenberg_ring_L10
-    PROGRAM Spin_GenericPeriodicSpinChain
-    ARGS -p 10 --nbr-sz 1
-    OUTPUT "spin_1_2_periodicchain_n_10.dat"
-    CHECK min-abs @OUTPUT@ -1 -4.5154463544920365 ${DIAGHAM_TEST_TOLERANCE}
     LABELS spin
 )
 
@@ -427,11 +420,12 @@ if(_manifest_mode)
 endif()
 
 # Self-test: the claim rules (tests/check_claims.py): every physics and crosscheck test says where its answer is known
-# from (KNOWN_FROM; report-only while any is missing), loose tolerances carry a TOLERANCE_REASON, labels are in
+# from (KNOWN_FROM, required since 2 November 2026), loose tolerances carry a TOLERANCE_REASON, labels are in
 # tests/labels.txt, WILL_FAIL goes with the label open-finding, and every open-finding test is in the register.
 if(Python3_FOUND)
     add_test(NAME selftest.claims
-        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_claims.py ${CMAKE_BINARY_DIR})
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_claims.py ${CMAKE_BINARY_DIR}
+            --known-from-required)
     set_tests_properties(selftest.claims PROPERTIES LABELS "selftest" TIMEOUT 120
         ENVIRONMENT "CTEST_COMMAND=${CMAKE_CTEST_COMMAND}")
 endif()

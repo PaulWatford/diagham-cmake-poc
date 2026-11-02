@@ -28,9 +28,8 @@ Run them in this order, from a clean, out-of-source build. Every one must exit 0
 | G6 | Documentation builds | `python3 scripts_cmake/gen_mkdocs_nav.py --check && mkdocs build --strict` | no broken link, no page outside the nav |
 | G7 | Disclosure | the pull request template's "AI assistance" section has exactly one box ticked | the Guard's author gate fails every pull request without it |
 
-G4 reports a `physics` or `crosscheck` test without `KNOWN_FROM` and passes, until every test has one; the
-remaining ones are listed by `python3 tests/claims.py build/default --missing`. Everything else G4 checks fails
-the suite. A new test sets `KNOWN_FROM`, and `REASON` when its tolerance is looser than `rel:1e-12`, 4 ulp or
+G4 fails the suite on a `physics` or `crosscheck` test without `KNOWN_FROM`; `python3 tests/claims.py
+build/default --missing` lists any. A new test sets `KNOWN_FROM`, and `REASON` when its tolerance is looser than `rel:1e-12`, 4 ulp or
 an absolute 1e-9 (`docs/how-to/develop/add-a-golden-test.md`).
 
 ## Before touching these, stop and ask the maintainer

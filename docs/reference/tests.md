@@ -19,8 +19,9 @@ computes the right numbers. A `crosscheck` says two DiagHam implementations
 agree (both could be wrong the same way). A `regression` test says the
 output has not changed since it was saved (right or wrong). A `smoke` test
 says the program links and parses `--help`. The per-program picture is in
-[test-coverage.md](test-coverage.md), generated from the build; the
-headline today is **74 of 603 programs with a physics or cross-check test** (74 of them against an independently known answer).
+[test-coverage.md](test-coverage.md), generated from the build. Counts quoted
+in the documentation come from [numbers.md](numbers.md), the figures of record,
+also generated from the build and checked for staleness by `scripts_cmake/ci.sh`.
 
 | Label | Tests | What passes means |
 |---|---|---|

@@ -2,18 +2,76 @@
   "repo": "PaulWatford/diagham-cmake-poc",
   "pr": {
     "number": 103,
-    "user": {"login": "new-contributor", "type": "User"},
+    "user": {
+      "login": "new-contributor",
+      "type": "User"
+    },
     "body": "## What this changes and why\n\nAdds a golden test.\n\n## AI assistance\n\n- [x] No AI tools were used for this change.\n",
-    "labels": [{"name": "held-for-approval"}, {"name": "external-contribution"}, {"name": "approved-by-maintainer"}],
-    "head": {"sha": "2222222222222222"}
+    "labels": [
+      {
+        "name": "held-for-approval"
+      },
+      {
+        "name": "external-contribution"
+      },
+      {
+        "name": "approved-by-maintainer"
+      }
+    ],
+    "head": {
+      "sha": "2222222222222222"
+    }
   },
   "commits": [
-    {"sha": "2222222222222222", "commit": {"message": "tests: Laughlin 1/5 zero mode", "author": {"email": "n@example.org"}, "committer": {"email": "n@example.org"}}, "author": {"login": "new-contributor", "type": "User"}, "committer": {"login": "new-contributor", "type": "User"}}
+    {
+      "sha": "2222222222222222",
+      "commit": {
+        "message": "tests: Laughlin 1/5 zero mode",
+        "author": {
+          "email": "n@example.org"
+        },
+        "committer": {
+          "email": "n@example.org"
+        }
+      },
+      "author": {
+        "login": "new-contributor",
+        "type": "User"
+      },
+      "committer": {
+        "login": "new-contributor",
+        "type": "User"
+      }
+    }
   ],
-  "files": [{"filename": "tests/fqhe_sphere.cmake"}, {"filename": "tests/manifest.txt"}],
+  "files": [
+    {
+      "filename": "tests/fqhe_sphere.cmake"
+    },
+    {
+      "filename": "tests/manifest.txt"
+    }
+  ],
   "reviews": [],
   "label_events": [
-    {"event": "labeled", "label": {"name": "held-for-approval"}, "actor": {"login": "github-actions[bot]"}},
-    {"event": "labeled", "label": {"name": "approved-by-maintainer"}, "actor": {"login": "PaulWatford"}}
-  ]
+    {
+      "event": "labeled",
+      "label": {
+        "name": "held-for-approval"
+      },
+      "actor": {
+        "login": "github-actions[bot]"
+      }
+    },
+    {
+      "event": "labeled",
+      "label": {
+        "name": "approved-by-maintainer"
+      },
+      "actor": {
+        "login": "PaulWatford"
+      }
+    }
+  ],
+  "event_action": "opened"
 }

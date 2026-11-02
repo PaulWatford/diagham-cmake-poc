@@ -114,6 +114,26 @@ expect_rc 0 gate_released $G .github/scripts/fixtures/external_released_by_label
 expect_in gate_released "released: @PaulWatford"
 expect_rc 1 gate_bad_label $G .github/scripts/fixtures/bad_release_label.json
 expect_in gate_bad_label "not declared"; expect_in gate_bad_label "remove labels \['approved-by-maintainer'\]"
+expect_rc 0 gate_opened $G .github/scripts/fixtures/approved_opened.json
+expect_in gate_opened "request review \['maintainer-two', 'dev-approved'\]"; expect_in gate_opened "| Hold | none |"
+expect_in gate_opened "Review requested from: @maintainer-two, @dev-approved"
+expect_rc 0 gate_synchronize $G .github/scripts/fixtures/approved_synchronize.json
+expect_in gate_synchronize "none on this event"
+if grep -q "request review" "$TMP/gate_synchronize.out"; then echo "FAIL gate_synchronize requests a review"; fail=1; else echo "ok   gate_synchronize requests no review"; fi
+expect_rc 1 gate_volunteers $G .github/scripts/fixtures/volunteer_comments.json
+expect_in gate_volunteers "Volunteer checks: 1"
+
+say "Discord notice (dry run; nothing sent)"
+D="python3 $ROOT/.github/scripts/discord_post.py --dry-run"
+expect_rc 0 discord_opened $D .github/scripts/fixtures/discord_opened.json
+expect_in discord_opened "@​everyone"; expect_in discord_opened "Volunteer checklist"
+for f in Author Hold "AI assistance" "DiagHam physics sources touched" Damage; do expect_in discord_opened "\"name\": \"$f\""; done
+if grep -q '"title": "#105  Fix @everyone' "$TMP/discord_opened.out"; then echo "FAIL discord_opened: @everyone not neutralised"; fail=1; else echo "ok   discord_opened neutralises @everyone"; fi
+expect_rc 0 discord_released $D .github/scripts/fixtures/discord_released.json
+expect_in discord_released "Released by PaulWatford"
+if grep -q "Volunteer checklist" "$TMP/discord_released.out"; then echo "FAIL discord_released has the checklist"; fail=1; else echo "ok   discord_released has no checklist"; fi
+expect_rc 0 discord_no_secret env DISCORD_WEBHOOK_URL= python3 "$ROOT/.github/scripts/discord_post.py"
+expect_in discord_no_secret "nothing posted"
 
 say "report script on a damaged scan (dry run)"
 $SCAN "$BASE" "$(git -C "$TMP/repo" rev-parse golden)" --repo "$TMP/repo" --markdown "$TMP/d.md" --json "$TMP/d.json" --quiet || true
@@ -123,6 +143,16 @@ expect_in report_held "add labels \['damage', 'held-for-approval'\]"
 expect_rc 0 report_released $R .github/scripts/fixtures/external_released_by_label.json
 
 say "workflow file parses as YAML"
-expect_rc 0 yaml python3 -c "import yaml,sys; d=yaml.safe_load(open('$ROOT/.github/workflows/guard.yml')); assert set(d['jobs'])=={'author-gate','damage-scan'}; print('jobs:', list(d['jobs']))"
+expect_rc 0 yaml python3 -c "
+import yaml
+d = yaml.safe_load(open('$ROOT/.github/workflows/guard.yml'))
+j = d['jobs']
+assert set(j) == {'author-gate', 'damage-scan', 'notify'}, list(j)
+n = j['notify']
+assert n['needs'] == ['author-gate', 'damage-scan'] and 'always()' in n['if'] and 'approved-by-maintainer' in n['if']
+step = [s for s in n['steps'] if 'discord_post.py' in s.get('run', '')][0]
+assert step['if'] == \"env.DISCORD_WEBHOOK_URL != ''\" and n['env']['DISCORD_WEBHOOK_URL'] == '\${{ secrets.DISCORD_WEBHOOK_URL }}'
+assert j['author-gate']['outputs'].keys() == {'hold', 'ai', 'physics'} and 'damage' in j['damage-scan']['outputs']
+print('jobs:', list(j))"
 
 if [ "$fail" -eq 0 ]; then say "all checks passed"; else say "SOME CHECKS FAILED"; exit 1; fi

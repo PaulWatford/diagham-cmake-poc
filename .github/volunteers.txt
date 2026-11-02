@@ -1,0 +1,6 @@
+# Volunteers: GitHub logins whose "Volunteer check:" comments on a pull request the Guard counts.
+# One login per line; "#" starts a comment. Read from the base branch by .github/scripts/author_gate.py.
+# A volunteer records a check with a pull request comment whose body starts with "Volunteer check:"; the
+# author gate reports the count. A count releases nothing: only a login in .github/guard-reviewers.txt does.
+#
+# Changing this file is a governance change (GOVERNANCE.md): by pull request, merged by the maintainer.

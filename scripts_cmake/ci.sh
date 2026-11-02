@@ -42,19 +42,21 @@ ctest --preset "$PRESET" --parallel "${CTEST_PARALLEL_LEVEL:-$(nproc)}"
 if [ "$PRESET" = default ] && command -v python3 >/dev/null; then
     echo "== version consistent?"
     python3 scripts_cmake/check_version.py
-    echo "== README program count matches the coverage page?"
+    echo "== README program count matches the numbers page?"
     python3 - <<'PY'
 import re, sys
 from pathlib import Path
-cov = Path("docs/reference/test-coverage.md").read_text().splitlines()
-n_phys = n_union = n_any = 0
-for line in cov:
-    m = re.match(r"^\| (\S+) \| (\S+) \| (✓?) \| (✓?) \| (✓?) \| `", line)
-    if not m:
-        continue
-    p, c, r = (bool(x) for x in m.groups()[2:])
-    n_phys += p; n_union += (p or c); n_any += (p or c or r)
-want = f"{n_union} of 603 programs have a physics or cross-check test today ({n_phys} with an independently known answer) and {n_any - n_union} more a regression test ({n_any} with any test beyond --help)."
+# the figures of record (docs/reference/numbers.md, written by tests/numbers_of_record.py and checked below)
+rows = {}
+for line in Path("docs/reference/numbers.md").read_text(encoding="utf-8").splitlines():
+    m = re.match(r"^\| (.+?) \| (\d+) \| ", line)
+    if m:
+        rows[m.group(1)] = int(m.group(2))
+n_all = rows["programs in the build"]
+n_phys = rows["programs with a `physics` test"]
+n_union = rows["programs with a `physics` or `crosscheck` test"]
+n_any = rows["programs with a `physics`, `crosscheck` or `regression` test"]
+want = f"{n_union} of {n_all} programs have a physics or cross-check test today ({n_phys} with an independently known answer) and {n_any - n_union} more a regression test ({n_any} with any test beyond --help)."
 if want not in Path("README.md").read_text():
     print("README.md program-count sentence is stale; it should read:", want, file=sys.stderr)
     sys.exit(1)
@@ -66,4 +68,6 @@ PY
         echo "docs/reference/test-coverage.md is stale: regenerate with python3 tests/coverage.py build/default --write docs/reference/test-coverage.md" >&2
         exit 1
     fi
+    echo "== numbers page up to date?"
+    python3 tests/numbers_of_record.py "build/$PRESET" --check
 fi

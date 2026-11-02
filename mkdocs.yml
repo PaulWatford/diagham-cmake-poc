@@ -82,6 +82,7 @@ nav:
           - 'CMake presets': how-to/build/presets.md
       - Develop:
           - 'Add a physics golden test': how-to/develop/add-a-golden-test.md
+          - 'Run the gates an AI tool must pass before handing work back': how-to/develop/ai-gates.md
           - 'Add a new program to DiagHam': how-to/develop/create-a-program.md
           - 'Preview and publish the documentation site': how-to/develop/docs-site.md
           - 'Run, read and release the Guard (author gate and damage scan)': how-to/develop/guard.md
@@ -96,6 +97,7 @@ nav:
       - 'Build system reference': reference/build-system.md
       - 'configure.ac → CMake flag map': reference/configure-flag-map.md
       - 'Data formats and file tools': reference/data-formats.md
+      - 'Numbers of record': reference/numbers.md
       - 'Open findings in the DiagHam sources — register': reference/open-findings.md
       - 'Publications using DiagHam': reference/publications.md
       - 'Test coverage by program': reference/test-coverage.md

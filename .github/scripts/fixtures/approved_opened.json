@@ -1,0 +1,53 @@
+{
+  "repo": "PaulWatford/diagham-cmake-poc",
+  "pr": {
+    "number": 102,
+    "user": {
+      "login": "PaulWatford",
+      "type": "User"
+    },
+    "body": "## What this changes and why\n\nDocs typo.\n\n## AI assistance\n\n- [x] No AI tools were used for this change.\n- [ ] AI-assisted\n- [ ] AI-generated\n",
+    "labels": [],
+    "head": {
+      "sha": "1111111111111111"
+    }
+  },
+  "commits": [
+    {
+      "sha": "1111111111111111",
+      "commit": {
+        "message": "docs: fix a typo",
+        "author": {
+          "email": "paulwatford@gmail.com"
+        },
+        "committer": {
+          "email": "paulwatford@gmail.com"
+        }
+      },
+      "author": {
+        "login": "PaulWatford",
+        "type": "User"
+      },
+      "committer": {
+        "login": "PaulWatford",
+        "type": "User"
+      }
+    }
+  ],
+  "files": [
+    {
+      "filename": "docs/README.md"
+    }
+  ],
+  "reviews": [],
+  "label_events": [],
+  "event_action": "opened",
+  "approved": [
+    "PaulWatford",
+    "dev-approved"
+  ],
+  "reviewers": [
+    "PaulWatford",
+    "maintainer-two"
+  ]
+}

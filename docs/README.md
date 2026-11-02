@@ -50,11 +50,13 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | Add a spin Hilbert space with a discrete symmetry | [how-to/develop/new-spin-hilbert-space-with-symmetry.md](how-to/develop/new-spin-hilbert-space-with-symmetry.md) |
 | Preview or publish this documentation as a site | [how-to/develop/docs-site.md](how-to/develop/docs-site.md) |
 | Read or release the Guard on a pull request (author gate, damage scan) | [how-to/develop/guard.md](how-to/develop/guard.md) |
+| Run the gates an AI tool must pass before handing work back | [how-to/develop/ai-gates.md](how-to/develop/ai-gates.md) |
 | Add a test that checks a spectrum against a known answer | [how-to/develop/add-a-golden-test.md](how-to/develop/add-a-golden-test.md) |
 | What the test suite checks, and what it does not | [reference/tests.md](reference/tests.md) |
 | What is proven, what is only watched, what is untested — in one page | [explanation/verification.md](explanation/verification.md) |
 | How this repository scores against JOSS / FAIR4RS / Turing Way / CERTIFY-ED | [explanation/checklists.md](explanation/checklists.md) |
 | Which programs actually have their physics tested (accurate count) | [reference/test-coverage.md](reference/test-coverage.md) |
+| Every figure the project quotes, from one build | [reference/numbers.md](reference/numbers.md) |
 | Fix something in DiagHam's own sources: the rules and the index of fixes so far | `CONTRIBUTING.md` at the root, then [explanation/upstream-fixes.md](explanation/upstream-fixes.md) |
 | Offer a fix or a finding to the DiagHam authors (reports + `svn patch` diffs) | [how-to/develop/send-a-fix-upstream.md](how-to/develop/send-a-fix-upstream.md), [upstream-reports/](upstream-reports/README.md) |
 | Code that is excluded from the build, and why | [explanation/deferred-code.md](explanation/deferred-code.md) |

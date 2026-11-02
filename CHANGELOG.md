@@ -14,6 +14,12 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Gates for AI work: `CLAUDE.md` (G1 to G7, stop-and-ask list, vocabulary; imports `AGENTS.md`),
+  `docs/how-to/develop/ai-gates.md`; the Guard requests review from `.github/guard-reviewers.txt` and
+  `.github/approved-developers.txt` on every new pull request; `tests/numbers_of_record.py` writes
+  `docs/reference/numbers.md`, the figures of record, checked for staleness by `ci.sh`; the Guard posts new pull
+  requests to a Discord channel when the secret `DISCORD_WEBHOOK_URL` exists, and counts `Volunteer check:`
+  comments from `.github/volunteers.txt`.
 - The Guard (`.github/workflows/guard.yml`): the damage scan of `AGENTS.md` as `scripts_cmake/damage_scan.py`
   (tests removed, demo unregistered, checks skipped, golden edited, option default flipped, in-source build,
   patches changed; read with git only; `damage_scan_selftest.sh` checks every class), and an author gate that

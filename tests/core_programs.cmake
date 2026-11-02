@@ -32,6 +32,7 @@ foreach(case "alternating_spacings_r_half|alternating" "uniform_spacings_r_one|u
     list(GET c 0 name)
     list(GET c 1 file)
     diagham_physics_test(physics.core.level_statistics.${name}
+        KNOWN_FROM "analytic: <r> of the input levels, worked out in the input file's header (equal spacings 1, spacings 1, 2 give 1/2)"
         PROGRAM Programs_LevelStatistics
         ARGS -s ${core_data}/levelstat/${file}.dat -o levelstat.out
         OUTPUT "program.log"

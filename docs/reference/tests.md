@@ -577,6 +577,12 @@ Measured on 25 October 2026 in the default, LAPACK and full builds:
 | Torus ED groups and the spinful torus cross-check | 1e-8 | up to 10⁻⁹ | DiagHam truncates its momentum sums at about 10⁻¹⁰; most cases of each group reach 10⁻¹² |
 | `open-finding` reproducers | various | | they record a wrong result; the tolerance identifies the wrong value |
 
+Each `physics` or `crosscheck` test looser than `rel:1e-12`, 4 ulp or an absolute 1e-9 carries the reason from
+this table as its test property `TOLERANCE_REASON` (argument `REASON` of `diagham_physics_test`), and where its
+expected answer is known from as `KNOWN_FROM`; `selftest.claims` (`tests/check_claims.py`) fails on a looser
+tolerance without a reason, and both properties are listed in [claims.md](claims.md). The zero thresholds of
+`count` and `nonzero` (1e-10) are within the absolute bound and need none.
+
 **Time budget.** Every DiagHam program test is designed to finish in about 30 seconds when run on its own.
 Measured one at a time on 25 October 2026, all 280 such tests take 13.4 s in total, and the slowest takes
 3.7 s. The ctest `TIMEOUT` of each is the cache variable `DIAGHAM_TEST_TIMEOUT`, 120 s, larger than the

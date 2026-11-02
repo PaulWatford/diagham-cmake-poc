@@ -66,9 +66,16 @@ set(DIAGHAM_TEST_BLAS_THREADS_HEAVY 4 CACHE STRING
 #         checking two independent implementations against each other
 #     [PRE_STEPS <step>...]   programs run first in the work directory, each
 #         step "target|arg|arg..." (the target name is replaced by its file)
-#     [LABELS <extra labels...>] [TIMEOUT <seconds>] [WILL_FAIL])
+#     [LABELS <extra labels...>] [TIMEOUT <seconds>] [WILL_FAIL]
+#     [KNOWN_FROM <where the expected answer is known from>]
+#     [REASON <why the tolerance is looser than the policy>])
+# KNOWN_FROM (test property KNOWN_FROM) starts with its kind: "oracle tests/oracles/<file>.py", "analytic: ...",
+# "exact count: ...", "independent program: <target>", "paper: ..." or "saved reference: <file>, cross-checked by
+# <test>". Left out, it is "independent program: <REF_PROGRAM>" for a crosscheck and "oracle tests/oracles/<dir>.py"
+# for a CHECK that reads tests/data/<dir>/ when that oracle exists. REASON becomes TOLERANCE_REASON. Both are
+# indexed by tests/claims.py (docs/reference/claims.md) and enforced by selftest.claims (tests/check_claims.py).
 function(diagham_physics_test name)
-    cmake_parse_arguments(ARG "WILL_FAIL" "PROGRAM;OUTPUT;TIMEOUT;REF_PROGRAM;REF_OUTPUT"
+    cmake_parse_arguments(ARG "WILL_FAIL" "PROGRAM;OUTPUT;TIMEOUT;REF_PROGRAM;REF_OUTPUT;KNOWN_FROM;REASON"
         "ARGS;CHECK;LABELS;REF_ARGS;PRE_STEPS" ${ARGN})
     set(pre_defs "")
     if(ARG_PRE_STEPS)
@@ -130,6 +137,23 @@ function(diagham_physics_test name)
         TIMEOUT ${ARG_TIMEOUT}
         WILL_FAIL ${ARG_WILL_FAIL}
     )
+    if(NOT ARG_KNOWN_FROM)
+        if(ARG_REF_PROGRAM)
+            set(ARG_KNOWN_FROM "independent program: ${ARG_REF_PROGRAM}")
+        elseif(check_args MATCHES "/tests/data/([A-Za-z0-9_-]+)/")
+            # ${CMAKE_MATCH_1} is expanded before if() evaluates, so the match and the EXISTS are two steps.
+            set(data_dir ${CMAKE_MATCH_1})
+            if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/oracles/${data_dir}.py)
+                set(ARG_KNOWN_FROM "oracle tests/oracles/${data_dir}.py")
+            endif()
+        endif()
+    endif()
+    if(ARG_KNOWN_FROM)
+        set_tests_properties(${name} PROPERTIES KNOWN_FROM "${ARG_KNOWN_FROM}")
+    endif()
+    if(ARG_REASON)
+        set_tests_properties(${name} PROPERTIES TOLERANCE_REASON "${ARG_REASON}")
+    endif()
 endfunction()
 
 # ----------------------------------------------------------------------------
@@ -151,6 +175,7 @@ else()
     set(hubbard_u4_check min-abs @OUTPUT@ -1 -5.6568542494923806 1e-12)
 endif()
 diagham_physics_test(physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2
+    KNOWN_FROM "analytic: 2x2 Hubbard, half filling, U = 4t, Sz = 0: E0 = -4*sqrt(2), correctly rounded with mpmath"
     PROGRAM ${hubbard}
     ARGS -p 4 -x 2 -y 2 --u-potential 4 --nn-t 1.0 --full-diag 1000
     OUTPUT "*_u_4.000000_sz_0.dat"
@@ -160,6 +185,7 @@ diagham_physics_test(physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2
 
 # U = 0: free fermions, ground state is the filled band, exactly -8t.
 diagham_physics_test(physics.hubbard.2x2.U0.ground_state_is_minus_8
+    KNOWN_FROM "analytic: at U = 0 the 2x2 lattice is free fermions and the filled band gives exactly -8t"
     PROGRAM ${hubbard}
     ARGS -p 4 -x 2 -y 2 --u-potential 0 --nn-t 1.0 --full-diag 1000
     # (at U = 0 the program leaves "_u_..." out of the file name)
@@ -171,6 +197,7 @@ diagham_physics_test(physics.hubbard.2x2.U0.ground_state_is_minus_8
 # Full 36-state 2x2 U = 4 spectrum against the saved reference in
 # benchmarks/ (written with 14 significant digits, hence 1e-11).
 diagham_physics_test(physics.hubbard.2x2.U4.full_spectrum
+    KNOWN_FROM "saved reference: benchmarks/fermions_hubbard_square_x_2_y_2_n_4_ns_4_t_1.000000_tp_0.000000_u_4.000000_sz_0.dat.txt, cross-checked by benchmarks/hubbard_ed.py (benchmarks/BENCHMARK.md test 5, outside ctest)"
     PROGRAM ${hubbard}
     ARGS -p 4 -x 2 -y 2 --u-potential 4 --nn-t 1.0 --full-diag 1000
     OUTPUT "*_u_4.000000_sz_0.dat"
@@ -183,6 +210,7 @@ diagham_physics_test(physics.hubbard.2x2.U4.full_spectrum
 # 2x4, U = 4, lowest state of each of the 8 momentum sectors (basis
 # dimension 4900, Lanczos) against the saved reference.
 diagham_physics_test(physics.hubbard.2x4.U4.sector_ground_states
+    KNOWN_FROM "saved reference: benchmarks/fermions_hubbard_square_x_2_y_4_n_8_ns_8_t_1.000000_tp_0.000000_u_4.000000_sz_0.dat.txt, cross-checked by benchmarks/hubbard_ed.py (benchmarks/BENCHMARK.md test 5, outside ctest)"
     PROGRAM ${hubbard}
     ARGS -p 8 -x 2 -y 4 --u-potential 4 --nn-t 1.0 -n 1
     OUTPUT "*_u_4.000000_sz_0.dat"
@@ -200,6 +228,7 @@ set(v1 ${DIAGHAM_TEST_DATA}/v1_pseudopotential.dat)
 # Sphere, N = 6, 2S = 15 = 3(N-1): the Laughlin state is the unique zero
 # mode; in the Lz = 0 sector (dimension 338) exactly one eigenvalue is 0.
 diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.unique_zero_mode
+    KNOWN_FROM "exact count: at 2S = 3(N-1) the Laughlin state is the unique V1 zero mode, one state at Lz = 0"
     PROGRAM FQHEOnSphere_FQHESphereFermionsTwoBodyGeneric
     ARGS -p 6 -l 15 --interaction-file ${v1} --interaction-name v1 --nbr-lz 1 --full-diag 2000
     OUTPUT "fermions_v1_n_6_2s_15_lz.dat"
@@ -212,6 +241,7 @@ diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.unique_zero_mode
 # L = 6, 4, 2, 0 multiplets (28 states in all), i.e. exactly 4 zero modes
 # in the Lz = 0 sector.
 diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.two_quasihole_count
+    KNOWN_FROM "exact count: two bosonic quasiholes of angular momentum N/2 = 3 form L = 6, 4, 2, 0, four zero modes at Lz = 0"
     PROGRAM FQHEOnSphere_FQHESphereFermionsTwoBodyGeneric
     ARGS -p 6 -l 17 --interaction-file ${v1} --interaction-name v1 --nbr-lz 1 --full-diag 5000
     OUTPUT "fermions_v1_n_6_2s_17_lz.dat"
@@ -222,6 +252,7 @@ diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.two_quasihole_count
 # Torus, N = 4, Nphi = 12, all Ky sectors (495 states): the Laughlin state
 # is 3-fold degenerate (topological degeneracy q = 3), all at zero energy.
 diagham_physics_test(physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
+    KNOWN_FROM "exact count: the Laughlin 1/3 state on the torus is threefold degenerate (q = 3)"
     PROGRAM FQHEOnTorus_FQHETorusFermionsTwoBodyGeneric
     ARGS -p 4 -l 12 --interaction-file ${v1} --interaction-name v1 --redundant-kymomenta --full-diag 5000
     OUTPUT "fermions_torus_kysym_v1_n_4_2s_12_ratio_1.000000.dat"
@@ -238,6 +269,7 @@ diagham_physics_test(physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
 # also reproduced by an independent numpy ED to 1e-15. L = 10 checks the Lanczos
 # path against the numpy ED value -4.5154463544920365.
 diagham_physics_test(physics.spin.heisenberg_ring_L4
+    KNOWN_FROM "analytic: the 4-site spin-1/2 Heisenberg ring has E0 = -2J"
     PROGRAM Spin_GenericPeriodicSpinChain
     ARGS -p 4 --nbr-sz 1
     OUTPUT "spin_1_2_periodicchain_n_4.dat"
@@ -245,6 +277,7 @@ diagham_physics_test(physics.spin.heisenberg_ring_L4
     LABELS spin
 )
 diagham_physics_test(physics.spin.heisenberg_ring_L6
+    KNOWN_FROM "analytic: the 6-site spin-1/2 Heisenberg ring has E0 = -(2 + sqrt(13))/2"
     PROGRAM Spin_GenericPeriodicSpinChain
     ARGS -p 6 --nbr-sz 1
     OUTPUT "spin_1_2_periodicchain_n_6.dat"
@@ -285,6 +318,7 @@ diagham_physics_test(crosscheck.fqhe.torus.su2_coulomb.polarized_N3_matches_spin
     LABELS fqhe
 )
 diagham_physics_test(crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations
+    REASON "DiagHam truncates its momentum sums at about 1e-10, so its degenerate pairs differ in the tenth digit (docs/reference/tests.md, tolerance table)"
     PROGRAM FQHEOnTorus_FQHETorusFermionsWithSpin
     ARGS --nbr-particles 3 --max-momentum 9 --total-spin 1 --ratio 1.0 --full-diag 9000 --redundantYMomenta
     OUTPUT "fermions_torus_su2_coulomb_n_3_2s_9_Sz_1_ratio_1.000000.dat"
@@ -392,8 +426,57 @@ if(_manifest_mode)
     set_tests_properties(selftest.manifest PROPERTIES LABELS "selftest" TIMEOUT 120)
 endif()
 
-# Thread limit of every Python oracle test (label "python"; see DIAGHAM_TEST_BLAS_THREADS above).
+# Self-test: the claim rules (tests/check_claims.py): every physics and crosscheck test says where its answer is known
+# from (KNOWN_FROM; report-only while any is missing), loose tolerances carry a TOLERANCE_REASON, labels are in
+# tests/labels.txt, WILL_FAIL goes with the label open-finding, and every open-finding test is in the register.
+if(Python3_FOUND)
+    add_test(NAME selftest.claims
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/check_claims.py ${CMAKE_BINARY_DIR})
+    set_tests_properties(selftest.claims PROPERTIES LABELS "selftest" TIMEOUT 120
+        ENVIRONMENT "CTEST_COMMAND=${CMAKE_CTEST_COMMAND}")
+endif()
+
+# Where the answer of each Python oracle test is known from (KNOWN_FROM, see diagham_physics_test): the oracle the
+# test runs, by test name. selftest.claims checks that the oracle named here is the script in the test's command.
+set(_python_known_from
+    "^python\\.hubbard_ed_cross_check$=tests/hubbard_cross_check.py"
+    "^physics\\.fqhe\\.cylinder\\.confining_potential_coefficients\\.=tests/oracles/confining.py"
+    "^physics\\.core\\.matrix_extract_columns\\.=tests/oracles/core_tools.py"
+    "^physics\\.fqhe\\.sphere\\.(boson_entanglement|su2_spin_rotation|unnormalize_state)\\.=tests/oracles/core_tools.py"
+    "^physics\\.fti\\.(particle_entanglement|show_basis)\\.=tests/oracles/core_tools.py"
+    "^physics\\.fqhe\\.cp2\\.=tests/oracles/cp2.py"
+    "^physics\\.fqhe\\.cylinder\\.density\\.=tests/oracles/cylinder_density.py"
+    "^physics\\.fqhe\\.cylinder\\.(quasihole_matrix_elements|quasiholes_time_reversal_josephson)\\.=tests/oracles/cylinder_quasiholes.py"
+    "^physics\\.fti\\.generic_interaction_two_bands\\.=tests/oracles/fti_generic.py"
+    "^physics\\.hubbard\\.superconductor_order_parameter\\.=tests/oracles/hubbard_order_parameter.py"
+    "^physics\\.(fti\\.min_nbr_singlet_projection|hubbard\\.square_lattice)\\.=tests/oracles/hubbard_square.py"
+    "^physics\\.fqhe\\.sphere\\.mps_create_state\\.=tests/oracles/mps_laughlin.py"
+    "^physics\\.fqhe\\.sphere\\.(quasihole_matrix_elements|quasiholes_time_reversal_[a-z_]+)\\.=tests/oracles/quasiholes_trs.py"
+    "^physics\\.fqhe\\.(cylinder|sphere|disk)\\.realspace_partition_coefficients\\.=tests/oracles/realspace.py"
+    "^physics\\.spin\\.(compute_s2|multiple_entanglement_spectra)\\.=tests/oracles/spin_tools.py"
+    "^physics\\.fqhe\\.cylinder\\.mps_orbital_entanglement_spectrum\\.=tests/oracles/mps_oes.py"
+    "^physics\\.fqhe\\.torus\\.mps_create_state\\.=tests/oracles/torus_mps.py"
+    "^physics\\.fqhe\\.cylinder\\.quasiholes_time_reversal_generate_basis\\.=tests/oracles/trs_generate_basis.py"
+    "^physics\\.core\\.vector_(ascii2binary|binary2ascii)\\.=tests/oracles/vector_io.py")
 get_property(_all_tests DIRECTORY PROPERTY TESTS)
+foreach(_t IN LISTS _all_tests)
+    get_test_property(${_t} LABELS _labels)
+    get_test_property(${_t} KNOWN_FROM _known)
+    if(_labels AND "python" IN_LIST _labels AND NOT _known)
+        foreach(_entry IN LISTS _python_known_from)
+            string(FIND "${_entry}" "=" _eq REVERSE)
+            string(SUBSTRING "${_entry}" 0 ${_eq} _re)
+            math(EXPR _eq "${_eq} + 1")
+            string(SUBSTRING "${_entry}" ${_eq} -1 _oracle)
+            if(_t MATCHES "${_re}")
+                set_tests_properties(${_t} PROPERTIES KNOWN_FROM "oracle ${_oracle}")
+                break()
+            endif()
+        endforeach()
+    endif()
+endforeach()
+
+# Thread limit of every Python oracle test (label "python"; see DIAGHAM_TEST_BLAS_THREADS above).
 foreach(_t IN LISTS _all_tests)
     get_test_property(${_t} LABELS _labels)
     if(_labels AND "python" IN_LIST _labels)

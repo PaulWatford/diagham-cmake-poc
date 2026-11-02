@@ -404,6 +404,7 @@ selftest.checker.rejects_wrong_count
 selftest.checker.rejects_wrong_value
 selftest.checker.relative_tolerance_rejects
 selftest.checker.relative_tolerance_scales
+selftest.claims
 selftest.confining_oracle
 selftest.core_tools_oracle
 selftest.dimension_oracle

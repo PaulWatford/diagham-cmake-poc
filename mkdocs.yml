@@ -95,6 +95,7 @@ nav:
           - 'Bring new DiagHam revisions in from Subversion': how-to/develop/sync-upstream.md
   - Reference:
       - 'Build system reference': reference/build-system.md
+      - 'Claim index: what each physics test establishes and where its answer is known from': reference/claims.md
       - 'configure.ac → CMake flag map': reference/configure-flag-map.md
       - 'Data formats and file tools': reference/data-formats.md
       - 'Numbers of record': reference/numbers.md

@@ -38,7 +38,8 @@ function(diagham_dimension_test name)
             -DEXPECT_FILE=${DIAGHAM_TEST_DATA}/dimensions/${ARG_EXPECT}.txt
             ${extra}
             -P ${CMAKE_CURRENT_SOURCE_DIR}/RunAndMatch.cmake)
-    set_tests_properties(${name} PROPERTIES LABELS "physics;dimension;${ARG_LABELS}" TIMEOUT ${ARG_TIMEOUT})
+    set_tests_properties(${name} PROPERTIES LABELS "physics;dimension;${ARG_LABELS}" TIMEOUT ${ARG_TIMEOUT}
+        KNOWN_FROM "oracle tests/oracles/dimensions.py")
 endfunction()
 
 # --- sphere: FQHESphereGetDimension prints "Lz = ..." (states per 2Lz = 0,2,...)

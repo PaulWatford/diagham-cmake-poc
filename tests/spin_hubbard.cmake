@@ -26,7 +26,8 @@ function(diagham_ground_energy_test name)
         ARGS ${ARG_ARGS}
         OUTPUT "${ARG_OUTPUT}"
         CHECK min-abs @OUTPUT@ -1 ${value} ${tol}
-        LABELS ${ARG_LABELS})
+        LABELS ${ARG_LABELS}
+        KNOWN_FROM "oracle tests/oracles/spin_hubbard.py")
 endfunction()
 
 # --- spin chains ---------------------------------------------------------------
@@ -47,6 +48,7 @@ endforeach()
 # open AKLT chain as a sum of projectors: the two spin-1/2 edge spins give exactly four zero-energy
 # states (singlet + triplet); the program lists the 2Sz >= 0 sectors, so 3 appear (2 at Sz=0, 1 at Sz=1)
 diagham_physics_test(physics.spin.aklt_open_chain_L6.edge_state_count
+    KNOWN_FROM "exact count: the open AKLT chain's two spin-1/2 edge spins give four zero-energy states, three in the 2Sz >= 0 sectors"
     PROGRAM Spin_SpinChainAKLT
     ARGS -p 6 --projector-normalization --full-diag 5000
     OUTPUT "spin_1_open_projnormaklt_n_6.dat"

@@ -24,7 +24,8 @@ KINDS = ("physics", "crosscheck", "regression", "smoke")
 
 
 def ctest_json(build_dir):
-    out = subprocess.run(["ctest", "--show-only=json-v1"], cwd=build_dir, check=True,
+    # CTEST_COMMAND: the ctest of the build, when run as a test (selftest.claims); else the one on PATH
+    out = subprocess.run([os.environ.get("CTEST_COMMAND", "ctest"), "--show-only=json-v1"], cwd=build_dir, check=True,
                          capture_output=True, text=True).stdout
     return json.loads(out)
 

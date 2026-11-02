@@ -33,7 +33,8 @@ function(diagham_geometry_test name)
         OUTPUT "${ARG_OUTPUT}"
         CHECK count @OUTPUT@ -1 0 1e-10 ${count}
         TIMEOUT ${ARG_TIMEOUT}
-        LABELS fqhe ${ARG_GEOMETRY})
+        LABELS fqhe ${ARG_GEOMETRY}
+        KNOWN_FROM "oracle tests/oracles/fqhe_geometries.py")
 endfunction()
 
 # --- torus ------------------------------------------------------------------------

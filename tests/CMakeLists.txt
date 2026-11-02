@@ -77,6 +77,11 @@ set(DIAGHAM_TEST_BLAS_THREADS_HEAVY 4 CACHE STRING
 function(diagham_physics_test name)
     cmake_parse_arguments(ARG "WILL_FAIL" "PROGRAM;OUTPUT;TIMEOUT;REF_PROGRAM;REF_OUTPUT;KNOWN_FROM;REASON"
         "ARGS;CHECK;LABELS;REF_ARGS;PRE_STEPS" ${ARGN})
+    # a ";" in a one-value argument (KNOWN_FROM, REASON) splits it and the rest lands here, silently cut off
+    if(ARG_UNPARSED_ARGUMENTS)
+        message(FATAL_ERROR "diagham_physics_test(${name}): unexpected arguments ${ARG_UNPARSED_ARGUMENTS} "
+            "(a \";\" in KNOWN_FROM or REASON?)")
+    endif()
     set(pre_defs "")
     if(ARG_PRE_STEPS)
         set(steps "")

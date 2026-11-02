@@ -22,7 +22,8 @@ diagham_physics_test(physics.<module>.<what>
 a `CHECK` that reads `tests/data/<dir>/` written by `tests/oracles/<dir>.py` (the oracle), and a test with
 `REF_PROGRAM` (that program). `REASON` is needed when the tolerance is looser than `rel:1e-12`, 4 ulp for `min`,
 or an absolute 1e-9; the reasons in use are in the tolerance table of
-[../../reference/tests.md](../../reference/tests.md). A label must be listed in `tests/labels.txt`.
+[../../reference/tests.md](../../reference/tests.md). A label must be listed in `tests/labels.txt`. Neither text may contain `;`, which CMake reads as a list separator;
+the configure step stops if one does.
 `selftest.claims` checks all of this, and the test then appears in
 [../../reference/claims.md](../../reference/claims.md) (regenerate it with
 `python3 tests/claims.py build/default --write docs/reference/claims.md`).

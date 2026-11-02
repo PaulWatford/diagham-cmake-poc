@@ -19,7 +19,7 @@ all present on the `upstream` branch: `git log upstream`).
   `REASON`; filled in automatically for an oracle's `tests/data/<dir>/` and for a `REF_PROGRAM`), all 347 in the
   default build. `physics.spin.heisenberg_ring_L10` now takes its value from `tests/oracles/spin_hubbard.py`
   (new case `heisenberg_ring_L10`, a numpy dense ED; the inline value, from a numpy ED outside the tree,
-  agreed to 8e-15). `tests/claims.py` writes `docs/reference/claims.md`, checked for staleness by `ci.sh`; the
+  agreed to 8e-15). The properties are read from the build's `CTestTestfile.cmake` files, because `ctest --show-only=json-v1` of CMake 3.28 (Ubuntu 24.04) leaves custom properties out. `tests/claims.py` writes `docs/reference/claims.md`, checked for staleness by `ci.sh`; the
   new test `selftest.claims` (`tests/check_claims.py`) fails on a source of no known kind, a looser tolerance
   without `TOLERANCE_REASON`, a label outside the new `tests/labels.txt`, `WILL_FAIL` without the label
   `open-finding` (or the reverse), an `open-finding` test missing from the register, or a missing

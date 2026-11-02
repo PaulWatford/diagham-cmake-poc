@@ -665,7 +665,7 @@ endforeach()
 # Lanczos with reorthogonalisation (-n 4) vs full diagonalisation: same program, same
 # Hamiltonian (Coulomb, N=6, 2S=15, Lz=0, 338 states), the 4 lowest eigenvalues to 1e-10.
 diagham_physics_test(crosscheck.fqhe.sphere.lanczos_vs_full_diagonalisation
-    KNOWN_FROM "independent program: the same program with full diagonalisation (same Hamiltonian; the Lanczos path against the dense one)"
+    KNOWN_FROM "independent program: the same program with full diagonalisation (same Hamiltonian, the Lanczos path against the dense one)"
     PROGRAM ${fer2}
     ARGS -p 6 -l 15 --interaction-file ${ed_data}/fermions_n5_2s12_coulomb_pp.dat --interaction-name c15 --nbr-lz 1 --full-diag 100 -n 4
     OUTPUT "fermions_c15_n_6_2s_15_lz.dat"
@@ -678,7 +678,7 @@ diagham_physics_test(crosscheck.fqhe.sphere.lanczos_vs_full_diagonalisation
 #  this is a consensus check, the interaction only needs to be the same on both sides)
 if(DIAGHAM_USE_LAPACK)
     diagham_physics_test(crosscheck.fqhe.sphere.lapack_vs_internal_diagonaliser
-        KNOWN_FROM "independent program: the same program with its internal diagonaliser (same Hamiltonian; LAPACK against DiagHam's own)"
+        KNOWN_FROM "independent program: the same program with its internal diagonaliser (same Hamiltonian, LAPACK against DiagHam's own)"
         PROGRAM ${fer2}
         ARGS -p 6 -l 15 --interaction-file ${ed_data}/fermions_n5_2s12_coulomb_pp.dat --interaction-name c15 --nbr-lz 1 --full-diag 100000 --use-lapack
         OUTPUT "fermions_c15_n_6_2s_15_lz.dat"

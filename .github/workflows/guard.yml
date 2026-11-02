@@ -1,0 +1,66 @@
+name: Guard
+
+# The review pipeline's author gate and damage scan (AGENTS.md "Pipeline" steps 3 and 5;
+# docs/explanation/guard-design.md; docs/how-to/develop/guard.md).
+#
+# Runs on pull_request_target so that it has a token that can label, comment and request reviews on pull
+# requests from forks. For that reason it checks out the BASE branch only and never executes anything from
+# the pull request: the head is fetched as git data and read by scripts_cmake/damage_scan.py from the base
+# checkout. Keep it that way; do not add `ref: ${{ github.event.pull_request.head.sha }}` to the checkout.
+#
+# Both jobs are meant to be required status checks on main (.github/rulesets/main.json). A held pull request
+# shows them red until a login from .github/guard-reviewers.txt adds the label approved-by-maintainer (which
+# re-runs this workflow) or approves the head commit.
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, ready_for_review, edited, labeled, unlabeled]
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+concurrency:
+  group: guard-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  author-gate:
+    name: guard / author gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4   # the base branch: the lists and the scripts come from main, never from the PR
+      - name: Author gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GUARD_SENDER: ${{ github.event.sender.login }}
+        run: python3 .github/scripts/author_gate.py
+
+  damage-scan:
+    name: guard / damage scan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4   # the base branch
+        with:
+          fetch-depth: 0
+      - name: Fetch the pull request head as data (nothing from it is executed)
+        run: git fetch --no-tags origin "pull/${{ github.event.pull_request.number }}/head:refs/guard/head"
+      - name: Damage scan (scripts_cmake/damage_scan.py from the base branch)
+        id: scan
+        run: |
+          base=$(git merge-base "${{ github.event.pull_request.base.sha }}" refs/guard/head)
+          echo "comparing $base to $(git rev-parse --short refs/guard/head)"
+          set +e
+          python3 scripts_cmake/damage_scan.py "$base" refs/guard/head --markdown damage.md --json damage.json --quiet
+          rc=$?
+          set -e
+          if [ "$rc" -eq 1 ]; then echo "the scan could not run"; exit 1; fi
+      - name: Report and hold
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: python3 .github/scripts/guard_report.py damage.md damage.json

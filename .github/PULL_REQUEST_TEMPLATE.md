@@ -2,6 +2,16 @@
 
 ## What this changes and why
 
+## AI assistance
+
+<!-- Tick exactly one. The Guard workflow reads this section; a pull request with no box ticked fails its
+     author gate until one is. AI-assisted and AI-generated changes are held for a named maintainer
+     (AGENTS.md); changes to DiagHam's physics sources made with AI tools are marked "for maintainer review". -->
+
+- [ ] No AI tools were used for this change.
+- [ ] AI-assisted: a tool helped (name it and say what it did, e.g. "Claude Code drafted the CMake changes; I reviewed and tested them"):
+- [ ] AI-generated: the change was produced by a tool and is submitted for maintainer review (name the tool and the prompt or task):
+
 ## Checklist
 
 - [ ] `ctest --preset default` is green locally (say which other presets you ran).

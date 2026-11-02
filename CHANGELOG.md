@@ -14,6 +14,15 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- The Guard (`.github/workflows/guard.yml`): the damage scan of `AGENTS.md` as `scripts_cmake/damage_scan.py`
+  (tests removed, demo unregistered, checks skipped, golden edited, option default flipped, in-source build,
+  patches changed; read with git only; `damage_scan_selftest.sh` checks every class), and an author gate that
+  holds pull requests from logins not in `.github/approved-developers.txt`, from bots, or with declared or
+  detected AI assistance, requests review from `.github/guard-reviewers.txt`, and requires the pull request
+  template's new "AI assistance" section to be answered. A hold is released only by a listed reviewer
+  (label `approved-by-maintainer` or an approving review). Repository rulesets for `main` and the release
+  tags are kept as `.github/rulesets/*.json`. Documented in `docs/how-to/develop/guard.md`;
+  `docs/explanation/guard-design.md` status table updated.
 - `DIAGHAM_TEST_BLAS_THREADS` (default 1, or `OMP_NUM_THREADS` at configure time) and
   `DIAGHAM_TEST_BLAS_THREADS_HEAVY` (4): the BLAS threads of every Python oracle test. Without a
   limit each parallel ctest job started a thread pool sized for the whole machine, which caused

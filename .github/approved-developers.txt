@@ -1,0 +1,11 @@
+# Approved developers: GitHub logins whose pull requests the Guard's author gate does not hold.
+# One login per line; "#" starts a comment. Read from the base branch by .github/scripts/author_gate.py.
+# Pull requests by anyone else (and by any bot) are labelled external-contribution and held for a review
+# request to the logins in .github/guard-reviewers.txt. AI-assisted pull requests are held whoever opens them.
+#
+# Changing this file is a governance change (GOVERNANCE.md): by pull request, merged by the maintainer.
+PaulWatford
+# DiagHam authors: add their GitHub logins once confirmed with them (not read from any record yet):
+# Gunnar Moller      -> login not read
+# Nicolas Regnault   -> login not read
+# Zlatko Papic       -> login not read

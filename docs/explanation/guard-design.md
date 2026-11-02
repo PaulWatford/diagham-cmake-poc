@@ -1,7 +1,7 @@
 # The review pipeline ("CMake AI Guard") — design
 
 Purpose: why the repository's review process is shaped the way it is, and how each part maps onto CI.
-Source: the "CMake AI Guard" specification (Paul Watford, September 2026) and the pipeline section of `AGENTS.md`. Changed: the spec's "79-name manifest" is expressed in terms of the ctest suite that now exists; implementation status stated plainly.
+Source: the "CMake AI Guard" specification (Paul Watford, September 2026) and the pipeline section of `AGENTS.md`. Changed: the spec's "79-name manifest" is expressed in terms of the ctest suite that now exists; implementation status stated plainly. Status table updated 2 November 2026 for the Guard workflow (`how-to/develop/guard.md`).
 
 ## The idea in one sentence
 
@@ -50,15 +50,28 @@ The test manifest (`tests/manifest.txt`, enforced by `selftest.manifest`), the g
 of them is Damage even if the build stays green: it is flagged and held,
 never merged on a green tick.
 
-## Status (2026-09-26)
+## Who may submit, and who must look
+
+The specification speaks of a maintainer who approves. The Guard workflow makes the two sides of that
+explicit as files on `main`: `.github/approved-developers.txt` (whose pull requests are not held for being
+external) and `.github/guard-reviewers.txt` (who is asked to review a held pull request and who alone can
+release it). Every pull request from anyone else, every pull request by a bot, and every pull request that
+declares or shows AI assistance is held and the reviewers are asked. AI-assisted changes to DiagHam's physics
+sources are reported "for maintainer review", the `GOVERNANCE.md` wording for physics-affecting changes.
+Disclosure is required: the pull request template's "AI assistance" section must have a box ticked, or the
+gate fails for everyone. No AI agent is on either list, now or ever.
+
+## Status (2026-11-02)
 
 | Part | State |
 |---|---|
 | Gates 1–2 without the manifest | implemented: `scripts_cmake/ci.sh` (build + ctest) via `.github/workflows/ci.yml` and `.gitlab-ci.yml` |
 | Manifest check | done 2026-09-27: `tests/manifest.txt` + `selftest.manifest` (CheckManifest.cmake) |
-| Damage scan | designed (a git-and-grep script with the seven classes above); to be added as a CI job |
-| Description (model) | not built; the system prompt is in `AGENTS.md` |
-| Hold / approval | to be a manual CI job plus branch protection on `main` (a named maintainer plays it); until then, human review of every merge request is the rule |
+| Damage scan | built 2026-11-02: `scripts_cmake/damage_scan.py` (the seven classes above, read with git only, exit 2 on damage; `damage_scan_selftest.sh` checks each class) run by `.github/workflows/guard.yml` as the check `guard / damage scan`, reported as one comment per pull request, held with the labels `damage` and `held-for-approval` |
+| Author gate | built 2026-11-02: `.github/scripts/author_gate.py` as the check `guard / author gate`: approved-developer list, AI disclosure and detection, physics-source check, review requests |
+| Description (model) | not built; the system prompt is in `AGENTS.md`. The damage scan's report already carries the deterministic parts of the mail (Damage, test-name add/remove list, diffstat) |
+| Hold / approval | built 2026-11-02 as labels and required checks: `held-for-approval` until a login in `.github/guard-reviewers.txt` adds `approved-by-maintainer` or approves the head commit; `.github/rulesets/main.json` requires the two Guard checks, the five CI presets, the container job and one code-owner review on `main`. A release through a label is the `approve` reply of the specification; `reject` is closing the pull request; `restore-tests` is a review comment asking for the names and goldens back, after which the scan re-runs on the next push |
+| Mail | not built; the comment on the pull request and the notification GitHub sends for the review request stand in for it |
 
 The earlier wording "79 checks" referred to `cmake/verify_build.sh`, the
 autotools-parity script, which reports 79 passes in the default

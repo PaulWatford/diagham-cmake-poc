@@ -14,6 +14,17 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- Claim index and sealed claims (G4, G5): every `physics` and `crosscheck` test carries the test property
+  `KNOWN_FROM`, where its expected answer is known from (`diagham_physics_test` arguments `KNOWN_FROM` and
+  `REASON`; filled in automatically for an oracle's `tests/data/<dir>/` and for a `REF_PROGRAM`), all 347 in the
+  default build. `physics.spin.heisenberg_ring_L10` now takes its value from `tests/oracles/spin_hubbard.py`
+  (new case `heisenberg_ring_L10`, a numpy dense ED; the inline value, from a numpy ED outside the tree,
+  agreed to 8e-15). The properties are read from the build's `CTestTestfile.cmake` files, because `ctest --show-only=json-v1` of CMake 3.28 (Ubuntu 24.04) leaves custom properties out. `tests/claims.py` writes `docs/reference/claims.md`, checked for staleness by `ci.sh`; the
+  new test `selftest.claims` (`tests/check_claims.py`) fails on a source of no known kind, a looser tolerance
+  without `TOLERANCE_REASON`, a label outside the new `tests/labels.txt`, `WILL_FAIL` without the label
+  `open-finding` (or the reverse), an `open-finding` test missing from the register, or a missing
+  `KNOWN_FROM`. `tests/claims_selftest.sh` checks each rule. The register now
+  names the four `open-finding` tests of U50 and U51. Suite: 1030 tests.
 - Gates for AI work: `CLAUDE.md` (G1 to G7, stop-and-ask list, vocabulary; imports `AGENTS.md`),
   `docs/how-to/develop/ai-gates.md`; the Guard requests review from `.github/guard-reviewers.txt` and
   `.github/approved-developers.txt` on every new pull request; `tests/numbers_of_record.py` writes

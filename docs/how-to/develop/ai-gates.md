@@ -25,9 +25,9 @@ Nothing an AI tool writes here is done until every gate has been run and has pas
 
 **G3, the damage scan.** It compares the branch with `main` and exits 2 when a locked artefact changed: a test name removed, a golden or reference file edited, a value or tolerance line changed, an option default flipped, the in-source guard removed, `patches/` touched. Exit 2 is acceptable only when every finding is intended and listed under "Damage, explained" in the pull request; the maintainer then decides. Never undo a finding by editing the scan.
 
-**G4, sealed claims.** `selftest.claims` checks that every `physics` test says where its answer is known from, carries a tolerance (or the reason it has a looser one), uses only the labels of the vocabulary, and that open-finding tests are `WILL_FAIL` and registered. Until it exists the gate is reported NOT RUN (`docs/explanation/guard-design.md`, status table).
+**G4, sealed claims.** `selftest.claims` checks that every `physics` test says where its answer is known from, carries a tolerance (or the reason it has a looser one), uses only the labels of `tests/labels.txt`, and that open-finding tests are `WILL_FAIL` and registered. A test without `KNOWN_FROM` fails it too (`python3 tests/claims.py build/default --missing` lists any). `tests/claims_selftest.sh`, run by `scripts_cmake/ci.sh`, shows each rule catching a synthetic case.
 
-**G5, generated pages.** The coverage page, the claim index and the numbers page are written from the build. A stale page is a failure: regenerate it with the command and commit the result. Do not edit a generated page by hand. Until `tests/claims.py` exists that part of the gate is reported NOT RUN.
+**G5, generated pages.** The coverage page, the claim index and the numbers page are written from the build. A stale page is a failure: regenerate it with the command and commit the result. Do not edit a generated page by hand. `scripts_cmake/ci.sh default` checks all three.
 
 **G6, documentation.** `gen_mkdocs_nav.py --check` fails when a page is missing from the navigation (run it without `--check` to rewrite `mkdocs.yml`); `mkdocs build --strict` fails on a broken link.
 
@@ -49,13 +49,13 @@ One line per gate, the command's last line or lines after it, in a code block:
 G1 build:          [100%] Built target ...
 G2 suite:          100% tests passed, 0 tests failed out of N
 G3 damage scan:    Damage: none
-G4 claims:         NOT RUN (selftest.claims not built yet)
-G5 pages:          docs/reference/numbers.md is current; claims.py NOT RUN (not built yet)
+G4 claims:         selftest.claims: N tests, M physics or crosscheck; 0 failure(s)
+G5 pages:          docs/reference/numbers.md is current; docs/reference/claims.md is current
 G6 docs:           mkdocs.yml nav up to date; mkdocs exit 0
 G7 disclosure:     AI-generated ticked
 ```
 
-Paste the real output; the N above stands for the number your run printed. If G3 exited 2, add a section "Damage, explained" with one line per finding. Put "for maintainer review" in the title when a physics source or a locked artefact had to change.
+Paste the real output; N and M above stand for the numbers your run printed. If G3 exited 2, add a section "Damage, explained" with one line per finding. Put "for maintainer review" in the title when a physics source or a locked artefact had to change.
 
 ## ALPS
 

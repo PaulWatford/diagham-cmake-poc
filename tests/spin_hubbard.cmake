@@ -26,13 +26,19 @@ function(diagham_ground_energy_test name)
         ARGS ${ARG_ARGS}
         OUTPUT "${ARG_OUTPUT}"
         CHECK min-abs @OUTPUT@ -1 ${value} ${tol}
-        LABELS ${ARG_LABELS})
+        LABELS ${ARG_LABELS}
+        KNOWN_FROM "oracle tests/oracles/spin_hubbard.py")
 endfunction()
 
 # --- spin chains ---------------------------------------------------------------
 set(gps Spin_GenericPeriodicSpinChain)
 diagham_ground_energy_test(physics.spin.heisenberg_ring_L8 CASE heisenberg_ring_L8
     PROGRAM ${gps} ARGS -p 8 --nbr-sz 1 --full-diag 5000 OUTPUT "spin_1_2_periodicchain_n_8.dat" LABELS spin)
+# L = 10 runs the Lanczos path (no --full-diag; 252 states at Sz = 0); until 2 November 2026 its value was
+# written inline (-4.5154463544920365, rel:1e-12), from a numpy ED outside the tree; the oracle gives the same
+# value to 8e-15
+diagham_ground_energy_test(physics.spin.heisenberg_ring_L10 CASE heisenberg_ring_L10
+    PROGRAM ${gps} ARGS -p 10 --nbr-sz 1 OUTPUT "spin_1_2_periodicchain_n_10.dat" LABELS spin)
 diagham_ground_energy_test(physics.spin.spin1_heisenberg_ring_L6 CASE spin1_heisenberg_ring_L6
     PROGRAM ${gps} ARGS -s 2 -p 6 --nbr-sz 1 --full-diag 5000 OUTPUT "spin_1_periodicchain_n_6.dat" LABELS spin)
 # --nn-coupling -1 removes the Sz Sz term (the ZZ coupling is j + nn-coupling): the XX chain
@@ -47,6 +53,7 @@ endforeach()
 # open AKLT chain as a sum of projectors: the two spin-1/2 edge spins give exactly four zero-energy
 # states (singlet + triplet); the program lists the 2Sz >= 0 sectors, so 3 appear (2 at Sz=0, 1 at Sz=1)
 diagham_physics_test(physics.spin.aklt_open_chain_L6.edge_state_count
+    KNOWN_FROM "exact count: the open AKLT chain's two spin-1/2 edge spins give four zero-energy states, three in the 2Sz >= 0 sectors"
     PROGRAM Spin_SpinChainAKLT
     ARGS -p 6 --projector-normalization --full-diag 5000
     OUTPUT "spin_1_open_projnormaklt_n_6.dat"

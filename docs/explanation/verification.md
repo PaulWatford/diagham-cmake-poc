@@ -12,7 +12,9 @@ Source: the r4493 build of 2026-09-28, `docs/reference/test-coverage.md` (genera
 | **Regression** (`regression`) | 11 (+1 with GSL) | the program reproduces what this build produced on 2026-09-28, to 10⁻⁹ | *nothing* about correctness — a wrong number reproduced is a pass |
 | **Smoke** (`smoke`) | 599 | the program links, parses `--help` and exits 0 | nothing about physics |
 
-Plus 32 self-tests of the harness (the manifest, twenty-two oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 39 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+Plus 33 self-tests of the harness (the manifest, the claim rules, twenty-two oracle re-derivations, the checker's and runner's rejection of wrong values, missing files, NaN, wrong-length spectra and missing output, and the relative tolerance), 39 `open-finding` reproducers (`WILL_FAIL`), 1 install test and the Python cross-checks.
+
+Where the expected answer of each `physics` and `crosscheck` test is known from (an oracle in this repository, a closed form, an exact count, another program, or a saved reference and what cross-checked it) is listed test by test in [the claim index](../reference/claims.md), from each test's `KNOWN_FROM` property; `selftest.claims` keeps that property, the tolerance policy and the label list in order.
 
 ## Programs, by module
 

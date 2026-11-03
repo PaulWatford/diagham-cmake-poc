@@ -38,7 +38,8 @@ function(diagham_zero_mode_test name)
         ARGS ${ARG_ARGS} --initial-lz ${two_lz} --nbr-lz 1 --full-diag 20000
         OUTPUT "${ARG_OUTPUT}"
         CHECK count @OUTPUT@ -1 0 1e-10 ${count}
-        LABELS fqhe sphere)
+        LABELS fqhe sphere
+        KNOWN_FROM "oracle tests/oracles/fqhe_sphere.py")
 endfunction()
 
 # --- 1. zero modes -------------------------------------------------------------
@@ -98,6 +99,7 @@ set(jack FQHEOnSphere_FQHESphereJackGenerator)
 set(conv FQHEOnSphere_FQHESphereConvertHaldaneBasis)
 set(overlap Programs_GenericOverlap)
 diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.jack_equals_ed
+    KNOWN_FROM "analytic: the Laughlin 1/3 state is the Jack polynomial alpha = -2 and the unique V1 zero mode, so the squared overlap is 1"
     PRE_STEPS
         "${fer2}|-p|6|-l|15|--interaction-file|${v1}|--interaction-name|v1|--nbr-lz|1|--full-diag|2000|--eigenstate|-n|1"
         "${jack}|-a|-2|--fermion|-n|--reference-file|${sphere_data}/root_laughlin_1_3_n6_2s15.dat|-o|fermions_haldane_jack_n_6_2s_15_lz_0.0.vec"
@@ -108,6 +110,7 @@ diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.jack_equals_ed
     CHECK min-abs @OUTPUT@ 0 1 1e-12
     LABELS fqhe sphere)
 diagham_physics_test(physics.fqhe.sphere.bosons_laughlin_1_2.jack_equals_ed
+    KNOWN_FROM "analytic: the bosonic Laughlin 1/2 state is the Jack polynomial alpha = -2 and the unique V0 zero mode, so the squared overlap is 1"
     PRE_STEPS
         "${bos2}|-p|6|-l|10|--interaction-file|${v0}|--interaction-name|v0|--nbr-lz|1|--full-diag|5000|--eigenstate|-n|1"
         "${jack}|-a|-2|-n|--reference-file|${sphere_data}/root_laughlin_1_2_n6_2s10.dat|-o|bosons_haldane_jack_n_6_2s_10_lz_0.0.vec"
@@ -118,6 +121,7 @@ diagham_physics_test(physics.fqhe.sphere.bosons_laughlin_1_2.jack_equals_ed
     CHECK min-abs @OUTPUT@ 0 1 1e-12
     LABELS fqhe sphere)
 diagham_physics_test(physics.fqhe.sphere.bosons_mooreread.jack_equals_ed
+    KNOWN_FROM "analytic: the bosonic Moore-Read state is the Jack polynomial alpha = -3 and the unique zero mode of the three-body hard core, so the squared overlap is 1"
     PRE_STEPS
         "${bosN}|-p|6|-l|4|--nbr-nbody|3|--initial-lz|0|--nbr-lz|1|--full-diag|5000|--eigenstate|-n|1"
         "${jack}|-a|-3|-n|--reference-file|${sphere_data}/root_mooreread_n6_2s4.dat|-o|bosons_haldane_jack_n_6_2s_4_lz_0.0.vec"
@@ -143,6 +147,7 @@ foreach(line ${pes_lines})
         list(APPEND filters 1 ${lz})
     endif()
     diagham_physics_test(physics.fqhe.sphere.laughlin_1_3.${case}
+        KNOWN_FROM "oracle tests/oracles/fqhe_sphere.py"
         PRE_STEPS
             "${fer2}|-p|6|-l|15|--interaction-file|${v1}|--interaction-name|v1|--nbr-lz|1|--full-diag|2000|--eigenstate|-n|1"
         PROGRAM ${pes}

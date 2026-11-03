@@ -1,0 +1,50 @@
+# The test-label vocabulary, one label per line (enforced by selftest.claims, tests/check_claims.py).
+# A test may carry only labels listed here, so a typo ("phyiscs") cannot hide a test from "ctest -L physics".
+# Seeded on 2026-11-02 from the labels of the default build and the program modules of tests/data/regression/cases.txt
+# (the regression tests are labelled by module; FQHEOnCylinder appears only in builds with GSL).
+# Adding a label: add it here in the same commit as the test that uses it.
+atomiclimit
+bands
+checkerboard
+core
+cp2
+crosscheck
+cylinder
+dimension
+disk
+ed
+entanglement
+fci
+FCI
+fqhe
+FQHEOnCylinder
+FQHEOnLattice
+FQHEOnSphere
+FQHEOnTorus
+FTI
+fti
+haah_code
+haldane
+hofstadter
+hubbard
+HubbardModels
+install
+kagome
+lanczos
+lattice
+manybody
+mps
+nbody
+open-finding
+physics
+python
+QuantumDots
+regression
+selftest
+smoke
+sphere
+Spin
+spin
+toric_code
+torus
+xcube

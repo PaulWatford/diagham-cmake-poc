@@ -543,7 +543,7 @@ segfaults after `start` for every size tried; the regression case uses
 | `crosscheck.fqhe.torus.su2_coulomb.unpolarized_N3_matches_translations` | `FQHETorusFermionsWithSpin` vs `FQHETorusFermionsWithSpinAndTranslations` | full 324-state Sz=1 spectra agree to 1e-8 | two independent implementations; regression for patch 14 (fails by 0.43 without it) |
 | `physics.spin.heisenberg_ring_L4` | `GenericPeriodicSpinChain` | lowest eigenvalue = -2 ± 1e-12 | S=1/2 Heisenberg ring, exact |
 | `physics.spin.heisenberg_ring_L6` | `GenericPeriodicSpinChain` | lowest eigenvalue = -(2+√13)/2 ± 1e-12 | exact (closed form), cross-checked with numpy |
-| `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.5154463544920365 to relative 1e-12 | independent numpy ED (Lanczos path; dimension 252) |
+| `physics.spin.heisenberg_ring_L10` | `GenericPeriodicSpinChain` | lowest eigenvalue = -4.515446354492044 ± 1e-12 | independent numpy ED, `tests/oracles/spin_hubbard.py` (Lanczos path; dimension 252) |
 
 `tests/check_spectrum.cc` does the comparison; it needs no Python and no
 DiagHam library, so the goldens run anywhere the programs do.
@@ -576,6 +576,12 @@ Measured on 25 October 2026 in the default, LAPACK and full builds:
 | Hubbard-Haldane, SSH, AKLT p3p4, Kitaev-Heisenberg ED | 1e-7 | up to 2·10⁻⁸ | the programs converge to about 10⁻⁸ |
 | Torus ED groups and the spinful torus cross-check | 1e-8 | up to 10⁻⁹ | DiagHam truncates its momentum sums at about 10⁻¹⁰; most cases of each group reach 10⁻¹² |
 | `open-finding` reproducers | various | | they record a wrong result; the tolerance identifies the wrong value |
+
+Each `physics` or `crosscheck` test looser than `rel:1e-12`, 4 ulp or an absolute 1e-9 carries the reason from
+this table as its test property `TOLERANCE_REASON` (argument `REASON` of `diagham_physics_test`), and where its
+expected answer is known from as `KNOWN_FROM`; `selftest.claims` (`tests/check_claims.py`) fails on a looser
+tolerance without a reason, and both properties are listed in [claims.md](claims.md). The zero thresholds of
+`count` and `nonzero` (1e-10) are within the absolute bound and need none.
 
 **Time budget.** Every DiagHam program test is designed to finish in about 30 seconds when run on its own.
 Measured one at a time on 25 October 2026, all 280 such tests take 13.4 s in total, and the slowest takes

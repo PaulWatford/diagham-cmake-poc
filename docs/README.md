@@ -57,6 +57,7 @@ Every page starts with a `Purpose:` and a `Source:` line saying where its conten
 | How this repository scores against JOSS / FAIR4RS / Turing Way / CERTIFY-ED | [explanation/checklists.md](explanation/checklists.md) |
 | Which programs actually have their physics tested (accurate count) | [reference/test-coverage.md](reference/test-coverage.md) |
 | Every figure the project quotes, from one build | [reference/numbers.md](reference/numbers.md) |
+| Where each physics test's expected answer is known from | [reference/claims.md](reference/claims.md) |
 | Fix something in DiagHam's own sources: the rules and the index of fixes so far | `CONTRIBUTING.md` at the root, then [explanation/upstream-fixes.md](explanation/upstream-fixes.md) |
 | Offer a fix or a finding to the DiagHam authors (reports + `svn patch` diffs) | [how-to/develop/send-a-fix-upstream.md](how-to/develop/send-a-fix-upstream.md), [upstream-reports/](upstream-reports/README.md) |
 | Code that is excluded from the build, and why | [explanation/deferred-code.md](explanation/deferred-code.md) |
@@ -99,6 +100,6 @@ docs/
 
 ## Keeping it truthful
 
-- Counts quoted in the docs (61 libraries, 603 programs, 1029 tests, 344 physics goldens) are those of the r4493 build; [reference/build-system.md](reference/build-system.md) is where they are defined and the other pages follow it.
+- Counts quoted in the docs (61 libraries, 603 programs, 1030 tests, 344 physics goldens) are those of the r4493 build; [reference/build-system.md](reference/build-system.md) is where they are defined and the other pages follow it.
 - `docs/reference/programs/` is regenerated with `python3 scripts_cmake/gen_program_reference.py build/lapack docs/reference/programs` after any change to a program's options; the manuals are re-attached with `scripts_cmake/attach_wiki_manuals.py`.
 - A page that cannot be verified against the build goes to `drafts/` with a note on what is missing, not into the sections above.

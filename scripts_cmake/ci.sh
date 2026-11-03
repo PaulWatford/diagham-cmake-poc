@@ -70,4 +70,8 @@ PY
     fi
     echo "== numbers page up to date?"
     python3 tests/numbers_of_record.py "build/$PRESET" --check
+    echo "== claim index up to date?"
+    python3 tests/claims.py "build/$PRESET" --check docs/reference/claims.md
+    echo "== claim rules self-test"
+    tests/claims_selftest.sh
 fi

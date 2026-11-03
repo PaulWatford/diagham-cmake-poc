@@ -40,6 +40,7 @@ function(diagham_torus_pes_test name)
         list(APPEND filters 1 ${ARG_KY})
     endif()
     diagham_physics_test(physics.entanglement.torus.laughlin_1_3.${name}
+        KNOWN_FROM "oracle tests/oracles/entanglement.py"
         PRE_STEPS
             "${tf2_pes}|-p|4|-l|12|--interaction-file|${DIAGHAM_TEST_DATA}/v1_pseudopotential.dat|--interaction-name|v1|--redundant-kymomenta|--full-diag|5000|--eigenstate|-n|1"
         PROGRAM ${torus_pes}
@@ -74,12 +75,14 @@ function(diagham_spin_entropy_tests prefix)
         set(WF "")
     endif()
     diagham_physics_test(${prefix}.bell_pair_entropy_ln2
+        KNOWN_FROM "analytic: a Bell pair (|01> - |10>)/sqrt 2 split in half has entanglement entropy ln 2"
         PROGRAM ${spin_ent}
         ARGS -s 1 ${ent_data}/spin_1_2_n_2_sz_0.0.vec -o bell.ent
         OUTPUT "bell.ent"
         CHECK min-abs @OUTPUT@ 1 0.6931471805599453 1e-12
         ${WF} LABELS entanglement spin ${EXTRA})
     diagham_physics_test(${prefix}.product_state_entropy_zero
+        KNOWN_FROM "analytic: a product state has entanglement entropy 0"
         PROGRAM ${spin_ent}
         ARGS -s 1 ${ent_data}/spin_1_2_n_4_sz_4.0.vec -o product.ent
         OUTPUT "product.ent"
@@ -89,12 +92,14 @@ endfunction()
 if(DIAGHAM_USE_LAPACK)
     diagham_spin_entropy_tests(physics.entanglement.spin_chain)
     diagham_physics_test(physics.entanglement.spin_chain.bell_pair_two_levels_one_half
+        KNOWN_FROM "analytic: the reduced density matrix of a Bell pair has two eigenvalues 1/2"
         PROGRAM ${spin_ent}
         ARGS -s 1 ${ent_data}/spin_1_2_n_2_sz_0.0.vec -o bell.ent
         OUTPUT "bell.full.ent"
         CHECK nonzero @OUTPUT@ 2 1e-10 2 0 1
         LABELS entanglement spin )
     diagham_physics_test(physics.entanglement.spin_chain.product_state_one_level
+        KNOWN_FROM "analytic: the reduced density matrix of a product state has one eigenvalue 1"
         PROGRAM ${spin_ent}
         ARGS -s 1 ${ent_data}/spin_1_2_n_4_sz_4.0.vec -o product.ent
         OUTPUT "product.full.ent"

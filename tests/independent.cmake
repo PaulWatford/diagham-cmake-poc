@@ -205,6 +205,7 @@ foreach(case
         set(extra --interaction-file ${torus_ed_data}/${name}_pp.dat --interaction-name ${inter})
     endif()
     diagham_physics_test(physics.fqhe.torus.ed.${name}
+        REASON "DiagHam truncates its momentum sums at about 1e-10, so its degenerate pairs differ in the tenth digit (docs/reference/tests.md, tolerance table)"
         PROGRAM ${prog}
         ARGS -p ${n} -l ${nphi} --ratio ${ratio} --ky-momentum ${ky} --full-diag 100000 ${extra}
         OUTPUT "${stat}_torus_kysym_${inter}_n_${n}_2s_${nphi}_ratio_*.dat"
@@ -229,6 +230,7 @@ function(diagham_torus_species_test name case)
         set(col -1)
     endif()
     diagham_physics_test(${name}
+        REASON "DiagHam truncates its momentum sums at about 1e-10, so its degenerate pairs differ in the tenth digit (docs/reference/tests.md, tolerance table)"
         PROGRAM ${ARG_PROGRAM}
         ARGS ${ARG_ARGS} ${extra} --full-diag 100000
         OUTPUT "${ARG_OUTPUT}"
@@ -382,6 +384,7 @@ function(diagham_band_case name program nx ny nz glob col0 bands)
     foreach(band ${bands})
         math(EXPR col "${band} + ${col0}")
         diagham_physics_test(physics.${program}.bands.${name}.band${band}
+            REASON "${fci_band_reason}"
             PROGRAM ${program}
             ARGS -p 2 -x ${nx} -y ${ny} ${ARGN}
             OUTPUT "${glob}"
@@ -409,6 +412,7 @@ diagham_band_case(zhangqi_4x3_theta_0.15_mus_0.2 FCI_FCIZhangQiLatticeModel 4 3 
 diagham_band_case(bhz_3x3 FTI_FQSH2DBHZModel 3 3 0
     "fermions_quantumspihall2d_BHZlattice_n_2_x_3_y_3_*_tightbinding.dat" 2 "0;1;2;3" --nbr-bands 2 ${fci_export})
 # the 3D plain .dat carries six significant digits only
+set(fci_band_reason "the program writes these bands with six significant digits (docs/reference/tests.md, tolerance table)")
 set(fci_band_tol 1e-5)
 diagham_band_case(simple_ti3d_3x3x2_m1.5 FTI_FTI3DSimpleTI 3 3 2
     "fermions_quantumspinhall3d_simpleti_fourbands_n_2_x_3_y_3_z_2_u_*_gz_0.000000.dat" 3 "0;3"
@@ -444,6 +448,7 @@ foreach(case "haldane_phi0.5_mus0.3|0.5|0.3" "haldane_phi-0.5_mus0.3|-0.5|0.3" "
     list(GET c 1 phi)
     list(GET c 2 mus)
     diagham_physics_test(physics.fci.chern.${name}
+        REASON "a discretised Berry-curvature estimate converging as 1/N^2, within 0.008 of the integer at N = 64 (docs/reference/tests.md, tolerance table)"
         PROGRAM FCI_FCIHaldaneModel
         ARGS -p 2 -x 64 -y 64 --single-band --phi ${phi} --mu-s ${mus} --singleparticle-spectrum --singleparticle-chernnumber
         OUTPUT "program.log"
@@ -461,6 +466,7 @@ function(diagham_spin_ed_test name case)
     endif()
     string(REGEX MATCH "^${case} ([-0-9.e+]+) ([-0-9.e+]+)" _ "${lines}")
     diagham_physics_test(${name}
+        KNOWN_FROM "oracle tests/oracles/spin_ed.py"
         PROGRAM ${ARG_PROGRAM} ARGS ${ARG_ARGS} OUTPUT "${ARG_OUTPUT}"
         CHECK min-abs @OUTPUT@ -1 ${CMAKE_MATCH_1} ${CMAKE_MATCH_2}
         LABELS spin ed)
@@ -495,6 +501,7 @@ diagham_physics_test(physics.fci.checkerboard.manybody.3x3_n2_flat
     CHECK spectrum @OUTPUT@ 2 ${fci_mb_data}/checkerboard_3x3_n2_flat.dat 2 ${DIAGHAM_TEST_TOLERANCE}
     LABELS fci checkerboard manybody)
 diagham_physics_test(physics.fci.checkerboard.manybody.3x3_n3_flat
+    REASON "measured between 2.5e-12 and 3.7e-12 relative in the default, LAPACK and full builds (docs/reference/tests.md, tolerance section)"
     PROGRAM ${fci_cb}
     ARGS -p 3 -x 3 -y 3 --single-band --flat-band --full-diag 5000 --full-momentum
     OUTPUT "fermions_singleband_checkerboardlattice_n_3_ns_18_x_3_y_3_*_gx_*.dat"
@@ -626,6 +633,7 @@ set(lf_data ${DIAGHAM_TEST_DATA}/lattice_fermions)
 function(diagham_lattice_test name case)
     cmake_parse_arguments(ARG "" "PROGRAM;OUTPUT" "ARGS" ${ARGN})
     diagham_physics_test(${name}
+        REASON "the programs converge to about 1e-8 (docs/reference/tests.md, tolerance table)"
         PROGRAM ${ARG_PROGRAM}
         ARGS ${ARG_ARGS} --full-diag 100000
         OUTPUT "${ARG_OUTPUT}"
@@ -645,11 +653,19 @@ diagham_lattice_test(physics.hubbard.ed.ssh_4cells_n4_delta0.3 ssh_4cells_n4_del
     PROGRAM HubbardModels_HubbardSSHModel ARGS -p 4 -x 4 --delta 0.3 --no-translation OUTPUT "fermions_ssh_x_4_n_4_ns_8_d_0.3.dat")
 diagham_spin_model_test(physics.spin.ed.kitaev_heisenberg_honeycomb_2x2 kitaev_heisenberg_honeycomb_2x2_j1_jk0.5
     PROGRAM HubbardModels_HubbardExtendedKitaevHeisenbergHoneycombModel ARGS -x 2 -y 2 --spin --j1 1 --jK 0.5 OUTPUT "spin_kitaev_heisenberg_honeycomb_x_2_y_2_ns_8_j1_*_hz_0.000000.dat" TOL 1e-7 LABELS lattice)
+# the reason of the calls above that pass TOL 1e-7 (diagham_spin_model_test has no REASON of its own)
+foreach(_t physics.spin.ed.aklt_p3p4_spin2_L4_sz0_k0 physics.spin.ed.aklt_p3p4_spin2_L4_sz0_k2
+           physics.spin.ed.kitaev_heisenberg_honeycomb_2x2)
+    if(TEST ${_t})
+        set_tests_properties(${_t} PROPERTIES TOLERANCE_REASON "the programs converge to about 1e-8 (docs/reference/tests.md, tolerance table)")
+    endif()
+endforeach()
 
 # --- 3. algorithm consensus (crosscheck) ------------------------------------------------------
 # Lanczos with reorthogonalisation (-n 4) vs full diagonalisation: same program, same
 # Hamiltonian (Coulomb, N=6, 2S=15, Lz=0, 338 states), the 4 lowest eigenvalues to 1e-10.
 diagham_physics_test(crosscheck.fqhe.sphere.lanczos_vs_full_diagonalisation
+    KNOWN_FROM "independent program: the same program with full diagonalisation (same Hamiltonian, the Lanczos path against the dense one)"
     PROGRAM ${fer2}
     ARGS -p 6 -l 15 --interaction-file ${ed_data}/fermions_n5_2s12_coulomb_pp.dat --interaction-name c15 --nbr-lz 1 --full-diag 100 -n 4
     OUTPUT "fermions_c15_n_6_2s_15_lz.dat"
@@ -662,6 +678,7 @@ diagham_physics_test(crosscheck.fqhe.sphere.lanczos_vs_full_diagonalisation
 #  this is a consensus check, the interaction only needs to be the same on both sides)
 if(DIAGHAM_USE_LAPACK)
     diagham_physics_test(crosscheck.fqhe.sphere.lapack_vs_internal_diagonaliser
+        KNOWN_FROM "independent program: the same program with its internal diagonaliser (same Hamiltonian, LAPACK against DiagHam's own)"
         PROGRAM ${fer2}
         ARGS -p 6 -l 15 --interaction-file ${ed_data}/fermions_n5_2s12_coulomb_pp.dat --interaction-name c15 --nbr-lz 1 --full-diag 100000 --use-lapack
         OUTPUT "fermions_c15_n_6_2s_15_lz.dat"

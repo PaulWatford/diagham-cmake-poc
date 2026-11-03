@@ -17,7 +17,7 @@ Closed forms (no numerics beyond a sum):
   eps (both spins).
 Independent numerics (numpy, dense diagonalisation of the full 2^L or 3^L
 matrix, no symmetry, nothing shared with DiagHam):
-- spin-1/2 Heisenberg ring L=8, spin-1 Heisenberg ring L=6,
+- spin-1/2 Heisenberg rings L=8 and L=10, spin-1 Heisenberg ring L=6,
 - transverse-field Ising ring L=8: SpinChainXYZ uses Pauli matrices for the
   couplings and S = sigma/2 for the field, H = Jx sum sigma^x sigma^x + h sum S^z
   (established by matching, then checked at 1e-12; the generic XYZ case
@@ -91,6 +91,7 @@ def _numpy_spin_chain(L, s2, terms, field=0.0, coupling_scale=1.0):
 
 CASES = [
     ("heisenberg_ring_L8", lambda: _numpy_spin_chain(8, 1, {"x": 1, "y": 1, "z": 1}), 1e-12, "numpy dense ED, 256 states"),
+    ("heisenberg_ring_L10", lambda: _numpy_spin_chain(10, 1, {"x": 1, "y": 1, "z": 1}), 1e-12, "numpy dense ED, 1024 states"),
     ("spin1_heisenberg_ring_L6", lambda: _numpy_spin_chain(6, 2, {"x": 1, "y": 1, "z": 1}), 1e-11, "numpy dense ED, 729 states"),
     ("tfim_ring_L8_h0.5", lambda: _numpy_spin_chain(8, 1, {"x": 1}, field=0.5, coupling_scale=4), 1e-11, "numpy dense ED; Jx sigma^x sigma^x + h S^z"),
     ("xx_ring_L6", lambda: xx_ring(6), 1e-12, "free fermions: -sum of 3 lowest cos k, periodic k"),

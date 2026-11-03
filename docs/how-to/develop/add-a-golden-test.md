@@ -11,8 +11,22 @@ diagham_physics_test(physics.<module>.<what>
     ARGS <program arguments>
     OUTPUT "<glob matching the one spectrum file the run writes>"
     CHECK <min|min-abs|spectrum|count> @OUTPUT@ <column> ...
-    LABELS <module>)
+    LABELS <module>
+    KNOWN_FROM "<kind>: <where the expected answer is known from>"
+    REASON "<why the tolerance is looser than the policy>")   # only when it is
 ```
+
+`KNOWN_FROM` starts with one of six kinds: `oracle tests/oracles/<file>.py`, `analytic: ...`,
+`exact count: ...`, `independent program: <target>`, `paper: ...` or
+`saved reference: <file>, cross-checked by <test>`. It can be left out in two cases, where the helper fills it in:
+a `CHECK` that reads `tests/data/<dir>/` written by `tests/oracles/<dir>.py` (the oracle), and a test with
+`REF_PROGRAM` (that program). `REASON` is needed when the tolerance is looser than `rel:1e-12`, 4 ulp for `min`,
+or an absolute 1e-9; the reasons in use are in the tolerance table of
+[../../reference/tests.md](../../reference/tests.md). A label must be listed in `tests/labels.txt`. Neither text may contain `;`, which CMake reads as a list separator;
+the configure step stops if one does.
+`selftest.claims` checks all of this, and the test then appears in
+[../../reference/claims.md](../../reference/claims.md) (regenerate it with
+`python3 tests/claims.py build/default --write docs/reference/claims.md`).
 
 The test runs the program in a fresh, empty directory (so stale output can
 never satisfy a check), finds the one file matching `OUTPUT`, and runs
@@ -42,9 +56,10 @@ REF_ARGS <args> REF_OUTPUT <glob>` and use `@REFERENCE@` in `CHECK` (the
 
 Rules:
 
-- **Every golden must say, in a comment, why the expected answer is known**
-  — analytic, from an independent code, or from a saved reference that was
-  itself cross-checked. "It is what the program printed" is not a golden.
+- **Every golden must say why the expected answer is known**, in `KNOWN_FROM`
+  and in a comment with the detail — analytic, from an independent code, or
+  from a saved reference that was itself cross-checked. "It is what the
+  program printed" is not a golden.
 - Goldens are never edited to make a failing test pass (`AGENTS.md`). A
   changed expected value is a physics change and needs a maintainer.
 - Prefer small systems: the whole physics suite runs in seconds, which is

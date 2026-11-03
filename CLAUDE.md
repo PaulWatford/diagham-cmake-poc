@@ -23,13 +23,14 @@ Run them in this order, from a clean, out-of-source build. Every one must exit 0
 | G1 | Configure and build, out of source | `cmake --preset default && cmake --build --preset default` | the tree still builds |
 | G2 | Full suite with the manifest | `ctest --preset default --output-on-failure` | every test still passes, and `selftest.manifest` proves the set of test names equals `tests/manifest.txt` |
 | G3 | Damage scan | `python3 scripts_cmake/damage_scan.py main HEAD` | no locked artefact changed (test names, goldens, `tests/data/`, `benchmarks/`, option defaults, `patches/`, in-source build). Exit 2 is allowed only if every finding is listed under "Damage, explained" in the pull request |
-| G4 | Claims are sealed | `ctest --preset default -R selftest.claims` | every `physics` test states where its answer is known from, carries a tolerance, and uses only the labels in the vocabulary below |
+| G4 | Claims are sealed | `ctest --preset default -R selftest.claims` | every `physics` test states where its answer is known from, carries a tolerance, and uses only the labels in `tests/labels.txt` (the kinds are in the vocabulary below) |
 | G5 | Generated pages are current | `python3 tests/coverage.py build/default --write docs/reference/test-coverage.md && python3 tests/claims.py build/default --write docs/reference/claims.md && python3 tests/numbers_of_record.py build/default --check` | the coverage page, the claim index and the canonical numbers page match this build; a stale page is a failure |
 | G6 | Documentation builds | `python3 scripts_cmake/gen_mkdocs_nav.py --check && mkdocs build --strict` | no broken link, no page outside the nav |
 | G7 | Disclosure | the pull request template's "AI assistance" section has exactly one box ticked | the Guard's author gate fails every pull request without it |
 
-Until G4 and G5 exist (see `docs/explanation/guard-design.md`, status table), they are reported as NOT RUN, with
-that reason.
+G4 fails the suite on a `physics` or `crosscheck` test without `KNOWN_FROM`; `python3 tests/claims.py
+build/default --missing` lists any. A new test sets `KNOWN_FROM`, and `REASON` when its tolerance is looser than `rel:1e-12`, 4 ulp or
+an absolute 1e-9 (`docs/how-to/develop/add-a-golden-test.md`).
 
 ## Before touching these, stop and ask the maintainer
 

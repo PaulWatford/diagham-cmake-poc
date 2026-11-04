@@ -1,7 +1,8 @@
 # DiagHam core programs: the build set of DIAGHAM_PROGRAM_SET=core and of the core presets.
-# PROVISIONAL: the 42 programs of DiagHam_essential_programs_v2_2026-10-19.xlsx. The team decides the final
+# PROVISIONAL: the 42 programs of DiagHam_essential_programs_v2_2026-10-19.xlsx, and
+# FTIGenericInteractionFromFileSingleBand (Nicolas Regnault, e-mail of 3 November 2026). The team decides the final
 # list by how developed each program's wiki page is (Nicolas Regnault, 20 October 2026) and a vote; edit
-# this file when it is agreed, then regenerate tests/manifest-core.txt (docs/how-to/build/presets.md).
+# this file when it is agreed, then regenerate tests/manifest-core-programs.txt (docs/how-to/build/presets.md).
 # One upstream binary name per line; '#' starts a comment.
 
 # Core tools
@@ -41,6 +42,7 @@ FCIKagomeLatticeModel
 FCIZhangQiLatticeModel
 FCIHofstadterModel
 FQSH2DBHZModel
+FTIGenericInteractionFromFileSingleBand
 # Hubbard
 HubbardSquareLatticeModel
 HubbardHaldaneLatticeModel

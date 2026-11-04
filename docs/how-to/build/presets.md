@@ -55,7 +55,8 @@ registers only the tests of the programs that are built.
 - **`core` set:** checked against its own locked list, `tests/manifest-core-programs.txt`.
 - **Any other selection:** every test it registers must be in the full list, `tests/manifest.txt`.
 
-The core list is provisional: the 42 programs of the candidate list of 19 October 2026. The team settles the
+The core list is provisional: the 42 programs of the candidate list of 19 October 2026, and
+`FTIGenericInteractionFromFileSingleBand`, added at Nicolas Regnault's request on 3 November 2026. The team settles the
 final list by how developed each program's wiki page is. After editing `cmake/core-programs.txt`, regenerate the
 locked list from a `core-programs-portable` build:
 

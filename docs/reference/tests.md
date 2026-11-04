@@ -441,6 +441,16 @@ Later the same day, three more:
 In the overnight run of 26 October 2026, programs core under every weighting first:
 
 - **`FTIGenericInteractionFromFileTwoBands`** (4 tests). Generic one-body energies and a generic momentum-conserving interaction, written to the program's input files, against an exact diagonalisation of the same Hamiltonian, every momentum sector (`tests/oracles/fti_generic.py`). The program applies V c+_1 c+_2 c_3 c_4; that order is the one convention taken from it, fixed on two particles, and the three-particle spectra then agree with nothing left to adjust (about 4e-14). Three tests use `--3band-convention`; one pins the default.
+- **`FTIGenericInteractionFromFileSingleBand`** (core list since 3 November 2026, at Nicolas Regnault's request; 4 tests in every build, 5 more with LAPACK, 2 `open-finding` tests).
+  - A generic complex momentum-conserving interaction (hermitian, every element listed), with and without one-body energies, against an exact diagonalisation of the same Hamiltonian, every momentum sector (`tests/oracles/fti_single_band.py`).
+    - The program builds its interaction in the same class as the two-band program, so it has the same V c+_1 c+_2 c_3 c_4 order. Two particles fix it (the other order is off by 0.94), and four particles on 4 × 3 then agree to 4.5e-14.
+    - The 3 × 3 case runs with `--use-lapack`, in LAPACK builds only. The built-in diagonaliser is off by 4.9e-12 there (U46), too close to the tolerance for a stable `open-finding` test.
+  - Nicolas Regnault's 5 × 5 example (`tests/data/fti_single_band_regnault`: his interaction file and spectrum as he sent them, 8 fermions, 43,263 states per sector), sector (0,0), against his saved spectrum:
+    - plain Lanczos in every build (about 2 s), and his GenericOverlap example: the sector's two eigenvectors are orthogonal (squared overlap 0 to within 1e-12; his run gives 2.7e-30);
+    - with LAPACK, his own options (block Lanczos, `--use-lapack`);
+    - with LAPACK, the eigenvectors of the two runs, whose squared overlaps are 1 to within 1e-10 by GenericOverlap.
+  - With LAPACK, all 25 sectors with his options, line by line against his whole spectrum file (`check_spectrum numbers`, about 5 minutes). His `--auto-loadbalancing` exists only in an MPI build, and his `--selected-sectors` file was not sent; his spectrum has all 25 sectors.
+  - Open findings U62 (block Lanczos without `--use-lapack`) and U63 (`--eigenstate-file` ignored).
 
   One finding, the same on a pristine autotools build:
   - **U48:** without `--3band-convention` the interaction file's band labels act on the opposite bands of the one-body file (the default Hilbert space uses bit 2k + 1 - m for two-body operators and 2k + m for one-body ones).
@@ -591,7 +601,7 @@ the harness, not a program, and keep their own longer timeouts.
 
 ### Known upstream findings
 
-Thirty-nine `open-finding` tests exist (U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
+Forty-one `open-finding` tests exist (U62, complex block Lanczos without `--use-lapack`: nan and a segmentation fault, every build; U63, `FTIGenericInteractionFromFileSingleBand` ignores `--eigenstate-file`; U46, the Householder cut-off in the built-in full diagonalisation: three cases, two of them only without LAPACK; U40, `SpinChainEntanglementEntropy` aborts in a build without LAPACK: two cases, default build only; U39, the one-body energy of the single-band many-body Hamiltonians: four cases, Haldane and Kagome at half the band energy, the non-flat checkerboard overwritten; U36, `FTI3DHopf` segfaults after writing its band file; U37, the 3D tight-binding `--export-onebodytext` file holds only the kz = 0 slice; U31, the two-band checkerboard segfault; U32,
 the empty fermionic basis with both symmetrisation flags; U34, the disk
 pseudopotential Hamiltonian, three cases; U35, the 2D Ising program's
 ignored open boundaries; see above. U30,

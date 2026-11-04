@@ -300,6 +300,132 @@ if(Python3_Interpreter_FOUND)
     set_tests_properties(selftest.fti_generic_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
 endif()
 
+# FTIGenericInteractionFromFileSingleBand, added to the core list at Nicolas Regnault's request (e-mail of 3 November
+# 2026). Two sources:
+#  - a complex momentum-conserving interaction, with and without one-body energies, against an exact diagonalisation
+#    of the same Hamiltonian, sector by sector (tests/oracles/fti_single_band.py). The 3 x 3 case runs with
+#    --use-lapack: the built-in full diagonalisation is off by 4.9e-12 there (U46, through HermitianMatrix::Diagonalize),
+#    too close to the 1e-12 tolerance for a stable open-finding test;
+#  - Nicolas Regnault's 5 x 5 example (8 fermions, his interaction file and spectrum, tests/data/fti_single_band_regnault),
+#    sector (0,0), which runs in about 2 s: plain Lanczos in every build, and with LAPACK his own options (block
+#    Lanczos, --use-lapack; --auto-loadbalancing exists only in an MPI build and is left out), and the eigenvectors
+#    with GenericOverlap, as his e-mail does: the two states of the sector orthogonal, and the two runs' states the
+#    same. With LAPACK, all 25 sectors with his options against his whole spectrum file (about 5 minutes).
+# Two open findings met on the way: U62 (block Lanczos on a complex Hamiltonian without --use-lapack never diagonalises
+# its reduced matrix: nan from the first step, then a segmentation fault) and U63 (--eigenstate-file is ignored).
+set(fsb FTI_FTIGenericInteractionFromFileSingleBand)
+set(fsb_data ${DIAGHAM_TEST_DATA}/fti_single_band)
+set(fsb_ref ${DIAGHAM_TEST_DATA}/fti_single_band_regnault)
+if(Python3_Interpreter_FOUND AND TARGET ${fsb})
+    set(fsb_cases "fermions_x3_y2_n2" "fermions_x4_y3_n4")
+    if(DIAGHAM_USE_LAPACK)
+        list(APPEND fsb_cases "fermions_x3_y3_n3|--use-lapack")
+    endif()
+    foreach(case ${fsb_cases})
+        string(REPLACE "|" ";" c "${case}")
+        list(GET c 0 name)
+        list(REMOVE_AT c 0)
+        set(tname physics.fti.generic_interaction_single_band.${name})
+        add_test(NAME ${tname}
+            COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fti_single_band.py run
+                $<TARGET_FILE:${fsb}> ${name} ${fsb_data} ${DIAGHAM_TEST_WORK}/${tname} ${DIAGHAM_TEST_TOLERANCE} ${c})
+        set_tests_properties(${tname} PROPERTIES LABELS "physics;python;fti" TIMEOUT ${DIAGHAM_TEST_TIMEOUT})
+    endforeach()
+endif()
+if(Python3_Interpreter_FOUND)
+    add_test(NAME selftest.fti_single_band_oracle
+        COMMAND ${Python3_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/oracles/fti_single_band.py --check ${fsb_data})
+    set_tests_properties(selftest.fti_single_band_oracle PROPERTIES LABELS "selftest;python" TIMEOUT 300)
+endif()
+
+set(fsb_5x5 -x 5 -y 5 --interaction-file ${fsb_ref}/twobody_v1_1_n1_5_n2_5_s1_1.0.dat --only-kx 0 --only-ky 0
+    --full-diag 1500 -S --processors 2 --disable-pzsymmetry --disable-szsymmetry --lanczos-precision 1e-13
+    --force-reorthogonalize -n 2)
+set(fsb_regnault_known "saved reference: tests/data/fti_single_band_regnault/k0_0_spectrum.dat (Nicolas Regnault's run, block Lanczos with LAPACK), cross-checked by physics.fti.generic_interaction_single_band.fermions_x4_y3_n4")
+diagham_physics_test(physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0
+    KNOWN_FROM "${fsb_regnault_known}"
+    PROGRAM ${fsb}
+    ARGS ${fsb_5x5} -p 8 --interaction-name v1_1_s1_1.0
+    OUTPUT "fermions_oneband_u_1.000_v1_1_s1_1.0_n_8_ns_50_x_5_y_5.dat"
+    CHECK spectrum @OUTPUT@ -1 ${fsb_ref}/k0_0_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+    LABELS fti)
+# his GenericOverlap example: the two eigenvectors of sector (0,0) are orthogonal (his run gives 2.7125336736447e-30)
+string(REPLACE ";" "|" fsb_steps "${fsb_5x5}")
+set(fsb_vec fermions_oneband_u_1.000_v1_1_s1_1.0_n_8_ns_50_x_5_y_5_kx_0_ky_0)
+diagham_physics_test(physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_orthogonality
+    KNOWN_FROM "analytic: eigenvectors of a hermitian matrix for distinct eigenvalues are orthogonal (Nicolas Regnault's GenericOverlap example)"
+    PRE_STEPS "${fsb}|${fsb_steps}|-p|8|--interaction-name|v1_1_s1_1.0|--eigenstate"
+    PROGRAM Programs_GenericOverlap
+    ARGS -c --quiet ${fsb_vec}.0.vec ${fsb_vec}.1.vec
+    OUTPUT "program.log"
+    CHECK min-abs @OUTPUT@ 0 0 1e-12
+    LABELS fti)
+if(DIAGHAM_USE_LAPACK)
+    # all 25 sectors with his command (less --auto-loadbalancing, MPI only; --selected-sectors, whose file he did not
+    # send, his spectrum has all 25 sectors; and --eigenstate, the vectors are not compared here), line by line
+    # against his whole spectrum file. About 5 minutes.
+    diagham_physics_test(physics.fti.generic_interaction_single_band.regnault_5x5_n8_all_sectors
+        KNOWN_FROM "saved reference: tests/data/fti_single_band_regnault/fermions_oneband_u_1.000_v1_1_s1_1.0_n_8_ns_50_x_5_y_5.dat (Nicolas Regnault's run, his options), cross-checked by physics.fti.generic_interaction_single_band.fermions_x4_y3_n4"
+        PROGRAM ${fsb}
+        ARGS --use-lapack -x 5 -y 5 --interaction-file ${fsb_ref}/twobody_v1_1_n1_5_n2_5_s1_1.0.dat
+            --interaction-name v1_1_s1_1.0 --full-diag 1500 --memory 1500000 --show-itertime -S --processors 2
+            --disable-pzsymmetry --disable-szsymmetry --lanczos-precision 1e-13 -n 2 --block-lanczos --block-size 2
+            --force-reorthogonalize -p 8
+        OUTPUT "fermions_oneband_u_1.000_v1_1_s1_1.0_n_8_ns_50_x_5_y_5.dat"
+        CHECK numbers @OUTPUT@ ${fsb_ref}/fermions_oneband_u_1.000_v1_1_s1_1.0_n_8_ns_50_x_5_y_5.dat ${DIAGHAM_TEST_TOLERANCE}
+        TIMEOUT 1800
+        LABELS fti)
+    diagham_physics_test(physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_block_lanczos
+        KNOWN_FROM "${fsb_regnault_known}"
+        PROGRAM ${fsb}
+        ARGS ${fsb_5x5} -p 8 --interaction-name v1_1_s1_1.0 --use-lapack --memory 1500000 --show-itertime --eigenstate
+            --block-lanczos --block-size 2
+        OUTPUT "fermions_oneband_u_1.000_v1_1_s1_1.0_n_8_ns_50_x_5_y_5.dat"
+        CHECK spectrum @OUTPUT@ -1 ${fsb_ref}/k0_0_spectrum.dat -1 ${DIAGHAM_TEST_TOLERANCE}
+        LABELS fti)
+    # the two runs differ only in --interaction-name, which names their files (--eigenstate-file is ignored, U63)
+    foreach(state 0 1)
+        set(v fermions_oneband_u_1.000_@_n_8_ns_50_x_5_y_5_kx_0_ky_0.${state}.vec)
+        string(REPLACE "@" "lanczos" v_plain "${v}")
+        string(REPLACE "@" "block_lanczos" v_block "${v}")
+        diagham_physics_test(physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_eigenvector${state}
+            KNOWN_FROM "independent program: the same program with plain Lanczos against block Lanczos with LAPACK (same Hamiltonian, the squared overlap of the two eigenvectors is 1)"
+            PRE_STEPS
+                "${fsb}|${fsb_steps}|-p|8|--interaction-name|lanczos|--eigenstate"
+                "${fsb}|${fsb_steps}|-p|8|--interaction-name|block_lanczos|--eigenstate|--use-lapack|--block-lanczos|--block-size|2"
+            PROGRAM Programs_GenericOverlap
+            ARGS -c --quiet ${v_plain} ${v_block}
+            OUTPUT "program.log"
+            CHECK min-abs @OUTPUT@ 0 1 1e-10
+            LABELS fti)
+    endforeach()
+endif()
+# U62: --block-lanczos without --use-lapack (in every build). Four particles, sector (0,0) has 506 states; --iter-max
+# bounds the run (with the default 3000 it iterates on nan for seconds to minutes before the crash).
+diagham_physics_test(openfinding.fti.generic_interaction_single_band.block_lanczos_without_lapack.n4_k0_0
+    PROGRAM ${fsb}
+    ARGS -x 5 -y 5 --interaction-file ${fsb_ref}/twobody_v1_1_n1_5_n2_5_s1_1.0.dat --interaction-name v1_1_s1_1.0 -p 4
+        --only-kx 0 --only-ky 0 --full-diag 101 --lanczos-precision 1e-13 --force-reorthogonalize -n 2 --iter-max 100
+        --block-lanczos --block-size 2
+    OUTPUT "fermions_oneband_u_1.000_v1_1_s1_1.0_n_4_ns_50_x_5_y_5.dat"
+    REF_PROGRAM ${fsb}
+    REF_ARGS -x 5 -y 5 --interaction-file ${fsb_ref}/twobody_v1_1_n1_5_n2_5_s1_1.0.dat --interaction-name v1_1_s1_1.0 -p 4
+        --only-kx 0 --only-ky 0 --full-diag 101 --lanczos-precision 1e-13 --force-reorthogonalize -n 2
+    REF_OUTPUT "fermions_oneband_u_1.000_v1_1_s1_1.0_n_4_ns_50_x_5_y_5.dat"
+    CHECK lowest @OUTPUT@ -1 @REFERENCE@ -1 2 1e-10
+    WILL_FAIL LABELS fti)
+# U63: --eigenstate-file names no file; the vectors keep the default name. When it works, the state's squared
+# overlap with itself is 1.
+diagham_physics_test(openfinding.fti.generic_interaction_single_band.eigenstate_file_ignored
+    KNOWN_FROM "analytic: the squared overlap of a normalised state with itself is 1"
+    PRE_STEPS
+        "${fsb}|-x|3|-y|2|-p|2|--interaction-file|${fsb_data}/x3_y2_interaction.dat|--interaction-name|oracle|--only-kx|0|--only-ky|0|--full-diag|5000|--eigenstate|--eigenstate-file|named"
+    PROGRAM Programs_GenericOverlap
+    ARGS -c --quiet named_kx_0_ky_0.0.vec named_kx_0_ky_0.0.vec
+    OUTPUT "program.log"
+    CHECK min-abs @OUTPUT@ 0 1 1e-12
+    WILL_FAIL LABELS fti)
+
 # Overnight run, program 2: FTIEntanglementEntropyParticlePartition (core under every weighting). Complex states with
 # generic amplitudes, written in FTIShowBasis order, against the particle-partition reduced density matrix built
 # from scratch (tests/oracles/core_tools.py); one case is a three-state --degenerated-groundstate mixture.

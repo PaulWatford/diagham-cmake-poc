@@ -35,6 +35,11 @@ physics.hubbard.square_lattice.n4_3x2_sz0_u2.5_t1.1_tp0.35
 physics.hubbard.square_lattice.n4_2x3_sz0_u1.7_t0.9_tp-0.45
 physics.hubbard.square_lattice.n3_3x4_sz1_u1.7_t0.9_tp-0.45
 physics.hubbard.square_lattice.gutzwiller.n4_3x3_sz0_t1_tp0.3
+physics.fti.generic_interaction_single_band.fermions_x3_y3_n3
+physics.fti.generic_interaction_single_band.regnault_5x5_n8_all_sectors
+physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_block_lanczos
+physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_eigenvector0
+physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_eigenvector1
 # registered only WITHOUT LAPACK (open findings U40, U42, U46 and U51 that the LAPACK build does not reach)
 openfinding.spin.multiple_entanglement_spectra.svd_null_without_lapack.spin_1_2_n8_sz0
 openfinding.fqhe.cylinder.mps_orbital_entanglement_spectrum.householder_1x1_crash.boson_laughlin_m2_n5_perimeter8

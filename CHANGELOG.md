@@ -14,9 +14,20 @@ all present on the `upstream` branch: `git log upstream`).
 ## [Unreleased]
 
 ### Added
+- `FTIGenericInteractionFromFileSingleBand` joins the core list (`cmake/core-programs.txt`), at Nicolas Regnault's
+  request (e-mail of 3 November 2026), with its first physics tests:
+  - an independent exact diagonalisation of a generic complex interaction, with and without one-body energies
+    (`tests/oracles/fti_single_band.py`, `tests/data/fti_single_band`, `selftest.fti_single_band_oracle`);
+  - his 5 x 5 example against his saved spectrum (`tests/data/fti_single_band_regnault`, his files as sent):
+    sector (0,0) with plain Lanczos in every build, and his GenericOverlap example (the sector's two eigenvectors
+    orthogonal); with LAPACK his block-Lanczos options in sector (0,0) and in all 25 sectors against his whole
+    spectrum file, and the eigenvectors of the two algorithms against each other with GenericOverlap.
+  Open findings U62 (complex block Lanczos without `--use-lapack`: nan, then a segmentation fault) and U63
+  (`--eigenstate-file` is ignored), each with an `open-finding` test and a report in `docs/upstream-reports/`.
+  Suite: 1037 tests (core set 277).
 - Claim index and sealed claims (G4, G5): every `physics` and `crosscheck` test carries the test property
   `KNOWN_FROM`, where its expected answer is known from (`diagham_physics_test` arguments `KNOWN_FROM` and
-  `REASON`; filled in automatically for an oracle's `tests/data/<dir>/` and for a `REF_PROGRAM`), all 347 in the
+  `REASON`; filled in automatically for an oracle's `tests/data/<dir>/` and for a `REF_PROGRAM`), all 348 in the
   default build. `physics.spin.heisenberg_ring_L10` now takes its value from `tests/oracles/spin_hubbard.py`
   (new case `heisenberg_ring_L10`, a numpy dense ED; the inline value, from a numpy ED outside the tree,
   agreed to 8e-15). The properties are read from the build's `CTestTestfile.cmake` files, because `ctest --show-only=json-v1` of CMake 3.28 (Ubuntu 24.04) leaves custom properties out. `tests/claims.py` writes `docs/reference/claims.md`, checked for staleness by `ci.sh`; the

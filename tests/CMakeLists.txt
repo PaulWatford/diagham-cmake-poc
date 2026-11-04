@@ -447,6 +447,7 @@ set(_python_known_from
     "^physics\\.fqhe\\.cylinder\\.density\\.=tests/oracles/cylinder_density.py"
     "^physics\\.fqhe\\.cylinder\\.(quasihole_matrix_elements|quasiholes_time_reversal_josephson)\\.=tests/oracles/cylinder_quasiholes.py"
     "^physics\\.fti\\.generic_interaction_two_bands\\.=tests/oracles/fti_generic.py"
+    "^physics\\.fti\\.generic_interaction_single_band\\.fermions_=tests/oracles/fti_single_band.py"
     "^physics\\.hubbard\\.superconductor_order_parameter\\.=tests/oracles/hubbard_order_parameter.py"
     "^physics\\.(fti\\.min_nbr_singlet_projection|hubbard\\.square_lattice)\\.=tests/oracles/hubbard_square.py"
     "^physics\\.fqhe\\.sphere\\.mps_create_state\\.=tests/oracles/mps_laughlin.py"

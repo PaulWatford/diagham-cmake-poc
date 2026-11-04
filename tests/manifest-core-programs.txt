@@ -13,6 +13,8 @@ openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz6_v0
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n3_lz9_v2
 openfinding.fqhe.disk.bosons_two_body_generic.bosons_n4_lz12_v0_v2
 openfinding.fqhe.sphere.fermions_with_spin.lz_sz_symmetrized_basis_empty
+openfinding.fti.generic_interaction_single_band.block_lanczos_without_lapack.n4_k0_0
+openfinding.fti.generic_interaction_single_band.eigenstate_file_ignored
 openfinding.full_diagonalisation.householder_cutoff.hubbard_square_n3_3x3_sz1_u1.7_tp-0.45
 physics.FCI_FCIHaldaneModel.bands.haldane_3x3.band0
 physics.FCI_FCIHaldaneModel.bands.haldane_3x3.band1
@@ -152,6 +154,10 @@ physics.fqhe.torus.ed.translations.fermions_n4_nphi8_v1v3_kx2_ky0
 physics.fqhe.torus.laughlin_1_3.one_quasihole_count
 physics.fqhe.torus.laughlin_1_3.threefold_degeneracy
 physics.fqhe.torus.laughlin_1_3.two_quasihole_count
+physics.fti.generic_interaction_single_band.fermions_x3_y2_n2
+physics.fti.generic_interaction_single_band.fermions_x4_y3_n4
+physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0
+physics.fti.generic_interaction_single_band.regnault_5x5_n8_k0_0_orthogonality
 physics.hubbard.2x2.U0.ground_state_is_minus_8
 physics.hubbard.2x2.U4.full_spectrum
 physics.hubbard.2x2.U4.ground_state_is_minus_4sqrt2
@@ -210,6 +216,7 @@ selftest.fci_manybody_oracle
 selftest.fqhe_geometries_oracle
 selftest.fqhe_sphere_oracle
 selftest.fti_generic_oracle
+selftest.fti_single_band_oracle
 selftest.geometry_ed_oracle
 selftest.haah_oracle
 selftest.hofstadter_oracle
@@ -255,6 +262,7 @@ smoke.FQHEOnTorus_FQHETorusFermionsWithSpin
 smoke.FQHEOnTorus_FQHETorusFermionsWithTranslations
 smoke.FQHEOnTorus_FQHETorusGetDimension
 smoke.FTI_FQSH2DBHZModel
+smoke.FTI_FTIGenericInteractionFromFileSingleBand
 smoke.HubbardModels_HubbardGetDimension
 smoke.HubbardModels_HubbardHaldaneLatticeModel
 smoke.HubbardModels_HubbardSquareLatticeModel

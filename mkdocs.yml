@@ -168,6 +168,8 @@ nav:
       - 'Open finding U59: HubbardSuperconductorOrderParameter -o writes to a file with an uninitialised name': upstream-reports/open-U59.md
       - 'Open finding U60: FQHECylinderQuasiholesWithSpinTimeReversalSymmetryGenerateBasis tests degeneracies on unsorted energies': upstream-reports/open-U60.md
       - 'Open finding U61: FQHETorusMPSCreateState --topological-sector selects a different state for each P truncation mod m': upstream-reports/open-U61.md
+      - 'Open finding U62: complex block Lanczos without --use-lapack never diagonalises its reduced matrix': upstream-reports/open-U62.md
+      - 'Open finding U63: FTIGenericInteractionFromFileSingleBand ignores --eigenstate-file': upstream-reports/open-U63.md
   - Drafts:
       - 'Drafts: incomplete documentation, and where retired pages went': drafts/INDEX.md
       - 'Build on the University of Kent cluster (draft)': drafts/kent-cluster-build.md
